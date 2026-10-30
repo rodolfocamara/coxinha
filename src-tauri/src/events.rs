@@ -30,14 +30,6 @@ pub struct Navigate {
     pub route: Route,
 }
 
-/// Broadcast from both shutdown paths (tray Quit today,
-/// `window::close_for_quit` later). Components that hold
-/// pending work (editor debounced saves, drafts, etc.) listen
-/// and flush immediately — the host gives a ~600 ms window
-/// before calling `app.exit(0)`.
-#[derive(Debug, Clone, Serialize, Deserialize, Type, Event)]
-pub struct BeforeQuit;
-
 #[derive(Debug, Clone, Serialize, Deserialize, Type, Event)]
 pub struct CallDetected {
     pub app_name: String,

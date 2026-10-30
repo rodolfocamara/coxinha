@@ -12,6 +12,9 @@ use rusqlite::{params, Connection};
 use shared::*;
 use uuid::Uuid;
 
+mod note_index;
+pub(crate) use note_index::NoteIndexEntry;
+
 pub struct Db {
     conn: Mutex<Connection>,
 }
@@ -86,36 +89,12 @@ impl Db {
 
     // ---- Notes ----
 
+    #[cfg(test)]
     pub fn upsert_note(&self, note: &Note, body: &str) -> Result<()> {
-        let conn = self.conn.lock().unwrap();
-        let tags_json = serde_json::to_string(&note.tags)?;
-        conn.execute(
-            "INSERT INTO notes (id, path, title, tags_json, created_at, updated_at)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6)
-             ON CONFLICT(id) DO UPDATE SET
-                path       = excluded.path,
-                title      = excluded.title,
-                tags_json  = excluded.tags_json,
-                updated_at = excluded.updated_at",
-            params![
-                note.id.to_string(),
-                note.path,
-                note.title,
-                tags_json,
-                note.created_at.to_rfc3339(),
-                note.updated_at.to_rfc3339(),
-            ],
-        )?;
-
-        // FTS: delete + insert (simpler than upsert)
-        conn.execute(
-            "DELETE FROM notes_fts WHERE id = ?1",
-            params![note.id.to_string()],
-        )?;
-        conn.execute(
-            "INSERT INTO notes_fts (id, title, body) VALUES (?1, ?2, ?3)",
-            params![note.id.to_string(), note.title, body],
-        )?;
+        let mut conn = self.conn.lock().unwrap();
+        let tx = conn.transaction()?;
+        note_index::write_note(&tx, note, body)?;
+        tx.commit()?;
         Ok(())
     }
 
@@ -221,20 +200,6 @@ impl Db {
         let mut stmt = conn.prepare(&sql)?;
         let rows = stmt.query_map(params.as_slice(), row_to_note)?;
         rows.collect::<Result<_, _>>().map_err(Into::into)
-    }
-
-    /// Wipe every note-side table (notes, notes_fts, links). Used by
-    /// `rebuild_from_vault` to start from a clean slate before walking
-    /// the filesystem. Meetings are untouched — they are not derivable
-    /// from markdown files.
-    pub fn clear_all_note_data(&self) -> Result<()> {
-        let mut conn = self.conn.lock().unwrap();
-        let tx = conn.transaction()?;
-        tx.execute("DELETE FROM links", [])?;
-        tx.execute("DELETE FROM notes_fts", [])?;
-        tx.execute("DELETE FROM notes", [])?;
-        tx.commit()?;
-        Ok(())
     }
 
     // ---- Tags ----

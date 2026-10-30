@@ -11,11 +11,11 @@
 //!   3. A change to the shortcut-registration log format that
 //!      breaks user-reported diagnostics.
 //!
-//! Uses `COXINHA_VAULT=<tmp>` to keep a fresh config every run so
-//! the test is independent of whatever `~/coxinha/` already holds.
+//! Requires a disposable full application profile and a private desktop/session.
+//! See tests/README.md; default cargo test cannot launch this binary.
 
 use std::io::{BufRead, BufReader};
-use std::process::{Command, Stdio};
+mod support;
 use std::sync::mpsc;
 use std::thread;
 use std::time::{Duration, Instant};
@@ -24,17 +24,12 @@ const SUMMARY_MARKER: &str = "shortcut registration summary:";
 const BOOT_WAIT_BUDGET: Duration = Duration::from_secs(10);
 
 #[test]
+#[ignore = "native app: requires explicit feature and parent-owned private desktop/session"]
 fn all_five_default_shortcuts_register_cleanly() {
     let bin = env!("CARGO_BIN_EXE_coxinha");
-    let tmp = tempfile::tempdir().expect("tempdir");
+    let sandbox = support::NativeSandbox::new();
 
-    let mut child = Command::new(bin)
-        .env("COXINHA_VAULT", tmp.path())
-        .env("RUST_LOG", "coxinha=info,coxinha_lib=info")
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .expect("spawn coxinha.exe");
+    let mut child = sandbox.spawn(std::path::Path::new(bin));
 
     let (tx, rx) = mpsc::channel::<String>();
     spawn_line_pump("stdout", child.stdout.take().expect("stdout"), tx.clone());
