@@ -1,0 +1,22 @@
+{
+  "baseline_manifest_sha256": "60cf2fb72432d9f8e49b99109ea3f39ba1a7bb431c8e7f3d2ecdcc815f87b875",
+  "captured_v4_source": {
+    "coxinha-core/src/store.rs": "36a76d887bc4c2fb3494cc2ad55fdc3c72f4576acbe184a8e383bb5212e3e161",
+    "coxinha-core/src/session/mod.rs": "fef25714785622933c10059c36ddc9aae6a1af1ca84bcf0262cba793683ec685",
+    "coxinha-core/src/session/schema.sql": "3b945a86bf051ad8bc7b40936a931826c4475ae561638f8107a8f2bd81bd008b"
+  },
+  "generated_by": "target/session-workspace-20261024/v4-generator; baseline Store compiled offline; captured v3 fixture input",
+  "files": {
+    "generator/Cargo.lock": "714d520bd7f1b2076c76a42c7f0cc2e1c715ca8e3c1bd48e2f82228221fe7a2b",
+    "generator/Cargo.toml": "67d6f8de72cd202f1312f13bfff86fbe4e4a5d8da7c2ad978bb982625b2d2ca9",
+    "generator/src/main.rs": "028f34b291d230a08cd9bea850bf2bea7b422776f3bc62551a33ab87ce13698c",
+    "library/fixture.json": "8c8b88363024b1be45ff5b37455cf9c91abe8a7bb117217a007639c4b5f2ef63",
+    "library/meetings.db": "60247291af52c7176522520a981a02c1b7143ea8a5a003579a8d0a0b81bfb654",
+    "library/private/profiles.db": "f28641d8fcfa7dc4d94b6d37296299da1a3514a3e38f1b8011aa8d2b6a2ba5c0",
+    "library/raw/b67cd546-5aa2-48f7-b010-dc872107aa95/manifest.json": "4221921ef8a60262ff8fa0fcfdb314aa8b7f8660e4bc602dd9a657e7e476b12e",
+    "library/raw/b67cd546-5aa2-48f7-b010-dc872107aa95/mic.wav": "c201c6fd5a20ff268519b5dac797a3e3889c2bb61d2f42d7562ef256205a1686",
+    "library/raw/b67cd546-5aa2-48f7-b010-dc872107aa95/output.wav": "edb0c8c0d98bd1a3e32bf477073df990e2a39b6497d954c0a0b46c4043cae25b",
+    "library/raw/b67cd546-5aa2-48f7-b010-dc872107aa95/outputs/70504414-2e2f-4ec9-8493-cd74cb3757c7.json": "f5567bebd2e0a601ae210964a78689d6090626bea00f08c8ac65ed2b382677bc",
+    "library/raw/b67cd546-5aa2-48f7-b010-dc872107aa95/timing.jsonl": "82fd18d79fbaca567b00e51677df0bcbeda15ea2f7f2e3252dacacb4e1c1b237"
+  }
+}
