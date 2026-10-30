@@ -1,0 +1,7 @@
+_version: 2
+callDetection.title:
+  en: Possible meeting detected
+  pt-BR: Possível reunião detectada
+callDetection.body:
+  en: "Possible call in %{app}. Open Coxinha to prepare recording."
+  pt-BR: "Possível chamada no %{app}. Abra o Coxinha para preparar a gravação."

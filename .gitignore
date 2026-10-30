@@ -72,3 +72,12 @@ logs/
 
 # Local design scratch / unrelated project files dropped into docs/ui/
 docs/ui/
+
+# Synthetic migration fixtures are product test inputs, never operator databases.
+!coxinha-core/tests/fixtures/session-v3/library/meetings.db
+!coxinha-core/tests/fixtures/session-v3/library/private/profiles.db
+!coxinha-core/tests/fixtures/session-v4/library/meetings.db
+!coxinha-core/tests/fixtures/session-v4/library/private/profiles.db
+
+# Python bytecode from tools/ scripts.
+__pycache__/

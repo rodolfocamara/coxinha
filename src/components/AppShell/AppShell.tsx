@@ -1,5 +1,13 @@
-import { ReactNode } from 'react';
+import { MeetingReminder } from '../../features/detection/MeetingReminder';
+import { ReactNode, useLayoutEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
+import brandMark from '../../assets/coxinha-mark.svg';
+import { useSidebar } from '../../lib/sidebar';
+import { WindowChromeProvider, WindowDragRegion } from './WindowChrome';
+import { WindowFrame } from './WindowFrame';
+import { SidebarToggle } from './SidebarToggle';
+import { RecordingStatus } from './RecordingStatus';
 import { ChromeCap } from './ChromeCap';
 import { Rail } from './Rail';
 import { SidePanel } from './SidePanel';
@@ -12,7 +20,7 @@ interface Props {
   sidePanel?: ReactNode;
   /** Breadcrumb segments displayed in the chrome. */
   trail?: string[];
-  /** Tab strip — callers pass exactly one tab in this iteration. */
+  /** Open tabs; a single route is presented as a quiet title. */
   tabs?: ChromeTab[];
   /** Right-side slot in the chrome (save status, share, more). */
   chromeRight?: ReactNode;
@@ -22,9 +30,7 @@ interface Props {
 }
 
 /**
- * Three-column workspace shell: chrome cap (48 px) above a row of
- * rail (256 px) + canvas (flex) + optional side panel (380 px).
- * See spec 0057.
+ * Full-height sidebar beside the content chrome and workspace. See spec 0064.
  */
 export function AppShell({
   rail,
@@ -35,30 +41,86 @@ export function AppShell({
   chromeLeft,
   children,
 }: Props) {
+  const { t } = useTranslation();
+  const open = useSidebar((s) => s.open);
+  const setOpen = useSidebar((s) => s.setOpen);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const restoreFocus = useRef(false);
+  const toggleSidebar = () => {
+    restoreFocus.current = true;
+    setOpen(!open);
+  };
+  useLayoutEffect(() => {
+    if (restoreFocus.current) {
+      toggleRef.current?.focus();
+      restoreFocus.current = false;
+    }
+  }, [open]);
   return (
-    <div className="h-screen w-screen flex flex-col bg-background text-foreground">
-      <a
-        href="#canvas"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-sm"
-      >
-        Skip to canvas
-      </a>
+    <WindowChromeProvider>
+      <WindowFrame>
+        <div className="h-full w-full flex overflow-hidden bg-background text-foreground">
+          <a
+            href="#canvas"
+            className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-sm"
+          >
+            {t('a11y.skipToCanvas')}
+          </a>
 
-      <ChromeCap
-        trail={trail}
-        tabs={tabs}
-        left={chromeLeft}
-        right={chromeRight}
-        hasSidePanel={sidePanel != null}
-      />
+          {open && (
+            <aside
+              id="workspace-sidebar"
+              aria-label={t('rail.workspace')}
+              className="shrink-0 min-h-0 flex flex-col border-r border-border bg-background"
+              style={{ width: 'var(--shell-rail-width)' }}
+            >
+              <div
+                className="shrink-0 px-4 flex items-center gap-2"
+                style={{ height: 'var(--shell-chrome-height)' }}
+              >
+                <button
+                  type="button"
+                  onClick={() => window.dispatchEvent(new Event('coxinha:open-map'))}
+                  aria-label={t('session.map')}
+                  className="flex items-center gap-2 rounded focus-visible:outline focus-visible:outline-ring"
+                >
+                  <img src={brandMark} alt="" className="w-7 h-7" />
+                  <span className="text-sm font-semibold tracking-tight">{t('brand.name')}</span>
+                </button>
+                <WindowDragRegion
+                  data-testid="brand-drag-region"
+                  className="self-stretch flex-1 min-w-2 select-none"
+                />
+                <div>
+                  <SidebarToggle expanded onClick={toggleSidebar} ref={toggleRef} />
+                </div>
+              </div>
+              <RecordingStatus variant="sidebar" />
+              {rail ?? <Rail />}
+            </aside>
+          )}
+          <div className="flex flex-col flex-1 min-w-0 min-h-0">
+            <ChromeCap
+              trail={trail}
+              tabs={tabs}
+              left={chromeLeft}
+              right={chromeRight}
+              onToggleRail={open ? undefined : toggleSidebar}
+              railToggleRef={toggleRef}
+              hasSidePanel={sidePanel != null}
+            />
 
-      <div className="flex-1 min-h-0 flex">
-        {rail ?? <Rail />}
-        <main id="canvas" className="flex-1 min-w-0 overflow-hidden">
-          {children}
-        </main>
-        {sidePanel && <SidePanel>{sidePanel}</SidePanel>}
-      </div>
-    </div>
+            {!open && <RecordingStatus variant="bar" />}
+            <MeetingReminder />
+            <div className="flex-1 min-h-0 flex">
+              <main id="canvas" className="flex-1 min-w-0 overflow-hidden">
+                {children}
+              </main>
+              {sidePanel && <SidePanel>{sidePanel}</SidePanel>}
+            </div>
+          </div>
+        </div>
+      </WindowFrame>
+    </WindowChromeProvider>
   );
 }

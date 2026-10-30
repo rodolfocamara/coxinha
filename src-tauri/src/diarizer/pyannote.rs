@@ -46,26 +46,14 @@ impl Diarizer for PyannoteDiarizer {
         wav: &Path,
         segments: Vec<TranscriptSegment>,
     ) -> Result<Vec<TranscriptSegment>> {
-        let _wav = wav.to_path_buf();
-        let _seg_model = self.segmentation_model.clone();
-        let _emb_model = self.embedding_model.clone();
-        let segments_clone = segments.clone();
-
-        // TODO: wire up real pyannote-rs. API sketch:
-        //
-        // let mut embedding_extractor = pyannote_rs::EmbeddingExtractor::new(&emb_model)?;
-        // let mut speaker_manager = pyannote_rs::EmbeddingManager::new(/* max speakers */);
-        // let segments_it = pyannote_rs::segment(&samples, sample_rate, &seg_model)?;
-        // for seg in segments_it {
-        //     let embedding = embedding_extractor.compute(&seg.samples)?;
-        //     let speaker = speaker_manager.search_speaker(embedding, /* threshold */);
-        //     ...
-        // }
-        //
-        // Then merge the speaker segments with the transcript segments by
-        // timestamp overlap.
-
-        tracing::warn!("PyannoteDiarizer: not wired yet, returning segments as-is");
-        Ok(segments_clone)
+        let _ = (
+            wav,
+            segments,
+            &self.segmentation_model,
+            &self.embedding_model,
+        );
+        anyhow::bail!(
+            "pyannote adapter is not implemented; no diarization output produced (spec 0058)"
+        )
     }
 }

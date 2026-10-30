@@ -83,7 +83,19 @@ describe('BacklinksPanel', () => {
     render(<BacklinksPanel noteId="target" />);
 
     const alert = await screen.findByRole('alert');
-    expect(alert.textContent).toContain('boom');
+    expect(alert).toHaveTextContent('backlinks.unavailable');
+    expect(alert).not.toHaveTextContent('boom');
+    expect(getBacklinks).toHaveBeenCalledTimes(1);
+  });
+
+  it('turns rejected IPC into an actionable error without repeated requests', async () => {
+    getBacklinks.mockRejectedValue(new Error('private transport detail'));
+    const { rerender } = render(<BacklinksPanel noteId="target" />);
+    expect(await screen.findByRole('alert')).toHaveTextContent('backlinks.unavailable');
+    expect(screen.queryByRole('status')).toBeNull();
+    rerender(<BacklinksPanel noteId="target" />);
+    await waitFor(() => expect(getBacklinks).toHaveBeenCalledTimes(1));
+    expect(screen.queryByText('private transport detail')).toBeNull();
   });
 
   it('falls back to "(untitled)" when the linker has no title', async () => {

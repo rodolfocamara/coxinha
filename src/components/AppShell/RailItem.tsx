@@ -23,10 +23,10 @@ export function RailItem({ icon, label, to, onClick, trailing, active }: Props) 
       : false);
 
   const classes = clsx(
-    'flex items-center gap-2 w-full h-8 px-2 rounded-md text-[13px] transition-colors truncate',
+    'flex items-center gap-2 w-full min-w-0 shrink-0 h-9 px-2 rounded-md text-[13px] transition-colors truncate focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring',
     matched
       ? 'bg-secondary text-foreground'
-      : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60',
+      : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'
   );
 
   const content = (

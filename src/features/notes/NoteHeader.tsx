@@ -21,15 +21,10 @@ export function NoteHeader({ title, tags, updatedAt }: Props) {
   return (
     <>
       <header className="flex flex-col gap-2.5 mb-5">
-        <h1
-          className="cx-display text-[38px] text-foreground"
-          style={{ textWrap: 'balance' }}
-        >
+        <h1 className="cx-display text-[38px] text-foreground" style={{ textWrap: 'balance' }}>
           {displayTitle}
         </h1>
-        {meta && (
-          <p className="text-xs text-muted-foreground tracking-wide">{meta}</p>
-        )}
+        {meta && <p className="text-xs text-muted-foreground tracking-wide">{meta}</p>}
       </header>
       {tags.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-6" data-testid="note-tag-row">
@@ -52,5 +47,5 @@ export function formatNoteMeta(updatedAt: string): string {
     month: 'short',
     year: 'numeric',
   });
-  return `${formatted} · Saved`;
+  return formatted;
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider } from '@tanstack/react-router';
 
+import { DesktopLifecycle } from './lib/DesktopLifecycle';
 import { createAppRouter } from './router';
 
 export default function App() {
@@ -38,6 +39,7 @@ export default function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <DesktopLifecycle />
       <RouterProvider router={router} />
     </QueryClientProvider>
   );

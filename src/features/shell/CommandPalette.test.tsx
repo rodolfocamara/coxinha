@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 vi.mock('react-i18next', () => ({
@@ -24,16 +24,10 @@ const storeState = {
 };
 
 vi.mock('../../lib/store', () => ({
-  useAppStore: <T,>(selector: (s: typeof storeState) => T) =>
-    selector(storeState),
+  useAppStore: <T,>(selector: (s: typeof storeState) => T) => selector(storeState),
 }));
 
-vi.mock('../../lib/theme', () => ({
-  applyTheme: vi.fn(),
-  getThemePreference: vi.fn(() => 'light'),
-  setThemePreference: vi.fn(),
-  systemTheme: vi.fn(() => 'light'),
-}));
+import { applyTheme, getThemePreference } from '../../lib/theme';
 
 import { CommandPalette } from './CommandPalette';
 
@@ -41,7 +35,14 @@ function note(id: string, title: string) {
   return { id, title };
 }
 
+afterEach(() => {
+  vi.unstubAllGlobals();
+  localStorage.clear();
+});
+
 beforeEach(() => {
+  localStorage.clear();
+  applyTheme('light');
   navigate.mockReset();
   pathname.current = '/notes';
   storeState.notes = [
@@ -54,6 +55,29 @@ beforeEach(() => {
 });
 
 describe('CommandPalette', () => {
+  it('toggles the applied native theme when auto media reports the opposite', async () => {
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn(() => ({ matches: false }))
+    );
+    applyTheme('dark');
+    expect(getThemePreference()).toBe('auto');
+    const user = userEvent.setup();
+    render(<CommandPalette open onClose={() => {}} />);
+    await user.click(screen.getByText('palette.actions.toggleTheme'));
+    expect(getThemePreference()).toBe('light');
+    expect(document.documentElement.dataset.theme).toBe('light');
+  });
+
+  it('refreshes the toggle when the applied theme changes while the palette is open', async () => {
+    const user = userEvent.setup();
+    render(<CommandPalette open onClose={() => {}} />);
+    act(() => applyTheme('dark'));
+    await user.click(screen.getByText('palette.actions.toggleTheme'));
+    expect(getThemePreference()).toBe('light');
+    expect(document.documentElement.dataset.theme).toBe('light');
+  });
+
   it('returns null when closed', () => {
     const { container } = render(<CommandPalette open={false} onClose={() => {}} />);
     expect(container.firstChild).toBeNull();
@@ -109,25 +133,19 @@ describe('CommandPalette', () => {
     const user = userEvent.setup();
     render(<CommandPalette open onClose={() => {}} />);
     await user.type(screen.getByPlaceholderText('palette.placeholder'), 'xyzzz');
-    expect(
-      screen.getByText(/palette\.empty/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/palette\.empty/)).toBeInTheDocument();
   });
 
   it('exposes a Delete-this-note action only on note-detail routes', () => {
     pathname.current = '/notes/b';
     render(<CommandPalette open onClose={() => {}} />);
-    expect(
-      screen.getByText('palette.actions.deleteCurrentNote'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('palette.actions.deleteCurrentNote')).toBeInTheDocument();
   });
 
   it('hides the Delete-this-note action on non-detail routes', () => {
     pathname.current = '/settings';
     render(<CommandPalette open onClose={() => {}} />);
-    expect(
-      screen.queryByText('palette.actions.deleteCurrentNote'),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText('palette.actions.deleteCurrentNote')).not.toBeInTheDocument();
   });
 
   it('calls deleteNote when the user confirms the row trash icon', async () => {
@@ -159,4 +177,46 @@ describe('CommandPalette', () => {
     expect(storeState.deleteNote).not.toHaveBeenCalled();
     confirmSpy.mockRestore();
   });
+});
+
+it.each([
+  ['note_file_missing_or_moved', 'noteRecovery.missingOrMoved'],
+  ['note_file_changed_externally', 'noteRecovery.changedExternally'],
+  ['note_file_identity_conflict', 'noteRecovery.identityConflict'],
+  [
+    'session_note_delete_requires_detach\nprotected ownership',
+    'editor.sessionNoteDeleteRequiresDetach',
+  ],
+])('keeps a failed trash action visible with stable guidance for %s', async (code, message) => {
+  storeState.deleteNote.mockRejectedValue(new Error(code));
+  const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
+  const close = vi.fn();
+  try {
+    const user = userEvent.setup();
+    render(<CommandPalette open onClose={close} />);
+    await user.click(screen.getAllByRole('button', { name: 'palette.actions.deleteThisNote' })[1]);
+    expect(await screen.findByRole('alert')).toHaveTextContent(message);
+    expect(screen.getByText('Beta meeting')).toBeInTheDocument();
+    expect(close).not.toHaveBeenCalled();
+    expect(navigate).not.toHaveBeenCalled();
+  } finally {
+    confirm.mockRestore();
+  }
+});
+
+it('the Delete-current-note action remains open when continuity rejection needs attention', async () => {
+  pathname.current = '/notes/b';
+  storeState.deleteNote.mockRejectedValue('note_file_changed_externally');
+  const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
+  const close = vi.fn();
+  try {
+    const user = userEvent.setup();
+    render(<CommandPalette open onClose={close} />);
+    await user.click(screen.getByText('palette.actions.deleteCurrentNote'));
+    expect(await screen.findByRole('alert')).toHaveTextContent('noteRecovery.changedExternally');
+    expect(close).not.toHaveBeenCalled();
+    expect(navigate).not.toHaveBeenCalled();
+  } finally {
+    confirm.mockRestore();
+  }
 });

@@ -16,7 +16,7 @@ describe('SidePanel', () => {
     render(
       <SidePanel>
         <div>panel-body</div>
-      </SidePanel>,
+      </SidePanel>
     );
     expect(screen.getByText('panel-body')).toBeInTheDocument();
     expect(screen.getByLabelText('Context panel')).toBeInTheDocument();
@@ -29,7 +29,7 @@ describe('SidePanel', () => {
     render(
       <SidePanel>
         <div>panel-body</div>
-      </SidePanel>,
+      </SidePanel>
     );
     expect(screen.queryByText('panel-body')).not.toBeInTheDocument();
   });

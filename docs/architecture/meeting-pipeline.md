@@ -1,5 +1,11 @@
 # Meeting pipeline
 
+> Emenda 2026-10-17: ADR-0018 e spec 0058 prevalecem no domínio de reuniões.
+> Linux+Windows, biblioteca independente de notas, trilhas originais separadas,
+> core sem Tauri, bancos canônicos separados e identidade apenas confirmada.
+> Regras anteriores conflitantes permanecem abaixo como histórico, sem vigência.
+
+
 The meeting pipeline is the sequence that turns a real call into a
 recording, transcript, and summary stored in the vault. This doc
 fixes the state machine, the engine defaults, and the fallback

@@ -1,5 +1,10 @@
 # Spec 0004: Database migrations
 
+> Emenda 2026-10-17: o domínio novo de reuniões/perfis usa runner transacional
+> `user_version` em coxinha-core (ADR-0018/spec0058). O índice de notas legado
+> permanece separado; esta fatia não o converte nem declara esta spec concluída.
+
+
 - **Status:** draft
 - **Phase:** F1
 - **Owner:** Rodolfo

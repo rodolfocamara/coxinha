@@ -13,11 +13,13 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
+tempfile = "3"
 # Shared types
 shared = { path = "../shared" }
+coxinha-core = { path = "../coxinha-core" }
 
 # Tauri core + plugins
-tauri = { version = "2", features = ["tray-icon"] }
+tauri = { version = "2", features = ["tray-icon", "protocol-asset"] }
 tauri-plugin-autostart = "2"
 tauri-plugin-global-shortcut = "2"
 tauri-plugin-notification = "2"
@@ -26,7 +28,7 @@ tauri-plugin-dialog = "2"
 tauri-plugin-fs = "2"
 
 # Typed IPC (generates TS from Rust)
-specta = { version = "2.0.0-rc", features = ["derive", "chrono", "uuid"] }
+specta = { version = "2.0.0-rc", features = ["derive", "chrono", "uuid", "serde_json"] }
 # Pinning 0.0.9: 0.0.11 moves `BigIntExportBehavior` out of the
 # crate root; worth updating the export call if we ever bump.
 specta-typescript = "0.0.9"
@@ -35,6 +37,7 @@ tauri-specta = { version = "2.0.0-rc", features = ["derive", "typescript"] }
 # Shared workspace
 serde.workspace = true
 serde_json.workspace = true
+serde_yaml = "0.9.34"
 anyhow.workspace = true
 thiserror.workspace = true
 tracing.workspace = true
@@ -79,8 +82,13 @@ pyannote-rs = { version = "0.3", optional = true }
 # Unified LLM client
 genai = "0.5"
 
+# OS credential storage, no plaintext token fallback (MIT/Apache-2.0).
+keyring = { version = "3.6", features = ["sync-secret-service", "crypto-rust", "windows-native"] }
+sha2 = "0.10"
+base64 = "0.22"
+
 # HTTP + config
-reqwest = { version = "0.13", features = ["json", "stream"] }
+reqwest = { version = "0.13", features = ["json", "stream", "form"] }
 toml = "1"
 directories = "6"
 
@@ -95,7 +103,6 @@ rust-i18n = "4"
 sys-locale = "0.3"
 
 [dev-dependencies]
-tempfile = "3"
 tokio = { workspace = true }
 # Lightweight process inspection for perf smoke (RSS + CPU sampling).
 sysinfo = { version = "0.38", default-features = false, features = ["system"] }
@@ -113,20 +120,38 @@ windows = { version = "0.62", features = [
 ] }
 wasapi = "0.18"
 
+# Native tests are neither discovered nor launched by default cargo test.
+[[test]]
+name = "boot_smoke"
+required-features = ["native-smoke-tests"]
+
+[[test]]
+name = "perf_smoke"
+required-features = ["native-smoke-tests"]
+
+[[test]]
+name = "shortcut_smoke"
+required-features = ["native-smoke-tests"]
+
 [features]
+native-smoke-tests = []
+
 # Default: no STT. Keeps dev builds fast and avoids the libclang
 # system dependency that `whisper-rs-sys` needs at compile time.
 # Release builds use `full-release` below to pull real engines in.
 default = []
 
 # STT engines (one or more)
-stt-whisper = ["dep:whisper-rs"]
+stt-whisper = ["dep:whisper-rs", "coxinha-core/stt-whisper"]
 stt-parakeet = ["dep:transcribe-rs"]
 
 # GPU acceleration (each engine picks what it needs)
 cuda = ["whisper-rs/cuda"]
 metal = ["whisper-rs/metal"]
 vulkan = ["whisper-rs/vulkan"]
+
+# Local meeting CPU pipeline
+local-processing = ["stt-whisper", "coxinha-core/local-processing"]
 
 # Diarization engines
 diarize-pyannote = ["dep:pyannote-rs"]

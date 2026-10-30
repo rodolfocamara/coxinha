@@ -10,17 +10,24 @@ vi.mock('react-i18next', () => ({
 
 vi.mock('@tanstack/react-router', () => ({
   useNavigate: () => () => undefined,
+  Link: ({ to, children, ...props }: { to: string; children: React.ReactNode }) => (
+    <a href={to} {...props}>
+      {children}
+    </a>
+  ),
 }));
 
 import { HomeCanvas } from './HomeCanvas';
 import { homeFixture } from './fixtures';
+vi.mock('./fixtures', async (original) => ({
+  ...(await original<typeof import('./fixtures')>()),
+  useHome: () => homeFixture,
+}));
 
 describe('HomeCanvas', () => {
   it('renders the greeting with the user first name', () => {
     render(<HomeCanvas />);
-    expect(
-      screen.getByRole('heading', { level: 1 }),
-    ).toHaveTextContent(homeFixture.userFirstName);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(homeFixture.userFirstName);
   });
 
   it('renders every fixture thing-card', () => {

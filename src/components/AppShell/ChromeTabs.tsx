@@ -14,12 +14,7 @@ interface Props {
   onNewTab?: () => void;
 }
 
-/**
- * Placeholder tab strip. For this iteration we render exactly one
- * tab derived from the active route — the shape matches Notion's
- * multi-tab chrome so callers can push real open-tab state in a
- * later pass without changing this contract.
- */
+/** Real open-tab state supplied by callers; single routes use the chrome title. */
 export function ChromeTabs({ tabs, onNewTab }: Props) {
   return (
     <div role="tablist" className="flex items-center gap-1 min-w-0">
@@ -31,10 +26,10 @@ export function ChromeTabs({ tabs, onNewTab }: Props) {
           aria-selected={tab.active}
           onClick={tab.onActivate}
           className={clsx(
-            'group flex items-center gap-1.5 max-w-[220px] h-8 px-2 rounded-md text-sm transition-colors',
+            'group flex items-center gap-1.5 min-w-0 max-w-[220px] h-8 px-2 rounded-md text-sm transition-colors',
             tab.active
               ? 'bg-secondary text-foreground'
-              : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60',
+              : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'
           )}
         >
           <FileText size={14} aria-hidden="true" className="shrink-0" />

@@ -1,0 +1,9 @@
+[package]
+name = "session-v4-fixture-generator"
+version = "0.0.0"
+edition = "2021"
+[workspace]
+[dependencies]
+coxinha-core = { path = "../baseline/source/coxinha-core" }
+anyhow = "1"
+uuid = "1"

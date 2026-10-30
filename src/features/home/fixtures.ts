@@ -1,3 +1,6 @@
+import { useTranslation } from 'react-i18next';
+import { useAppStore } from '../../lib/store';
+
 export type ThingCardKind = 'meeting' | 'email' | 'agent-output';
 
 export interface ThingCard {
@@ -123,9 +126,25 @@ export const homeFixture: HomeFixture = {
 };
 
 export function useHome(): HomeFixture {
-  if (import.meta.env.DEV) {
-    // eslint-disable-next-line no-console
-    console.debug('[fixture] home.useHome');
-  }
-  return homeFixture;
+  const { t } = useTranslation();
+  const notes = useAppStore((state) => state.notes);
+  const today = new Date();
+  return {
+    userFirstName: '',
+    todayIso: `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`,
+    thingsToday: [],
+    messages: [],
+    news: [],
+    recents: notes
+      .slice()
+      .sort((a, b) => b.updated_at.localeCompare(a.updated_at))
+      .slice(0, 8)
+      .map((note) => ({
+        id: note.id,
+        title: note.title || t('sidebar.untitled'),
+        tag: '',
+        updatedAtLabel: new Date(note.updated_at).toLocaleDateString(),
+        href: `/notes/${note.id}`,
+      })),
+  };
 }

@@ -5,16 +5,45 @@
     <link rel="icon" type="image/png" href="/coxinha.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Coxinha</title>
-    <!-- Fonts loaded here (not via CSS @import) because Tailwind 4's
-         @import "tailwindcss" expands inline during PostCSS and
-         displaces our font @import past the spec-mandated "imports
-         must come first" rule. <link> sidesteps the dependency. -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
-    />
+    <style>
+      /* Keep the native cutouts clear before CSS/React and after theme changes. */
+      html[data-native-window='true'],
+      html[data-native-window='true'] body,
+      html[data-native-window='true'] #root {
+        background-color: transparent;
+      }
+      /* One outer clip includes fixed children and global overlays/portals. */
+      html[data-window-rounded='true'] body {
+        clip-path: inset(0 round var(--radius-md));
+      }
+    </style>
+    <script>
+      // Paint the saved preference before React/CSS loads. Native OS resolution
+      // follows asynchronously once the desktop bridge is available.
+      (() => {
+        let pref;
+        try {
+          pref = localStorage.getItem('coxinha.themePref');
+        } catch {}
+        const theme =
+          pref === 'light' || pref === 'dark'
+            ? pref
+            : window.matchMedia?.('(prefers-color-scheme: dark)').matches
+              ? 'dark'
+              : 'light';
+        const root = document.documentElement;
+        root.classList.toggle('dark', theme === 'dark');
+        root.dataset.theme = theme;
+        root.style.colorScheme = theme;
+        if (window.isTauri) {
+          root.dataset.nativeWindow = 'true';
+          root.style.backgroundColor = 'transparent';
+        } else {
+          root.style.backgroundColor = theme === 'dark' ? '#242528' : '#f6f5f1';
+        }
+      })();
+    </script>
+    <!-- System fonts keep the desktop shell fully offline. -->
   </head>
   <body class="bg-background text-foreground antialiased">
     <div id="root"></div>

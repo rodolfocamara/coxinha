@@ -1,0 +1,11 @@
+# Activity board
+
+The board replaces the blank notes index at `/notes`. Cards reference the existing Markdown editor and never own note content. Removing cards or dependencies does not remove Markdown files or index entries. Existing notes remain selectable from the board and sidebar.
+
+`<vault>/.coxinha/board.json` is canonical user-authored data, not a cache. Include the complete `.coxinha` directory together with Markdown notes in backups. The v1 JSON contains a schema version, monotonic revision, colored areas/cards and directed dependencies. Note UUID references also retain the relative Markdown path so rebuilding the SQLite index can recover the reference. Missing notes retain their cards for recovery.
+
+Writes lock `board.lock`, compare revisions, validate geometry/references, sync a temporary file, atomically replace the canonical file and sync its directory on Unix. No board data is stored in localStorage. A conflicting writer is rejected without overwriting the saved board. Recovery exports use unique filenames, sync files and directory metadata, and never replace the canonical board. The UI retains local edits, offers a native recovery JSON export inside `.coxinha/recovery/` and requires explicit discard confirmation before reloading the saved version. Other save errors retain changes and offer retry. The process-wide session registers with the desktop exit save barrier, including when the board route has unmounted. Opening a note waits for pending board writes; unmount also flushes pending writes instead of cancelling the only save timer.
+
+Pan/zoom, a minimap and draggable nodes use `@xyflow/react` 12.12.0 (MIT). The inspector provides keyboard-accessible selection, note opening, position/dimension/color editing, area naming and explicit dependency creation/removal. Connections indicate dependencies; cycles are permitted because the board is a planning surface, not a scheduler. Areas are independent visual annotations; moving an area does not automatically move cards.
+
+Focused verification: `pnpm test src/features/board` and `cargo test -p coxinha board::tests --lib`. Real Linux/Windows webview interaction, filesystem durability under power loss and assistive-technology acceptance remain native acceptance gates.

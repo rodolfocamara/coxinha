@@ -1,17 +1,16 @@
+import { CallDetectionController } from '../features/detection/CallDetectionController';
 import { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from '@tanstack/react-router';
 import type { UnlistenFn } from '@tauri-apps/api/event';
 
+import { useTranslation } from 'react-i18next';
+import { reportFrontendError } from '../lib/lifecycle';
 import { CommandPalette } from '../features/shell/CommandPalette';
 import { events, type Route } from '../lib/bindings';
 import { useSidePanel } from '../lib/panels';
 import { mark } from '../lib/perf';
 import { useAppStore } from '../lib/store';
-import {
-  followThemePreference,
-  getThemePreference,
-  THEME_PREF_EVENT,
-} from '../lib/theme';
+import { followThemePreference, getThemePreference, THEME_PREF_EVENT } from '../lib/theme';
 
 /**
  * Root layout. Every route renders inside its own AppShell (spec
@@ -21,6 +20,9 @@ import {
  */
 export function RootLayout() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const [startupFailed, setStartupFailed] = useState(false);
+  const [startupAttempt, setStartupAttempt] = useState(0);
   const loadNotes = useAppStore((s) => s.loadNotes);
   const newNote = useAppStore((s) => s.newNote);
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -42,23 +44,20 @@ export function RootLayout() {
     let cancelled = false;
     const unsubs: UnlistenFn[] = [];
 
-    loadNotes();
+    setStartupFailed(false);
+    const failed = () => {
+      if (!cancelled) setStartupFailed(true);
+      reportFrontendError('frontend_error');
+    };
+    void loadNotes().catch(failed);
 
     (async () => {
       const navUnsub = await events.navigate.listen(async (e) => {
-        await handleRoute(e.payload.route);
+        await handleRoute(e.payload.route).catch(failed);
       });
       if (cancelled) return navUnsub();
       unsubs.push(navUnsub);
-
-      const callUnsub = await events.callDetected.listen((e) => {
-        // TODO(spec 0007): surface a toast with a "Record" button.
-        // eslint-disable-next-line no-console
-        console.log('Call detected', e.payload);
-      });
-      if (cancelled) return callUnsub();
-      unsubs.push(callUnsub);
-    })();
+    })().catch(failed);
 
     async function handleRoute(route: Route) {
       switch (route) {
@@ -75,16 +74,13 @@ export function RootLayout() {
           navigate({ to: '/agenda' });
           return;
         case 'meetings':
-          // /meetings was removed in spec 0057; the shortcut slot
-          // is repurposed in a later commit. Until then, send the
-          // user to /notes so they land somewhere sensible.
-          navigate({ to: '/notes' });
+          navigate({ to: '/meetings' });
           return;
         case 'settings':
           navigate({ to: '/settings' });
           return;
         case 'toggle-recording':
-          // TODO (spec 0007)
+          await navigate({ to: '/meetings' });
           return;
       }
     }
@@ -93,7 +89,7 @@ export function RootLayout() {
       cancelled = true;
       unsubs.forEach((f) => f());
     };
-  }, [loadNotes, navigate, newNote]);
+  }, [loadNotes, navigate, newNote, startupAttempt]);
 
   // Ctrl+K / Ctrl+P open the command palette; Ctrl+\ toggles
   // the side panel. All gated on Ctrl/Cmd so they don't fight
@@ -113,12 +109,29 @@ export function RootLayout() {
         toggleSidePanel();
       }
     };
+    const openPalette = () => setPaletteOpen(true);
+    const openMap = () => void navigate({ to: '/' });
+    window.addEventListener('coxinha:open-map', openMap);
+    window.addEventListener('coxinha:open-palette', openPalette);
     window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [toggleSidePanel]);
+    return () => {
+      window.removeEventListener('coxinha:open-palette', openPalette);
+      window.removeEventListener('coxinha:open-map', openMap);
+      window.removeEventListener('keydown', handler);
+    };
+  }, [toggleSidePanel, navigate]);
 
   return (
     <>
+      {startupFailed && (
+        <div role="alert" className="p-3 border-b">
+          {t('desktopRecovery.startup')}
+          <button className="ml-4" onClick={() => setStartupAttempt((n) => n + 1)}>
+            {t('desktopRecovery.retry')}
+          </button>
+        </div>
+      )}
+      <CallDetectionController />
       <Outlet />
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
     </>

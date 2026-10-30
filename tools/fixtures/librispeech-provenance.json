@@ -1,0 +1,69 @@
+{
+  "dataset": "openslr/librispeech_asr",
+  "revision": "71cacbfb7e2354c4226d01e70d77d5fca3d04ba1",
+  "license": "CC-BY-4.0",
+  "attribution": "LibriSpeech, Vassil Panayotov, Daniel Povey and contributors; LibriVox narrators",
+  "source": "https://www.openslr.org/12",
+  "samples": [
+    {
+      "id": "6930-75918-0000",
+      "speaker_id": 6930,
+      "text": "CONCORD RETURNED TO ITS PLACE AMIDST THE TENTS",
+      "row": 0,
+      "sha256": "9ce35224156f071ab58eb7feb8a5ceae600f6f9f353da2a6cbf797b6b1ac8a23",
+      "wav_sha256": "171f13388dae23d11484f0803fbaa06d7aefe77c862453240a79610ae0886834",
+      "source": "https://datasets-server.huggingface.co/rows?dataset=openslr/librispeech_asr&config=clean&split=test&offset=0&length=1",
+      "source_asset_revision": "71cacbfb7e2354c4226d01e70d77d5fca3d04ba1"
+    },
+    {
+      "id": "6930-75918-0002",
+      "speaker_id": 6930,
+      "text": "CONGRATULATIONS WERE POURED IN UPON THE PRINCESS EVERYWHERE DURING HER JOURNEY",
+      "row": 2,
+      "sha256": "74ecfd628f49dca71995972c075fcc9904df804d49a4eb5b11fb712b3584f789",
+      "wav_sha256": "39dd5ef6168667cf05ee3c332b6fef3e241c5373edfe59ed1066b40722258c05",
+      "source": "https://datasets-server.huggingface.co/rows?dataset=openslr/librispeech_asr&config=clean&split=test&offset=2&length=1",
+      "source_asset_revision": "71cacbfb7e2354c4226d01e70d77d5fca3d04ba1"
+    },
+    {
+      "id": "1320-122617-0022",
+      "speaker_id": 1320,
+      "text": "THE DELAWARES ARE CHILDREN OF THE TORTOISE AND THEY OUTSTRIP THE DEER",
+      "row": 100,
+      "sha256": "9c4d285c536c8562a3b9add558d159b84c5b3d8c27922669906ae8da831fc25c",
+      "wav_sha256": "d759256c38d36cd12c8c32ea496d150367b9572be21a0b376cf965f340f80be4",
+      "source": "https://datasets-server.huggingface.co/rows?dataset=openslr/librispeech_asr&config=clean&split=test&offset=100&length=1",
+      "source_asset_revision": "71cacbfb7e2354c4226d01e70d77d5fca3d04ba1"
+    },
+    {
+      "id": "1320-122617-0023",
+      "speaker_id": 1320,
+      "text": "UNCAS WHO HAD ALREADY APPROACHED THE DOOR IN READINESS TO LEAD THE WAY NOW RECOILED AND PLACED HIMSELF ONCE MORE IN THE BOTTOM OF THE LODGE",
+      "row": 101,
+      "sha256": "553fc6594343774831ac876fee34c4ec2b47b53d451f313b10e64eea5cadd8c2",
+      "wav_sha256": "c5670d7da6e3c6267d43cd8220bf4f17e94c9eb2ab0b9cd2d8f40d96b3961164",
+      "source": "https://datasets-server.huggingface.co/rows?dataset=openslr/librispeech_asr&config=clean&split=test&offset=101&length=1",
+      "source_asset_revision": "71cacbfb7e2354c4226d01e70d77d5fca3d04ba1"
+    },
+    {
+      "id": "260-123286-0000",
+      "speaker_id": 260,
+      "text": "SATURDAY AUGUST FIFTEENTH THE SEA UNBROKEN ALL ROUND NO LAND IN SIGHT",
+      "row": 200,
+      "sha256": "d654a43d06f0e8b586b525e8ec83d6e3c0dc83c3f4742f8e25fd291db77248b3",
+      "wav_sha256": "37360467119c6b380499507ba8711728231391cecaa978d58b3a54692d74b73a",
+      "source": "https://datasets-server.huggingface.co/rows?dataset=openslr/librispeech_asr&config=clean&split=test&offset=200&length=1",
+      "source_asset_revision": "71cacbfb7e2354c4226d01e70d77d5fca3d04ba1"
+    },
+    {
+      "id": "260-123286-0001",
+      "speaker_id": 260,
+      "text": "THE HORIZON SEEMS EXTREMELY DISTANT",
+      "row": 201,
+      "sha256": "482a025752a99bedf0d539c055c80c1f0396f3f0b0094fd1d3ff89b3d26beb9e",
+      "wav_sha256": "d52b15d976dc2fa5e9c7efc666e7eb914edf11db100aadadde6f2689a43e4c48",
+      "source": "https://datasets-server.huggingface.co/rows?dataset=openslr/librispeech_asr&config=clean&split=test&offset=201&length=1",
+      "source_asset_revision": "71cacbfb7e2354c4226d01e70d77d5fca3d04ba1"
+    }
+  ]
+}

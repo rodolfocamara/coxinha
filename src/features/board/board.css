@@ -1,0 +1,400 @@
+/* Layered (spec 0095) so utilities in JSX override these defaults. */
+/* Declare Tailwind's layer order first: whichever file loads first fixes it. */
+@layer theme, base, components, utilities;
+@import './boardCards.css';
+@import './boardNotePanel.css';
+@layer components {
+  .activity-board {
+    container: activity-board / inline-size;
+    --board-dot: color-mix(in srgb, var(--color-muted-foreground) 25%, transparent);
+    --board-surface: var(--color-card, var(--color-background));
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    min-width: 0;
+    background: var(--color-background);
+    color: var(--color-foreground);
+  }
+  .board-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 23px 28px 16px;
+  }
+  .board-header h1 {
+    font-size: 21px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+  }
+  .board-header p {
+    font-size: 12px;
+    color: var(--color-muted-foreground);
+    margin-top: 4px;
+  }
+  .board-save-state {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--color-muted-foreground);
+    white-space: nowrap;
+  }
+  .board-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    padding: 0 28px 18px;
+  }
+  .board-toolbar-end {
+    margin-left: auto;
+    display: flex;
+    gap: 6px;
+  }
+  .activity-board button:not(:where(.board-note-content *)),
+  .activity-board select:not(:where(.board-note-content *)),
+  .activity-board input:not(:where(.board-note-content *)),
+  .board-note-picker > summary {
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    background: var(--board-surface);
+    color: inherit;
+    font-size: 12px;
+    line-height: 1.3;
+  }
+  .activity-board button:not(:where(.board-note-content *)),
+  .board-note-picker > summary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    cursor: pointer;
+  }
+  .activity-board button:not(:where(.board-note-content *)):hover,
+  .board-note-picker > summary:hover {
+    background: var(--color-muted);
+  }
+  .activity-board .board-primary {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-primary-foreground);
+    font-weight: 550;
+  }
+  .activity-board .board-primary:hover {
+    filter: brightness(0.96);
+    background: var(--color-primary);
+  }
+  .activity-board button:not(:where(.board-note-content *)):disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+  .activity-board
+    :is(button, select, input, summary):not(:where(.board-note-content *)):focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+  }
+  .board-note-picker {
+    position: relative;
+  }
+  .board-note-picker > summary {
+    list-style: none;
+  }
+  .board-note-picker > summary::-webkit-details-marker {
+    display: none;
+  }
+  .board-note-popover {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    width: 270px;
+    max-width: calc(100vw - 48px);
+    padding: 12px;
+    display: flex;
+    gap: 8px;
+    flex-direction: column;
+    background: var(--board-surface);
+    border: 1px solid var(--color-border);
+    box-shadow: 0 10px 30px #0002;
+    border-radius: 12px;
+    z-index: 20;
+  }
+  .board-workspace {
+    position: relative;
+    display: flex;
+    flex: 1;
+    min-height: 260px;
+    min-width: 0;
+    border-top: 1px solid var(--color-border);
+  }
+  .board-canvas {
+    container: board-canvas / inline-size;
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    background: color-mix(in srgb, var(--color-muted) 65%, var(--color-background));
+  }
+  .board-help {
+    position: absolute;
+    bottom: 15px;
+    left: 60px;
+    right: 170px;
+    pointer-events: none;
+    font-size: 10px;
+    color: var(--color-muted-foreground);
+  }
+  .board-inspector {
+    width: 264px;
+    flex-shrink: 0;
+    overflow: auto;
+    padding: 18px;
+    border-left: 1px solid var(--color-border);
+    background: var(--board-surface);
+    font-size: 12px;
+  }
+  .board-inspector-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .board-inspector-heading h2 {
+    font-weight: 600;
+  }
+  .board-inspector-heading button {
+    border: 0;
+    padding: 5px;
+  }
+  .board-inspector fieldset {
+    min-width: 0;
+    border: 0;
+    margin: 14px 0;
+  }
+  .board-inspector legend {
+    font-weight: 550;
+    margin-bottom: 8px;
+  }
+  .board-inspector label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 12px 0;
+    color: var(--color-muted-foreground);
+  }
+  .board-inspector :is(input, select) {
+    width: 100%;
+    min-width: 0;
+    color: var(--color-foreground);
+  }
+  .board-inspector li {
+    margin: 6px 0;
+  }
+  .board-inspector li button {
+    max-width: 100%;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    justify-content: flex-start;
+    text-align: left;
+  }
+  .board-inspector li button[aria-pressed='true'] {
+    border-color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 10%, var(--board-surface));
+  }
+  .board-inspector details {
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 12px;
+    margin-top: 12px;
+  }
+  .board-inspector summary {
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 0;
+  }
+  .board-geometry-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 10px;
+  }
+  .board-geometry-grid label {
+    font-size: 10px;
+  }
+  .activity-board .board-remove {
+    margin-top: 16px;
+    color: var(--color-destructive);
+  }
+  .board-error {
+    color: var(--color-destructive);
+    padding: 8px 28px;
+    font-size: 12px;
+  }
+  .board-error button {
+    margin-left: 8px;
+  }
+  .activity-board .react-flow {
+    --xy-background-color: transparent;
+    --xy-edge-stroke: var(--color-muted-foreground);
+    --xy-edge-stroke-selected: var(--color-primary);
+    --xy-controls-button-background-color: var(--board-surface);
+    --xy-controls-button-background-color-hover: var(--color-muted);
+    --xy-controls-button-color: var(--color-foreground);
+    --xy-controls-button-border-color: var(--color-border);
+    --xy-minimap-background-color: var(--board-surface);
+    --xy-minimap-mask-background-color: color-mix(
+      in srgb,
+      var(--color-background) 65%,
+      transparent
+    );
+    --xy-minimap-node-background-color: color-mix(
+      in srgb,
+      var(--color-muted-foreground) 38%,
+      var(--board-surface)
+    );
+  }
+  .activity-board .react-flow__node {
+    border: 1px solid color-mix(in srgb, var(--color-border) 75%, var(--color-muted-foreground));
+    border-radius: 12px;
+    padding: 18px;
+    text-align: left;
+    white-space: normal;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--color-foreground);
+  }
+  .activity-board .react-flow__node-card {
+    box-shadow: 0 3px 12px #0000000d;
+    font-weight: 500;
+  }
+  .activity-board .react-flow__node-card > span {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .activity-board .react-flow__node-area {
+    border-style: dashed;
+    border-radius: 18px;
+    font-size: 12px;
+    font-weight: 550;
+  }
+  .activity-board .react-flow__node.selected {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+    box-shadow: 0 5px 18px #0002;
+  }
+  .activity-board .react-flow__handle {
+    background: var(--color-muted-foreground);
+    border: 2px solid var(--board-surface);
+    width: 8px;
+    height: 8px;
+  }
+  .activity-board .board-neutral {
+    background: var(--board-surface);
+  }
+  .activity-board .board-blue {
+    background: color-mix(in srgb, #5295ce 22%, var(--board-surface));
+  }
+  .activity-board .board-green {
+    background: color-mix(in srgb, #62a88a 22%, var(--board-surface));
+  }
+  .activity-board .board-orange {
+    background: color-mix(in srgb, #de8c3a 22%, var(--board-surface));
+  }
+  .activity-board .board-purple {
+    background: color-mix(in srgb, #9b7acc 22%, var(--board-surface));
+  }
+  .activity-board .react-flow__controls {
+    border: 1px solid var(--color-border);
+    border-radius: 9px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px #0001;
+  }
+  .activity-board .react-flow__controls-button {
+    border-radius: 0;
+    padding: 6px;
+    width: 28px;
+    height: 28px;
+  }
+  .activity-board .react-flow__minimap {
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    overflow: hidden;
+    width: 145px;
+    height: 95px;
+    box-shadow: 0 2px 8px #0001;
+  }
+  .board-empty {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    pointer-events: none;
+    padding: 30px 50px 100px;
+    color: var(--color-muted-foreground);
+  }
+  .board-empty h2 {
+    font-size: 22px;
+    letter-spacing: -0.5px;
+    color: var(--color-foreground);
+    margin-top: 16px;
+    font-weight: 550;
+  }
+  .board-empty p {
+    font-size: 13px;
+    max-width: 320px;
+    line-height: 1.7;
+    margin: 9px 0 20px;
+  }
+  .board-empty button {
+    pointer-events: auto;
+  }
+  @media (max-width: 1100px) {
+    .board-inspector {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      z-index: 10;
+      box-shadow: -8px 0 24px #0001;
+    }
+    .board-toolbar-end span {
+      display: none;
+    }
+  }
+  @media (max-width: 700px) {
+    .board-header {
+      padding: 18px 16px 14px;
+    }
+    .board-header h1 {
+      font-size: 18px;
+    }
+    .board-header p {
+      display: none;
+    }
+    .board-toolbar {
+      padding: 0 16px 14px;
+      gap: 6px;
+    }
+    .board-toolbar-end {
+      margin-left: 0;
+    }
+    .board-help {
+      display: none;
+    }
+    .board-save-state {
+      font-size: 10px;
+    }
+    .activity-board .react-flow__minimap {
+      display: none;
+    }
+    .board-empty {
+      padding: 24px 24px 90px;
+    }
+  }
+}

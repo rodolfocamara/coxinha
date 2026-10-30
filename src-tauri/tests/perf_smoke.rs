@@ -1,7 +1,7 @@
 //! Runtime performance smoke test: spawns the real binary, waits
 //! for ready, then samples process RSS and CPU for a fixed window
 //! so we catch memory regressions (leaks, unintentional preloads,
-//! bloat from a new dep) on every CI run.
+//! bloat from a new dep) in an explicitly provisioned private desktop session.
 //!
 //! This is the measurement feeder for spec 0003 (cold-start-load).
 //! The budgets below are calibrated to what a Tauri 2 + webview2 +
@@ -9,7 +9,7 @@
 //! hundred runs of history; loosen only with a postmortem.
 
 use std::io::{BufRead, BufReader, Read};
-use std::process::{Command, Stdio};
+mod support;
 use std::sync::mpsc;
 use std::thread;
 use std::time::{Duration, Instant};
@@ -40,17 +40,12 @@ const READY_MARKER: &str = "Coxinha ready";
 const BOOT_WAIT_BUDGET: Duration = Duration::from_secs(8);
 
 #[test]
+#[ignore = "native app: requires explicit feature and parent-owned private desktop/session"]
 fn idle_memory_and_cpu_stay_within_budget() {
     let bin = env!("CARGO_BIN_EXE_coxinha");
-    let tmp = tempfile::tempdir().expect("tempdir");
+    let sandbox = support::NativeSandbox::new();
 
-    let mut child = Command::new(bin)
-        .env("COXINHA_VAULT", tmp.path())
-        .env("RUST_LOG", "coxinha=info,coxinha_lib=info")
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .expect("spawn coxinha.exe");
+    let mut child = sandbox.spawn(std::path::Path::new(bin));
 
     let pid = Pid::from_u32(child.id());
 
