@@ -273,13 +273,18 @@ it('releases a pending upload only when its previously observed owner block is r
 });
 
 it('surfaces a missing-file save in the active remounted editor and retains text across recovery retry', async () => {
-  mocks.editor.tryParseMarkdownToBlocks.mockResolvedValue(['loaded']);
+  // A slow parse keeps the editor initializing after it renders; edits made then are ignored.
+  mocks.editor.tryParseMarkdownToBlocks.mockImplementation(
+    () => new Promise((resolve) => setTimeout(() => resolve(['loaded']), 20))
+  );
   const first = render(<NoteEditor noteId="editor-load" content={content} />);
   await screen.findByTestId('editable');
   first.unmount();
   // The queue survives the first editor. A later failure must reach this mount.
   render(<NoteEditor noteId="editor-load" content={content} />);
-  await screen.findByTestId('editable');
+  await waitFor(() =>
+    expect(screen.getByTestId('editable')).toHaveAttribute('data-editable', 'true')
+  );
   mocks.editor.blocksToMarkdownLossy.mockReturnValue('# retained after external move');
   mocks.save.mockRejectedValue('note_file_missing_or_moved');
   try {
