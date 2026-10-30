@@ -1,5 +1,11 @@
 # ADR-0004: Pure Rust, no Python sidecar
 
+> Emenda 2026-10-17: ADR-0018 e spec 0058 prevalecem no domínio de reuniões.
+> Linux+Windows, biblioteca independente de notas, trilhas originais separadas,
+> core sem Tauri, bancos canônicos separados e identidade apenas confirmada.
+> Regras anteriores conflitantes permanecem abaixo como histórico, sem vigência.
+
+
 - **Date:** 2026-04-18
 - **Status:** Accepted
 
