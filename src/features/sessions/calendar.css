@@ -1,0 +1,28 @@
+/* Layered (spec 0095) so utilities in JSX override these defaults. */
+/* Declare Tailwind's layer order first: whichever file loads first fixes it. */
+@layer theme, base, components, utilities;
+@layer components {
+  .session-calendar {
+    container-type: inline-size;
+    container-name: session-calendar;
+  }
+  .calendar-day-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    align-items: start;
+  }
+  .calendar-day-detail {
+    min-width: 0;
+    scroll-margin: 12px;
+  }
+  @container session-calendar (min-width: 920px) {
+    .calendar-day-layout {
+      grid-template-columns: minmax(0, 1fr) 260px;
+    }
+    .calendar-day-detail {
+      position: sticky;
+      top: 0;
+    }
+  }
+}

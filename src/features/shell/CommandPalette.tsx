@@ -5,12 +5,9 @@ import { FileText, Search, Settings, Sparkles, Trash2 } from 'lucide-react';
 import clsx from 'clsx';
 
 import { useAppStore } from '../../lib/store';
-import {
-  applyTheme,
-  getThemePreference,
-  setThemePreference,
-  systemTheme,
-} from '../../lib/theme';
+import { applyTheme, setThemePreference } from '../../lib/theme';
+import { useResolvedTheme } from '../../lib/useTheme';
+import { noteDeletionErrorKey } from '../../lib/noteFileErrors';
 
 interface Props {
   open: boolean;
@@ -32,6 +29,7 @@ type Group = { label: string; items: PaletteRow[] };
 export function CommandPalette({ open, onClose }: Props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const resolvedTheme = useResolvedTheme();
   const pathname = useLocation({ select: (s) => s.pathname });
   const notes = useAppStore((s) => s.notes);
   const newNote = useAppStore((s) => s.newNote);
@@ -39,11 +37,13 @@ export function CommandPalette({ open, onClose }: Props) {
 
   const [query, setQuery] = useState('');
   const [cursor, setCursor] = useState(0);
+  const [deleteFailure, setDeleteFailure] = useState<{ error: unknown } | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (!open) return;
     setQuery('');
+    setDeleteFailure(null);
     setCursor(0);
     const id = setTimeout(() => inputRef.current?.focus(), 10);
     return () => clearTimeout(id);
@@ -55,16 +55,22 @@ export function CommandPalette({ open, onClose }: Props) {
   }, [pathname]);
   const currentNote = useMemo(
     () => (currentNoteId ? notes.find((n) => n.id === currentNoteId) : undefined),
-    [currentNoteId, notes],
+    [currentNoteId, notes]
   );
 
   async function confirmAndDelete(note: { id: string; title: string }) {
     const label = note.title || t('sidebar.untitled');
     const prompt = t('palette.deleteConfirm', { title: label });
     if (!window.confirm(prompt)) return;
-    await deleteNote(note.id);
-    if (note.id === currentNoteId) {
-      await navigate({ to: '/notes' });
+    try {
+      await deleteNote(note.id);
+      setDeleteFailure(null);
+      if (note.id === currentNoteId) {
+        await navigate({ to: '/notes' });
+        onClose();
+      }
+    } catch (error) {
+      setDeleteFailure({ error });
     }
   }
 
@@ -95,9 +101,7 @@ export function CommandPalette({ open, onClose }: Props) {
         id: 'toggle-theme',
         label: t('palette.actions.toggleTheme'),
         run: () => {
-          const pref = getThemePreference();
-          const resolved = pref === 'auto' ? systemTheme() : pref;
-          const next = resolved === 'dark' ? 'light' : 'dark';
+          const next = resolvedTheme === 'dark' ? 'light' : 'dark';
           setThemePreference(next);
           applyTheme(next);
         },
@@ -121,7 +125,7 @@ export function CommandPalette({ open, onClose }: Props) {
     }
     return items;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigate, newNote, t, currentNote]);
+  }, [navigate, newNote, t, currentNote, resolvedTheme]);
 
   const groups = useMemo<Group[]>(() => {
     const q = query.trim().toLowerCase();
@@ -157,6 +161,10 @@ export function CommandPalette({ open, onClose }: Props) {
   useEffect(() => setCursor(0), [query]);
 
   function pick(row: PaletteRow) {
+    if (row.kind === 'action' && row.id === 'delete-current-note') {
+      row.run();
+      return;
+    }
     onClose();
     if (row.kind === 'action') {
       row.run();
@@ -203,12 +211,12 @@ export function CommandPalette({ open, onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex justify-center px-4 pt-[14vh] bg-foreground/10 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex justify-center px-4 pt-[14vh] bg-black/30"
       onClick={onClose}
       role="presentation"
     >
       <div
-        className="w-full max-w-[560px] max-h-[60vh] flex flex-col overflow-hidden rounded-[16px] border border-border bg-popover/80 backdrop-blur-2xl shadow-2xl"
+        className="w-full max-w-[560px] max-h-[60vh] flex flex-col overflow-hidden rounded-[16px] border border-border bg-card shadow-xl"
         onClick={(e) => e.stopPropagation()}
         onKeyDown={onKey}
         role="dialog"
@@ -216,11 +224,7 @@ export function CommandPalette({ open, onClose }: Props) {
         aria-label={t('palette.title')}
       >
         <div className="flex items-center gap-2.5 px-4 h-12 border-b border-border">
-          <Search
-            size={17}
-            className="text-muted-foreground shrink-0"
-            aria-hidden="true"
-          />
+          <Search size={17} className="text-muted-foreground shrink-0" aria-hidden="true" />
           <input
             ref={inputRef}
             value={query}
@@ -232,6 +236,11 @@ export function CommandPalette({ open, onClose }: Props) {
           <kbd className="cx-kbd">Esc</kbd>
         </div>
 
+        {deleteFailure && (
+          <p role="alert" className="px-4 py-2">
+            {t(noteDeletionErrorKey(deleteFailure.error) ?? 'editor.deleteFailed')}
+          </p>
+        )}
         <div className="flex-1 overflow-y-auto p-1.5">
           {flat.length === 0 && (
             <div className="px-4 py-7 text-center text-sm text-muted-foreground">
@@ -310,7 +319,7 @@ function PaletteItemRow({
     <div
       className={clsx(
         'group w-full flex items-center rounded-md text-sm text-foreground',
-        active && 'bg-secondary/70',
+        active && 'bg-secondary/70'
       )}
       onMouseEnter={onHover}
     >
@@ -320,29 +329,13 @@ function PaletteItemRow({
         className="flex-1 min-w-0 flex items-center gap-2.5 px-2.5 py-2 text-left"
       >
         {item.kind === 'note' ? (
-          <FileText
-            size={15}
-            className="text-muted-foreground shrink-0"
-            aria-hidden="true"
-          />
+          <FileText size={15} className="text-muted-foreground shrink-0" aria-hidden="true" />
         ) : item.id === 'open-settings' ? (
-          <Settings
-            size={15}
-            className="text-muted-foreground shrink-0"
-            aria-hidden="true"
-          />
+          <Settings size={15} className="text-muted-foreground shrink-0" aria-hidden="true" />
         ) : item.id === 'delete-current-note' ? (
-          <Trash2
-            size={15}
-            className="text-destructive shrink-0"
-            aria-hidden="true"
-          />
+          <Trash2 size={15} className="text-destructive shrink-0" aria-hidden="true" />
         ) : (
-          <Sparkles
-            size={15}
-            className="text-muted-foreground shrink-0"
-            aria-hidden="true"
-          />
+          <Sparkles size={15} className="text-muted-foreground shrink-0" aria-hidden="true" />
         )}
         <span className="flex-1 truncate">{item.label}</span>
       </button>

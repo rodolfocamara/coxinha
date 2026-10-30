@@ -15,9 +15,7 @@ import { MeetingCard } from '../features/meetings/MeetingCard';
  */
 export function DevShellPreviewRoute() {
   const { t } = useTranslation();
-  const [activeCanvas, setActiveCanvas] = useState<'empty' | 'home' | 'meeting'>(
-    'home',
-  );
+  const [activeCanvas, setActiveCanvas] = useState<'empty' | 'home' | 'meeting'>('home');
 
   const tabs: ChromeTab[] = [
     {
@@ -104,16 +102,21 @@ export function DevShellPreviewRoute() {
 function HomePreview() {
   return (
     <>
-      <h1 className="text-[48px] leading-[1.1] font-semibold tracking-tight">
-        Bom dia, Rodolfo
-      </h1>
-      <p className="mt-2 text-muted-foreground">
-        terça · 22 de abril · 3 coisas pra você hoje
-      </p>
+      <h1 className="text-[48px] leading-[1.1] font-semibold tracking-tight">Bom dia, Rodolfo</h1>
+      <p className="mt-2 text-muted-foreground">terça · 22 de abril · 3 coisas pra você hoje</p>
       <div className="mt-8 flex flex-col gap-2">
-        <Card title="Reunião em 40min — IT Weekly Status" subtitle="Sofia já preparou o resumo dos pontos em aberto" />
-        <Card title="Rita Menezes respondeu o e-mail de endossos" subtitle="2 dúvidas respondidas, fluxo ainda aguardando" />
-        <Card title="Sofia terminou o resumo da call da Kathia" subtitle="14 minutos, 3 decisões, 2 pendências atribuídas" />
+        <Card
+          title="Reunião em 40min — IT Weekly Status"
+          subtitle="Sofia já preparou o resumo dos pontos em aberto"
+        />
+        <Card
+          title="Rita Menezes respondeu o e-mail de endossos"
+          subtitle="2 dúvidas respondidas, fluxo ainda aguardando"
+        />
+        <Card
+          title="Sofia terminou o resumo da call da Kathia"
+          subtitle="14 minutos, 3 decisões, 2 pendências atribuídas"
+        />
       </div>
     </>
   );
@@ -121,18 +124,14 @@ function HomePreview() {
 
 function EmptyPreview() {
   return (
-    <div className="py-16 text-muted-foreground">
-      Empty canvas — just the shell, nothing else.
-    </div>
+    <div className="py-16 text-muted-foreground">Empty canvas — just the shell, nothing else.</div>
   );
 }
 
 function MeetingPreview() {
   return (
     <>
-      <h1 className="text-[32px] leading-[1.15] font-semibold tracking-tight">
-        VC 15/jan
-      </h1>
+      <h1 className="text-[32px] leading-[1.15] font-semibold tracking-tight">VC 15/jan</h1>
       <p className="mt-2 text-muted-foreground">
         Note containing a MeetingBlock — fixture-backed preview.
       </p>
@@ -178,9 +177,7 @@ function PreviewPanel() {
         <h4 className="text-[11px] uppercase tracking-wider text-muted-foreground/70 mb-2">
           Conversas IA
         </h4>
-        <p className="text-sm text-muted-foreground">
-          Sofia está ociosa. Invoque com Cmd+J.
-        </p>
+        <p className="text-sm text-muted-foreground">Sofia está ociosa. Invoque com Cmd+J.</p>
       </section>
     </div>
   );

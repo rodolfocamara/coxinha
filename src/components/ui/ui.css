@@ -1,0 +1,346 @@
+/* Shared primitives (spec 0095). Layered so JSX utilities always win. */
+/* Declare Tailwind's layer order first: whichever file loads first fixes it. */
+@layer theme, base, components, utilities;
+@layer components {
+  .cx-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 14px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    transition:
+      background-color var(--dur-fast) var(--ease-calm),
+      border-color var(--dur-fast) var(--ease-calm),
+      color var(--dur-fast) var(--ease-calm);
+  }
+  .cx-btn:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+  .cx-btn:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+  .cx-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .cx-btn[data-size='sm'] {
+    height: 32px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+  .cx-btn[data-icon-only='true'] {
+    width: 36px;
+    padding: 0;
+  }
+  .cx-btn[data-icon-only='true'][data-size='sm'] {
+    width: 32px;
+  }
+  .cx-btn[data-variant='primary'] {
+    background: var(--color-primary);
+    color: var(--color-primary-foreground);
+  }
+  .cx-btn[data-variant='primary']:hover:not(:disabled) {
+    background: oklch(var(--accent-hover));
+  }
+  .cx-btn[data-variant='secondary'] {
+    border-color: var(--color-border);
+    background: var(--color-card);
+    color: var(--color-foreground);
+  }
+  .cx-btn[data-variant='secondary']:hover:not(:disabled) {
+    background: var(--color-secondary);
+  }
+  .cx-btn[data-variant='ghost'] {
+    background: transparent;
+    color: var(--color-muted-foreground);
+  }
+  .cx-btn[data-variant='ghost']:hover:not(:disabled) {
+    background: var(--color-secondary);
+    color: var(--color-foreground);
+  }
+  .cx-btn[data-variant='danger'] {
+    border-color: var(--color-border);
+    background: transparent;
+    color: var(--color-destructive);
+  }
+  .cx-btn[data-variant='danger']:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--color-destructive) 10%, transparent);
+  }
+
+  .cx-input {
+    display: block;
+    width: 100%;
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-card);
+    color: var(--color-foreground);
+    font-size: 13px;
+    line-height: 1.4;
+  }
+  textarea.cx-input {
+    height: auto;
+    min-height: 72px;
+    padding: 8px 10px;
+    resize: vertical;
+  }
+  .cx-input[data-size='sm'] {
+    height: 32px;
+    font-size: 12px;
+  }
+  .cx-input::placeholder {
+    color: oklch(var(--fg-quaternary));
+  }
+  .cx-input:hover:not(:disabled) {
+    border-color: color-mix(in oklab, var(--color-foreground) 22%, transparent);
+  }
+  .cx-input:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+  .cx-input[aria-invalid='true'] {
+    border-color: var(--color-destructive);
+  }
+  .cx-input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .cx-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+  .cx-field-label {
+    color: var(--color-foreground);
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .cx-field-label[data-required='true']::after {
+    content: '*';
+    margin-left: 2px;
+    color: var(--color-primary);
+  }
+  .cx-field-hint {
+    color: var(--color-muted-foreground);
+    font-size: 12px;
+    line-height: 1.45;
+  }
+  .cx-field-error {
+    color: var(--color-destructive);
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .cx-card {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-card);
+    color: var(--color-card-foreground);
+  }
+  .cx-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 20px 0;
+  }
+  .cx-card-title {
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .cx-card-description {
+    margin-top: 4px;
+    color: var(--color-muted-foreground);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .cx-card-body {
+    padding: 16px 20px;
+  }
+  .cx-card-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 12px 20px;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .cx-page-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .cx-page-title {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .cx-page-description {
+    margin-top: 4px;
+    color: var(--color-muted-foreground);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .cx-alert {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 10px 12px;
+    border: 1px solid var(--cx-alert-tone);
+    border-radius: var(--radius-sm);
+    background: color-mix(in oklab, var(--cx-alert-tone) 9%, transparent);
+    color: var(--color-foreground);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .cx-alert > svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: var(--cx-alert-tone);
+  }
+  .cx-alert[data-tone='error'] {
+    --cx-alert-tone: var(--color-destructive);
+  }
+  .cx-alert[data-tone='warning'] {
+    --cx-alert-tone: oklch(var(--warning));
+  }
+  .cx-alert[data-tone='success'] {
+    --cx-alert-tone: oklch(var(--success));
+  }
+  .cx-alert[data-tone='info'] {
+    --cx-alert-tone: var(--color-muted-foreground);
+  }
+
+  .cx-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 20px;
+    padding: 0 8px;
+    border-radius: 999px;
+    background: var(--color-secondary);
+    color: var(--color-muted-foreground);
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .cx-badge[data-tone='success'] {
+    background: color-mix(in oklab, oklch(var(--success)) 16%, transparent);
+    color: var(--color-foreground);
+  }
+  .cx-badge[data-tone='warning'] {
+    background: color-mix(in oklab, oklch(var(--warning)) 18%, transparent);
+    color: var(--color-foreground);
+  }
+  .cx-badge[data-tone='danger'] {
+    background: color-mix(in oklab, var(--color-destructive) 16%, transparent);
+    color: var(--color-foreground);
+  }
+  .cx-badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: currentColor;
+  }
+  .cx-badge[data-tone='success'] .cx-badge-dot {
+    background: oklch(var(--success));
+  }
+
+  .cx-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 40px 16px;
+    text-align: center;
+  }
+  .cx-empty-title {
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .cx-empty-description {
+    max-width: 420px;
+    color: var(--color-muted-foreground);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .cx-empty-action {
+    margin-top: 10px;
+  }
+
+  .cx-sheet-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: oklch(0 0 0 / 0.35);
+  }
+  .cx-sheet {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    bottom: 12px;
+    z-index: 201;
+    display: flex;
+    flex-direction: column;
+    width: min(440px, calc(100vw - 24px));
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-card);
+    color: var(--color-card-foreground);
+    box-shadow: 0 12px 40px oklch(0 0 0 / 0.25);
+  }
+  .cx-sheet:focus-visible {
+    outline: none;
+  }
+  .cx-sheet-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .cx-sheet-title {
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .cx-sheet-description {
+    margin-top: 4px;
+    color: var(--color-muted-foreground);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .cx-sheet-body {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding: 20px;
+  }
+  .cx-sheet-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 12px 20px;
+    border-top: 1px solid var(--color-border);
+  }
+}

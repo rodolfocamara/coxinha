@@ -25,8 +25,7 @@ vi.mock('../../lib/bindings', () => ({
 
 const loadNotes = vi.fn();
 vi.mock('../../lib/store', () => ({
-  useAppStore: <T,>(selector: (s: { loadNotes: typeof loadNotes }) => T) =>
-    selector({ loadNotes }),
+  useAppStore: <T,>(selector: (s: { loadNotes: typeof loadNotes }) => T) => selector({ loadNotes }),
 }));
 
 import { SettingsView } from './SettingsView';
@@ -63,13 +62,11 @@ describe('SettingsView — vault panel', () => {
 
     render(<SettingsView />);
 
-    await waitFor(() =>
-      expect(screen.getByText('settings.vault.noObsidian')).toBeInTheDocument()
-    );
+    await waitFor(() => expect(screen.getByText('settings.vault.noObsidian')).toBeInTheDocument());
     expect(screen.getByText('C:/Users/me/coxinha')).toBeInTheDocument();
   });
 
-  it('lists detected vaults as radio options and keeps Save disabled until selection changes', async () => {
+  it('lists detected vaults with switching disabled until storage supports migration', async () => {
     getConfig.mockResolvedValue({ status: 'ok', data: BASE_CONFIG });
     listObsidianVaults.mockResolvedValue({
       status: 'ok',
@@ -86,6 +83,7 @@ describe('SettingsView — vault panel', () => {
 
     render(<SettingsView />);
 
+    await userEvent.click(await screen.findByText('settings.vault.otherFolders'));
     const radio = await screen.findByRole('radio', { name: /Work/ });
     const save = screen.getByRole('button', { name: /settings\.vault\.save/ });
 
@@ -93,11 +91,12 @@ describe('SettingsView — vault panel', () => {
 
     await userEvent.click(radio);
 
-    expect(radio).toBeChecked();
-    expect(save).toBeEnabled();
+    expect(radio).not.toBeChecked();
+    expect(radio).toBeDisabled();
+    expect(save).toBeDisabled();
   });
 
-  it('calls updateConfig with the picked vault path on Save', async () => {
+  it('never pretends changing the configured path switched active storage', async () => {
     getConfig.mockResolvedValue({ status: 'ok', data: BASE_CONFIG });
     listObsidianVaults.mockResolvedValue({
       status: 'ok',
@@ -115,16 +114,13 @@ describe('SettingsView — vault panel', () => {
 
     render(<SettingsView />);
 
+    await userEvent.click(await screen.findByText('settings.vault.otherFolders'));
     const radio = await screen.findByRole('radio', { name: /Ideas/ });
     await userEvent.click(radio);
     await userEvent.click(screen.getByRole('button', { name: /settings\.vault\.save/ }));
 
-    await waitFor(() =>
-      expect(updateConfig).toHaveBeenCalledWith(
-        expect.objectContaining({ vault_path: 'D:/Vaults/ideas' })
-      )
-    );
-    expect(await screen.findByText('settings.vault.saved')).toBeInTheDocument();
+    expect(updateConfig).not.toHaveBeenCalled();
+    expect(screen.getByText('settings.recovery.vaultSwitch')).toBeVisible();
   });
 
   it('surfaces load errors from getConfig in an alert', async () => {
@@ -164,9 +160,7 @@ describe('SettingsView — vault panel', () => {
 
     render(<SettingsView />);
 
-    await userEvent.click(
-      await screen.findByRole('button', { name: /settings\.vault\.rebuild/ }),
-    );
+    await userEvent.click(await screen.findByRole('button', { name: /settings\.vault\.rebuild/ }));
 
     const alert = await screen.findByRole('alert');
     expect(alert.textContent).toContain('disk full');
@@ -193,13 +187,10 @@ describe('SettingsView — appearance panel', () => {
     render(<SettingsView />);
 
     const events: string[] = [];
-    const listener = (e: Event) =>
-      events.push((e as CustomEvent).detail as string);
+    const listener = (e: Event) => events.push((e as CustomEvent).detail as string);
     window.addEventListener('coxinha:theme-pref-changed', listener);
 
-    await user.click(
-      await screen.findByRole('radio', { name: 'settings.appearance.theme.dark' }),
-    );
+    await user.click(await screen.findByRole('radio', { name: 'settings.appearance.theme.dark' }));
 
     expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('dark');
     expect(events).toEqual(['dark']);
@@ -212,9 +203,7 @@ describe('SettingsView — appearance panel', () => {
     localStorage.setItem(THEME_STORAGE_KEY, 'light');
     render(<SettingsView />);
 
-    await user.click(
-      await screen.findByRole('radio', { name: 'settings.appearance.theme.auto' }),
-    );
+    await user.click(await screen.findByRole('radio', { name: 'settings.appearance.theme.auto' }));
 
     expect(localStorage.getItem(THEME_STORAGE_KEY)).toBeNull();
   });
@@ -261,8 +250,34 @@ describe('SettingsView — shortcuts panel', () => {
 
     render(<SettingsView />);
 
-    expect(
-      await screen.findByText('settings.shortcuts.rebindComingSoon'),
-    ).toBeInTheDocument();
+    expect(await screen.findByText('settings.shortcuts.rebindComingSoon')).toBeInTheDocument();
   });
+});
+
+it('recovers from rejected IPC promises with explicit retry', async () => {
+  getConfig
+    .mockRejectedValueOnce(new Error('IPC transport unavailable'))
+    .mockResolvedValueOnce({ status: 'ok', data: BASE_CONFIG });
+  listObsidianVaults.mockResolvedValue({ status: 'ok', data: [] });
+  render(<SettingsView />);
+  expect(await screen.findByRole('alert')).toHaveTextContent('settings.recovery.loadError');
+  await userEvent.click(screen.getByRole('button', { name: 'settings.recovery.retry' }));
+  expect(await screen.findByText(BASE_CONFIG.vault_path)).toBeVisible();
+  expect(getConfig).toHaveBeenCalledTimes(2);
+});
+
+it.each([
+  ['note_file_identity_conflict', 'settings.rebuildErrors.identityConflict'],
+  ['note_file_invalid_metadata', 'settings.rebuildErrors.invalidMetadata'],
+])('localizes known preflight refusal %s without rebuilding automatically', async (code, key) => {
+  getConfig.mockResolvedValue({ status: 'ok', data: BASE_CONFIG });
+  listObsidianVaults.mockResolvedValue({ status: 'ok', data: [] });
+  rebuildFromVault.mockResolvedValue({ status: 'error', error: code });
+  render(<SettingsView />);
+  const button = await screen.findByRole('button', { name: 'settings.vault.rebuild' });
+  expect(rebuildFromVault).not.toHaveBeenCalled();
+  await userEvent.click(button);
+  expect(await screen.findByRole('alert')).toHaveTextContent(key);
+  expect(screen.getByRole('alert')).not.toHaveTextContent(code);
+  expect(loadNotes).not.toHaveBeenCalled();
 });

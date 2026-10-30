@@ -1,6 +1,6 @@
 import { Calendar, FileText, Mail, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 
 import { useHome, type ThingCard, type ThingCardKind } from './fixtures';
 
@@ -12,13 +12,12 @@ export function HomeCanvas() {
 
   return (
     <section className="h-full overflow-auto">
-      <div className="mx-auto max-w-[760px] px-24 pt-16 pb-10">
-        <h1 className="text-[48px] leading-[1.1] font-semibold tracking-tight">
+      <div className="mx-auto max-w-[960px] px-6 sm:px-12 lg:px-20 pt-12 pb-10">
+        <h1 className="text-4xl lg:text-[44px] leading-[1.15] font-semibold tracking-tight">
           {greeting} {home.userFirstName}
         </h1>
         <p className="mt-2 text-muted-foreground">
-          {dateLabel} ·{' '}
-          {t('home.thingsToday.title', { count: home.thingsToday.length })}
+          {dateLabel} · {t('home.thingsToday.title', { count: home.thingsToday.length })}
         </p>
 
         <div className="mt-8 flex flex-col gap-2">
@@ -35,8 +34,8 @@ export function HomeCanvas() {
         <ul className="flex flex-col">
           {home.recents.map((r) => (
             <li key={r.id}>
-              <a
-                href={r.href}
+              <Link
+                to={r.href}
                 className="flex items-center justify-between gap-3 py-2 border-b border-border last:border-0 hover:bg-secondary/30 transition-colors rounded-sm -mx-2 px-2"
               >
                 <span className="flex items-center gap-2 min-w-0">
@@ -47,10 +46,8 @@ export function HomeCanvas() {
                   />
                   <span className="truncate">{r.title}</span>
                 </span>
-                <span className="text-xs text-muted-foreground shrink-0">
-                  {r.updatedAtLabel}
-                </span>
-              </a>
+                <span className="text-xs text-muted-foreground shrink-0">{r.updatedAtLabel}</span>
+              </Link>
             </li>
           ))}
         </ul>
@@ -80,8 +77,12 @@ function Card({ card }: { card: ThingCard }) {
       <div
         className="w-9 h-9 rounded-md shrink-0 flex items-center justify-center"
         style={{
-          backgroundColor: card.kind === 'agent-output' ? 'oklch(var(--accent))' : 'oklch(var(--bg-surface-2))',
-          color: card.kind === 'agent-output' ? 'oklch(var(--fg-on-accent))' : 'oklch(var(--fg-primary))',
+          backgroundColor:
+            card.kind === 'agent-output' ? 'oklch(var(--accent))' : 'oklch(var(--bg-surface-2))',
+          color:
+            card.kind === 'agent-output'
+              ? 'oklch(var(--fg-on-accent))'
+              : 'oklch(var(--fg-primary))',
         }}
         aria-hidden="true"
       >

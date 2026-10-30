@@ -12,13 +12,21 @@ vi.mock('react-i18next', () => ({
 
 import { NoteActionsMenu, type NoteActionsMenuProps } from './NoteActionsMenu';
 
-function defaults(
-  overrides: Partial<NoteActionsMenuProps> = {},
-): NoteActionsMenuProps {
+function defaults(overrides: Partial<NoteActionsMenuProps> = {}): NoteActionsMenuProps {
   const anchor = document.createElement('button');
   document.body.appendChild(anchor);
   anchor.getBoundingClientRect = () =>
-    ({ top: 0, bottom: 40, left: 100, right: 140, width: 40, height: 40, x: 100, y: 0, toJSON: () => ({}) }) as DOMRect;
+    ({
+      top: 0,
+      bottom: 40,
+      left: 100,
+      right: 140,
+      width: 40,
+      height: 40,
+      x: 100,
+      y: 0,
+      toJSON: () => ({}),
+    }) as DOMRect;
   const anchorRef = { current: anchor };
   return {
     open: true,
@@ -46,21 +54,22 @@ describe('NoteActionsMenu', () => {
     expect(screen.queryByTestId('note-actions-menu')).toBeNull();
   });
 
-  it('renders every section and the footer when open', () => {
+  it('renders only implemented actions and the footer when open', () => {
     render(<NoteActionsMenu {...defaults()} />);
-    // All 19 rows + 3 font picker options render for an empty query.
-    // Spot-check one from each group so a regression that drops a
-    // whole group fails here.
     expect(screen.getByText('noteMenu.font.default')).toBeInTheDocument();
     expect(screen.getByText('noteMenu.font.serif')).toBeInTheDocument();
     expect(screen.getByText('noteMenu.font.mono')).toBeInTheDocument();
     expect(screen.getByText('noteMenu.copyLink')).toBeInTheDocument();
+    expect(screen.getByText('noteMenu.copyContents')).toBeInTheDocument();
+    expect(screen.getByText('noteMenu.duplicate')).toBeInTheDocument();
     expect(screen.getByText('noteMenu.moveToTrash')).toBeInTheDocument();
-    expect(screen.getByText('noteMenu.present')).toBeInTheDocument();
     expect(screen.getByText('noteMenu.smallText')).toBeInTheDocument();
-    expect(screen.getByText('noteMenu.useWithAi')).toBeInTheDocument();
-    expect(screen.getByText('noteMenu.versionHistory')).toBeInTheDocument();
-    // Footer renders word count from the `footer` prop.
+    expect(screen.getByText('noteMenu.fullWidth')).toBeInTheDocument();
+    expect(screen.getByText('noteMenu.undo')).toBeInTheDocument();
+    expect(screen.queryByText('noteMenu.archive')).toBeNull();
+    expect(screen.queryByText('noteMenu.present')).toBeNull();
+    expect(screen.queryByText('noteMenu.useWithAi')).toBeNull();
+    expect(screen.queryByText('noteMenu.versionHistory')).toBeNull();
     expect(screen.getByTestId('note-actions-footer').textContent).toContain('42');
   });
 
@@ -69,11 +78,7 @@ describe('NoteActionsMenu', () => {
     const onClose = vi.fn();
     const onCopyLink = vi.fn();
     const onMoveToTrash = vi.fn();
-    render(
-      <NoteActionsMenu
-        {...defaults({ onClose, onCopyLink, onMoveToTrash })}
-      />,
-    );
+    render(<NoteActionsMenu {...defaults({ onClose, onCopyLink, onMoveToTrash })} />);
     await user.click(screen.getByText('noteMenu.copyLink'));
     expect(onCopyLink).toHaveBeenCalledOnce();
     expect(onClose).toHaveBeenCalledOnce();
@@ -89,8 +94,6 @@ describe('NoteActionsMenu', () => {
     await user.type(screen.getByPlaceholderText('noteMenu.search'), 'trash');
     expect(screen.getByText('noteMenu.moveToTrash')).toBeInTheDocument();
     expect(screen.queryByText('noteMenu.copyLink')).toBeNull();
-    // The font picker hides when there's an active query, so the
-    // user sees matches only.
     expect(screen.queryByText('noteMenu.font.default')).toBeNull();
   });
 
@@ -110,16 +113,11 @@ describe('NoteActionsMenu', () => {
     expect(onFullWidthChange).toHaveBeenCalledWith(true);
   });
 
-  it('does not fire callbacks for disabled rows', async () => {
-    const user = userEvent.setup();
-    render(<NoteActionsMenu {...defaults()} />);
-    // `Archive` is disabled (Beta). Clicking it should be a no-op.
-    const archive = screen.getByRole('menuitem', { name: /noteMenu\.archive/ });
-    expect(archive).toBeDisabled();
-    await user.click(archive);
-    // Nothing to assert positively — the expectation is that the
-    // click didn't throw and no onClose fired (handler isn't wired).
-    expect(archive).toBeDisabled();
+  it('hides duplicate and delete rows for session notes when allowDuplicateAndDelete is false', () => {
+    render(<NoteActionsMenu {...defaults({ allowDuplicateAndDelete: false })} />);
+    expect(screen.queryByText('noteMenu.duplicate')).toBeNull();
+    expect(screen.queryByText('noteMenu.moveToTrash')).toBeNull();
+    expect(screen.getByText('noteMenu.copyLink')).toBeInTheDocument();
   });
 
   it('closes on Escape', () => {
@@ -138,7 +136,7 @@ describe('NoteActionsMenu', () => {
           open
         </button>
         <NoteActionsMenu {...defaults({ onClose, anchorRef })} />
-      </>,
+      </>
     );
     const outside = document.createElement('div');
     document.body.appendChild(outside);

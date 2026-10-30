@@ -46,16 +46,21 @@ export function DevMenuPreviewRoute() {
             updatedAt="2026-04-21T15:03:00Z"
           />
           <p className="mt-4 text-foreground leading-7">
-            Primeira reunião com a Trinca para alinhar o modelo de
-            onboarding da Coxinha. Objetivo: transformar a "pasta
-            do usuário" em um destino — onboarding como promessa,
-            não como tour.
+            Primeira reunião com a Trinca para alinhar o modelo de onboarding da Coxinha. Objetivo:
+            transformar a "pasta do usuário" em um destino — onboarding como promessa, não como
+            tour.
           </p>
           <h2 className="cx-display text-[20px] mt-6 mb-2">Decisões</h2>
           <ul className="list-disc pl-6 text-foreground leading-7">
             <li>Vamos chamar o produto de "capsule" internamente até o naming final.</li>
-            <li>Onboarding não deve fazer tour da UI — deve entregar uma primeira nota útil nos primeiros 20 segundos.</li>
-            <li>O AI só aparece quando invocado — Cmd+J, barra lateral ou sugestão inline. Nunca como pop-up.</li>
+            <li>
+              Onboarding não deve fazer tour da UI — deve entregar uma primeira nota útil nos
+              primeiros 20 segundos.
+            </li>
+            <li>
+              O AI só aparece quando invocado — Cmd+J, barra lateral ou sugestão inline. Nunca como
+              pop-up.
+            </li>
           </ul>
         </div>
         <NoteActionsMenu

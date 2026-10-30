@@ -125,9 +125,7 @@ function TabPanel({ tab, meeting }: { tab: Tab; meeting: MeetingRow }) {
       : tab === 'transcript'
         ? meeting.transcriptMd
         : meeting.actionItemsMd;
-  return (
-    <div className="whitespace-pre-wrap font-[var(--font-sans)]">{md}</div>
-  );
+  return <div className="whitespace-pre-wrap font-[var(--font-sans)]">{md}</div>;
 }
 
 function formatMeetingDate(iso: string): string {

@@ -1,0 +1,117 @@
+/* Layered (spec 0095) so utilities in JSX override these defaults. */
+/* Declare Tailwind's layer order first: whichever file loads first fixes it. */
+@layer theme, base, components, utilities;
+@layer components {
+  .settings-page {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+  .settings-page > header {
+    margin-bottom: 24px;
+  }
+  .settings-page h1 {
+    font-size: 22px;
+    font-weight: 600;
+  }
+  .settings-page > header p {
+    margin-top: 5px;
+    color: var(--color-muted-foreground);
+    font-size: 13px;
+  }
+  .settings-layout {
+    display: grid;
+    grid-template-columns: 160px minmax(0, 1fr);
+    gap: 32px;
+    align-items: start;
+  }
+  .settings-navigation {
+    position: sticky;
+    top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .settings-navigation a {
+    display: flex;
+    gap: 9px;
+    align-items: center;
+    padding: 9px 10px;
+    border-radius: var(--radius-md);
+    color: var(--color-muted-foreground);
+    font-size: 13px;
+  }
+  .settings-navigation a:hover,
+  .settings-navigation a:focus-visible {
+    color: var(--color-foreground);
+    background: var(--color-secondary);
+  }
+  .settings-content {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .settings-content > section,
+  .settings-content > fieldset {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    min-width: 0;
+    background: var(--color-card);
+  }
+  /* Sections that hold their own cards (Integrations) skip the outer frame. */
+  .settings-content > section.settings-plain {
+    border: 0;
+    padding: 0;
+    background: none;
+  }
+  .settings-content > fieldset > legend {
+    float: left;
+    width: 100%;
+    margin-bottom: 12px;
+  }
+  .settings-content h2,
+  .settings-content legend {
+    font-size: 14px;
+    font-weight: 600;
+    scroll-margin-top: 24px;
+  }
+  .settings-content code,
+  .settings-content pre {
+    overflow-wrap: anywhere;
+  }
+  .settings-content li {
+    border-bottom: 1px solid var(--color-border);
+    padding-block: 10px;
+  }
+  .settings-content li:last-child {
+    border-bottom: 0;
+  }
+  @media (max-width: 1000px) {
+    .settings-layout {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 16px;
+    }
+    .settings-navigation {
+      position: static;
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+    .settings-page {
+      padding: 16px;
+    }
+  }
+
+  .settings-advanced > summary {
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--color-muted-foreground);
+  }
+  .settings-advanced[open] > summary {
+    margin-bottom: 16px;
+  }
+  .settings-advanced > * + * {
+    margin-top: 16px;
+  }
+}

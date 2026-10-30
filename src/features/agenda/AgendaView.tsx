@@ -1,70 +1,200 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useQueryClient } from '@tanstack/react-query';
-import type { NoteContent } from '../../lib/bindings';
-import { commands } from '../../lib/bindings';
-import { useAppStore } from '../../lib/store';
-import { NoteEditor, NoteLoadingSkeleton } from '../notes/NoteEditor';
+import { RefreshCw, Settings } from 'lucide-react';
+import {
+  Alert,
+  Button,
+  Card,
+  CardBody,
+  CardFooter,
+  CardHeader,
+  EmptyState,
+  Field,
+  PageHeader,
+  Select,
+} from '../../components/ui';
+import { type CalendarEvent } from './calendar';
+import { library, type LibraryMeeting } from '../meetings/library';
+import { OutlookConnectionCard } from './OutlookConnectionCard';
+import { useOutlookConnection } from './useOutlookConnection';
 
-type State =
-  | { kind: 'loading' }
-  | { kind: 'ready'; noteId: string; content: NoteContent }
-  | { kind: 'error'; message: string };
+type Props = {
+  /** Opens the Outlook integration in Settings; the route supplies navigation. */
+  onConfigure?: () => void;
+};
 
-export function AgendaView() {
+export function AgendaView({ onConfigure }: Props) {
   const { t } = useTranslation();
-  const openDailyNote = useAppStore((s) => s.openDailyNote);
-  const queryClient = useQueryClient();
-  const [state, setState] = useState<State>({ kind: 'loading' });
+  const [selected, setSelected] = useState<CalendarEvent | null>(null);
+  const [meetings, setMeetings] = useState<LibraryMeeting[]>([]);
+  const [meetingId, setMeetingId] = useState('');
+  const [notice, setNotice] = useState('');
+  const connection = useOutlookConnection({
+    onReset: () => {
+      setSelected(null);
+      setMeetingId('');
+      setNotice('');
+    },
+  });
+  const { snapshot, busy, connected, error, run } = connection;
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const note = await openDailyNote();
-        // Warm the query cache so NoteEditor renders without a
-        // second IPC roundtrip.
-        const contentRes = await commands.getNote(note.id);
-        if (contentRes.status === 'error') {
-          throw new Error(contentRes.error);
-        }
-        queryClient.setQueryData(['note', note.id], contentRes.data);
-        if (!cancelled) {
-          setState({ kind: 'ready', noteId: note.id, content: contentRes.data });
-        }
-      } catch (e) {
-        if (!cancelled) {
-          setState({
-            kind: 'error',
-            message: e instanceof Error ? e.message : String(e),
-          });
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [openDailyNote, queryClient]);
-
+  async function select(event: CalendarEvent) {
+    setSelected(event);
+    setMeetingId('');
+    setNotice('');
+    try {
+      setMeetings(await library.list());
+    } catch {
+      connection.setError(t('outlook.meetingsError'));
+    }
+  }
+  async function copyCandidates() {
+    if (!selected || !meetingId) return;
+    await run(async () => {
+      const current = await library.participantContext(meetingId);
+      const merged = [...current];
+      for (const candidate of selected.attendees)
+        if (
+          !merged.some((c) =>
+            c.email && candidate.email
+              ? c.email.toLowerCase() === candidate.email.toLowerCase()
+              : !c.email &&
+                !candidate.email &&
+                c.name.trim().toLowerCase() === candidate.name.trim().toLowerCase()
+          )
+        )
+          merged.push(candidate);
+      if (merged.length > 100) throw new Error('calendar.candidateLimit');
+      await library.setParticipantContext(meetingId, merged);
+      setNotice(t('outlook.copied'));
+    });
+  }
   return (
-    <section className="h-full flex flex-col" aria-labelledby="agenda-heading">
-      <header className="px-8 pt-6 pb-2">
-        <h1 id="agenda-heading" className="cx-display text-4xl">
-          {t('agenda.title')}
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          {t('agenda.dailyHeading')}
-        </p>
-      </header>
-      <div className="flex-1 overflow-hidden">
-        {state.kind === 'loading' && <NoteLoadingSkeleton />}
-        {state.kind === 'error' && (
-          <p className="px-8 text-red-600" role="alert">
-            {t('agenda.error', { error: state.message })}
-          </p>
+    <section className="h-full overflow-auto" aria-labelledby="agenda-heading">
+      <div className="mx-auto max-w-4xl space-y-6 px-6 py-6">
+        <PageHeader
+          titleId="agenda-heading"
+          title={t('agenda.title')}
+          description={t('outlook.subtitle')}
+          actions={
+            connected && (
+              <>
+                {onConfigure && (
+                  <Button
+                    variant="ghost"
+                    icon={<Settings size={14} aria-hidden="true" />}
+                    onClick={onConfigure}
+                  >
+                    {t('outlook.configure')}
+                  </Button>
+                )}
+                <Button
+                  icon={<RefreshCw size={14} aria-hidden="true" />}
+                  disabled={busy}
+                  onClick={connection.sync}
+                >
+                  {t('outlook.sync')}
+                </Button>
+              </>
+            )
+          }
+        />
+        {/* Disconnected or expired: the shared card owns setup, status and errors. */}
+        {!connected && <OutlookConnectionCard connection={connection} />}
+        {connected && (
+          <>
+            {busy && (
+              <p role="status" className="text-ui text-muted-foreground">
+                {t('outlook.working')}
+              </p>
+            )}
+            {snapshot.syncedAt && (
+              <p className="text-xs text-muted-foreground">
+                {t('outlook.freshness', { date: new Date(snapshot.syncedAt).toLocaleString() })}
+              </p>
+            )}
+            {error && (
+              <Alert
+                tone="error"
+                action={
+                  <Button size="sm" onClick={connection.retry}>
+                    {t('settings.recovery.retry')}
+                  </Button>
+                }
+              >
+                {error}
+              </Alert>
+            )}
+          </>
         )}
-        {state.kind === 'ready' && (
-          <NoteEditor noteId={state.noteId} content={state.content} />
+        <Card aria-labelledby="agenda-events-heading">
+          <CardHeader titleId="agenda-events-heading" title={t('outlook.eventsHeading')} />
+          <CardBody className="pt-2">
+            {snapshot.events.length === 0 ? (
+              <EmptyState title={t('outlook.empty')} />
+            ) : (
+              <ul className="divide-y divide-border">
+                {snapshot.events.map((event) => (
+                  <li
+                    key={`${snapshot.account}:${event.id}`}
+                    className="flex items-center justify-between gap-4 py-3"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(event.startsAt).toLocaleString()} ·{' '}
+                        {event.allDay
+                          ? t('outlook.allDay')
+                          : new Date(event.endsAt).toLocaleTimeString()}
+                      </p>
+                      <h3 className="truncate text-sm font-semibold">{event.title}</h3>
+                      <p className="text-ui text-muted-foreground">
+                        {event.cancelled
+                          ? t('outlook.cancelled')
+                          : t('outlook.candidates', { count: event.attendees.length })}
+                      </p>
+                    </div>
+                    <Button size="sm" disabled={busy} onClick={() => void select(event)}>
+                      {t('outlook.review')}
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardBody>
+        </Card>
+        {selected && (
+          <Card aria-label={t('outlook.review')}>
+            <CardHeader title={selected.title} description={t('outlook.candidateHint')} />
+            <CardBody className="space-y-4">
+              <ul className="flex flex-wrap gap-2">
+                {selected.attendees.map((candidate, i) => (
+                  <li key={i} className="cx-badge">
+                    {candidate.name}
+                  </li>
+                ))}
+              </ul>
+              <Field label={t('outlook.chooseMeeting')}>
+                <Select block value={meetingId} onChange={(e) => setMeetingId(e.target.value)}>
+                  <option value="">{t('outlook.chooseMeeting')}</option>
+                  {meetings.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.title} · {new Date(m.createdAt).toLocaleString()}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              {notice && <Alert tone="success">{notice}</Alert>}
+            </CardBody>
+            <CardFooter>
+              <Button
+                variant="primary"
+                disabled={busy || !meetingId || !selected.attendees.length}
+                onClick={() => void copyCandidates()}
+              >
+                {t('outlook.copy')}
+              </Button>
+            </CardFooter>
+          </Card>
         )}
       </div>
     </section>

@@ -1,3 +1,5 @@
+import { DetectionSettings } from '../detection/DetectionSettings';
+import { invoke } from '@tauri-apps/api/core';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -7,11 +9,11 @@ import {
   type RebuildStats,
 } from '../../lib/bindings';
 import { useAppStore } from '../../lib/store';
-import {
-  getThemePreference,
-  setThemePreference,
-  type ThemePreference,
-} from '../../lib/theme';
+import { SettingsRebuildError } from './SettingsRebuildError';
+import { AppearanceSection, ShortcutsSection } from './SettingsSections';
+import { SettingsFrame } from './SettingsFrame';
+import { IntegrationsSection } from './IntegrationsSection';
+import { Alert, Badge, Button, Input } from '../../components/ui';
 
 type LoadState =
   | { kind: 'loading' }
@@ -30,9 +32,18 @@ type RebuildState =
   | { kind: 'done'; stats: RebuildStats }
   | { kind: 'error'; message: string };
 
-export function SettingsView() {
-  const { t } = useTranslation();
+type Props = {
+  /** Opens the agenda from the Outlook integration; the route supplies navigation. */
+  onOpenAgenda?: () => void;
+  /** Heading id to focus once preferences load, e.g. `integrations-heading`. */
+  initialSection?: string;
+};
+
+export function SettingsView({ onOpenAgenda, initialSection }: Props = {}) {
+  const { t, i18n } = useTranslation();
   const loadNotes = useAppStore((s) => s.loadNotes);
+  const [retry, setRetry] = useState(0);
+  const [diagnostics, setDiagnostics] = useState('');
   const [state, setState] = useState<LoadState>({ kind: 'loading' });
   const [selectedPath, setSelectedPath] = useState<string>('');
   const [save, setSave] = useState<SaveState>({ kind: 'idle' });
@@ -41,24 +52,38 @@ export function SettingsView() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const [cfgRes, vaultRes] = await Promise.all([
-        commands.getConfig(),
-        commands.listObsidianVaults(),
-      ]);
-      if (cancelled) return;
+      setState({ kind: 'loading' });
+      try {
+        const [cfgRes, vaultRes] = await Promise.all([
+          commands.getConfig(),
+          commands.listObsidianVaults(),
+        ]);
+        if (cancelled) return;
 
-      if (cfgRes.status === 'error') {
-        setState({ kind: 'error', message: cfgRes.error });
-        return;
+        if (cfgRes.status === 'error') {
+          setState({ kind: 'error', message: cfgRes.error });
+          return;
+        }
+        const vaults = vaultRes.status === 'ok' ? vaultRes.data : [];
+        setState({ kind: 'ready', config: cfgRes.data, vaults });
+        setSelectedPath(cfgRes.data.vault_path);
+      } catch {
+        if (!cancelled) setState({ kind: 'error', message: t('settings.recovery.loadError') });
       }
-      const vaults = vaultRes.status === 'ok' ? vaultRes.data : [];
-      setState({ kind: 'ready', config: cfgRes.data, vaults });
-      setSelectedPath(cfgRes.data.vault_path);
     })();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [retry]);
+
+  useEffect(() => {
+    if (state.kind !== 'ready' || !initialSection) return;
+    const heading = document.getElementById(initialSection);
+    if (!heading) return;
+    heading.tabIndex = -1;
+    heading.focus({ preventScroll: true });
+    heading.scrollIntoView?.({ block: 'start' });
+  }, [state.kind, initialSection]);
 
   const dirty = useMemo(() => {
     if (state.kind !== 'ready') return false;
@@ -80,20 +105,24 @@ export function SettingsView() {
 
   async function onRebuild() {
     setRebuild({ kind: 'running' });
-    const res = await commands.rebuildFromVault();
-    if (res.status === 'error') {
-      setRebuild({ kind: 'error', message: res.error });
-      return;
+    try {
+      const res = await commands.rebuildFromVault();
+      if (res.status === 'error') {
+        setRebuild({ kind: 'error', message: res.error });
+        return;
+      }
+      setRebuild({ kind: 'done', stats: res.data });
+      await loadNotes();
+    } catch {
+      setRebuild({ kind: 'error', message: t('settings.recovery.loadError') });
     }
-    setRebuild({ kind: 'done', stats: res.data });
-    await loadNotes();
   }
 
   if (state.kind === 'loading') {
     return (
       <SettingsFrame>
-        <p role="status" aria-live="polite" className="text-muted-foreground">
-          {t('settings.comingSoon')}
+        <p role="status" aria-live="polite" className="text-ui text-muted-foreground">
+          {t('settings.loading')}
         </p>
       </SettingsFrame>
     );
@@ -101,9 +130,26 @@ export function SettingsView() {
   if (state.kind === 'error') {
     return (
       <SettingsFrame>
-        <p role="alert" className="text-red-600">
-          {t('settings.vault.loadError', { error: state.message })}
-        </p>
+        <Alert tone="error">{t('settings.vault.loadError', { error: state.message })}</Alert>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="primary" onClick={() => setRetry((v) => v + 1)}>
+            {t('settings.recovery.retry')}
+          </Button>
+          <Button
+            onClick={() =>
+              void invoke<string>('desktop_diagnostic_info')
+                .then(setDiagnostics)
+                .catch(() => setDiagnostics(t('settings.recovery.diagnosticError')))
+            }
+          >
+            {t('settings.recovery.showDiagnostics')}
+          </Button>
+        </div>
+        {diagnostics && (
+          <pre className="whitespace-pre-wrap break-all text-xs" role="status">
+            {diagnostics}
+          </pre>
+        )}
       </SettingsFrame>
     );
   }
@@ -112,134 +158,103 @@ export function SettingsView() {
 
   return (
     <SettingsFrame>
+      <AppearanceSection />
+      <DetectionSettings />
+      <IntegrationsSection onOpenAgenda={onOpenAgenda} />
       <section aria-labelledby="vault-heading" className="space-y-4">
-        <h2 id="vault-heading" className="text-lg font-semibold">
-          {t('settings.vault.heading')}
-        </h2>
+        <h2 id="vault-heading">{t('settings.vault.heading')}</h2>
 
         <p className="text-sm text-muted-foreground">
           <span className="font-medium">{t('settings.vault.currentPath')}:</span>{' '}
           <code className="font-mono">{config.vault_path}</code>
         </p>
 
-        <fieldset className="space-y-2">
-          <legend className="text-sm font-medium">
-            {t('settings.vault.detectedObsidian')}
-          </legend>
-          {vaults.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              {t('settings.vault.noObsidian')}
-            </p>
-          ) : (
-            <ul className="space-y-1">
-              {vaults.map((v) => (
-                <li key={v.id}>
-                  <label className="flex items-start gap-2 rounded px-2 py-1.5 hover:bg-accent/50 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="vault"
-                      value={v.path}
-                      checked={selectedPath === v.path}
-                      onChange={() => setSelectedPath(v.path)}
-                      className="mt-1"
-                      aria-describedby={`vault-meta-${v.id}`}
-                    />
-                    <span className="flex-1">
-                      <span className="font-medium">{v.name || v.path}</span>
-                      <span
-                        id={`vault-meta-${v.id}`}
-                        className="block text-xs text-muted-foreground"
-                      >
-                        <code className="font-mono">{v.path}</code>
-                        {' · '}
-                        {v.last_opened_ms
-                          ? `${t('settings.vault.lastOpenedPrefix')} ${formatRelative(v.last_opened_ms)}`
-                          : t('settings.vault.neverOpened')}
-                        {!v.exists && (
-                          <>
-                            {' · '}
-                            <span className="text-amber-600">
-                              {t('settings.vault.missingFolder')}
-                            </span>
-                          </>
-                        )}
+        <p className="text-sm text-muted-foreground">{t('settings.recovery.vaultSwitch')}</p>
+        <details className="settings-advanced">
+          <summary>{t('settings.vault.otherFolders')}</summary>
+          <fieldset disabled className="space-y-2">
+            <legend className="text-sm font-medium">{t('settings.vault.detectedObsidian')}</legend>
+            {vaults.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{t('settings.vault.noObsidian')}</p>
+            ) : (
+              <ul className="space-y-1">
+                {vaults.map((v) => (
+                  <li key={v.id}>
+                    <label className="flex items-start gap-2 rounded px-2 py-1.5 hover:bg-accent/50 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="vault"
+                        value={v.path}
+                        checked={selectedPath === v.path}
+                        onChange={() => setSelectedPath(v.path)}
+                        className="mt-1"
+                        aria-describedby={`vault-meta-${v.id}`}
+                      />
+                      <span className="flex-1">
+                        <span className="font-medium">{v.name || v.path}</span>
+                        <span
+                          id={`vault-meta-${v.id}`}
+                          className="block text-xs text-muted-foreground"
+                        >
+                          <code className="font-mono">{v.path}</code>
+                          {' · '}
+                          {v.last_opened_ms
+                            ? `${t('settings.vault.lastOpenedPrefix')} ${formatRelative(v.last_opened_ms, i18n?.resolvedLanguage)}`
+                            : t('settings.vault.neverOpened')}
+                          {!v.exists && (
+                            <>
+                              {' · '}
+                              <Badge tone="warning">{t('settings.vault.missingFolder')}</Badge>
+                            </>
+                          )}
+                        </span>
                       </span>
-                    </span>
-                  </label>
-                </li>
-              ))}
-            </ul>
-          )}
-        </fieldset>
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </fieldset>
 
-        <fieldset className="space-y-1">
-          <label htmlFor="vault-custom-path" className="text-sm font-medium">
-            {t('settings.vault.customPath')}
-          </label>
-          <input
-            id="vault-custom-path"
-            type="text"
-            value={selectedPath}
-            onChange={(e) => setSelectedPath(e.target.value)}
-            placeholder={t('settings.vault.customPathPlaceholder')}
-            className="w-full rounded border border-border bg-background px-2 py-1 font-mono text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-          />
-        </fieldset>
+          <fieldset disabled className="space-y-1">
+            <label htmlFor="vault-custom-path" className="cx-field-label">
+              {t('settings.vault.customPath')}
+            </label>
+            <Input
+              id="vault-custom-path"
+              type="text"
+              value={selectedPath}
+              onChange={(e) => setSelectedPath(e.target.value)}
+              placeholder={t('settings.vault.customPathPlaceholder')}
+              className="font-mono"
+            />
+          </fieldset>
 
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={onSave}
-            disabled={!dirty || save.kind === 'saving'}
-            className="px-4 py-2 rounded bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-          >
-            {save.kind === 'saving' ? t('settings.vault.saving') : t('settings.vault.save')}
-          </button>
-          {save.kind === 'saved' && (
-            <p role="status" aria-live="polite" className="text-sm text-green-700">
-              {t('settings.vault.saved')}
-            </p>
-          )}
-          {save.kind === 'error' && (
-            <p role="alert" className="text-sm text-red-600">
-              {t('settings.vault.saveError', { error: save.message })}
-            </p>
-          )}
-        </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <Button variant="primary" onClick={onSave} disabled={true}>
+              {save.kind === 'saving' ? t('settings.vault.saving') : t('settings.vault.save')}
+            </Button>
+            {save.kind === 'saved' && <Alert tone="success">{t('settings.vault.saved')}</Alert>}
+            {save.kind === 'error' && (
+              <Alert tone="error">{t('settings.vault.saveError', { error: save.message })}</Alert>
+            )}
+          </div>
+        </details>
       </section>
-
-      <AppearanceSection />
 
       <ShortcutsSection shortcuts={config.shortcuts} />
 
       <section aria-labelledby="rebuild-heading" className="space-y-3">
-        <h2 id="rebuild-heading" className="text-lg font-semibold">
-          {t('settings.vault.rebuildHeading')}
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          {t('settings.vault.rebuildDescription')}
-        </p>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={onRebuild}
-            disabled={rebuild.kind === 'running'}
-            className="px-4 py-2 rounded border border-border bg-background hover:bg-accent/50 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-          >
+        <h2 id="rebuild-heading">{t('settings.vault.rebuildHeading')}</h2>
+        <p className="text-sm text-muted-foreground">{t('settings.vault.rebuildDescription')}</p>
+        <div className="flex flex-col items-start gap-3">
+          <Button onClick={onRebuild} disabled={rebuild.kind === 'running'}>
             {rebuild.kind === 'running'
               ? t('settings.vault.rebuilding')
               : t('settings.vault.rebuild')}
-          </button>
+          </Button>
           {rebuild.kind === 'done' && (
-            <p
-              role="status"
-              aria-live="polite"
-              className={
-                rebuild.stats.notes_skipped > 0
-                  ? 'text-sm text-amber-600'
-                  : 'text-sm text-green-700'
-              }
-            >
+            <Alert tone={rebuild.stats.notes_skipped > 0 ? 'warning' : 'success'}>
               {rebuild.stats.notes_skipped > 0
                 ? t('settings.vault.rebuiltWithSkips', {
                     notes: String(rebuild.stats.notes_indexed),
@@ -250,130 +265,43 @@ export function SettingsView() {
                     notes: String(rebuild.stats.notes_indexed),
                     links: String(rebuild.stats.links_indexed),
                   })}
-            </p>
+            </Alert>
           )}
-          {rebuild.kind === 'error' && (
-            <p role="alert" className="text-sm text-red-600">
-              {t('settings.vault.rebuildError', { error: rebuild.message })}
-            </p>
-          )}
+          {rebuild.kind === 'error' && <SettingsRebuildError message={rebuild.message} />}
         </div>
+      </section>
+      <section aria-labelledby="diagnostics-heading" className="space-y-2">
+        <h2 id="diagnostics-heading">{t('settings.recovery.diagnostics')}</h2>
+        <Button
+          onClick={() =>
+            void invoke<string>('desktop_diagnostic_info')
+              .then(setDiagnostics)
+              .catch(() => setDiagnostics(t('settings.recovery.diagnosticError')))
+          }
+        >
+          {t('settings.recovery.showDiagnostics')}
+        </Button>
+        {diagnostics && (
+          <pre className="whitespace-pre-wrap break-all text-xs" role="status">
+            {diagnostics}
+          </pre>
+        )}
       </section>
     </SettingsFrame>
   );
 }
 
-function AppearanceSection() {
-  const { t } = useTranslation();
-  const [pref, setPref] = useState<ThemePreference>(() => getThemePreference());
-
-  function choose(next: ThemePreference) {
-    setPref(next);
-    setThemePreference(next);
+function formatRelative(ms: number, locale?: string): string {
+  const seconds = (ms - Date.now()) / 1000;
+  const format = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+  for (const [unit, size] of [
+    ['year', 31536000],
+    ['month', 2592000],
+    ['day', 86400],
+    ['hour', 3600],
+    ['minute', 60],
+  ] as const) {
+    if (Math.abs(seconds) >= size) return format.format(Math.round(seconds / size), unit);
   }
-
-  const options: ThemePreference[] = ['auto', 'light', 'dark'];
-
-  return (
-    <fieldset aria-labelledby="appearance-heading" className="space-y-3">
-      <legend id="appearance-heading" className="text-lg font-semibold">
-        {t('settings.appearance.heading')}
-      </legend>
-      <p className="text-xs text-muted-foreground">
-        {t('settings.appearance.themeHint')}
-      </p>
-      <div className="flex gap-2">
-        {options.map((opt) => (
-          <label
-            key={opt}
-            className={
-              'cursor-pointer text-sm px-3 py-1.5 rounded border focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring ' +
-              (pref === opt
-                ? 'bg-primary text-primary-foreground border-primary'
-                : 'border-border hover:bg-accent/50')
-            }
-          >
-            <input
-              type="radio"
-              name="theme-pref"
-              value={opt}
-              checked={pref === opt}
-              onChange={() => choose(opt)}
-              className="sr-only"
-            />
-            {t(`settings.appearance.theme.${opt}`)}
-          </label>
-        ))}
-      </div>
-    </fieldset>
-  );
-}
-
-// Display order matches the user's mental model (create → navigate
-// → record), not the struct field order — lifted to module scope
-// so it isn't recreated per render.
-const SHORTCUT_KEYS: ReadonlyArray<keyof AppConfig['shortcuts']> = [
-  'new_note',
-  'open_app',
-  'agenda',
-  'meetings',
-  'toggle_recording',
-];
-
-function ShortcutsSection({
-  shortcuts,
-}: {
-  shortcuts: AppConfig['shortcuts'];
-}) {
-  const { t } = useTranslation();
-
-  return (
-    <section aria-labelledby="shortcuts-heading" className="space-y-3">
-      <h2 id="shortcuts-heading" className="text-lg font-semibold">
-        {t('settings.shortcuts.heading')}
-      </h2>
-      <p className="text-xs text-muted-foreground">
-        {t('settings.shortcuts.rebindComingSoon')}
-      </p>
-      <ul className="space-y-0.5">
-        {SHORTCUT_KEYS.map((key) => (
-          <li
-            key={key}
-            className="grid grid-cols-[1fr_auto] items-center gap-4 px-2 py-1.5 rounded hover:bg-accent/30"
-          >
-            <span className="text-sm">
-              {t(`settings.shortcuts.action.${key}`)}
-            </span>
-            <kbd className="text-xs font-mono px-2 py-0.5 rounded border border-border bg-background">
-              {shortcuts[key]}
-            </kbd>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
-function SettingsFrame({ children }: { children: React.ReactNode }) {
-  const { t } = useTranslation();
-  return (
-    <section className="p-8 space-y-6 max-w-3xl" aria-labelledby="settings-heading">
-      <h1 id="settings-heading" className="cx-display text-4xl">
-        {t('settings.title')}
-      </h1>
-      {children}
-    </section>
-  );
-}
-
-function formatRelative(ms: number): string {
-  const diff = Date.now() - ms;
-  const hours = diff / 36e5;
-  if (hours < 1) return 'just now';
-  if (hours < 24) return `${Math.round(hours)}h ago`;
-  const days = hours / 24;
-  if (days < 30) return `${Math.round(days)}d ago`;
-  const months = days / 30;
-  if (months < 12) return `${Math.round(months)}mo ago`;
-  return `${Math.round(months / 12)}y ago`;
+  return format.format(0, 'minute');
 }

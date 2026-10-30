@@ -11,10 +11,7 @@ export function Breadcrumb({ trail }: Props) {
         return (
           <span key={i} className="flex items-center gap-1.5 min-w-0">
             {i > 0 && <span className="text-muted-foreground/60">/</span>}
-            <span
-              className={isLast ? 'truncate text-foreground' : 'truncate'}
-              title={seg}
-            >
+            <span className={isLast ? 'truncate text-foreground' : 'truncate'} title={seg}>
               {seg}
             </span>
           </span>

@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { Mail } from 'lucide-react';
 
@@ -16,8 +17,8 @@ export function HomePanel() {
         <ul className="flex flex-col gap-2">
           {home.messages.map((m) => (
             <li key={m.id}>
-              <a
-                href={m.href}
+              <Link
+                to={m.href}
                 className="flex items-start gap-2 p-2 -mx-2 rounded-md hover:bg-secondary/60 transition-colors"
               >
                 <Mail
@@ -27,14 +28,10 @@ export function HomePanel() {
                 />
                 <div className="min-w-0">
                   <p className="text-[13px] font-medium truncate">{m.fromName}</p>
-                  <p className="text-[12px] text-muted-foreground truncate">
-                    {m.subject}
-                  </p>
-                  <p className="text-[12px] text-muted-foreground/80 truncate">
-                    {m.excerpt}
-                  </p>
+                  <p className="text-[12px] text-muted-foreground truncate">{m.subject}</p>
+                  <p className="text-[12px] text-muted-foreground/80 truncate">{m.excerpt}</p>
                 </div>
-              </a>
+              </Link>
             </li>
           ))}
         </ul>
@@ -50,15 +47,9 @@ export function HomePanel() {
               key={n.id}
               className={
                 'text-[13px] rounded-md px-2 py-1 ' +
-                (n.highlighted
-                  ? 'text-foreground'
-                  : 'text-muted-foreground')
+                (n.highlighted ? 'text-foreground' : 'text-muted-foreground')
               }
-              style={
-                n.highlighted
-                  ? { backgroundColor: 'oklch(var(--accent) / 0.16)' }
-                  : undefined
-              }
+              style={n.highlighted ? { backgroundColor: 'oklch(var(--accent) / 0.16)' } : undefined}
             >
               {n.label}
             </li>
