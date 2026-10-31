@@ -180,3 +180,5 @@ Pending decisions that block or shape the implementation.
 - [0093 — Sidebar live recording pill and unified status](0093-sidebar-recording-status.md) — in-progress
 
 - [0094 — Meeting end/boundary prompt, focus bring-up and UI simplification](0094-meeting-end-prompt-and-simplification.md) — in-progress
+
+- [0096 — Frontend redesign (Hoje, Reuniões, Workspace, one recorder)](0096-frontend-redesign.md) — in-progress

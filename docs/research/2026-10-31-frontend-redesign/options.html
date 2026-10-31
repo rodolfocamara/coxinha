@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Coxinha: direções alternativas do frontend (2026-10-31)</title>
+<style>
+/* Three alternative directions, static frames at 1280x800. Styles dealt by taste-skill (app track):
+   B framed-sheet, C editorial-greeting, D true-black-flat. Coxinha orange stays the one data/action hue. */
+* { box-sizing: border-box; }
+body { margin: 0; padding: 24px 0 60px; background: #1b1c20; font: 13px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #222; }
+h2.cap { width: 1280px; margin: 28px auto 10px; color: #ddd; font-size: 15px; font-weight: 600; }
+h2.cap span { color: #999; font-weight: 400; margin-left: 8px; }
+.frame { width: 1280px; height: 800px; margin: 0 auto; border-radius: 12px; overflow: hidden; position: relative; display: flex; box-shadow: 0 0 0 1px #333, 0 20px 50px rgb(0 0 0 / .5); }
+svg.i { width: 16px; height: 16px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+svg.sm { width: 14px; height: 14px; }
+.tab { font-variant-numeric: tabular-nums; }
+.mono { font-family: ui-monospace, "SF Mono", Consolas, monospace; }
+.btn { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 6px; border: 1px solid transparent; font: inherit; font-weight: 500; background: none; color: inherit; cursor: pointer; white-space: nowrap; }
+
+/* signature element: faixa de falas (speaker lanes) */
+.lanes { display: grid; grid-template-columns: 120px 1fr 52px; gap: 6px 10px; align-items: center; font-size: 12px; }
+.lanes .who { display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; }
+.lanes .who i { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.lanes .track { position: relative; height: 12px; border-radius: 3px; }
+.lanes .track b { position: absolute; top: 0; bottom: 0; border-radius: 2px; }
+.lanes .pct { text-align: right; font-variant-numeric: tabular-nums; }
+.lanes .cursor { position: absolute; top: -4px; bottom: -4px; width: 1px; }
+
+/* ============ B: framed sheet, light, 3 panes, recorder in the top bar ============ */
+.b { background: #ece8e1; color: #2a2b2f; }
+.b .side { width: 212px; padding: 8px 8px 8px 10px; display: flex; flex-direction: column; gap: 1px; }
+.b .brand { display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 6px; font-weight: 650; }
+.b .logo { width: 20px; height: 20px; border-radius: 6px; background: #e8873a; color: #2b1d10; display: grid; place-items: center; font-size: 11px; font-weight: 800; }
+.b .nav { display: flex; align-items: center; gap: 9px; height: 30px; padding: 0 8px; border-radius: 6px; color: #5b5d63; }
+.b .nav.on { background: rgb(0 0 0 / .07); color: #1e1f22; font-weight: 550; }
+.b .nav .n { margin-left: auto; font-size: 11px; color: #8a8c92; }
+.b .lbl { font-size: 11px; color: #8a8c92; padding: 14px 8px 4px; }
+.b .col { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.b .top { height: 48px; display: flex; align-items: center; gap: 10px; padding: 0 12px 0 4px; }
+.b .search { flex: 0 1 380px; height: 32px; border-radius: 8px; background: rgb(255 255 255 / .6); display: flex; align-items: center; gap: 8px; padding: 0 10px; color: #8a8c92; }
+.b .search kbd { margin-left: auto; font: 11px ui-monospace, monospace; }
+.b .rec { margin-left: auto; display: flex; align-items: center; gap: 10px; height: 36px; padding: 0 6px 0 12px; border-radius: 999px; background: #fff; border: 1px solid #e2ddd5; }
+.b .rec .dot { width: 8px; height: 8px; border-radius: 50%; background: #d8452f; box-shadow: 0 0 0 3px rgb(216 69 47 / .18); }
+.b .rec .meter { display: flex; gap: 2px; align-items: flex-end; height: 14px; }
+.b .rec .meter i { width: 3px; border-radius: 1px; background: #4b9a6a; }
+.b .rec .btn { height: 26px; padding: 0 9px; border-color: #e2ddd5; background: #faf8f5; }
+.b .rec .btn.stop { color: #c2412c; }
+.b .win { display: flex; gap: 4px; color: #8a8c92; margin-left: 6px; }
+.b .win span { width: 26px; text-align: center; }
+.b .sheet { flex: 1; margin: 0 8px 8px 0; background: #fff; border: 1px solid #e2ddd5; border-radius: 14px; display: flex; overflow: hidden; }
+.b .list { width: 300px; border-right: 1px solid #eee9e2; display: flex; flex-direction: column; }
+.b .list .lh { padding: 14px 14px 10px; display: flex; align-items: center; gap: 8px; }
+.b .list .lh h1 { font-size: 16px; margin: 0; font-weight: 650; }
+.b .list .lh .btn { margin-left: auto; height: 28px; background: #222327; color: #fff; }
+.b .tabs { display: flex; gap: 14px; padding: 0 14px; border-bottom: 1px solid #eee9e2; font-size: 12px; color: #7b7d83; }
+.b .tabs span { padding: 8px 0; }
+.b .tabs span.on { color: #1e1f22; box-shadow: inset 0 -2px 0 #1e1f22; }
+.b .grp { font-size: 11px; color: #8a8c92; padding: 12px 14px 4px; }
+.b .row { padding: 9px 14px; border-left: 2px solid transparent; }
+.b .row.on { background: #faf6f0; border-left-color: #e8873a; }
+.b .row b { display: flex; gap: 6px; align-items: center; font-weight: 550; }
+.b .row .m { font-size: 12px; color: #8a8c92; display: flex; gap: 8px; margin-top: 2px; }
+.b .pill { display: inline-flex; align-items: center; height: 18px; padding: 0 7px; border-radius: 999px; font-size: 11px; font-weight: 500; }
+.b .pill.rec { background: #fbe4df; color: #9b2f1f; }
+.b .pill.ok { background: #e3f0e7; color: #2c5a3c; }
+.b .pill.warn { background: #f8ecd2; color: #6e4c0c; }
+.b .pill.ol { background: #e3ebf7; color: #284a7a; }
+.b .doc { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.b .dh { padding: 16px 22px 12px; border-bottom: 1px solid #eee9e2; }
+.b .dh h2 { margin: 0; font-size: 20px; font-weight: 650; letter-spacing: -0.01em; }
+.b .dh .props { display: flex; gap: 16px; color: #7b7d83; font-size: 12px; margin-top: 6px; }
+.b .dh .props span { display: inline-flex; gap: 5px; align-items: center; }
+.b .finding { margin-top: 10px; font-size: 12px; color: #5b5d63; }
+.b .finding b { color: #1e1f22; }
+.b .panes { flex: 1; display: grid; grid-template-columns: 1fr 340px; min-height: 0; }
+.b .notes { padding: 18px 22px; font-size: 14px; line-height: 1.65; border-right: 1px solid #eee9e2; }
+.b .notes h3 { font-size: 15px; margin: 0 0 4px; }
+.b .notes ul { margin: 2px 0 12px; padding-left: 18px; }
+.b .notes .caret { display: inline-block; width: 1.5px; height: 17px; background: #e8873a; vertical-align: -3px; }
+.b .live { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: #fcfbf9; overflow: hidden; }
+.b .live h4 { margin: 0; font-size: 12px; color: #7b7d83; font-weight: 600; display: flex; justify-content: space-between; }
+.b .utt { font-size: 13px; line-height: 1.5; }
+.b .utt .s { font-size: 11px; font-weight: 600; margin-bottom: 1px; display: flex; gap: 6px; }
+.b .utt .s .t { color: #a0a2a8; font-weight: 400; }
+.b .utt.cur { color: #8a8c92; }
+
+/* ============ C: editorial greeting, light, Hoje first, floating recorder ============ */
+.c { background: #f7f5f1; color: #26272b; }
+.c .side { width: 220px; border-right: 1px solid #e7e3dc; padding: 12px 10px; display: flex; flex-direction: column; gap: 1px; background: #f7f5f1; }
+.c .brand { display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 6px; font-weight: 650; margin-bottom: 8px; }
+.c .logo { width: 20px; height: 20px; border-radius: 50%; background: #e8873a; }
+.c .nav { display: flex; align-items: center; gap: 9px; height: 30px; padding: 0 8px; border-radius: 6px; color: #5d5f65; }
+.c .nav.on { color: #1d1e21; background: #ebe7e0; font-weight: 550; }
+.c .main { flex: 1; overflow: hidden; position: relative; }
+.c .wrap { width: 920px; margin: 0 auto; padding: 40px 0 0; }
+.c h1 { font: 400 34px/1.15 Georgia, "Iowan Old Style", "Times New Roman", serif; letter-spacing: -0.01em; margin: 0; }
+.c .lede { margin: 8px 0 26px; color: #6a6c72; font-size: 14px; }
+.c .lede b { color: #26272b; font-weight: 550; }
+.c .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
+.c .panel { background: #efebe4; border-radius: 12px; padding: 16px; }
+.c .panel h3 { margin: 0 0 10px; font-size: 13px; font-weight: 600; display: flex; align-items: center; }
+.c .panel h3 a { margin-left: auto; font-weight: 400; color: #8a8c92; font-size: 12px; }
+.c .s6 { grid-column: span 6; } .c .s3 { grid-column: span 3; } .c .s9 { grid-column: span 9; } .c .s12 { grid-column: span 12; }
+.c .ag { display: grid; grid-template-columns: 52px 1fr auto; gap: 10px; align-items: center; padding: 9px 0; border-top: 1px solid #e2ddd4; }
+.c .ag:first-of-type { border-top: 0; }
+.c .ag .h { font-variant-numeric: tabular-nums; color: #6a6c72; }
+.c .ag b { font-weight: 550; display: block; }
+.c .ag .m { font-size: 12px; color: #8a8c92; }
+.c .ag .btn { height: 28px; border-color: #d9d3c9; background: #f7f5f1; }
+.c .ag .btn.pri { background: #e8873a; border-color: #e8873a; color: #2b1d10; }
+.c .todo { display: flex; gap: 10px; padding: 8px 0; border-top: 1px solid #e2ddd4; font-size: 13px; }
+.c .todo:first-of-type { border-top: 0; }
+.c .todo .k { font-size: 22px; font-weight: 400; min-width: 22px; font-variant-numeric: tabular-nums; }
+.c .todo span { color: #6a6c72; font-size: 12px; display: block; }
+.c .card { background: #fff; border-radius: 10px; padding: 14px 16px; }
+.c .mini { position: relative; height: 150px; background-image: radial-gradient(#d9d3c9 1px, transparent 1px); background-size: 16px 16px; border-radius: 8px; }
+.c .mini .bc { position: absolute; background: #fff; border: 1px solid #e2ddd4; border-radius: 8px; padding: 7px 9px; font-size: 12px; width: 150px; }
+.c .mini .bc i { display: block; height: 3px; border-radius: 2px; background: #e2ddd4; margin-top: 6px; }
+.c .mini .bc i b { display: block; height: 100%; border-radius: 2px; background: #e8873a; }
+.c .note { padding: 8px 0; border-top: 1px solid #e2ddd4; }
+.c .note:first-of-type { border-top: 0; }
+.c .note b { font-weight: 550; display: block; font-size: 13px; }
+.c .note span { font-size: 12px; color: #8a8c92; }
+.c .float { position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; padding: 8px 8px 8px 16px; border-radius: 999px; background: #232428; color: #f1efe9; box-shadow: 0 10px 30px rgb(0 0 0 / .25); }
+.c .float .dot { width: 8px; height: 8px; border-radius: 50%; background: #ff6a4d; box-shadow: 0 0 0 3px rgb(255 106 77 / .25); }
+.c .float .t { color: #a7a9ad; font-size: 12px; }
+.c .float .wave { display: flex; gap: 2px; align-items: center; height: 18px; }
+.c .float .wave i { width: 2px; border-radius: 1px; background: #8fcf9f; }
+.c .float .btn { height: 30px; border-radius: 999px; background: #34363b; }
+.c .float .btn.stop { background: #ff6a4d; color: #2a1009; }
+
+/* ============ D: true black flat, dark, dense, recorder strip ============ */
+.d { background: #0b0b0c; color: #e9e9ea; flex-direction: column; }
+.d .strip { height: 34px; flex-shrink: 0; display: flex; align-items: center; gap: 12px; padding: 0 12px; background: #2a1411; color: #ffd9d1; font-size: 12px; border-bottom: 1px solid #3a1d18; }
+.d .strip .dot { width: 7px; height: 7px; border-radius: 50%; background: #ff5a3d; }
+.d .strip .btn { height: 24px; padding: 0 9px; background: #3a1d18; color: #ffd9d1; }
+.d .strip .lv { display: flex; gap: 2px; align-items: flex-end; height: 12px; }
+.d .strip .lv i { width: 3px; background: #7ccf93; border-radius: 1px; }
+.d .body { flex: 1; display: flex; min-height: 0; }
+.d .rail { width: 56px; border-right: 1px solid #1c1c1e; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 0; color: #77787d; }
+.d .rail .logo { width: 22px; height: 22px; border-radius: 6px; background: #f0904a; margin-bottom: 8px; }
+.d .rail span { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 8px; position: relative; }
+.d .rail span.on { color: #fff; background: #1a1a1c; }
+.d .rail span small { position: absolute; bottom: -2px; font-size: 9px; }
+.d .list { width: 290px; border-right: 1px solid #1c1c1e; display: flex; flex-direction: column; }
+.d .lh { height: 46px; display: flex; align-items: center; gap: 8px; padding: 0 14px; border-bottom: 1px solid #1c1c1e; }
+.d .lh b { font-size: 14px; }
+.d .lh .k { margin-left: auto; color: #77787d; font: 11px ui-monospace, monospace; }
+.d .row { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 9px 14px; border-bottom: 1px solid #141416; }
+.d .row.on { background: #141416; box-shadow: inset 2px 0 0 #f0904a; }
+.d .row b { font-weight: 550; }
+.d .row .t { color: #77787d; font: 11px ui-monospace, monospace; text-align: right; }
+.d .row .m { grid-column: 1 / -1; color: #77787d; font-size: 12px; display: flex; gap: 8px; }
+.d .row .m .w { color: #f2c46d; } .d .row .m .e { color: #ff8b75; } .d .row .m .r { color: #ff7a61; }
+.d .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.d .mh { padding: 16px 22px 0; }
+.d .mh h1 { margin: 0; font-size: 20px; font-weight: 600; }
+.d .mh .sub { color: #8b8c91; font-size: 12px; margin-top: 4px; }
+.d .mh .sub b { color: #e9e9ea; font-weight: 500; }
+.d .tabs { display: flex; gap: 18px; padding: 0 22px; margin-top: 14px; border-bottom: 1px solid #1c1c1e; color: #8b8c91; }
+.d .tabs span { padding: 8px 0; }
+.d .tabs span.on { color: #fff; box-shadow: inset 0 -1px 0 #f0904a; }
+.d .content { flex: 1; display: grid; grid-template-columns: 1fr 260px; min-height: 0; }
+.d .tx { padding: 14px 22px; overflow: hidden; }
+.d .player { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.d .player .pp { width: 30px; height: 30px; border-radius: 50%; background: #f0904a; color: #1a0f06; display: grid; place-items: center; }
+.d .seg { display: grid; grid-template-columns: 58px 1fr; gap: 2px 12px; padding: 7px 0; border-top: 1px solid #141416; }
+.d .seg .ts { color: #6f7075; font: 12px ui-monospace, monospace; }
+.d .seg .who { font-size: 12px; font-weight: 600; }
+.d .seg .txt { grid-column: 2; font-size: 13.5px; line-height: 1.55; color: #d6d6d8; }
+.d .seg.hl { background: #121214; }
+.d .insp { border-left: 1px solid #1c1c1e; padding: 14px 16px; display: flex; flex-direction: column; gap: 14px; font-size: 12px; }
+.d .insp h5 { margin: 0 0 6px; font-size: 11px; color: #77787d; font-weight: 600; }
+.d .kv { display: grid; grid-template-columns: 80px 1fr; gap: 6px 8px; }
+.d .kv span:nth-child(odd) { color: #77787d; }
+.d .who2 { display: flex; align-items: center; gap: 8px; padding: 5px 0; }
+.d .who2 i { width: 8px; height: 8px; border-radius: 50%; }
+.d .who2 .q { margin-left: auto; color: #f2c46d; }
+.d .who2 .btn { margin-left: auto; height: 22px; padding: 0 8px; background: #1a1a1c; color: #e9e9ea; font-size: 11px; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></symbol>
+  <symbol id="board" viewBox="0 0 24 24"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></symbol>
+  <symbol id="cal" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+  <symbol id="note" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4M10 9H8M16 13H8M16 17H8"/></symbol>
+  <symbol id="users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+  <symbol id="mic" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="13" rx="3"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3"/></symbol>
+  <symbol id="pause" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></symbol>
+  <symbol id="stop" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></symbol>
+  <symbol id="play" viewBox="0 0 24 24"><path d="m7 4 13 8-13 8V4z"/></symbol>
+  <symbol id="plus" viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></symbol>
+  <symbol id="clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+  <symbol id="phone" viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></symbol>
+</svg>
+
+<h2 class="cap">B · Três painéis com gravador no topo <span>estilo framed-sheet · claro · notas e transcrição ao vivo lado a lado</span></h2>
+<div class="frame b">
+  <aside class="side">
+    <div class="brand"><span class="logo">C</span>Coxinha</div>
+    <div class="nav"><svg class="i"><use href="#board"/></svg>Atividades</div>
+    <div class="nav on"><svg class="i"><use href="#cal"/></svg>Reuniões<span class="n">2 hoje</span></div>
+    <div class="nav"><svg class="i"><use href="#note"/></svg>Notas</div>
+    <div class="nav"><svg class="i"><use href="#users"/></svg>Pessoas</div>
+    <div class="lbl">Fixadas</div>
+    <div class="nav"><svg class="i"><use href="#note"/></svg>Contrato de API v2</div>
+    <div class="nav"><svg class="i"><use href="#note"/></svg>Runbook do CRM</div>
+    <div style="flex:1"></div>
+    <div class="nav"><svg class="i"><use href="#gear"/></svg>Configurações</div>
+  </aside>
+  <div class="col">
+    <div class="top">
+      <div class="search"><svg class="i sm"><use href="#search"/></svg>Buscar ou executar ação<kbd>Ctrl K</kbd></div>
+      <div class="rec"><span class="dot"></span><b class="tab">Gravando 12:04</b><span style="color:#8a8c92">Weekly de TI</span><span class="meter"><i style="height:6px"></i><i style="height:11px"></i><i style="height:8px"></i><i style="height:13px"></i><i style="height:5px"></i></span><button class="btn"><svg class="i sm"><use href="#pause"/></svg>Pausar</button><button class="btn stop"><svg class="i sm"><use href="#stop"/></svg>Parar</button></div>
+      <div class="win"><span>–</span><span>□</span><span>✕</span></div>
+    </div>
+    <div class="sheet">
+      <div class="list">
+        <div class="lh"><h1>Reuniões</h1><button class="btn"><svg class="i sm"><use href="#plus"/></svg>Nova</button></div>
+        <div class="tabs"><span class="on">Próximas e recentes</span><span>Mês</span><span>A revisar 2</span></div>
+        <div class="grp">Agora</div>
+        <div class="row on"><b>Weekly de TI <span class="pill rec">gravando</span></b><div class="m"><span class="tab">10:00–10:45</span><span>Outlook · 8 pessoas</span></div></div>
+        <div class="grp">Hoje</div>
+        <div class="row"><b>Comitê de produto <span class="pill ol">14:00</span></b><div class="m"><span>Outlook · 6 pessoas</span><span>sem gravação</span></div></div>
+        <div class="grp">Anteriores</div>
+        <div class="row"><b>1:1 com a Rita <span class="pill warn">1 falante</span></b><div class="m"><span>ter. · 32 min</span><span>transcrita</span></div></div>
+        <div class="row"><b>Daily do squad</b><div class="m"><span>ter. · 14 min</span><span>sem transcrição</span></div></div>
+        <div class="row"><b>Entrevista: dev backend <span class="pill" style="background:#f9e1dc;color:#8d2c1d">falhou</span></b><div class="m"><span>seg. · 51 min</span><span>áudio importado</span></div></div>
+      </div>
+      <div class="doc">
+        <div class="dh">
+          <h2>Weekly de TI</h2>
+          <div class="props"><span><svg class="i sm"><use href="#clock"/></svg><span class="tab">hoje 10:00–10:45</span></span><span><svg class="i sm"><use href="#cal"/></svg>Outlook · Teams</span><span><svg class="i sm"><use href="#users"/></svg>Rita, Marcos, Juliana +5</span></div>
+          <div class="lanes" style="margin-top:12px">
+            <div class="who"><i style="background:#e9a46c"></i>Rodolfo</div><div class="track" style="background:#f4f1ec"><b style="left:0;width:9%;background:#efc09a"></b><b style="left:22%;width:7%;background:#efc09a"></b><b style="left:41%;width:4%;background:#efc09a"></b><span class="cursor" style="left:27%;background:#d8452f"></span></div><div class="pct">31%</div>
+            <div class="who"><i style="background:#c98bb8"></i>Rita Souza</div><div class="track" style="background:#f4f1ec"><b style="left:9%;width:10%;background:#e2c0d9"></b><b style="left:30%;width:6%;background:#e2c0d9"></b><span class="cursor" style="left:27%;background:#d8452f"></span></div><div class="pct">24%</div>
+            <div class="who"><i style="background:#7fb0c9"></i>Falante 3</div><div class="track" style="background:#f4f1ec"><b style="left:19%;width:3%;background:#bcd6e4"></b><span class="cursor" style="left:27%;background:#d8452f"></span></div><div class="pct">5%</div>
+          </div>
+        </div>
+        <div class="panes">
+          <div class="notes"><h3>Pauta</h3><ul><li>Status da migração do CRM</li><li>Incidente de sexta no gateway</li></ul><h3>Anotações</h3><ul><li>Rita: contrato de API v2 sai sexta</li><li>Gateway: falta alerta de fila parada<span class="caret"></span></li></ul></div>
+          <div class="live"><h4>Transcrição ao vivo <span>local · pt-BR</span></h4>
+            <div class="utt"><div class="s" style="color:#b0602a">Rodolfo <span class="t">11:41</span></div>E o alerta da fila, alguém ficou com isso?</div>
+            <div class="utt"><div class="s" style="color:#9c5487">Rita Souza <span class="t">11:48</span></div>Ainda não. Acho que faz sentido ficar com o time de plataforma.</div>
+            <div class="utt"><div class="s" style="color:#4b7f98">Falante 3 <span class="t">11:59</span></div>Posso pegar, mas só depois da migração.</div>
+            <div class="utt cur"><div class="s">…</div>ouvindo</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2 class="cap">C · Hoje primeiro, gravador flutuante <span>estilo editorial-greeting · claro · a tela inicial responde "o que preciso fazer hoje?"</span></h2>
+<div class="frame c">
+  <aside class="side">
+    <div class="brand"><span class="logo"></span>Coxinha</div>
+    <div class="nav on"><svg class="i"><use href="#home"/></svg>Hoje</div>
+    <div class="nav"><svg class="i"><use href="#cal"/></svg>Reuniões</div>
+    <div class="nav"><svg class="i"><use href="#board"/></svg>Atividades</div>
+    <div class="nav"><svg class="i"><use href="#note"/></svg>Notas</div>
+    <div class="nav"><svg class="i"><use href="#users"/></svg>Pessoas</div>
+    <div style="flex:1"></div>
+    <div class="nav"><svg class="i"><use href="#search"/></svg>Buscar<span style="margin-left:auto;font:11px ui-monospace,monospace;color:#9a9ca1">Ctrl K</span></div>
+    <div class="nav"><svg class="i"><use href="#gear"/></svg>Configurações</div>
+  </aside>
+  <div class="main"><div class="wrap">
+    <h1>Bom dia, Rodolfo.</h1>
+    <p class="lede">Sexta, 31 de outubro. <b>2 reuniões</b> hoje, a próxima às 14:00. <b>1 falante</b> esperando confirmação desde terça.</p>
+    <div class="grid">
+      <div class="panel s6"><h3>Agenda de hoje<a>Ver semana</a></h3>
+        <div class="ag"><span class="h">10:00</span><div><b>Weekly de TI</b><span class="m">gravando agora · 12:04</span></div><button class="btn">Abrir</button></div>
+        <div class="ag"><span class="h">14:00</span><div><b>Comitê de produto</b><span class="m">Teams · 6 pessoas · notas vazias</span></div><button class="btn">Preparar</button></div>
+        <div class="ag"><span class="h">16:30</span><div><b>Bloco de foco</b><span class="m">Outlook · sem participantes</span></div><span class="m" style="color:#9a9ca1">–</span></div>
+      </div>
+      <div class="panel s3"><h3>A revisar</h3>
+        <div class="todo"><span class="k">1</span><div>falante a confirmar<span>1:1 com a Rita</span></div></div>
+        <div class="todo"><span class="k">1</span><div>transcrição falhou<span>Entrevista: dev backend</span></div></div>
+        <div class="todo"><span class="k">1</span><div>gravação sem transcrição<span>Daily do squad</span></div></div>
+      </div>
+      <div class="panel s3"><h3>Notas recentes</h3>
+        <div class="note"><b>Contrato de API v2</b><span>hoje 09:12</span></div>
+        <div class="note"><b>1:1 com a Rita</b><span>ter. 16:40</span></div>
+        <div class="note"><b>Plano de rollback</b><span>seg.</span></div>
+      </div>
+      <div class="panel s9"><h3>Atividades<a>Abrir quadro</a></h3>
+        <div class="mini">
+          <div class="bc" style="left:16px;top:16px">Levantar integrações<i><b style="width:100%"></b></i></div>
+          <div class="bc" style="left:200px;top:56px">Contrato de API v2<i><b style="width:55%"></b></i></div>
+          <div class="bc" style="left:384px;top:16px">Comunicar áreas<i><b style="width:0"></b></i></div>
+          <div class="bc" style="left:16px;top:92px">Plano de rollback<i><b style="width:20%"></b></i></div>
+        </div>
+      </div>
+      <div class="panel s3"><h3>Esta semana</h3>
+        <div class="todo"><span class="k">6</span><div>reuniões gravadas<span>4h 12min de áudio</span></div></div>
+        <div class="todo"><span class="k">5</span><div>transcritas<span>1 falhou</span></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="float"><span class="dot"></span><b class="tab">12:04</b><span class="t">Weekly de TI</span><span class="wave"><i style="height:6px"></i><i style="height:14px"></i><i style="height:9px"></i><i style="height:16px"></i><i style="height:7px"></i><i style="height:12px"></i><i style="height:5px"></i></span><button class="btn"><svg class="i sm"><use href="#pause"/></svg></button><button class="btn stop"><svg class="i sm"><use href="#stop"/></svg>Parar</button></div>
+  </div>
+</div>
+
+<h2 class="cap">D · Escuro e denso, foco no trabalho pós-reunião <span>estilo true-black-flat · escuro · trilho de ícones, lista, transcrição e inspetor</span></h2>
+<div class="frame d">
+  <div class="strip"><span class="dot"></span><b class="tab">Gravando 12:04</b><span>Comitê de produto · Teams</span><span class="lv"><i style="height:5px"></i><i style="height:10px"></i><i style="height:7px"></i><i style="height:12px"></i></span><span style="flex:1"></span><button class="btn"><svg class="i sm"><use href="#pause"/></svg>Pausar</button><button class="btn"><svg class="i sm"><use href="#stop"/></svg>Parar e salvar</button><span style="color:#a77;margin-left:8px">– □ ✕</span></div>
+  <div class="body">
+    <nav class="rail"><span class="logo"></span><span><svg class="i"><use href="#search"/></svg></span><span class="on"><svg class="i"><use href="#cal"/></svg></span><span><svg class="i"><use href="#board"/></svg></span><span><svg class="i"><use href="#note"/></svg></span><span><svg class="i"><use href="#users"/></svg></span><div style="flex:1"></div><span><svg class="i"><use href="#gear"/></svg></span></nav>
+    <div class="list">
+      <div class="lh"><b>Reuniões</b><span class="k">J/K navega · N nova</span></div>
+      <div class="row"><b>Comitê de produto</b><span class="t">14:00</span><div class="m"><span class="r">● gravando 12:04</span><span>6 pessoas</span></div></div>
+      <div class="row on"><b>1:1 com a Rita</b><span class="t">ter 16:00</span><div class="m"><span>32 min</span><span class="w">1 falante a confirmar</span></div></div>
+      <div class="row"><b>Daily do squad</b><span class="t">ter 09:30</span><div class="m"><span>14 min</span><span>sem transcrição</span></div></div>
+      <div class="row"><b>Entrevista: dev backend</b><span class="t">seg 15:00</span><div class="m"><span>51 min</span><span class="e">transcrição falhou</span></div></div>
+      <div class="row"><b>Weekly de TI</b><span class="t">24 out</span><div class="m"><span>45 min</span><span>8 pessoas</span></div></div>
+      <div class="row"><b>Comitê de produto</b><span class="t">24 out</span><div class="m"><span>58 min</span><span>6 pessoas</span></div></div>
+    </div>
+    <div class="main">
+      <div class="mh"><h1>1:1 com a Rita</h1><div class="sub">ter., 28 out · 16:00–16:32 · Outlook · <b>Rita decidiu revisar o contrato até sexta</b> (00:11)</div>
+        <div class="lanes" style="margin-top:14px">
+          <div class="who" style="color:#c9cacd"><i style="background:#f0a56c"></i>Rodolfo</div><div class="track" style="background:#161618"><b style="left:0;width:12%;background:#5b3c26"></b><b style="left:30%;width:18%;background:#5b3c26"></b><b style="left:70%;width:14%;background:#5b3c26"></b><span class="cursor" style="left:27%;background:#f0904a"></span></div><div class="pct" style="color:#8b8c91">44%</div>
+          <div class="who" style="color:#c9cacd"><i style="background:#d58cc4"></i>Rita Souza</div><div class="track" style="background:#161618"><b style="left:12%;width:18%;background:#4f2f47"></b><b style="left:48%;width:21%;background:#4f2f47"></b><span class="cursor" style="left:27%;background:#f0904a"></span></div><div class="pct" style="color:#8b8c91">48%</div>
+          <div class="who" style="color:#f2c46d"><i style="background:#7fb6d1"></i>Falante 3 ?</div><div class="track" style="background:#161618"><b style="left:84%;width:8%;background:#24404d"></b><span class="cursor" style="left:27%;background:#f0904a"></span></div><div class="pct" style="color:#8b8c91">8%</div>
+        </div>
+      </div>
+      <div class="tabs"><span>Notas</span><span class="on">Transcrição</span><span>Falantes 1</span></div>
+      <div class="content">
+        <div class="tx">
+          <div class="player"><span class="pp"><svg class="i sm"><use href="#play"/></svg></span><span class="mono" style="color:#8b8c91">08:41 / 32:10</span><span style="color:#6f7075;font-size:12px">clique num trecho para ouvir</span></div>
+          <div class="seg"><span class="ts">00:04</span><span class="who" style="color:#f0a56c">Rodolfo</span><span class="txt">Bom, a ideia hoje é fechar o contrato da API v2 e ver quem fica com a revisão.</span></div>
+          <div class="seg hl"><span class="ts">00:11</span><span class="who" style="color:#d58cc4">Rita Souza</span><span class="txt">Eu posso pegar. Só preciso que segurança olhe a parte de tokens antes de sexta.</span></div>
+          <div class="seg"><span class="ts">00:19</span><span class="who" style="color:#f2c46d">Falante 3 ?</span><span class="txt">Dá para marcar essa revisão na quinta de manhã.</span></div>
+          <div class="seg"><span class="ts">00:27</span><span class="who" style="color:#f0a56c">Rodolfo</span><span class="txt">Fechado. Eu mando o rascunho hoje ainda.</span></div>
+          <div class="seg"><span class="ts">01:02</span><span class="who" style="color:#d58cc4">Rita Souza</span><span class="txt">Outra coisa: o feedback do trimestre, dá para falar agora ou fica para a próxima?</span></div>
+        </div>
+        <aside class="insp">
+          <div><h5>Reunião</h5><div class="kv"><span>Quando</span><span class="tab">28 out 16:00</span><span>Duração</span><span class="tab">32 min</span><span>Evento</span><span>1:1 Rodolfo / Rita</span><span>Transcrição</span><span>whisper-small</span></div></div>
+          <div><h5>Falantes</h5>
+            <div class="who2"><i style="background:#f0a56c"></i>Rodolfo Camara<span style="margin-left:auto;color:#77787d">confirmado</span></div>
+            <div class="who2"><i style="background:#d58cc4"></i>Rita Souza<span style="margin-left:auto;color:#77787d">confirmado</span></div>
+            <div class="who2"><i style="background:#7fb6d1"></i>Falante 3<button class="btn">Marcos Lima?</button></div>
+          </div>
+          <div><h5>Arquivos</h5><div class="kv"><span>Mic</span><span class="mono">mic.wav · 58 MB</span><span>Sistema</span><span class="mono">out.wav · 58 MB</span></div></div>
+        </aside>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

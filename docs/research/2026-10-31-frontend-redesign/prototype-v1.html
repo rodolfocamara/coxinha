@@ -1,0 +1,718 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Coxinha: protótipo do frontend novo (2026-10-31)</title>
+<style>
+/* Tokens copied from src/index.css (oklch triplets). Prototype only. */
+:root {
+  --bg-canvas: 0.96981 0.00541 95.1; --bg-surface: 0.99668 0.00537 95.1; --bg-surface-2: 0.945 0.007 95;
+  --bg-sunken: 0.92101 0.00811 98.89; --fg-primary: 0.28518 0.00564 271.22; --fg-secondary: 0.45364 0.00658 274.85;
+  --fg-tertiary: 0.5005 0.00797 277.04; --fg-quaternary: 0.55975 0.00775 277.07; --fg-on-accent: 0.25997 0.01184 67.27;
+  --accent: 0.7 0.14 55; --accent-hover: 0.64 0.15 55; --accent-soft: 0.935 0.035 65;
+  --success: 0.62 0.08 150; --warning: 0.72 0.11 80; --danger: 0.56 0.12 30; --live: 0.6 0.19 27;
+  --border: oklch(var(--fg-primary) / 0.09); --shadow: 0 1px 2px oklch(0 0 0 / .06), 0 8px 24px oklch(0 0 0 / .08);
+}
+[data-theme="dark"] {
+  --bg-canvas: 0.26465 0.00575 271.2; --bg-surface: 0.29633 0.00613 258.36; --bg-surface-2: 0.335 0.007 260;
+  --bg-sunken: 0.24794 0.00585 271.18; --fg-primary: 0.94548 0.00675 97.35; --fg-secondary: 0.81001 0.00837 98.91;
+  --fg-tertiary: 0.7347 0.00881 91.51; --fg-quaternary: 0.67629 0.00899 91.52;
+  --accent: 0.77 0.135 55; --accent-hover: 0.81 0.135 55; --accent-soft: 0.32 0.06 55;
+  --success: 0.72 0.1 150; --warning: 0.8 0.12 80; --danger: 0.75 0.11 30; --live: 0.68 0.19 27;
+  --border: oklch(0.58 0.006 80 / 0.32); --shadow: 0 1px 2px oklch(0 0 0 / .3), 0 12px 32px oklch(0 0 0 / .35);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { font: 13px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: oklch(0.18 0.004 270); color: oklch(var(--fg-primary)); padding: 18px 0 40px; }
+[data-theme="light"] body { background: oklch(0.86 0.006 95); }
+button, input, select, textarea { font: inherit; color: inherit; }
+svg.i { width: 16px; height: 16px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+svg.i.sm { width: 14px; height: 14px; }
+
+/* prototype controls (not part of the app) */
+.proto { width: 1280px; margin: 0 auto 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; color: oklch(0.8 0 0); font-size: 12px; }
+[data-theme="light"] .proto { color: oklch(0.35 0 0); }
+.proto b { font-weight: 600; margin-right: 4px; }
+.proto .seg { display: inline-flex; border: 1px solid oklch(0.5 0 0 / .4); border-radius: 8px; overflow: hidden; }
+.proto .seg button { background: none; border: 0; padding: 4px 9px; cursor: pointer; }
+.proto .seg button.on { background: oklch(var(--accent)); color: oklch(var(--fg-on-accent)); }
+.proto .sep { width: 1px; height: 18px; background: oklch(0.5 0 0 / .4); margin: 0 4px; }
+
+/* app frame */
+.app { width: 1280px; height: 800px; margin: 0 auto; display: flex; background: oklch(var(--bg-canvas)); border-radius: 12px; overflow: hidden; box-shadow: 0 0 0 1px var(--border), 0 20px 60px oklch(0 0 0 / .45); position: relative; }
+.sidebar { width: 248px; flex-shrink: 0; background: oklch(var(--bg-sunken)); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 10px 10px 10px; gap: 2px; }
+.brand { display: flex; align-items: center; gap: 8px; padding: 4px 6px 10px; font-weight: 650; font-size: 14px; }
+.brand .logo { width: 20px; height: 20px; border-radius: 6px; background: oklch(var(--accent)); display: grid; place-items: center; color: oklch(var(--fg-on-accent)); font-size: 12px; font-weight: 800; }
+.brand .collapse { margin-left: auto; color: oklch(var(--fg-tertiary)); }
+.nav { display: flex; align-items: center; gap: 9px; height: 32px; padding: 0 8px; border-radius: 6px; color: oklch(var(--fg-secondary)); cursor: pointer; border: 0; background: none; width: 100%; text-align: left; }
+.nav:hover { background: oklch(var(--fg-primary) / .06); color: oklch(var(--fg-primary)); }
+.nav.on { background: oklch(var(--fg-primary) / .09); color: oklch(var(--fg-primary)); font-weight: 550; }
+.nav kbd { margin-left: auto; font: 11px ui-monospace, monospace; color: oklch(var(--fg-quaternary)); }
+.nav .count { margin-left: auto; font-size: 11px; color: oklch(var(--fg-tertiary)); }
+.sect { font-size: 11px; font-weight: 600; color: oklch(var(--fg-tertiary)); padding: 14px 8px 4px; display: flex; align-items: center; }
+.sect a { margin-left: auto; color: oklch(var(--fg-quaternary)); cursor: pointer; font-weight: 500; }
+.mrow { display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-radius: 6px; cursor: pointer; color: oklch(var(--fg-secondary)); }
+.mrow:hover { background: oklch(var(--fg-primary) / .06); }
+.mrow .t { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: oklch(var(--fg-primary)); }
+.mrow .h { font-size: 11px; color: oklch(var(--fg-tertiary)); font-variant-numeric: tabular-nums; }
+.dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; background: oklch(var(--fg-quaternary) / .6); }
+.dot.ol { background: oklch(0.62 0.12 250); }
+.dot.live { background: oklch(var(--live)); box-shadow: 0 0 0 3px oklch(var(--live) / .2); animation: pulse 1.4s infinite; }
+.dot.paused { background: oklch(var(--warning)); }
+@keyframes pulse { 50% { box-shadow: 0 0 0 5px oklch(var(--live) / .05); } }
+.spacer { flex: 1; }
+
+/* recording dock */
+.dock { border: 1px solid var(--border); background: oklch(var(--bg-surface)); border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 6px; box-shadow: var(--shadow); }
+.dock .row { display: flex; align-items: center; gap: 8px; }
+.dock .title { font-weight: 600; }
+.dock .sub { font-size: 12px; color: oklch(var(--fg-tertiary)); }
+.dock .timer { font-variant-numeric: tabular-nums; font-weight: 650; }
+.dock .meeting { color: oklch(var(--fg-primary)); text-decoration: none; font-size: 12px; display: flex; align-items: center; gap: 4px; cursor: pointer; min-width: 0; }
+.dock .meeting span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.meters { display: grid; grid-template-columns: auto 1fr; gap: 3px 8px; align-items: center; font-size: 11px; color: oklch(var(--fg-tertiary)); }
+.meter { height: 5px; border-radius: 3px; background: oklch(var(--fg-primary) / .08); overflow: hidden; }
+.meter i { display: block; height: 100%; background: oklch(var(--success)); border-radius: 3px; animation: lvl 0.9s ease-in-out infinite alternate; }
+.meter.b i { animation-duration: 1.3s; }
+.paused-state .meter i { animation: none; width: 0 !important; }
+@keyframes lvl { from { width: 18%; } to { width: 72%; } }
+.dock .actions { display: flex; gap: 6px; }
+.dock .actions .btn { flex: 1 1 auto; padding: 0 10px; }
+.dock .actions .btn.icon { flex: 0 0 32px; }
+.dock.alert { border-color: oklch(var(--warning) / .7); }
+.dock.err { border-color: oklch(var(--danger) / .7); }
+.progress { height: 4px; border-radius: 2px; background: oklch(var(--fg-primary) / .08); overflow: hidden; }
+.progress i { display: block; height: 100%; width: 40%; background: oklch(var(--accent)); animation: indet 1.6s ease-in-out infinite; }
+@keyframes indet { 0% { transform: translateX(-100%); } 100% { transform: translateX(250%); } }
+
+/* buttons, inputs, badges (mirror src/components/ui) */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 6px; border: 1px solid transparent; font-weight: 500; cursor: pointer; white-space: nowrap; background: none; }
+.btn.md { height: 36px; padding: 0 14px; }
+.btn.primary { background: oklch(var(--accent)); color: oklch(var(--fg-on-accent)); }
+.btn.primary:hover { background: oklch(var(--accent-hover)); }
+.btn.secondary { border-color: var(--border); background: oklch(var(--bg-surface)); }
+.btn.secondary:hover, .btn.ghost:hover { background: oklch(var(--bg-surface-2)); }
+.btn.ghost { color: oklch(var(--fg-secondary)); }
+.btn.danger { border-color: var(--border); color: oklch(var(--danger)); }
+.btn.danger:hover { background: oklch(var(--danger) / .1); }
+.btn.icon { width: 32px; padding: 0; }
+.btn.live { background: oklch(var(--live)); color: white; }
+.input, .select { height: 36px; border: 1px solid var(--border); border-radius: 6px; background: oklch(var(--bg-surface)); padding: 0 10px; width: 100%; }
+.select { appearance: none; background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%); background-position: calc(100% - 15px) 16px, calc(100% - 10px) 16px; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 26px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label { font-size: 12px; font-weight: 500; }
+.field .hint { font-size: 12px; color: oklch(var(--fg-tertiary)); }
+.badge { display: inline-flex; align-items: center; gap: 5px; height: 20px; padding: 0 8px; border-radius: 999px; font-size: 11px; font-weight: 500; background: oklch(var(--fg-primary) / .08); color: oklch(var(--fg-secondary)); white-space: nowrap; }
+.badge.live { background: oklch(var(--live) / .15); color: oklch(var(--live)); }
+.badge.ok { background: oklch(var(--success) / .16); color: oklch(var(--fg-primary)); }
+.badge.warn { background: oklch(var(--warning) / .2); color: oklch(var(--fg-primary)); }
+.badge.err { background: oklch(var(--danger) / .16); color: oklch(var(--fg-primary)); }
+.badge.ol { background: oklch(0.62 0.12 250 / .16); color: oklch(var(--fg-primary)); }
+.badge .dot { width: 6px; height: 6px; }
+.seg2 { display: inline-flex; padding: 2px; border-radius: 8px; background: oklch(var(--fg-primary) / .06); }
+.seg2 button { border: 0; background: none; height: 28px; padding: 0 10px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; color: oklch(var(--fg-secondary)); }
+.seg2 button.on { background: oklch(var(--bg-surface)); color: oklch(var(--fg-primary)); box-shadow: 0 1px 2px oklch(0 0 0 / .15); }
+.card { border: 1px solid var(--border); background: oklch(var(--bg-surface)); border-radius: 10px; }
+.muted { color: oklch(var(--fg-tertiary)); }
+.small { font-size: 12px; }
+
+/* main column */
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.chrome { height: 40px; flex-shrink: 0; display: flex; align-items: center; gap: 8px; padding: 0 8px 0 16px; border-bottom: 1px solid var(--border); }
+.crumb { display: flex; align-items: center; gap: 6px; color: oklch(var(--fg-tertiary)); }
+.crumb b { color: oklch(var(--fg-primary)); font-weight: 500; }
+.crumb a { cursor: pointer; }
+.crumb a:hover { color: oklch(var(--fg-primary)); }
+.win { margin-left: auto; display: flex; gap: 2px; }
+.win span { width: 30px; height: 28px; display: grid; place-items: center; color: oklch(var(--fg-tertiary)); border-radius: 6px; }
+.screen { display: none; flex: 1; min-height: 0; overflow: auto; }
+.screen.on { display: block; }
+.page { max-width: 980px; margin: 0 auto; padding: 28px 36px 48px; }
+.ph { display: flex; align-items: flex-end; gap: 16px; margin-bottom: 20px; }
+.ph h1 { font-size: 22px; margin: 0; font-weight: 650; letter-spacing: -0.02em; }
+.ph p { margin: 4px 0 0; color: oklch(var(--fg-tertiary)); }
+.ph .acts { margin-left: auto; display: flex; gap: 8px; }
+.toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; }
+.toolbar .grow { flex: 1; }
+.search { position: relative; }
+.search svg { position: absolute; left: 10px; top: 10px; color: oklch(var(--fg-tertiary)); }
+.search .input { padding-left: 32px; }
+
+/* meetings list */
+.group { margin-bottom: 18px; }
+.group h3 { font-size: 12px; font-weight: 600; color: oklch(var(--fg-tertiary)); margin: 0 0 6px; display: flex; gap: 8px; align-items: center; }
+.list { border: 1px solid var(--border); border-radius: 10px; background: oklch(var(--bg-surface)); overflow: hidden; }
+.item { display: grid; grid-template-columns: 92px 1fr auto auto; gap: 14px; align-items: center; padding: 11px 14px; border-top: 1px solid var(--border); cursor: pointer; }
+.item:first-child { border-top: 0; }
+.item:hover { background: oklch(var(--bg-surface-2)); }
+.item .time { font-variant-numeric: tabular-nums; color: oklch(var(--fg-secondary)); font-size: 12px; }
+.item .time b { display: block; color: oklch(var(--fg-primary)); font-size: 13px; font-weight: 550; }
+.item .name { font-weight: 550; display: flex; align-items: center; gap: 8px; }
+.item .meta { font-size: 12px; color: oklch(var(--fg-tertiary)); margin-top: 2px; display: flex; gap: 10px; align-items: center; }
+.item .meta span { display: inline-flex; gap: 4px; align-items: center; }
+.item .badges { display: flex; gap: 6px; }
+.item.now { background: oklch(var(--live) / .06); }
+
+/* month */
+.month { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: oklch(var(--bg-surface)); }
+.month .dow { padding: 8px; font-size: 11px; color: oklch(var(--fg-tertiary)); border-bottom: 1px solid var(--border); text-align: center; }
+.month .day { min-height: 92px; padding: 6px; border-top: 1px solid var(--border); border-left: 1px solid var(--border); font-size: 12px; }
+.month .day:nth-child(7n+1) { border-left: 0; }
+.month .day .n { color: oklch(var(--fg-tertiary)); margin-bottom: 4px; display: inline-block; }
+.month .day.is-today .n { background: oklch(var(--accent)); color: oklch(var(--fg-on-accent)); border-radius: 999px; padding: 0 6px; font-weight: 650; }
+.month .day.out .n { opacity: .4; }
+.ev { display: flex; align-items: center; gap: 5px; font-size: 11px; padding: 2px 4px; border-radius: 4px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+.ev:hover { background: oklch(var(--fg-primary) / .06); }
+.ev .dot { width: 6px; height: 6px; }
+
+/* meeting detail */
+.detail { max-width: 860px; margin: 0 auto; padding: 26px 36px 48px; }
+.detail h1 { font-size: 26px; margin: 0 0 14px; font-weight: 680; letter-spacing: -0.02em; display: flex; align-items: center; gap: 10px; }
+.props { display: grid; grid-template-columns: 120px 1fr; gap: 9px 12px; align-items: center; margin-bottom: 18px; }
+.props .k { color: oklch(var(--fg-tertiary)); display: flex; gap: 7px; align-items: center; }
+.props .v { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; min-height: 28px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 9px 0 3px; border-radius: 999px; border: 1px solid var(--border); background: oklch(var(--bg-surface)); font-size: 12px; }
+.chip .av { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-size: 10px; font-weight: 700; color: white; }
+.chip.add { padding: 0 9px; color: oklch(var(--fg-tertiary)); cursor: pointer; border-style: dashed; }
+.player { display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 6px 0 4px; border: 1px solid var(--border); border-radius: 999px; background: oklch(var(--bg-surface)); flex: 1; max-width: 560px; }
+.player .pp { width: 30px; height: 30px; border-radius: 50%; background: oklch(var(--accent)); color: oklch(var(--fg-on-accent)); display: grid; place-items: center; border: 0; }
+.wave { flex: 1; height: 22px; display: flex; align-items: center; gap: 2px; }
+.wave i { flex: 1; background: oklch(var(--fg-primary) / .22); border-radius: 1px; }
+.wave i.p { background: oklch(var(--accent)); }
+.livebar { display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 12px; border-radius: 10px; background: oklch(var(--live) / .1); border: 1px solid oklch(var(--live) / .3); flex: 1; max-width: 560px; }
+.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+.tabs button { border: 0; background: none; padding: 9px 12px; cursor: pointer; color: oklch(var(--fg-tertiary)); border-bottom: 2px solid transparent; margin-bottom: -1px; display: inline-flex; gap: 6px; align-items: center; font-weight: 500; }
+.tabs button.on { color: oklch(var(--fg-primary)); border-bottom-color: oklch(var(--accent)); }
+.tab { display: none; } .tab.on { display: block; }
+.doc { font-size: 14px; line-height: 1.65; }
+.doc h2 { font-size: 16px; margin: 0 0 6px; }
+.doc ul { margin: 4px 0 14px; padding-left: 20px; }
+.doc .task { list-style: none; margin-left: -20px; display: flex; gap: 8px; align-items: center; }
+.doc .task i { width: 14px; height: 14px; border: 1.5px solid oklch(var(--fg-tertiary)); border-radius: 4px; display: inline-block; }
+.doc .task i.x { background: oklch(var(--accent)); border-color: oklch(var(--accent)); }
+.seg-t { display: grid; grid-template-columns: 54px 1fr; gap: 4px 12px; padding: 8px 6px; border-radius: 8px; }
+.seg-t:hover { background: oklch(var(--bg-surface-2)); }
+.seg-t .ts { font: 12px ui-monospace, monospace; color: oklch(var(--fg-tertiary)); padding-top: 2px; cursor: pointer; }
+.seg-t .who { font-weight: 600; font-size: 12px; display: flex; gap: 8px; align-items: center; }
+.seg-t .who .fix { margin-left: auto; opacity: 0; }
+.seg-t:hover .who .fix { opacity: 1; }
+.seg-t .txt { grid-column: 2; font-size: 14px; line-height: 1.55; }
+.spk { display: grid; grid-template-columns: 1fr auto; gap: 10px 16px; padding: 14px 16px; border-top: 1px solid var(--border); align-items: center; }
+.spk:first-child { border-top: 0; }
+.spk .who { display: flex; gap: 10px; align-items: center; }
+.spk .av { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; color: white; font-size: 12px; }
+.spk .assign { display: flex; gap: 8px; align-items: center; }
+.spk .assign .select { width: 200px; height: 32px; }
+.suggest { font-size: 12px; color: oklch(var(--fg-secondary)); margin-top: 2px; }
+.suggest svg { vertical-align: -3px; margin-right: 4px; }
+.empty { text-align: center; padding: 48px 16px; color: oklch(var(--fg-tertiary)); }
+.empty h4 { color: oklch(var(--fg-primary)); font-size: 14px; margin: 0 0 4px; }
+
+/* board */
+.boardbar { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--border); }
+.today { display: flex; gap: 8px; align-items: center; padding: 8px 16px; border-bottom: 1px solid var(--border); background: oklch(var(--bg-surface) / .5); font-size: 12px; }
+.today .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--border); background: oklch(var(--bg-surface)); cursor: pointer; }
+.canvas { position: relative; height: 640px; background-color: oklch(var(--bg-canvas)); background-image: radial-gradient(oklch(var(--fg-primary) / .12) 1px, transparent 1px); background-size: 20px 20px; overflow: hidden; }
+.area { position: absolute; border-radius: 12px; border: 1px solid; padding: 10px 12px; }
+.area h5 { margin: 0; font-size: 12px; display: flex; gap: 8px; align-items: center; }
+.area .meterbar { height: 4px; border-radius: 2px; background: oklch(var(--fg-primary) / .1); margin-top: 6px; overflow: hidden; }
+.area .meterbar i { display: block; height: 100%; }
+.bcard { position: absolute; width: 214px; background: oklch(var(--bg-surface)); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; box-shadow: var(--shadow); cursor: pointer; }
+.bcard:hover { outline: 2px solid oklch(var(--accent) / .5); }
+.bcard h6 { margin: 0 0 4px; font-size: 13px; }
+.bcard p { margin: 0; font-size: 12px; color: oklch(var(--fg-tertiary)); }
+.bcard .pg { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 11px; color: oklch(var(--fg-tertiary)); }
+.bcard .pg .meterbar { flex: 1; height: 4px; border-radius: 2px; background: oklch(var(--fg-primary) / .1); overflow: hidden; }
+.bcard .pg .meterbar i { display: block; height: 100%; }
+.bcard .open { position: absolute; top: 8px; right: 8px; opacity: 0; }
+.bcard:hover .open { opacity: 1; }
+.bcard.text { box-shadow: none; background: transparent; border-style: dashed; }
+
+/* notes */
+.split { display: grid; grid-template-columns: 300px 1fr; height: 100%; }
+.nlist { border-right: 1px solid var(--border); display: flex; flex-direction: column; min-height: 0; }
+.nlist .top { padding: 14px; display: flex; flex-direction: column; gap: 10px; border-bottom: 1px solid var(--border); }
+.nlist .tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.nitem { padding: 11px 14px; border-bottom: 1px solid var(--border); cursor: pointer; }
+.nitem:hover { background: oklch(var(--bg-surface-2)); }
+.nitem.on { background: oklch(var(--accent) / .12); box-shadow: inset 2px 0 0 oklch(var(--accent)); }
+.nitem b { display: block; font-weight: 600; margin-bottom: 2px; }
+.nitem p { margin: 0; font-size: 12px; color: oklch(var(--fg-tertiary)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nitem .m { font-size: 11px; color: oklch(var(--fg-quaternary)); margin-top: 4px; display: flex; gap: 8px; }
+.editor { padding: 26px 48px; overflow: auto; }
+.editor .eh { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; color: oklch(var(--fg-tertiary)); font-size: 12px; }
+.editor .eh .acts { margin-left: auto; display: flex; gap: 4px; }
+
+/* people */
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-size: 11px; font-weight: 600; color: oklch(var(--fg-tertiary)); padding: 9px 14px; border-bottom: 1px solid var(--border); }
+td { padding: 11px 14px; border-top: 1px solid var(--border); }
+tbody tr { cursor: pointer; } tbody tr:hover td { background: oklch(var(--bg-surface-2)); }
+.person { display: flex; align-items: center; gap: 10px; font-weight: 550; }
+.person .av { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; color: white; font-size: 11px; font-weight: 700; }
+
+/* settings */
+.sgrid { display: grid; grid-template-columns: 200px 1fr; gap: 32px; max-width: 980px; margin: 0 auto; padding: 28px 36px 48px; }
+.snav { position: sticky; top: 0; align-self: start; display: flex; flex-direction: column; gap: 2px; }
+.ssec { margin-bottom: 26px; }
+.ssec h2 { font-size: 15px; margin: 0 0 2px; }
+.ssec > p { margin: 0 0 12px; color: oklch(var(--fg-tertiary)); }
+.srow { display: grid; grid-template-columns: 1fr 260px; gap: 16px; align-items: center; padding: 14px 16px; border-top: 1px solid var(--border); }
+.srow:first-child { border-top: 0; }
+.srow b { font-weight: 550; display: block; }
+.srow span.muted { font-size: 12px; }
+.toggle { width: 34px; height: 20px; border-radius: 999px; background: oklch(var(--accent)); position: relative; justify-self: end; }
+.toggle::after { content: ""; position: absolute; width: 16px; height: 16px; border-radius: 50%; background: white; top: 2px; right: 2px; }
+.toggle.off { background: oklch(var(--fg-primary) / .2); } .toggle.off::after { right: auto; left: 2px; }
+
+/* overlays */
+.overlay { position: absolute; inset: 0; background: oklch(0 0 0 / .4); display: none; z-index: 20; }
+.overlay.on { display: block; }
+.palette { position: absolute; top: 90px; left: 50%; transform: translateX(-50%); width: 600px; background: oklch(var(--bg-surface)); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
+.palette .q { display: flex; align-items: center; gap: 10px; padding: 0 16px; height: 50px; border-bottom: 1px solid var(--border); font-size: 15px; }
+.palette .q input { border: 0; background: none; outline: none; flex: 1; font-size: 15px; }
+.palette .grp { padding: 8px; }
+.palette .grp h6 { margin: 4px 8px 4px; font-size: 11px; color: oklch(var(--fg-tertiary)); font-weight: 600; }
+.palette .opt { display: flex; align-items: center; gap: 10px; height: 36px; padding: 0 8px; border-radius: 6px; }
+.palette .opt.on { background: oklch(var(--accent) / .14); }
+.palette .opt kbd { margin-left: auto; font: 11px ui-monospace, monospace; color: oklch(var(--fg-tertiary)); }
+.sheet { position: absolute; top: 12px; right: 12px; bottom: 12px; width: 420px; background: oklch(var(--bg-surface)); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow); display: flex; flex-direction: column; }
+.sheet header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; gap: 12px; align-items: flex-start; }
+.sheet header h3 { margin: 0; font-size: 15px; }
+.sheet header p { margin: 4px 0 0; color: oklch(var(--fg-tertiary)); }
+.sheet .body { flex: 1; overflow: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.sheet footer { padding: 12px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+.toast { position: absolute; right: 16px; bottom: 16px; display: none; align-items: center; gap: 10px; padding: 10px 12px 10px 14px; border-radius: 10px; background: oklch(var(--bg-surface)); border: 1px solid var(--border); box-shadow: var(--shadow); z-index: 15; }
+.toast.on { display: flex; }
+.note { font-size: 12px; color: oklch(var(--fg-tertiary)); border-left: 2px solid oklch(var(--accent)); padding: 2px 10px; margin: 8px 0 0; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="home" viewBox="0 0 24 24"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></symbol>
+  <symbol id="cal" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+  <symbol id="note" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4M10 9H8M16 13H8M16 17H8"/></symbol>
+  <symbol id="users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="gear" viewBox="0 0 24 24"><path d="M12.2 2h-.4a2 2 0 0 0-2 2v.2a2 2 0 0 1-1 1.7l-.4.3a2 2 0 0 1-2 0l-.2-.1a2 2 0 0 0-2.7.7l-.2.4a2 2 0 0 0 .7 2.7l.2.1a2 2 0 0 1 1 1.7v.5a2 2 0 0 1-1 1.7l-.2.1a2 2 0 0 0-.7 2.7l.2.4a2 2 0 0 0 2.7.7l.2-.1a2 2 0 0 1 2 0l.4.3a2 2 0 0 1 1 1.7v.2a2 2 0 0 0 2 2h.4a2 2 0 0 0 2-2v-.2a2 2 0 0 1 1-1.7l.4-.3a2 2 0 0 1 2 0l.2.1a2 2 0 0 0 2.7-.7l.2-.4a2 2 0 0 0-.7-2.7l-.2-.1a2 2 0 0 1-1-1.7v-.5a2 2 0 0 1 1-1.7l.2-.1a2 2 0 0 0 .7-2.7l-.2-.4a2 2 0 0 0-2.7-.7l-.2.1a2 2 0 0 1-2 0l-.4-.3a2 2 0 0 1-1-1.7V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="mic" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="13" rx="3"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3"/></symbol>
+  <symbol id="pause" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></symbol>
+  <symbol id="stop" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></symbol>
+  <symbol id="play" viewBox="0 0 24 24"><path d="m7 4 13 8-13 8V4z"/></symbol>
+  <symbol id="plus" viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></symbol>
+  <symbol id="upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></symbol>
+  <symbol id="down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+  <symbol id="right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="phone" viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></symbol>
+  <symbol id="clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+  <symbol id="more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></symbol>
+  <symbol id="list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+  <symbol id="headphones" viewBox="0 0 24 24"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></symbol>
+  <symbol id="userplus" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></symbol>
+  <symbol id="alert" viewBox="0 0 24 24"><path d="m21.7 18-8-14a2 2 0 0 0-3.4 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3z"/><path d="M12 9v4M12 17h.01"/></symbol>
+  <symbol id="panel" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></symbol>
+  <symbol id="wave" viewBox="0 0 24 24"><path d="M2 10v3M6 6v11M10 3v18M14 8v7M18 5v13M22 10v3"/></symbol>
+  <symbol id="tag" viewBox="0 0 24 24"><path d="M12.6 2.6A2 2 0 0 0 11.2 2H4a2 2 0 0 0-2 2v7.2a2 2 0 0 0 .6 1.4l8.7 8.7a2.4 2.4 0 0 0 3.4 0l6.6-6.6a2.4 2.4 0 0 0 0-3.4z"/><circle cx="7.5" cy="7.5" r=".5"/></symbol>
+  <symbol id="arrow" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></symbol>
+  <symbol id="folder" viewBox="0 0 24 24"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9l-.8-1.2A2 2 0 0 0 7.9 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></symbol>
+  <symbol id="pencil" viewBox="0 0 24 24"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></symbol>
+  <symbol id="text" viewBox="0 0 24 24"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></symbol>
+  <symbol id="square" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" stroke-dasharray="4 3"/></symbol>
+  <symbol id="refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/></symbol>
+</svg>
+
+<div class="proto" id="proto">
+  <b>Protótipo</b>
+  <span>Gravação:</span>
+  <span class="seg" id="dockSeg">
+    <button data-dock="idle" class="on">Ociosa</button><button data-dock="detected">Chamada detectada</button><button data-dock="recording">Gravando</button><button data-dock="paused">Pausada</button><button data-dock="ended">Chamada terminou</button><button data-dock="processing">Transcrevendo</button><button data-dock="error">Interrompida</button>
+  </span>
+  <span class="sep"></span>
+  <span class="seg"><button id="themeBtn">Alternar tema</button></span>
+  <span class="seg"><button onclick="openPalette()">Ctrl+K</button></span>
+</div>
+
+<div class="app" id="app">
+  <aside class="sidebar">
+    <div class="brand"><span class="logo">C</span>Coxinha<svg class="i collapse"><use href="#panel"/></svg></div>
+    <button class="nav" onclick="openPalette()"><svg class="i"><use href="#search"/></svg>Buscar<kbd>Ctrl K</kbd></button>
+    <button class="nav" data-go="home"><svg class="i"><use href="#home"/></svg>Início</button>
+    <button class="nav" data-go="meetings"><svg class="i"><use href="#cal"/></svg>Reuniões</button>
+    <button class="nav" data-go="notes"><svg class="i"><use href="#note"/></svg>Notas</button>
+    <button class="nav" data-go="people"><svg class="i"><use href="#users"/></svg>Pessoas</button>
+
+    <div class="sect">Hoje<a data-go="meetings">Ver todas</a></div>
+    <div class="mrow" data-meeting="live"><span class="dot" id="sideLiveDot"></span><span class="t">Weekly de TI</span><span class="h">10:00</span></div>
+    <div class="mrow" data-meeting="planned"><span class="dot ol"></span><span class="t">Comitê de produto</span><span class="h">14:00</span></div>
+    <div class="sect">Recentes</div>
+    <div class="mrow" data-meeting="done"><span class="dot"></span><span class="t">1:1 com a Rita</span><span class="h">ter.</span></div>
+    <div class="mrow" data-meeting="done"><span class="dot"></span><span class="t">Daily do squad</span><span class="h">ter.</span></div>
+    <div class="mrow" data-meeting="done"><span class="dot"></span><span class="t">Entrevista: dev backend</span><span class="h">seg.</span></div>
+    <div class="spacer"></div>
+
+    <div id="dock"></div>
+    <button class="nav" data-go="settings"><svg class="i"><use href="#gear"/></svg>Configurações</button>
+  </aside>
+
+  <div class="main">
+    <div class="chrome"><div class="crumb" id="crumb"></div><div class="win"><span>–</span><span>□</span><span>✕</span></div></div>
+
+    <!-- INÍCIO -->
+    <section class="screen" id="s-home">
+      <div class="today"><b>Hoje</b>
+        <span class="pill" data-meeting="live"><span class="dot" id="todayLiveDot"></span>10:00 Weekly de TI</span>
+        <span class="pill" data-meeting="planned"><span class="dot ol"></span>14:00 Comitê de produto</span>
+        <span class="muted" style="margin-left:auto">2 reuniões · 1 nota criada hoje</span>
+      </div>
+      <div class="boardbar">
+        <button class="btn primary"><svg class="i"><use href="#plus"/></svg>Nova atividade</button>
+        <button class="btn secondary"><svg class="i"><use href="#text"/></svg>Texto</button>
+        <button class="btn secondary"><svg class="i"><use href="#square"/></svg>Área</button>
+        <button class="btn ghost"><svg class="i"><use href="#note"/></svg>Adicionar nota existente</button>
+        <span style="flex:1"></span>
+        <span class="muted small" style="display:flex;gap:6px;align-items:center"><svg class="i sm"><use href="#check"/></svg>Salvo</span>
+        <button class="btn ghost icon" title="Estrutura"><svg class="i"><use href="#list"/></svg></button>
+      </div>
+      <div class="canvas">
+        <svg width="100%" height="100%" style="position:absolute;inset:0;pointer-events:none">
+          <path d="M282 172 C 330 172, 330 262, 378 262" stroke="oklch(0.6 0 0 / .6)" stroke-width="1.5" fill="none"/>
+          <path d="M592 262 C 640 262, 640 172, 688 172" stroke="oklch(0.6 0 0 / .6)" stroke-width="1.5" fill="none"/>
+        </svg>
+        <div class="area" style="left:40px;top:40px;width:600px;height:330px;border-color:oklch(0.62 0.12 250 / .5);background:oklch(0.62 0.12 250 / .06)">
+          <h5>Migração do CRM <span class="muted" style="font-weight:400">58% · em andamento · 3 atividades</span></h5>
+          <div class="meterbar"><i style="width:58%;background:oklch(0.62 0.12 250)"></i></div>
+        </div>
+        <div class="bcard" style="left:68px;top:112px" data-go="notes"><button class="btn ghost icon open" title="Abrir nota"><svg class="i sm"><use href="#arrow"/></svg></button><h6>Levantar integrações</h6><p>Mapear webhooks e filas usadas hoje.</p><div class="pg"><div class="meterbar"><i style="width:100%;background:oklch(var(--success))"></i></div>100%</div></div>
+        <div class="bcard" style="left:378px;top:200px" data-go="notes"><button class="btn ghost icon open"><svg class="i sm"><use href="#arrow"/></svg></button><h6>Contrato de API v2</h6><p>Revisar com a Rita na 1:1.</p><div class="pg"><div class="meterbar"><i style="width:55%;background:oklch(0.62 0.12 250)"></i></div>55%</div></div>
+        <div class="bcard" style="left:68px;top:250px" data-go="notes"><button class="btn ghost icon open"><svg class="i sm"><use href="#arrow"/></svg></button><h6>Plano de rollback</h6><p>Rascunho no runbook.</p><div class="pg"><div class="meterbar"><i style="width:20%;background:oklch(var(--accent))"></i></div>20%</div></div>
+        <div class="bcard" style="left:688px;top:112px" data-go="notes"><button class="btn ghost icon open"><svg class="i sm"><use href="#arrow"/></svg></button><h6>Comunicar áreas</h6><p>Depois do contrato fechado.</p><div class="pg"><div class="meterbar"><i style="width:0"></i></div>0%</div></div>
+        <div class="bcard text" style="left:688px;top:300px;width:250px"><p style="color:oklch(var(--fg-secondary))">Ideia solta: usar a transcrição do Comitê para gerar o resumo semanal.</p></div>
+        <div class="area" style="left:40px;top:410px;width:420px;height:190px;border-color:oklch(var(--success) / .5);background:oklch(var(--success) / .06)">
+          <h5>LGPD <span class="muted" style="font-weight:400">100% · concluída</span></h5>
+          <div class="meterbar"><i style="width:100%;background:oklch(var(--success))"></i></div>
+        </div>
+        <div class="bcard" style="left:68px;top:476px" data-go="notes"><h6>Revisar retenção de áudio</h6><p>Política aprovada.</p><div class="pg"><div class="meterbar"><i style="width:100%;background:oklch(var(--success))"></i></div>100%</div></div>
+      </div>
+    </section>
+
+    <!-- REUNIÕES -->
+    <section class="screen" id="s-meetings">
+      <div class="page">
+        <div class="ph"><div><h1>Reuniões</h1><p>Agenda do Outlook e gravações locais no mesmo lugar.</p></div>
+          <div class="acts"><button class="btn secondary md" onclick="openSheet('import')"><svg class="i"><use href="#upload"/></svg>Importar áudio</button><button class="btn primary md" onclick="openSheet('meeting')"><svg class="i"><use href="#plus"/></svg>Nova reunião</button></div></div>
+        <div class="toolbar">
+          <div class="seg2" id="mview"><button class="on" data-v="list"><svg class="i sm"><use href="#list"/></svg>Lista</button><button data-v="month"><svg class="i sm"><use href="#cal"/></svg>Mês</button></div>
+          <div class="search grow"><svg class="i sm"><use href="#search"/></svg><input class="input" placeholder="Buscar por título, participante ou trecho da transcrição"></div>
+          <select class="select" style="width:150px"><option>Próximos 30 dias</option></select>
+          <select class="select" style="width:170px"><option>Qualquer transcrição</option></select>
+        </div>
+        <div id="m-list">
+          <div class="group"><h3><span class="dot" id="nowDot"></span>Agora</h3><div class="list">
+            <div class="item" id="nowItem" data-meeting="live"><div class="time"><b>10:00</b>10:00–10:45</div><div><div class="name">Weekly de TI</div><div class="meta"><span><svg class="i sm"><use href="#cal"/></svg>Outlook</span><span><svg class="i sm"><use href="#users"/></svg>8 participantes</span></div></div><div class="badges" id="nowBadges"></div><svg class="i muted"><use href="#right"/></svg></div>
+          </div></div>
+          <div class="group"><h3>Hoje, sex. 31 out</h3><div class="list">
+            <div class="item" data-meeting="planned"><div class="time"><b>14:00</b>14:00–15:00</div><div><div class="name">Comitê de produto</div><div class="meta"><span><svg class="i sm"><use href="#cal"/></svg>Outlook</span><span><svg class="i sm"><use href="#users"/></svg>6 participantes</span><span>Teams</span></div></div><div class="badges"><span class="badge ol">Agendada</span></div><svg class="i muted"><use href="#right"/></svg></div>
+          </div></div>
+          <div class="group"><h3>Segunda, 3 nov</h3><div class="list">
+            <div class="item" data-meeting="planned"><div class="time"><b>09:00</b>09:00–10:00</div><div><div class="name">Revisão de roadmap</div><div class="meta"><span><svg class="i sm"><use href="#cal"/></svg>Outlook</span><span><svg class="i sm"><use href="#users"/></svg>12 participantes</span></div></div><div class="badges"><span class="badge ol">Agendada</span></div><svg class="i muted"><use href="#right"/></svg></div>
+          </div></div>
+          <div class="group"><h3>Anteriores</h3><div class="list">
+            <div class="item" data-meeting="done"><div class="time"><b>ter. 28</b>16:00 · 32 min</div><div><div class="name">1:1 com a Rita</div><div class="meta"><span><svg class="i sm"><use href="#users"/></svg>Rita Souza, você</span><span><svg class="i sm"><use href="#note"/></svg>Nota</span></div></div><div class="badges"><span class="badge ok">Transcrita</span><span class="badge warn">1 falante a confirmar</span></div><svg class="i muted"><use href="#right"/></svg></div>
+            <div class="item" data-meeting="done"><div class="time"><b>ter. 28</b>09:30 · 14 min</div><div><div class="name">Daily do squad</div><div class="meta"><span>Gravação local</span></div></div><div class="badges"><span class="badge">Gravada</span></div><svg class="i muted"><use href="#right"/></svg></div>
+            <div class="item" data-meeting="done"><div class="time"><b>seg. 27</b>15:00 · 51 min</div><div><div class="name">Entrevista: dev backend</div><div class="meta"><span>Áudio importado</span></div></div><div class="badges"><span class="badge err">Transcrição falhou</span></div><svg class="i muted"><use href="#right"/></svg></div>
+          </div></div>
+        </div>
+        <div id="m-month" style="display:none">
+          <div class="toolbar" style="margin-bottom:10px"><button class="btn secondary icon"><svg class="i"><use href="#left"/></svg></button><button class="btn secondary">Hoje</button><button class="btn secondary icon"><svg class="i"><use href="#right"/></svg></button><b style="font-size:15px;margin-left:6px">Outubro de 2026</b></div>
+          <div class="month" id="monthGrid"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- REUNIÃO -->
+    <section class="screen" id="s-meeting">
+      <div class="detail">
+        <h1 id="mTitle">1:1 com a Rita <button class="btn ghost icon" title="Renomear"><svg class="i sm"><use href="#pencil"/></svg></button><span style="flex:1"></span><button class="btn ghost icon" title="Mais ações"><svg class="i"><use href="#more"/></svg></button></h1>
+        <div class="props">
+          <div class="k"><svg class="i sm"><use href="#clock"/></svg>Quando</div><div class="v" id="mWhen">ter., 28 out · 16:00–16:32</div>
+          <div class="k"><svg class="i sm"><use href="#cal"/></svg>Evento</div><div class="v" id="mEvent"><span class="badge ol">Outlook</span>1:1 Rodolfo / Rita<button class="btn ghost" style="height:26px">Trocar</button></div>
+          <div class="k"><svg class="i sm"><use href="#users"/></svg>Participantes</div><div class="v" id="mPeople"><span class="chip"><span class="av" style="background:oklch(0.6 0.13 330)">RS</span>Rita Souza</span><span class="chip"><span class="av" style="background:oklch(0.6 0.12 55)">RC</span>Rodolfo Camara</span><span class="chip add">+ Adicionar</span></div>
+          <div class="k"><svg class="i sm"><use href="#wave"/></svg>Áudio</div><div class="v" id="mAudio"></div>
+          <div class="k"><svg class="i sm"><use href="#note"/></svg>Transcrição</div><div class="v" id="mTx"></div>
+        </div>
+        <div class="tabs" id="mtabs"><button class="on" data-t="t-notes">Notas</button><button data-t="t-tx">Transcrição</button><button data-t="t-spk">Falantes <span class="badge warn" id="spkBadge">1</span></button></div>
+        <div class="tab on" id="t-notes"><div class="doc">
+          <h2>Pauta</h2><ul><li>Contrato de API v2: prazo e dono</li><li>Feedback do trimestre</li></ul>
+          <h2>Decisões</h2><ul><li>Rita assume a revisão do contrato até sexta.</li></ul>
+          <h2>Próximos passos</h2><ul><li class="task"><i class="x"></i>Enviar rascunho do contrato</li><li class="task"><i></i>Marcar revisão com segurança</li></ul>
+          <p class="muted small">Digite / para inserir blocos. Esta nota é um arquivo Markdown no seu vault.</p>
+        </div></div>
+        <div class="tab" id="t-tx">
+          <div class="toolbar"><div class="search grow"><svg class="i sm"><use href="#search"/></svg><input class="input" placeholder="Buscar na transcrição"></div><select class="select" style="width:190px"><option>Versão de 28 out, 16:40</option></select><button class="btn secondary"><svg class="i"><use href="#refresh"/></svg>Transcrever de novo</button></div>
+          <div class="seg-t"><span class="ts">00:04</span><div class="who"><span style="color:oklch(0.65 0.12 55)">Rodolfo Camara</span><button class="btn ghost fix" style="height:24px">Corrigir</button></div><div class="txt">Bom, a ideia hoje é fechar o contrato da API v2 e ver quem fica com a revisão.</div></div>
+          <div class="seg-t"><span class="ts">00:11</span><div class="who"><span style="color:oklch(0.65 0.14 330)">Rita Souza</span><button class="btn ghost fix" style="height:24px">Corrigir</button></div><div class="txt">Eu posso pegar. Só preciso que segurança olhe a parte de tokens antes de sexta.</div></div>
+          <div class="seg-t"><span class="ts">00:19</span><div class="who"><span class="muted">Falante 3</span><span class="badge warn">a confirmar</span><button class="btn ghost fix" style="height:24px">Corrigir</button></div><div class="txt">Dá para marcar essa revisão na quinta de manhã.</div></div>
+          <div class="seg-t"><span class="ts">00:27</span><div class="who"><span style="color:oklch(0.65 0.12 55)">Rodolfo Camara</span><button class="btn ghost fix" style="height:24px">Corrigir</button></div><div class="txt">Fechado. Eu mando o rascunho hoje ainda.</div></div>
+        </div>
+        <div class="tab" id="t-spk">
+          <p class="muted" style="margin:0 0 12px">Confirme quem falou. A confirmação fica registrada com data e reunião; amostras de voz só são guardadas se você escolher.</p>
+          <div class="card">
+            <div class="spk"><div class="who"><span class="av" style="background:oklch(0.6 0.12 55)">RC</span><div><b>Rodolfo Camara</b><div class="muted small">Microfone · 14 min · confirmado em 28 out</div></div></div><div class="assign"><button class="btn ghost"><svg class="i"><use href="#headphones"/></svg>Ouvir</button><button class="btn secondary">Guardar amostras de voz</button><button class="btn ghost">Desfazer</button></div></div>
+            <div class="spk"><div class="who"><span class="av" style="background:oklch(0.6 0.13 330)">RS</span><div><b>Rita Souza</b><div class="muted small">Sistema · 12 min · confirmado em 28 out</div></div></div><div class="assign"><button class="btn ghost"><svg class="i"><use href="#headphones"/></svg>Ouvir</button><button class="btn secondary">Guardar amostras de voz</button><button class="btn ghost">Desfazer</button></div></div>
+            <div class="spk"><div class="who"><span class="av" style="background:oklch(0.55 0 0)">3</span><div><b>Falante 3</b><div class="muted small">Sistema · 2 min</div><div class="suggest"><svg class="i sm"><use href="#users"/></svg>Parece ser <b>Marcos Lima</b> (voz parecida em 3 reuniões)</div></div></div><div class="assign"><button class="btn ghost"><svg class="i"><use href="#headphones"/></svg>Ouvir</button><select class="select"><option>Marcos Lima</option><option>Nova pessoa…</option></select><button class="btn primary">Confirmar</button></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- NOTAS -->
+    <section class="screen" id="s-notes">
+      <div class="split">
+        <div class="nlist">
+          <div class="top">
+            <div style="display:flex;gap:8px"><div class="search" style="flex:1"><svg class="i sm"><use href="#search"/></svg><input class="input" placeholder="Buscar no texto das notas"></div><button class="btn primary icon md" style="width:36px" title="Nova nota"><svg class="i"><use href="#plus"/></svg></button></div>
+            <div class="tags"><span class="badge" style="background:oklch(var(--accent)/.2);color:oklch(var(--fg-primary))">Todas</span><span class="badge"># crm</span><span class="badge"># lgpd</span><span class="badge"># 1:1</span><span class="badge">Notas de reunião</span></div>
+          </div>
+          <div style="overflow:auto">
+            <div class="nitem on"><b>Contrato de API v2</b><p>Escopo: autenticação, limites, versionamento de webhooks…</p><div class="m"><span>hoje 09:12</span><span># crm</span><span>no quadro</span></div></div>
+            <div class="nitem"><b>1:1 com a Rita</b><p>Pauta: contrato de API v2, feedback do trimestre…</p><div class="m"><span>ter. 16:40</span><span>nota de reunião</span></div></div>
+            <div class="nitem"><b>Levantar integrações</b><p>Webhooks do Salesforce, fila de leads, ETL noturno…</p><div class="m"><span>seg.</span><span># crm</span><span>no quadro</span></div></div>
+            <div class="nitem"><b>Plano de rollback</b><p>Feature flag por região, snapshot do banco…</p><div class="m"><span>seg.</span><span># crm</span></div></div>
+            <div class="nitem"><b>Retenção de áudio</b><p>Áudio local por 90 dias, transcrição mantida…</p><div class="m"><span>12 out</span><span># lgpd</span></div></div>
+          </div>
+        </div>
+        <div class="editor">
+          <div class="eh"><span>notas / contrato-de-api-v2.md</span><span>· salvo</span><div class="acts"><button class="btn ghost">Ver no quadro</button><button class="btn ghost icon" title="Mais ações (Ctrl+.)"><svg class="i"><use href="#more"/></svg></button></div></div>
+          <div class="doc"><h1 style="font-size:26px;margin:0 0 6px">Contrato de API v2</h1><p class="muted small" style="margin:0 0 14px"># crm · citado em 2 notas</p>
+            <h2>Escopo</h2><ul><li>Autenticação com client credentials</li><li>Limites por cliente: 600 req/min</li><li>Versionamento de webhooks</li></ul>
+            <h2>Pendências</h2><ul><li class="task"><i class="x"></i>Validar com a Rita</li><li class="task"><i></i>Revisão de segurança (quinta)</li></ul></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PESSOAS -->
+    <section class="screen" id="s-people">
+      <div class="page">
+        <div class="ph"><div><h1>Pessoas</h1><p>Quem participa das suas reuniões e as vozes que você escolheu guardar. Fica só neste computador.</p></div><div class="acts"><button class="btn primary md" onclick="openSheet('person')"><svg class="i"><use href="#userplus"/></svg>Adicionar pessoa</button></div></div>
+        <div class="toolbar"><div class="search grow"><svg class="i sm"><use href="#search"/></svg><input class="input" placeholder="Buscar pessoa"></div></div>
+        <div class="card"><table><thead><tr><th>Nome</th><th>Voz</th><th>Reuniões</th><th>Última reunião</th></tr></thead><tbody>
+          <tr onclick="openSheet('personDetail')"><td><div class="person"><span class="av" style="background:oklch(0.6 0.13 330)">RS</span>Rita Souza</div></td><td><span class="badge ok">6 amostras</span></td><td>9</td><td>1:1 com a Rita · ter.</td></tr>
+          <tr onclick="openSheet('personDetail')"><td><div class="person"><span class="av" style="background:oklch(0.6 0.12 55)">RC</span>Rodolfo Camara</div></td><td><span class="badge ok">14 amostras</span></td><td>23</td><td>Daily do squad · ter.</td></tr>
+          <tr onclick="openSheet('personDetail')"><td><div class="person"><span class="av" style="background:oklch(0.58 0.1 200)">ML</span>Marcos Lima</div></td><td><span class="badge">Sem amostras</span></td><td>3</td><td>Weekly de TI · 24 out</td></tr>
+          <tr onclick="openSheet('personDetail')"><td><div class="person"><span class="av" style="background:oklch(0.58 0.1 140)">JA</span>Juliana Alves</div></td><td><span class="badge ok">2 amostras</span></td><td>4</td><td>Comitê de produto · 24 out</td></tr>
+        </tbody></table></div>
+      </div>
+    </section>
+
+    <!-- CONFIGURAÇÕES -->
+    <section class="screen" id="s-settings">
+      <div class="sgrid">
+        <nav class="snav"><button class="nav on">Geral</button><button class="nav">Gravação</button><button class="nav">Transcrição local</button><button class="nav">Integrações</button><button class="nav">Atalhos</button><button class="nav">Armazenamento</button><button class="nav">Diagnóstico</button></nav>
+        <div>
+          <div class="ssec"><h2>Geral</h2><p>Aparência e idioma.</p><div class="card">
+            <div class="srow"><div><b>Tema</b><span class="muted">Automático segue o sistema.</span></div><div class="seg2" style="justify-self:end"><button class="on">Automático</button><button>Claro</button><button>Escuro</button></div></div>
+            <div class="srow"><div><b>Idioma</b><span class="muted">Hoje segue o sistema operacional.</span></div><select class="select"><option>Português (Brasil)</option></select></div>
+          </div></div>
+          <div class="ssec"><h2>Gravação</h2><p>Valem para o botão Gravar da barra lateral, para as reuniões e para chamadas detectadas.</p><div class="card">
+            <div class="srow"><div><b>Microfone</b><span class="muted">Sua voz.</span></div><select class="select"><option>Padrão do sistema (Headset USB)</option></select></div>
+            <div class="srow"><div><b>Áudio do computador</b><span class="muted">O que os outros falam na chamada.</span></div><select class="select"><option>Padrão do sistema (Alto-falantes)</option></select></div>
+            <div class="srow"><div><b>Avisar quando uma chamada começar</b><span class="muted">Teams, Meet, Zoom e outros. Funciona no Linux com PipeWire/PulseAudio.</span></div><span class="toggle"></span></div>
+          </div></div>
+          <div class="ssec"><h2>Transcrição local</h2><p>Tudo roda neste computador. Configure uma vez; depois cada reunião só tem o botão Transcrever.</p><div class="card">
+            <div class="srow"><div><b>Modelos</b><span class="muted">whisper-small · pyannote 3.1 · verificados por SHA-256</span></div><div style="display:flex;gap:8px;justify-content:flex-end"><span class="badge ok">Pronto</span><button class="btn secondary">Trocar arquivo</button></div></div>
+            <div class="srow"><div><b>Transcrever automaticamente ao parar</b><span class="muted">Começa assim que a gravação é salva.</span></div><span class="toggle off"></span></div>
+          </div></div>
+          <div class="ssec"><h2>Integrações</h2><p>Opcional. Nada sai do computador sem você conectar.</p><div class="card">
+            <div class="srow"><div><b>Outlook</b><span class="muted">rodolfo.camara@… · atualizado hoje 08:02</span></div><div style="display:flex;gap:8px;justify-content:flex-end"><span class="badge ok"><span class="dot" style="background:oklch(var(--success))"></span>Conectado</span><button class="btn secondary">Sincronizar</button><button class="btn danger">Desconectar</button></div></div>
+          </div></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="toast" id="toast"><svg class="i" style="color:oklch(var(--success))"><use href="#check"/></svg><span>Gravação salva em <b>Weekly de TI</b></span><button class="btn ghost" data-meeting="live">Abrir</button><button class="btn ghost icon" onclick="toast(false)"><svg class="i sm"><use href="#x"/></svg></button></div>
+
+    <div class="overlay" id="ovPalette" onclick="if(event.target===this)closeAll()">
+      <div class="palette">
+        <div class="q"><svg class="i"><use href="#search"/></svg><input placeholder="Buscar notas, reuniões, pessoas ou ações" value=""></div>
+        <div class="grp"><h6>Ações</h6>
+          <div class="opt on"><svg class="i"><use href="#mic"/></svg>Gravar agora<kbd>Ctrl Alt W</kbd></div>
+          <div class="opt"><svg class="i"><use href="#plus"/></svg>Nova reunião</div>
+          <div class="opt"><svg class="i"><use href="#note"/></svg>Nova nota<kbd>Ctrl Alt Y</kbd></div>
+          <div class="opt"><svg class="i"><use href="#upload"/></svg>Importar áudio</div>
+        </div>
+        <div class="grp"><h6>Ir para</h6>
+          <div class="opt"><svg class="i"><use href="#cal"/></svg>Reuniões</div>
+          <div class="opt"><svg class="i"><use href="#users"/></svg>Pessoas</div>
+          <div class="opt"><svg class="i"><use href="#gear"/></svg>Configurações</div>
+        </div>
+        <div class="grp"><h6>Recentes</h6>
+          <div class="opt"><svg class="i"><use href="#cal"/></svg>1:1 com a Rita<span class="muted small" style="margin-left:auto">reunião · ter.</span></div>
+          <div class="opt"><svg class="i"><use href="#note"/></svg>Contrato de API v2<span class="muted small" style="margin-left:auto">nota · hoje</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="overlay" id="ovSheet" onclick="if(event.target===this)closeAll()"><div class="sheet" id="sheet"></div></div>
+  </div>
+</div>
+
+<script>
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const icon = (id, cls = '') => `<svg class="i ${cls}"><use href="#${id}"/></svg>`;
+let dock = 'idle', screen = 'meetings', meetingVariant = 'done';
+
+const docks = {
+  idle: `<div class="dock"><div class="row"><span class="title">Gravar reunião</span></div>
+    <div class="sub">Microfone padrão + áudio do computador</div>
+    <div class="actions"><button class="btn primary">${icon('mic')}Gravar</button><button class="btn secondary icon" title="Escolher fontes">${icon('down')}</button></div></div>`,
+  detected: `<div class="dock alert"><div class="row">${icon('phone')}<span class="title">Chamada no Teams</span></div>
+    <div class="sub">Parece ser <b style="color:oklch(var(--fg-primary))">Comitê de produto</b> (Outlook, 14:00)</div>
+    <div class="actions"><button class="btn primary">${icon('mic')}Gravar</button><button class="btn ghost">Ignorar</button></div></div>`,
+  recording: `<div class="dock"><div class="row"><span class="dot live"></span><span class="timer">Gravando 12:04</span><button class="btn ghost icon" style="margin-left:auto;height:24px;width:24px" title="Fontes">${icon('down','sm')}</button></div>
+    <a class="meeting" data-meeting="live">${icon('cal','sm')}<span>Weekly de TI</span></a>
+    <div class="meters"><span>Mic</span><div class="meter"><i></i></div><span>PC</span><div class="meter b"><i></i></div></div>
+    <div class="actions"><button class="btn secondary">${icon('pause')}Pausar</button><button class="btn danger">${icon('stop')}Parar</button></div></div>`,
+  paused: `<div class="dock paused-state"><div class="row"><span class="dot paused"></span><span class="timer">Pausado 12:04</span></div>
+    <a class="meeting" data-meeting="live">${icon('cal','sm')}<span>Weekly de TI</span></a>
+    <div class="meters"><span>Mic</span><div class="meter"><i></i></div><span>PC</span><div class="meter b"><i></i></div></div>
+    <div class="actions"><button class="btn primary">${icon('play')}Retomar</button><button class="btn danger">${icon('stop')}Parar</button></div></div>`,
+  ended: `<div class="dock alert"><div class="row">${icon('phone')}<span class="title">A chamada terminou</span></div>
+    <div class="sub">Ainda gravando <b style="color:oklch(var(--fg-primary))">Weekly de TI</b> · 44:51</div>
+    <div class="actions"><button class="btn primary">${icon('stop')}Parar e salvar</button><button class="btn ghost">Continuar</button></div></div>`,
+  processing: `<div class="dock"><div class="row">${icon('wave')}<span class="title">Transcrevendo</span></div>
+    <a class="meeting" data-meeting="live">${icon('cal','sm')}<span>Weekly de TI</span></a>
+    <div class="progress"><i></i></div><div class="sub">Separando falantes · continua em segundo plano</div>
+    <div class="actions"><button class="btn primary">${icon('mic')}Gravar outra</button></div></div>`,
+  error: `<div class="dock err"><div class="row" style="color:oklch(var(--danger))">${icon('alert')}<span class="title">Gravação interrompida</span></div>
+    <div class="sub">O áudio do computador parou às 31:10. O que foi gravado está salvo.</div>
+    <div class="actions"><button class="btn primary">Recuperar</button><button class="btn ghost" data-meeting="live">Abrir reunião</button></div></div>`,
+};
+
+const crumbs = {
+  home: '<b>Início</b>', meetings: '<b>Reuniões</b>', notes: '<b>Notas</b>', people: '<b>Pessoas</b>', settings: '<b>Configurações</b>',
+  meeting: () => `<a data-go="meetings">Reuniões</a>${icon('right','sm')}<b>${$('#mTitle').firstChild.textContent.trim()}</b>`,
+};
+
+function isLive() { return ['recording', 'paused', 'ended'].includes(dock); }
+
+function renderDock() {
+  $('#dock').innerHTML = docks[dock];
+  $$('#dockSeg button').forEach(b => b.classList.toggle('on', b.dataset.dock === dock));
+  const live = isLive();
+  ['#sideLiveDot', '#todayLiveDot', '#nowDot'].forEach(s => { const d = $(s); d.className = 'dot' + (live ? (dock === 'paused' ? ' paused' : ' live') : ' ol'); });
+  $('#nowItem').classList.toggle('now', live);
+  $('#nowBadges').innerHTML = live ? `<span class="badge live"><span class="dot live"></span>${dock === 'paused' ? 'Pausada' : 'Gravando'} 12:04</span>`
+    : dock === 'processing' ? '<span class="badge">Transcrevendo</span>' : dock === 'error' ? '<span class="badge err">Interrompida</span>' : '<span class="badge ol">Em andamento</span>';
+  toast(dock === 'processing');
+  if (screen === 'meeting') renderMeeting();
+  wire();
+}
+
+function renderMeeting() {
+  const v = meetingVariant;
+  const title = { done: '1:1 com a Rita', planned: 'Comitê de produto', live: 'Weekly de TI' }[v];
+  $('#mTitle').firstChild.textContent = title + ' ';
+  $('#mWhen').textContent = { done: 'ter., 28 out · 16:00–16:32', planned: 'hoje · 14:00–15:00', live: 'hoje · 10:00–10:45' }[v];
+  $('#mEvent').innerHTML = `<span class="badge ol">Outlook</span>${{ done: '1:1 Rodolfo / Rita', planned: 'Comitê de produto · Teams', live: 'Weekly de TI · Teams' }[v]}<button class="btn ghost" style="height:26px">Trocar</button>`;
+  const wave = Array.from({ length: 64 }, (_, i) => `<i class="${i < 18 ? 'p' : ''}" style="height:${20 + Math.abs(Math.sin(i * 1.7) * 80)}%"></i>`).join('');
+  let audio, tx;
+  if (v === 'done') {
+    audio = `<div class="player"><button class="pp">${icon('play','sm')}</button><div class="wave">${wave}</div><span class="small muted" style="font-variant-numeric:tabular-nums">08:41 / 32:10</span><button class="btn ghost" style="height:28px">Faixas ${icon('down','sm')}</button></div>`;
+    tx = `<span class="badge ok">Concluída</span><span class="muted small">28 out, 16:40 · whisper-small</span>`;
+  } else if (v === 'planned') {
+    audio = `<button class="btn primary">${icon('mic')}Gravar esta reunião</button><span class="muted small">ou importe um áudio</span><button class="btn ghost">${icon('upload')}Importar</button>`;
+    tx = `<span class="muted small">Disponível depois da gravação</span>`;
+  } else if (isLive()) {
+    audio = `<div class="livebar"><span class="dot ${dock === 'paused' ? 'paused' : 'live'}"></span><b>${dock === 'paused' ? 'Pausado' : 'Gravando'} · 12:04</b><span class="muted small">Pausar e parar ficam na barra lateral</span></div>`;
+    tx = `<span class="muted small">Começa quando a gravação for salva</span>`;
+  } else if (dock === 'processing') {
+    audio = `<div class="player"><button class="pp">${icon('play','sm')}</button><div class="wave">${wave}</div><span class="small muted">00:00 / 45:02</span></div>`;
+    tx = `<span class="badge">Transcrevendo</span><div class="progress" style="width:160px"><i></i></div>`;
+  } else {
+    audio = `<div class="player"><button class="pp">${icon('play','sm')}</button><div class="wave">${wave}</div><span class="small muted">00:00 / 45:02</span></div>`;
+    tx = `<button class="btn primary">${icon('wave')}Transcrever</button>`;
+  }
+  $('#mAudio').innerHTML = audio; $('#mTx').innerHTML = tx;
+  $('#spkBadge').style.display = v === 'done' ? '' : 'none';
+  $('#crumb').innerHTML = crumbs.meeting();
+  wire();
+}
+
+function go(s, variant) {
+  screen = s;
+  if (variant) meetingVariant = variant;
+  $$('.screen').forEach(x => x.classList.toggle('on', x.id === 's-' + s));
+  $$('.sidebar .nav[data-go]').forEach(n => n.classList.toggle('on', n.dataset.go === s || (s === 'meeting' && n.dataset.go === 'meetings')));
+  if (s === 'meeting') renderMeeting(); else $('#crumb').innerHTML = crumbs[s];
+  closeAll(); wire();
+}
+
+function wire() {
+  $$('[data-go]').forEach(el => el.onclick = e => { e.stopPropagation(); go(el.dataset.go); });
+  $$('[data-meeting]').forEach(el => el.onclick = e => { e.stopPropagation(); go('meeting', el.dataset.meeting); });
+}
+
+const sheets = {
+  meeting: `<header><div><h3>Nova reunião</h3><p>Crie antes para já ter onde anotar. Você pode gravar depois.</p></div><button class="btn ghost icon" style="margin-left:auto" onclick="closeAll()">${icon('x')}</button></header>
+    <div class="body"><div class="field"><label>Título</label><input class="input" value="Alinhamento com segurança"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div class="field"><label>Data</label><input class="input" value="03/11/2026"></div><div class="field"><label>Horário</label><input class="input" value="11:00 – 11:30"></div></div>
+    <div class="field"><label>Evento do Outlook (opcional)</label><select class="select"><option>Nenhum</option><option>Alinhamento segurança · seg. 11:00</option></select><span class="hint">Traz título, horário e participantes do convite.</span></div>
+    <div class="field"><label>Participantes</label><div style="display:flex;gap:6px;flex-wrap:wrap"><span class="chip"><span class="av" style="background:oklch(0.6 0.13 330)">RS</span>Rita Souza</span><span class="chip add">+ Adicionar</span></div></div></div>
+    <footer><button class="btn secondary md" onclick="closeAll()">Cancelar</button><button class="btn primary md" onclick="closeAll()">Criar reunião</button></footer>`,
+  import: `<header><div><h3>Importar áudio</h3><p>O áudio vira uma reunião, ou é anexado a uma que já existe.</p></div><button class="btn ghost icon" style="margin-left:auto" onclick="closeAll()">${icon('x')}</button></header>
+    <div class="body"><div class="field"><label>Arquivo</label><button class="btn secondary md" style="justify-content:flex-start">${icon('folder')}entrevista-backend.wav · 51 min</button></div>
+    <div class="field"><label>Destino</label><select class="select"><option>Nova reunião</option><option>Anexar a: Comitê de produto (hoje)</option></select></div>
+    <div class="field"><label>Título</label><input class="input" value="Entrevista: dev backend"></div>
+    <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" checked> Transcrever depois de importar</label></div>
+    <footer><button class="btn secondary md" onclick="closeAll()">Cancelar</button><button class="btn primary md" onclick="closeAll()">Importar</button></footer>`,
+  person: `<header><div><h3>Adicionar pessoa</h3><p>Para identificar quem fala nas reuniões.</p></div><button class="btn ghost icon" style="margin-left:auto" onclick="closeAll()">${icon('x')}</button></header>
+    <div class="body"><div class="field"><label>Nome</label><input class="input" placeholder="Nome completo"></div>
+    <div class="field"><label>E-mail (opcional)</label><input class="input" placeholder="Ajuda a ligar com convites do Outlook"></div>
+    <div class="field"><label>Sugestões dos seus convites</label><div style="display:flex;gap:6px;flex-wrap:wrap"><span class="chip add">Marcos Lima</span><span class="chip add">Ana Prado</span><span class="chip add">Felipe Rocha</span></div></div></div>
+    <footer><button class="btn secondary md" onclick="closeAll()">Cancelar</button><button class="btn primary md" onclick="closeAll()">Adicionar</button></footer>`,
+  personDetail: `<header><div style="display:flex;gap:12px;align-items:center"><span class="av" style="width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:white;font-weight:700;background:oklch(0.6 0.13 330)">RS</span><div><h3>Rita Souza</h3><p>rita.souza@… · 9 reuniões</p></div></div><button class="btn ghost icon" style="margin-left:auto" onclick="closeAll()">${icon('x')}</button></header>
+    <div class="body"><div><b>Amostras de voz</b><p class="muted small" style="margin:2px 0 8px">Usadas só para sugerir quem está falando. Você pode revogar qualquer uma.</p>
+    <div class="card">${['1:1 com a Rita · 00:11–00:23', '1:1 com a Rita · 04:02–04:13', 'Weekly de TI · 12:40–12:51'].map(s => `<div class="srow" style="grid-template-columns:1fr auto"><div><b style="font-weight:500">${s}</b><span class="muted">guardada em 28 out</span></div><div style="display:flex;gap:4px"><button class="btn ghost icon">${icon('headphones')}</button><button class="btn ghost">Revogar</button></div></div>`).join('')}</div></div>
+    <div><b>Reuniões</b><div class="list" style="margin-top:8px">${['1:1 com a Rita · ter.', 'Weekly de TI · 24 out', 'Comitê de produto · 24 out'].map(s => `<div class="item" style="grid-template-columns:1fr auto" data-meeting="done"><div class="name" style="font-weight:500">${s}</div>${icon('right','muted')}</div>`).join('')}</div></div></div>`,
+};
+function openSheet(k) { $('#sheet').innerHTML = sheets[k]; $('#ovSheet').classList.add('on'); wire(); }
+function openPalette() { $('#ovPalette').classList.add('on'); }
+function closeAll() { $$('.overlay').forEach(o => o.classList.remove('on')); }
+function toast(on) { $('#toast').classList.toggle('on', !!on); }
+
+// month grid
+(() => {
+  const dows = ['seg.', 'ter.', 'qua.', 'qui.', 'sex.', 'sáb.', 'dom.'];
+  const ev = { 3: [['ol', 'Planejamento Q4']], 7: [['', 'Daily do squad']], 14: [['', 'Daily do squad'], ['ol', 'Comitê de produto']], 21: [['', 'Daily do squad']], 24: [['', 'Weekly de TI'], ['', 'Comitê de produto']], 27: [['', 'Entrevista: dev backend']], 28: [['', '1:1 com a Rita'], ['', 'Daily do squad']], 31: [['live', 'Weekly de TI'], ['ol', 'Comitê de produto']] };
+  let h = dows.map(d => `<div class="dow">${d}</div>`).join('');
+  for (let i = 0; i < 35; i++) {
+    const n = i - 2; const out = n < 1 || n > 31; const day = out ? (n < 1 ? 30 + n : n - 31) : n;
+    h += `<div class="day ${n === 31 ? 'is-today' : ''} ${out ? 'out' : ''}"><span class="n">${day}</span>${(!out && ev[n] || []).map(([c, t]) => `<div class="ev" data-meeting="${c === 'ol' ? 'planned' : c === 'live' ? 'live' : 'done'}"><span class="dot ${c}"></span>${t}</div>`).join('')}</div>`;
+  }
+  $('#monthGrid').innerHTML = h;
+})();
+
+$$('#mview button').forEach(b => b.onclick = () => { $$('#mview button').forEach(x => x.classList.toggle('on', x === b)); $('#m-list').style.display = b.dataset.v === 'list' ? '' : 'none'; $('#m-month').style.display = b.dataset.v === 'month' ? '' : 'none'; });
+$$('#mtabs button').forEach(b => b.onclick = () => { $$('#mtabs button').forEach(x => x.classList.toggle('on', x === b)); $$('.tab').forEach(t => t.classList.toggle('on', t.id === b.dataset.t)); });
+$$('#dockSeg button').forEach(b => b.onclick = () => { dock = b.dataset.dock; renderDock(); });
+$('#themeBtn').onclick = () => { const h = document.documentElement; h.dataset.theme = h.dataset.theme === 'dark' ? 'light' : 'dark'; };
+document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openPalette(); } if (e.key === 'Escape') closeAll(); });
+
+// URL hash lets screenshots open a given state: #screen=meeting&variant=planned&dock=recording&tab=t-spk&theme=light&overlay=palette
+const p = new URLSearchParams(location.hash.slice(1));
+if (p.get('theme')) document.documentElement.dataset.theme = p.get('theme');
+if (p.get('dock')) dock = p.get('dock');
+renderDock();
+go(p.get('screen') || 'meetings', p.get('variant') || undefined);
+if (p.get('tab')) $(`#mtabs button[data-t="${p.get('tab')}"]`).click();
+if (p.get('view') === 'month') $('#mview button[data-v="month"]').click();
+if (p.get('overlay') === 'palette') openPalette();
+if (p.get('sheet')) openSheet(p.get('sheet'));
+</script>
+</body>
+</html>
