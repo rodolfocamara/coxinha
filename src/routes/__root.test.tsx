@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   toggle: vi.fn(),
   invoke: vi.fn(),
   start: vi.fn(),
+  toggleCapture: vi.fn(),
   handler: undefined as undefined | ((event: { payload: { route: string } }) => Promise<void>),
 }));
 vi.mock('@tanstack/react-router', () => ({
@@ -18,11 +19,13 @@ vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => k
 vi.mock('@tauri-apps/api/core', () => ({ invoke: mocks.invoke, isTauri: () => false }));
 vi.mock('../features/meetings/library', () => ({ library: { start: mocks.start } }));
 vi.mock('../features/shell/CommandPalette', () => ({ CommandPalette: () => null }));
+vi.mock('../components/Shell/Shell', () => ({
+  Shell: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+vi.mock('../features/capture/CaptureController', () => ({ CaptureController: () => null }));
+vi.mock('../features/capture/captureActions', () => ({ toggleCapture: mocks.toggleCapture }));
 vi.mock('../lib/store', () => ({
   useAppStore: (select: (state: unknown) => unknown) => select(mocks),
-}));
-vi.mock('../lib/panels', () => ({
-  useSidePanel: (select: (state: unknown) => unknown) => select({ toggle: mocks.toggle }),
 }));
 vi.mock('../lib/theme', () => ({
   followThemePreference: () => () => {},
@@ -39,18 +42,20 @@ vi.mock('../lib/bindings', () => ({
     },
   },
 }));
-it('opens recording controls from the desktop shortcut without starting capture', async () => {
+it('toggles capture through the single controller from the desktop shortcut', async () => {
   render(<RootLayout />);
   await waitFor(() => expect(mocks.handler).toBeTypeOf('function'));
   await act(async () => {
     await mocks.handler!({ payload: { route: 'toggle-recording' } });
   });
-  expect(mocks.navigate).toHaveBeenCalledWith({ to: '/meetings' });
+  // Spec 0096 P1: the shortcut starts or stops through captureActions, never library directly.
+  expect(mocks.toggleCapture).toHaveBeenCalledOnce();
+  expect(mocks.toggleCapture.mock.calls[0][0]).toMatch(/^shell\.record\.quickTitle /);
   expect(mocks.start).not.toHaveBeenCalled();
   expect(mocks.invoke).not.toHaveBeenCalledWith('library_start', expect.anything());
-  expect(mocks.invoke).not.toHaveBeenCalledWith('start_recording', expect.anything());
+  expect(mocks.navigate).not.toHaveBeenCalled();
 });
-it('returns to the activity map from the brand without starting capture', async () => {
+it('returns to Hoje when asked to open the map, without starting capture', async () => {
   mocks.navigate.mockClear();
   render(<RootLayout />);
   await act(async () => {

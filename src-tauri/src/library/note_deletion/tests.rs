@@ -14,7 +14,7 @@ async fn fixture() -> (tempfile::TempDir, Arc<Storage>, Library) {
         dir.path().into(),
         Arc::new(Db::open(&dir.path().join("index.db")).unwrap()),
     ));
-    let library = Library::open(dir.path().join("library")).unwrap();
+    let library = Library::open(dir.path().join("library"), None).unwrap();
     (dir, storage, library)
 }
 
@@ -126,7 +126,7 @@ async fn legacy_binding_without_intent_is_protected_and_unbound_delete_still_wor
         .unwrap();
     assert!(store.personal_note_intent(&session.id).unwrap().is_none());
     drop(store);
-    let library = Library::open(dir.path().join("library")).unwrap();
+    let library = Library::open(dir.path().join("library"), None).unwrap();
     let before = snapshot(dir.path(), &bound.path);
     assert_eq!(
         library
@@ -176,7 +176,7 @@ async fn edited_envelope_and_reindexed_uuid_do_not_bypass_canonical_path_protect
             };
             store.bind_session_note(&session.id, &reference).unwrap();
             drop(store);
-            library = Library::open(dir.path().join("library")).unwrap();
+            library = Library::open(dir.path().join("library"), None).unwrap();
             reference
         } else {
             let intent = reserve(&library).await;

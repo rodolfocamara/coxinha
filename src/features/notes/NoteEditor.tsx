@@ -2,13 +2,13 @@ import { ColoredNoteEditor } from './ColoredNoteEditor';
 import { hasCanvasColors } from '../board/editor/markdown';
 import type { EditorFocusRequest } from './editorFocusRequest';
 import { compressImage } from './compressImage';
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { useCreateBlockNote } from '@blocknote/react';
 import { BlockNoteView } from '@blocknote/shadcn';
-import { BlockNoteSchema, defaultBlockSpecs } from '@blocknote/core';
+import { BlockNoteSchema, defaultBlockSpecs, type BlockNoteEditor } from '@blocknote/core';
 import '@blocknote/core/fonts/inter.css';
 import '@blocknote/shadcn/style.css';
 import { invoke } from '@tauri-apps/api/core';
@@ -25,6 +25,13 @@ import { type NoteFont } from './NoteActionsMenu';
 import { NoteRecovery } from './NoteRecovery';
 import { useNoteRecovery } from './useNoteRecovery';
 import { NoteEditorFrame, type NoteEditorVariant } from './NoteEditorFrame';
+import {
+  PREF_FONT_KEY,
+  PREF_FULLWIDTH_KEY,
+  PREF_SMALL_KEY,
+  readPrefBool,
+  readPrefString,
+} from './notePrefs';
 import { en, pt } from '@blocknote/core/locales';
 
 // Schema extends BlockNote's defaults with our custom MeetingBlock.
@@ -37,24 +44,6 @@ const editorSchema = BlockNoteSchema.create({
   },
 });
 
-const PREF_FONT_KEY = 'coxinha:note-font';
-const PREF_SMALL_KEY = 'coxinha:note-small';
-const PREF_FULLWIDTH_KEY = 'coxinha:note-full-width';
-
-function readPrefString<T extends string>(key: string, allowed: readonly T[], fallback: T): T {
-  if (typeof window === 'undefined') return fallback;
-  const raw = window.localStorage.getItem(key);
-  return (allowed as readonly string[]).includes(raw ?? '') ? (raw as T) : fallback;
-}
-
-function readPrefBool(key: string, fallback: boolean): boolean {
-  if (typeof window === 'undefined') return fallback;
-  const raw = window.localStorage.getItem(key);
-  if (raw === '1') return true;
-  if (raw === '0') return false;
-  return fallback;
-}
-
 interface Props {
   variant?: NoteEditorVariant;
   focusRequest?: EditorFocusRequest;
@@ -66,9 +55,26 @@ interface Props {
    * fetch. Tests can render it directly with a fixture.
    */
   content: NoteContent;
+  /** Rendered over the editor document (Workspace checklist actions). */
+  overlay?: (editor: NoteBlockEditor) => ReactNode;
+  /** Replaces the default "back to the Workspace" after the file is deleted. */
+  onDeleted?: () => void | Promise<void>;
+  /** Replaces the default "open the copy" after duplication. */
+  onDuplicated?: (noteId: string) => void | Promise<void>;
 }
 
-export function NoteEditor({ noteId, content, variant = 'standalone', focusRequest }: Props) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type NoteBlockEditor = BlockNoteEditor<any, any, any>;
+
+export function NoteEditor({
+  noteId,
+  content,
+  variant = 'standalone',
+  focusRequest,
+  overlay,
+  onDeleted,
+  onDuplicated,
+}: Props) {
   // Placed at the top of the component body so the mark captures
   // the end of the Suspense wait (the loader resolves before this
   // render fires). Harmless if this isn't a new-note flow —
@@ -99,13 +105,16 @@ export function NoteEditor({ noteId, content, variant = 'standalone', focusReque
       tags={metadata.tags ?? []}
       updatedAt={metadata.updated_at as unknown as string}
       onSave={save}
+      overlay={overlay}
       onDelete={async () => {
         await deleteNote(noteId);
-        await navigate({ to: '/notes' });
+        if (onDeleted) await onDeleted();
+        else await navigate({ to: '/workspace' });
       }}
       onDuplicate={async () => {
         const copy = await duplicateNote(noteId);
-        await navigate({ to: '/notes/$noteId', params: { noteId: copy.id } });
+        if (onDuplicated) await onDuplicated(copy.id);
+        else await navigate({ to: '/workspace/$noteId', params: { noteId: copy.id } });
       }}
     />
   );
@@ -122,7 +131,9 @@ function EditorInner({
   onSave,
   onDelete,
   onDuplicate,
+  overlay,
 }: {
+  overlay?: (editor: NoteBlockEditor) => ReactNode;
   variant: NoteEditorVariant;
   focusRequest?: EditorFocusRequest;
   noteId: string;
@@ -158,7 +169,7 @@ function EditorInner({
   >([]);
   const blockExists = useRef<(id: string) => boolean>(() => false);
   const editor = useCreateBlockNote({
-    ...(variant === 'embedded'
+    ...(variant !== 'standalone'
       ? { dictionary: i18n?.resolvedLanguage?.startsWith('pt') ? pt : en }
       : {}),
     schema: editorSchema,
@@ -223,7 +234,7 @@ function EditorInner({
   }, [editor]);
 
   useEffect(() => {
-    if (initialized && variant === 'embedded') focusRequest?.focus(() => editor.focus());
+    if (initialized && variant !== 'standalone') focusRequest?.focus(() => editor.focus());
   }, [initialized, variant, focusRequest, editor]);
 
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -369,13 +380,16 @@ function EditorInner({
         onFullWidthChange: setFullWidth,
       }}
     >
-      <BlockNoteView
-        editor={editor}
-        editable={initialized && !exitLocked}
-        onChange={debouncedSave}
-        data-note-id={noteId}
-        theme={theme}
-      />
+      <div className="relative">
+        <BlockNoteView
+          editor={editor}
+          editable={initialized && !exitLocked}
+          onChange={debouncedSave}
+          data-note-id={noteId}
+          theme={theme}
+        />
+        {initialized && overlay?.(editor as NoteBlockEditor)}
+      </div>
     </NoteEditorFrame>
   );
 }

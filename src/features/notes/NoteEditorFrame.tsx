@@ -7,7 +7,13 @@ import { NoteHeader } from './NoteHeader';
 import { NoteActionsMenu, type NoteFont } from './NoteActionsMenu';
 import { noteDeletionErrorKey } from '../../lib/noteFileErrors';
 
-export type NoteEditorVariant = 'standalone' | 'embedded';
+/**
+ * `standalone`: full page with header and backlinks column. `embedded`:
+ * meeting notes (no header, no duplicate/delete). `workspace`: the Workspace
+ * side editor, compact like `embedded` but with every note action and the
+ * backlinks listed under the text.
+ */
+export type NoteEditorVariant = 'standalone' | 'embedded' | 'workspace';
 export function NoteEditorFrame({
   variant,
   noteId,
@@ -44,7 +50,7 @@ export function NoteEditorFrame({
   children: ReactNode;
 }) {
   const { t } = useTranslation();
-  const embedded = variant === 'embedded';
+  const embedded = variant !== 'standalone';
   return (
     <div
       className={clsx(
@@ -80,7 +86,7 @@ export function NoteEditorFrame({
           >
             <MoreHorizontal size={16} aria-hidden="true" />
             <kbd className="hidden sm:inline-block font-mono text-[10px] text-muted-foreground">
-              {embedded && !/Mac|iPhone|iPad/.test(navigator.platform) ? 'Ctrl+.' : '⌘.'}
+              {/Mac|iPhone|iPad/.test(navigator.platform) ? '⌘.' : 'Ctrl+.'}
             </kbd>
           </button>
         </div>
@@ -99,7 +105,8 @@ export function NoteEditorFrame({
           {!embedded && <NoteHeader title={title} tags={tags} updatedAt={updatedAt} />}
           {children}
         </div>
-        <NoteActionsMenu {...menu} allowDuplicateAndDelete={!embedded} />
+        <NoteActionsMenu {...menu} allowDuplicateAndDelete={variant !== 'embedded'} />
+        {variant === 'workspace' && <BacklinksPanel noteId={noteId} compact />}
       </section>
       {!embedded && <BacklinksPanel noteId={noteId} />}
     </div>

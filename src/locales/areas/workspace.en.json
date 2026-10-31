@@ -1,0 +1,152 @@
+{
+  "workspace": {
+    "title": "Workspace",
+    "loading": "Loading the board…",
+    "untitled": "Untitled",
+    "progress": "Progress",
+    "promote": "Make it an activity",
+    "retry": "Try again",
+    "cancel": "Cancel",
+    "dismiss": "Dismiss",
+    "kind": {
+      "note": "Note",
+      "activity": "Activity",
+      "area": "Area"
+    },
+    "toolbar": {
+      "label": "Workspace tools",
+      "note": "Note",
+      "activity": "Activity",
+      "area": "Area",
+      "saved": "Saved",
+      "saving": "Saving…",
+      "notSaved": "Not saved",
+      "creating": "Creating…"
+    },
+    "card": {
+      "note": "note",
+      "missing": "Note unavailable"
+    },
+    "area": {
+      "untitled": "Untitled area",
+      "newName": "New area",
+      "empty": "no activities",
+      "summary": "{{progress}}% · {{count}} activities",
+      "done": "100% · done",
+      "progress": "Area progress",
+      "dropInto": "Release to add to {{area}}"
+    },
+    "drawer": {
+      "label": "Notes",
+      "title": "Notes",
+      "search": "Search all notes",
+      "collapse": "Collapse notes",
+      "tab_one": "Notes · {{count}} off the board",
+      "tab_other": "Notes · {{count}} off the board",
+      "offBoard": "Off the board · {{count}}",
+      "onBoard": "On the board · {{count}}",
+      "offBoardList": "Notes off the board",
+      "onBoardList": "Items on the board",
+      "allPlaced": "Every note is on the board.",
+      "noMatch": "No notes found.",
+      "place": "Put on the board",
+      "placeNote": "Put on the board: {{title}}",
+      "dragHint": "Drag onto the board",
+      "meetingNote": "meeting note · {{day}}",
+      "updated": "edited {{date}}",
+      "activityItem": "activity · {{progress}}%",
+      "noteItem": "note",
+      "areaItem_one": "area · {{count}} activity",
+      "areaItem_other": "area · {{count}} activities"
+    },
+    "editor": {
+      "label": "Note editor",
+      "kind": "Kind",
+      "expand": "Open full width",
+      "collapse": "Back to the board",
+      "close": "Close the editor",
+      "fromMeeting": "from the meeting",
+      "edited": "edited {{date}}",
+      "file": ".md file in the vault",
+      "area": "Area",
+      "noArea": "None",
+      "dependsOn": "Depends on",
+      "nothing": "nothing",
+      "link": "link",
+      "choose": "Choose…",
+      "chooseDependency": "Activity this one depends on",
+      "removeDependency": "Remove the dependency on {{title}}",
+      "noteHint": "A note becomes an activity when it gets progress. The text stays the same file.",
+      "offBoardHint": "This note is off the board. Put it on the board to make it an activity or link it to others.",
+      "missing": "This note's file was not found. Take the card off the board or rebuild the index in Settings.",
+      "loadError": "Could not open the note. Your edits are preserved."
+    },
+    "checklist": {
+      "group": "Checklist items",
+      "toActivity": "activity",
+      "toActivityFor": "Create activity: {{text}}",
+      "toActivityHint": "Create an activity linked to this note",
+      "onBoard": "on the board",
+      "onBoardFor": "{{text}} is already on the board",
+      "provenance": "From the checklist of \"{{title}}\"."
+    },
+    "fields": {
+      "label": "Area name",
+      "labelLimit": "Maximum 1,000 characters.",
+      "color": "Color",
+      "geometry": "Position, size and layer",
+      "x": "Horizontal position",
+      "y": "Vertical position",
+      "width": "Width",
+      "height": "Height",
+      "numberRange": "Enter a number from {{min}} to {{max}}.",
+      "front": "Bring to front",
+      "back": "Send to back",
+      "remove": "Take off the board",
+      "removeArea": "Delete the area"
+    },
+    "colors": {
+      "neutral": "Neutral",
+      "orange": "Orange",
+      "green": "Green",
+      "blue": "Blue",
+      "purple": "Purple"
+    },
+    "empty": {
+      "title": "Make room for your ideas",
+      "body": "Add activities, group them into areas and connect what comes next.",
+      "action": "Create your first activity"
+    },
+    "errors": {
+      "load": "Could not open the board. Your notes are still in the vault.",
+      "create": "Could not create the note.",
+      "action": "The action did not complete. Your notes and the board are preserved.",
+      "saveError": "The board was not saved. Check available storage and try again.",
+      "conflictError": "Another writer changed the board. Save a recovery copy before reloading.",
+      "validationError": "The board has invalid data or note references. Your edits are preserved; save a recovery copy before reloading.",
+      "export": "Save recovery copy",
+      "recoverySaved": "Recovery copy saved in the vault: .coxinha/recovery/",
+      "reload": "Reload saved board",
+      "reloadConfirm": "Discard unsaved board changes and load the saved version? Markdown notes are not changed.",
+      "discard": "Discard and reload"
+    },
+    "canvas": {
+      "label": "Board",
+      "controls": "Board zoom",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "fitView": "Fit the board",
+      "interactive": "Lock the board",
+      "minimap": "Board minimap",
+      "moved": "Item moved: {{x}}, {{y}}.",
+      "nodeHelp": "Enter opens it in the editor. Arrow keys move the selected item.",
+      "edgeHelp": "Select it and press Delete to remove the dependency."
+    },
+    "a11y": {
+      "activity": "{{title}}, activity {{progress}}%",
+      "note": "{{title}}, note",
+      "area": "{{title}}, area",
+      "edge": "{{source}} → {{target}}"
+    }
+  }
+}

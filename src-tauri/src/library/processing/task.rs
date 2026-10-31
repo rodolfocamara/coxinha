@@ -7,7 +7,7 @@ use std::{
 };
 
 pub(in crate::library) struct ProcessingTask {
-    pub(super) meeting: String,
+    pub(in crate::library) meeting: String,
     pub(super) prepared: Option<PreparedProcessing>,
     pub(super) receive: Receiver<Result<Completion, String>>,
     pub(super) control: ProcessingControl,
@@ -19,15 +19,17 @@ pub(super) enum Completion {
     Inferred(ProcessingResult),
 }
 impl ProcessingTask {
-    pub(in crate::library) fn status(&self) -> Value {
-        let phase = if self.control.is_cancelled() {
+    pub(in crate::library) fn phase(&self) -> &'static str {
+        if self.control.is_cancelled() {
             "stopping"
         } else if self.prepared.is_some() {
             "inference"
         } else {
             "validation"
-        };
-        json!({"meetingId":self.meeting,"job":self.prepared.as_ref().map(|p| &p.job),"phase":phase})
+        }
+    }
+    pub(in crate::library) fn status(&self) -> Value {
+        json!({"meetingId":self.meeting,"job":self.prepared.as_ref().map(|p| &p.job),"phase":self.phase()})
     }
     pub(super) fn finished(&self) -> bool {
         self.thread

@@ -1,0 +1,66 @@
+{
+  "shell": {
+    "nav": {
+      "hoje": "Hoje",
+      "meetings": "Reuniões",
+      "workspace": "Workspace",
+      "people": "Pessoas",
+      "search": "Buscar",
+      "settings": "Ajustes"
+    },
+    "record": {
+      "start": "Gravar agora",
+      "startHint": "Gravar agora (Ctrl+Alt+W)",
+      "stop": "Parar e salvar a gravação",
+      "quickTitle": "Gravação"
+    }
+  },
+  "recorder": {
+    "label": "Gravação",
+    "ready": "Pronto para gravar · Ctrl+Alt+W",
+    "untitled": "Reunião sem título",
+    "openMeeting": "Abrir a reunião",
+    "recording": "Gravando {{time}}",
+    "paused": "Pausado {{time}}",
+    "pause": "Pausar",
+    "resume": "Retomar",
+    "stop": "Parar e salvar",
+    "stopping": "Salvando…",
+    "levels": "Nível do microfone e do áudio do computador",
+    "metadataFailed": "convidados do Outlook não foram anexados",
+    "nextCall": "Nova chamada no {{app}}",
+    "stillRecording": "ainda gravando {{title}}",
+    "stillRecordingFor": "ainda gravando {{title}} · {{time}}",
+    "recordNew": "Gravar a nova",
+    "sameMeeting": "É a mesma reunião",
+    "callEnded": "A chamada no {{app}} terminou",
+    "keepRecording": "Continuar gravando",
+    "processing": {
+      "validation": "Verificando áudio e modelos",
+      "inference": "Transcrevendo",
+      "stopping": "Interrompendo a transcrição",
+      "running": "Processando"
+    },
+    "background": "continua em segundo plano",
+    "detected": "Chamada no {{app}}",
+    "detectedHelp": "grava microfone e áudio do computador",
+    "record": "Gravar",
+    "starting": "Iniciando…",
+    "details": "Detalhes",
+    "ignore": "Ignorar",
+    "interrupted": "Gravação interrompida",
+    "interruptedHelp": "o que foi gravado está salvo e pode ser recuperado",
+    "review": "Revisar",
+    "dismiss": "Dispensar aviso",
+    "badgeLive": "gravando",
+    "badgePaused": "pausada",
+    "failure": {
+      "start": "Não foi possível começar a gravar.",
+      "pause": "Não foi possível pausar.",
+      "stop": "Não foi possível parar. Tente de novo.",
+      "devices": "Não foi possível listar os dispositivos de áudio.",
+      "devicesMissing": "Nenhum microfone ou áudio do computador encontrado.",
+      "captureBusy": "Já existe uma gravação ou transcrição em andamento."
+    }
+  }
+}

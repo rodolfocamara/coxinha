@@ -1,0 +1,27 @@
+/* Command palette motion (spec 0096): opens fast, closes instantly (unmount). */
+@layer theme, base, components, utilities;
+@layer components {
+  .cx-palette-overlay {
+    animation: cx-palette-fade var(--m-fast) var(--e-out);
+  }
+  .cx-palette-panel {
+    animation: cx-palette-in var(--m-fast) var(--e-out);
+  }
+  @keyframes cx-palette-fade {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes cx-palette-in {
+    from {
+      opacity: 0;
+      transform: translateY(-6px) scale(0.98);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cx-palette-overlay,
+    .cx-palette-panel {
+      animation: none;
+    }
+  }
+}

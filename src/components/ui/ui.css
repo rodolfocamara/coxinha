@@ -20,14 +20,15 @@
     transition:
       background-color var(--dur-fast) var(--ease-calm),
       border-color var(--dur-fast) var(--ease-calm),
-      color var(--dur-fast) var(--ease-calm);
+      color var(--dur-fast) var(--ease-calm),
+      transform var(--m-instant) var(--e-out);
   }
   .cx-btn:focus-visible {
     outline: 2px solid var(--color-ring);
     outline-offset: 2px;
   }
   .cx-btn:active:not(:disabled) {
-    transform: translateY(1px);
+    transform: scale(0.96);
   }
   .cx-btn:disabled {
     opacity: 0.45;
@@ -38,12 +39,23 @@
     padding: 0 10px;
     font-size: 12px;
   }
+  /* Dense chrome (recorder strip, card hovers), spec 0096. */
+  .cx-btn[data-size='xs'] {
+    height: 26px;
+    padding: 0 9px;
+    font-size: 12px;
+    gap: 5px;
+  }
   .cx-btn[data-icon-only='true'] {
     width: 36px;
     padding: 0;
   }
   .cx-btn[data-icon-only='true'][data-size='sm'] {
     width: 32px;
+  }
+  .cx-btn[data-icon-only='true'][data-size='xs'] {
+    width: 26px;
+    padding: 0;
   }
   .cx-btn[data-variant='primary'] {
     background: var(--color-primary);

@@ -1,0 +1,152 @@
+{
+  "workspace": {
+    "title": "Workspace",
+    "loading": "Carregando o quadro…",
+    "untitled": "Sem título",
+    "progress": "Progresso",
+    "promote": "Virar atividade",
+    "retry": "Tentar de novo",
+    "cancel": "Cancelar",
+    "dismiss": "Fechar aviso",
+    "kind": {
+      "note": "Nota",
+      "activity": "Atividade",
+      "area": "Área"
+    },
+    "toolbar": {
+      "label": "Ferramentas do workspace",
+      "note": "Nota",
+      "activity": "Atividade",
+      "area": "Área",
+      "saved": "Salvo",
+      "saving": "Salvando…",
+      "notSaved": "Não salvo",
+      "creating": "Criando…"
+    },
+    "card": {
+      "note": "nota",
+      "missing": "Nota indisponível"
+    },
+    "area": {
+      "untitled": "Área sem nome",
+      "newName": "Nova área",
+      "empty": "sem atividades",
+      "summary": "{{progress}}% · {{count}} atividades",
+      "done": "100% · concluída",
+      "progress": "Progresso da área",
+      "dropInto": "Solte para colocar em {{area}}"
+    },
+    "drawer": {
+      "label": "Notas",
+      "title": "Notas",
+      "search": "Buscar em todas as notas",
+      "collapse": "Recolher as notas",
+      "tab_one": "Notas · {{count}} fora do quadro",
+      "tab_other": "Notas · {{count}} fora do quadro",
+      "offBoard": "Fora do quadro · {{count}}",
+      "onBoard": "No quadro · {{count}}",
+      "offBoardList": "Notas fora do quadro",
+      "onBoardList": "Itens no quadro",
+      "allPlaced": "Todas as notas estão no quadro.",
+      "noMatch": "Nenhuma nota encontrada.",
+      "place": "Colocar no quadro",
+      "placeNote": "Colocar no quadro: {{title}}",
+      "dragHint": "Arraste para o quadro",
+      "meetingNote": "nota da reunião · {{day}}",
+      "updated": "editada {{date}}",
+      "activityItem": "atividade · {{progress}}%",
+      "noteItem": "nota",
+      "areaItem_one": "área · {{count}} atividade",
+      "areaItem_other": "área · {{count}} atividades"
+    },
+    "editor": {
+      "label": "Editor da nota",
+      "kind": "Tipo",
+      "expand": "Abrir em tela cheia",
+      "collapse": "Voltar ao quadro",
+      "close": "Fechar o editor",
+      "fromMeeting": "veio da reunião",
+      "edited": "editada {{date}}",
+      "file": "arquivo .md no vault",
+      "area": "Área",
+      "noArea": "Nenhuma",
+      "dependsOn": "Depende de",
+      "nothing": "nada",
+      "link": "ligar",
+      "choose": "Escolher…",
+      "chooseDependency": "Atividade de que esta depende",
+      "removeDependency": "Remover a dependência de {{title}}",
+      "noteHint": "Uma nota vira atividade quando ganha progresso. O texto continua o mesmo arquivo.",
+      "offBoardHint": "Esta nota está fora do quadro. Coloque-a no quadro para virar atividade ou ligar a outras.",
+      "missing": "O arquivo desta nota não foi encontrado. Tire o card do quadro ou reconstrua o índice em Ajustes.",
+      "loadError": "Não foi possível abrir a nota. Suas edições estão preservadas."
+    },
+    "checklist": {
+      "group": "Itens do checklist",
+      "toActivity": "atividade",
+      "toActivityFor": "Criar atividade: {{text}}",
+      "toActivityHint": "Criar atividade ligada a esta nota",
+      "onBoard": "no quadro",
+      "onBoardFor": "{{text}} já está no quadro",
+      "provenance": "Saiu do checklist de \"{{title}}\"."
+    },
+    "fields": {
+      "label": "Nome da área",
+      "labelLimit": "No máximo 1.000 caracteres.",
+      "color": "Cor",
+      "geometry": "Posição, tamanho e camada",
+      "x": "Posição horizontal",
+      "y": "Posição vertical",
+      "width": "Largura",
+      "height": "Altura",
+      "numberRange": "Use um número de {{min}} a {{max}}.",
+      "front": "Trazer para frente",
+      "back": "Enviar para trás",
+      "remove": "Tirar do quadro",
+      "removeArea": "Apagar a área"
+    },
+    "colors": {
+      "neutral": "Neutra",
+      "orange": "Laranja",
+      "green": "Verde",
+      "blue": "Azul",
+      "purple": "Roxa"
+    },
+    "empty": {
+      "title": "Abra espaço para suas ideias",
+      "body": "Crie atividades, agrupe em áreas e ligue o que vem depois.",
+      "action": "Criar a primeira atividade"
+    },
+    "errors": {
+      "load": "Não foi possível abrir o quadro. Suas notas continuam no vault.",
+      "create": "Não foi possível criar a nota.",
+      "action": "A ação não foi concluída. Suas notas e o quadro estão preservados.",
+      "saveError": "O quadro não foi salvo. Confira o espaço em disco e tente de novo.",
+      "conflictError": "Outro processo mudou o quadro. Salve uma cópia de recuperação antes de recarregar.",
+      "validationError": "O quadro tem dados ou referências de nota inválidos. Suas edições estão preservadas; salve uma cópia antes de recarregar.",
+      "export": "Salvar cópia de recuperação",
+      "recoverySaved": "Cópia salva no vault em .coxinha/recovery/",
+      "reload": "Recarregar o quadro salvo",
+      "reloadConfirm": "Descartar as mudanças não salvas do quadro e carregar a versão salva? As notas Markdown não mudam.",
+      "discard": "Descartar e recarregar"
+    },
+    "canvas": {
+      "label": "Quadro",
+      "controls": "Zoom do quadro",
+      "zoomIn": "Aproximar",
+      "zoomOut": "Afastar",
+      "fitView": "Ver o quadro inteiro",
+      "interactive": "Travar o quadro",
+      "minimap": "Minimapa do quadro",
+      "moved": "Item movido: {{x}}, {{y}}.",
+      "nodeHelp": "Enter abre no editor. Setas movem o item selecionado.",
+      "edgeHelp": "Selecione e aperte Delete para remover a dependência."
+    },
+    "a11y": {
+      "activity": "{{title}}, atividade {{progress}}%",
+      "note": "{{title}}, nota",
+      "area": "{{title}}, área",
+      "edge": "{{source}} → {{target}}"
+    }
+  }
+}

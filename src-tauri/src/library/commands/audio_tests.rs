@@ -25,7 +25,16 @@ async fn canonical_detail_recover_import_only_grant_verified_audio() {
     recording.write_block(Track::Mic, &[19; 960], 1).unwrap();
     drop(recording);
     drop(store);
-    let library = Library::open(temp.path().into()).unwrap();
+    // A partial frame defeats boot reconciliation, so the raw stays unverified until explicit recovery.
+    let partial = temp.path().join("raw").join(&recoverable).join("mic.wav");
+    let intact = std::fs::metadata(&partial).unwrap().len();
+    std::fs::OpenOptions::new()
+        .append(true)
+        .open(&partial)
+        .unwrap()
+        .write_all(&[0])
+        .unwrap();
+    let library = Library::open(temp.path().into(), None).unwrap();
     let transport =
         crate::native_audio::NativeAudio::start(vec!["tauri://localhost".into()]).unwrap();
     let unclosed = library
@@ -42,6 +51,16 @@ async fn canonical_detail_recover_import_only_grant_verified_audio() {
     assert!(!dto["audio"]
         .to_string()
         .contains(temp.path().to_str().unwrap()));
+    assert!(library
+        .ask(Action::Recover(recoverable.clone()))
+        .await
+        .is_err());
+    std::fs::OpenOptions::new()
+        .write(true)
+        .open(&partial)
+        .unwrap()
+        .set_len(intact)
+        .unwrap();
     let recovered = library.ask(Action::Recover(recoverable)).await.unwrap();
     assert!(transport.grant_detail(recovered).unwrap()["audio"]["mic"].is_string());
     let imported = library

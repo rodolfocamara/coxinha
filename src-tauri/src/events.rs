@@ -49,3 +49,17 @@ pub struct TranscriptionProgress {
     pub percent: f32,
     pub message: String,
 }
+
+/// Live capture or processing state changed; payload-free signal to refetch `library_status`.
+#[derive(Debug, Clone, Serialize, Deserialize, Type, Event)]
+pub struct CaptureChanged {
+    pub at_ms: u64,
+}
+impl CaptureChanged {
+    pub fn now() -> Self {
+        let at_ms = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map_or(0, |d| d.as_millis() as u64);
+        Self { at_ms }
+    }
+}

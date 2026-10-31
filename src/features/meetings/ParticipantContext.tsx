@@ -10,7 +10,8 @@ function ParticipantContextForMeeting({
 }: {
   meetingId: string;
   disabled: boolean;
-  onSelect: (name: string) => void;
+  /** Omitted where no person form consumes the chosen name (Reuniões inspector). */
+  onSelect?: (name: string) => void;
 }) {
   const { t } = useTranslation();
   const k = (name: string) => t(`library.processing.${name}`);
@@ -85,9 +86,11 @@ function ParticipantContextForMeeting({
               />
             </Field>
             <div className="flex flex-wrap gap-2 sm:col-span-2">
-              <Button size="sm" onClick={() => onSelect(row.name)} disabled={!row.name.trim()}>
-                {k('useCandidate')}
-              </Button>
+              {onSelect && (
+                <Button size="sm" onClick={() => onSelect(row.name)} disabled={!row.name.trim()}>
+                  {k('useCandidate')}
+                </Button>
+              )}
               <Button
                 size="sm"
                 variant="danger"

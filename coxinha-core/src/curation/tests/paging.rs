@@ -209,6 +209,15 @@ fn malformed_or_oversized_target_row_does_not_block_metadata_or_other_person() -
         .as_str()
         .unwrap()
         .to_owned();
+    let mine = pager.profiles_page(&store, None, None)?["profiles"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|p| p["personId"] == s.person_id.as_str())
+        .cloned()
+        .unwrap();
+    assert_eq!(mine["activeSamples"], json!(1));
+    assert_eq!(mine["sampleMeetings"], json!(1));
     store.profiles.execute(
         "UPDATE voice_sample SET provenance_json='bad' WHERE id=?1",
         [&id],
@@ -221,13 +230,20 @@ fn malformed_or_oversized_target_row_does_not_block_metadata_or_other_person() -
         pager.samples_page(&store, &other, None, None)?["samples"],
         json!([])
     );
-    assert_eq!(
-        pager.profiles_page(&store, None, None)?["profiles"]
+    let profiles = pager.profiles_page(&store, None, None)?["profiles"].clone();
+    assert_eq!(profiles.as_array().unwrap().len(), 2);
+    let me = |id: &str| {
+        profiles
             .as_array()
             .unwrap()
-            .len(),
-        2
-    );
+            .iter()
+            .find(|p| p["personId"] == id)
+            .cloned()
+            .unwrap()
+    };
+    assert_eq!(me(&s.person_id)["activeSamples"], json!(1));
+    assert_eq!(me(&s.person_id)["sampleMeetings"], json!(0));
+    assert_eq!(me(&other)["activeSamples"], json!(0));
     store.profiles.execute(
         "UPDATE voice_sample SET provenance_json=?1",
         ["x".repeat(1024 * 1024 + 1)],

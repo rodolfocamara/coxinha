@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 vi.mock('react-i18next', () => ({
@@ -148,7 +148,7 @@ describe('SettingsView — vault panel', () => {
 
     await waitFor(() => expect(rebuildFromVault).toHaveBeenCalledOnce());
     expect(loadNotes).toHaveBeenCalledOnce();
-    const status = await screen.findByRole('status');
+    const status = await screen.findByText(/settings\.vault\.rebuiltSuccess/);
     expect(status.textContent).toContain('42');
     expect(status.textContent).toContain('7');
   });
@@ -178,7 +178,7 @@ describe('SettingsView — appearance panel', () => {
 
   it('defaults to Auto when no preference is stored', async () => {
     render(<SettingsView />);
-    const auto = await screen.findByRole('radio', { name: 'settings.appearance.theme.auto' });
+    const auto = await screen.findByRole('radio', { name: 'people.settings.theme.auto' });
     expect(auto).toBeChecked();
   });
 
@@ -190,7 +190,7 @@ describe('SettingsView — appearance panel', () => {
     const listener = (e: Event) => events.push((e as CustomEvent).detail as string);
     window.addEventListener('coxinha:theme-pref-changed', listener);
 
-    await user.click(await screen.findByRole('radio', { name: 'settings.appearance.theme.dark' }));
+    await user.click(await screen.findByRole('radio', { name: 'people.settings.theme.dark' }));
 
     expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('dark');
     expect(events).toEqual(['dark']);
@@ -203,7 +203,7 @@ describe('SettingsView — appearance panel', () => {
     localStorage.setItem(THEME_STORAGE_KEY, 'light');
     render(<SettingsView />);
 
-    await user.click(await screen.findByRole('radio', { name: 'settings.appearance.theme.auto' }));
+    await user.click(await screen.findByRole('radio', { name: 'people.settings.theme.auto' }));
 
     expect(localStorage.getItem(THEME_STORAGE_KEY)).toBeNull();
   });
@@ -227,7 +227,7 @@ describe('SettingsView — shortcuts panel', () => {
     expect(screen.getByText(shortcuts.toggle_recording)).toBeInTheDocument();
 
     expect(screen.getByText('settings.shortcuts.action.new_note')).toBeInTheDocument();
-    expect(screen.getByText('settings.shortcuts.action.toggle_recording')).toBeInTheDocument();
+    expect(screen.getByText('people.settings.shortcuts.toggleRecording')).toBeInTheDocument();
   });
 
   it('reflects a non-default binding from the saved config', async () => {
@@ -280,4 +280,78 @@ it.each([
   expect(await screen.findByRole('alert')).toHaveTextContent(key);
   expect(screen.getByRole('alert')).not.toHaveTextContent(code);
   expect(loadNotes).not.toHaveBeenCalled();
+});
+
+describe('SettingsView — section list and deep links', () => {
+  beforeEach(() => {
+    getConfig.mockResolvedValue({ status: 'ok', data: BASE_CONFIG });
+    listObsidianVaults.mockResolvedValue({ status: 'ok', data: [] });
+  });
+
+  it('lists every section as a button and keeps the legacy heading anchors', async () => {
+    render(<SettingsView />);
+    const nav = screen.getByRole('navigation', { name: 'people.settings.sectionsLabel' });
+    const names = within(nav)
+      .getAllByRole('button')
+      .map((b) => b.textContent);
+    expect(names).toEqual(
+      [
+        'general',
+        'recording',
+        'transcription',
+        'integrations',
+        'shortcuts',
+        'storage',
+        'diagnostics',
+      ].map((id) => `people.settings.sections.${id}`)
+    );
+    await screen.findByText(BASE_CONFIG.vault_path);
+    for (const id of [
+      'appearance-heading',
+      'detection-heading',
+      'integrations-heading',
+      'vault-heading',
+      'shortcuts-heading',
+      'rebuild-heading',
+      'diagnostics-heading',
+    ])
+      expect(document.getElementById(id), id).not.toBeNull();
+  });
+
+  it.each([
+    ['integrations-heading', 'integrations', 'people.settings.sections.integrations'],
+    ['recording', 'recording', 'people.settings.sections.recording'],
+    ['#storage', 'storage', 'people.settings.sections.storage'],
+  ])(
+    'lands on %s: focuses the heading and marks the section current',
+    async (hash, section, label) => {
+      render(<SettingsView initialSection={hash} />);
+      const heading = await screen.findByRole('heading', { level: 2, name: label });
+      await waitFor(() => expect(heading).toHaveFocus());
+      expect(heading.closest('section')).toHaveAttribute('id', section);
+      expect(screen.getByRole('button', { name: label })).toHaveAttribute('aria-current', 'true');
+    }
+  );
+
+  it('focuses the rebuild row for the note-recovery link', async () => {
+    render(<SettingsView initialSection="rebuild-heading" />);
+    const heading = await screen.findByRole('heading', { name: 'settings.vault.rebuildHeading' });
+    await waitFor(() => expect(heading).toHaveFocus());
+    expect(
+      screen.getByRole('button', { name: 'people.settings.sections.storage' })
+    ).toHaveAttribute('aria-current', 'true');
+  });
+
+  it('moves focus to a section heading when chosen in the list', async () => {
+    const user = userEvent.setup();
+    render(<SettingsView />);
+    await screen.findByText(BASE_CONFIG.vault_path);
+    await user.click(screen.getByRole('button', { name: 'people.settings.sections.shortcuts' }));
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'people.settings.sections.shortcuts' })
+    ).toHaveFocus();
+    expect(
+      screen.getByRole('button', { name: 'people.settings.sections.shortcuts' })
+    ).toHaveAttribute('aria-current', 'true');
+  });
 });

@@ -25,11 +25,16 @@ export function removeItem(board: Board, id: string): Board {
     edges: board.edges.filter((e) => e.source !== id && e.target !== id),
   };
 }
+/** Links join note-backed items, and at least one side is an activity (`board.rs`). */
+export function canLink(a: BoardItem | undefined, b: BoardItem | undefined): boolean {
+  if (!a || !b || a.id === b.id || a.kind === 'area' || b.kind === 'area') return false;
+  return a.kind === 'card' || b.kind === 'card';
+}
 export function connect(board: Board, source: string, target: string): Board {
+  const find = (id: string) => board.items.find((i) => i.id === id);
   if (
-    source === target ||
     board.edges.some((e) => e.source === source && e.target === target) ||
-    ![source, target].every((id) => board.items.some((i) => i.id === id && i.kind === 'card'))
+    !canLink(find(source), find(target))
   )
     return board;
   return { ...board, edges: [...board.edges, { id: crypto.randomUUID(), source, target }] };
@@ -59,7 +64,4 @@ export function progressColor(progress: number) {
       : progress > 0
         ? '#d99847'
         : '#929aa4';
-}
-export function editingSize(item: BoardItem) {
-  return item;
 }

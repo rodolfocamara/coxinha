@@ -6,17 +6,20 @@ import type { UnlistenFn } from '@tauri-apps/api/event';
 import { useTranslation } from 'react-i18next';
 import { reportFrontendError } from '../lib/lifecycle';
 import { CommandPalette } from '../features/shell/CommandPalette';
+import { Button } from '../components/ui';
 import { events, type Route } from '../lib/bindings';
-import { useSidePanel } from '../lib/panels';
 import { mark } from '../lib/perf';
 import { useAppStore } from '../lib/store';
 import { followThemePreference, getThemePreference, THEME_PREF_EVENT } from '../lib/theme';
+import { Shell } from '../components/Shell/Shell';
+import { quickCaptureTitle } from '../components/Shell/NavRail';
+import { CaptureController } from '../features/capture/CaptureController';
+import { toggleCapture } from '../features/capture/captureActions';
 
 /**
- * Root layout. Every route renders inside its own AppShell (spec
- * 0057) so this component only owns global concerns: theme
- * follow-up, IPC listeners, command palette overlay, and
- * shortcut handling that spans every route.
+ * Root layout (spec 0096): the persistent Shell (recorder strip + rail),
+ * the single CaptureController, theme follow-up, IPC listeners, the command
+ * palette and shortcuts that span every route.
  */
 export function RootLayout() {
   const navigate = useNavigate();
@@ -80,7 +83,7 @@ export function RootLayout() {
           navigate({ to: '/settings' });
           return;
         case 'toggle-recording':
-          await navigate({ to: '/meetings' });
+          await toggleCapture(quickCaptureTitle(t('shell.record.quickTitle')));
           return;
       }
     }
@@ -89,12 +92,10 @@ export function RootLayout() {
       cancelled = true;
       unsubs.forEach((f) => f());
     };
-  }, [loadNotes, navigate, newNote, startupAttempt]);
+  }, [loadNotes, navigate, newNote, startupAttempt, t]);
 
-  // Ctrl+K / Ctrl+P open the command palette; Ctrl+\ toggles
-  // the side panel. All gated on Ctrl/Cmd so they don't fight
-  // the editor's own hotkeys.
-  const toggleSidePanel = useSidePanel((s) => s.toggle);
+  // Ctrl+K / Ctrl+P open the command palette. Gated on Ctrl/Cmd so it
+  // doesn't fight the editor's own hotkeys.
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (!(e.ctrlKey || e.metaKey)) return;
@@ -102,11 +103,6 @@ export function RootLayout() {
       if (key === 'k' || key === 'p') {
         e.preventDefault();
         setPaletteOpen((v) => !v);
-        return;
-      }
-      if (key === '\\') {
-        e.preventDefault();
-        toggleSidePanel();
       }
     };
     const openPalette = () => setPaletteOpen(true);
@@ -119,20 +115,23 @@ export function RootLayout() {
       window.removeEventListener('coxinha:open-map', openMap);
       window.removeEventListener('keydown', handler);
     };
-  }, [toggleSidePanel, navigate]);
+  }, [navigate]);
 
   return (
     <>
-      {startupFailed && (
-        <div role="alert" className="p-3 border-b">
-          {t('desktopRecovery.startup')}
-          <button className="ml-4" onClick={() => setStartupAttempt((n) => n + 1)}>
-            {t('desktopRecovery.retry')}
-          </button>
-        </div>
-      )}
+      <CaptureController />
       <CallDetectionController />
-      <Outlet />
+      <Shell>
+        {startupFailed && (
+          <div role="alert" className="flex items-center gap-3 border-b px-4 py-2 text-sm">
+            {t('desktopRecovery.startup')}
+            <Button size="sm" onClick={() => setStartupAttempt((n) => n + 1)}>
+              {t('desktopRecovery.retry')}
+            </Button>
+          </div>
+        )}
+        <Outlet />
+      </Shell>
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
     </>
   );

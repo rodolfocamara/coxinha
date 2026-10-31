@@ -38,6 +38,10 @@ describe('board operations', () => {
     expect(connect(b, 'a', 'a')).toBe(b);
     expect(connect(b, 'a', 'area')).toBe(b);
     expect(connect(b, 'unknown', 'a')).toBe(b);
+    const notes = { ...b, items: [...b.items, { ...card('n'), kind: 'text' as const }, { ...card('m'), kind: 'text' as const }] };
+    expect(connect(notes, 'n', 'a').edges).toHaveLength(1);
+    expect(connect(notes, 'a', 'n').edges).toHaveLength(1);
+    expect(connect(notes, 'n', 'm')).toBe(notes);
   });
 });
 

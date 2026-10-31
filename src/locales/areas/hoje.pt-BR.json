@@ -1,0 +1,89 @@
+{
+  "hoje": {
+    "title": "Hoje",
+    "greeting": {
+      "morning": "Bom dia.",
+      "afternoon": "Boa tarde.",
+      "evening": "Boa noite."
+    },
+    "lede": {
+      "date": "{{date}}.",
+      "live": "<b>Gravando {{title}}</b> agora.",
+      "liveUntitled": "<b>Gravando</b> agora.",
+      "meetingsNext_one": "<b>{{count}} reunião</b> hoje, a próxima às {{time}}.",
+      "meetingsNext_other": "<b>{{count}} reuniões</b> hoje, a próxima às {{time}}.",
+      "meetingsDone_one": "<b>{{count}} reunião</b> hoje, nenhuma mais pela frente.",
+      "meetingsDone_other": "<b>{{count}} reuniões</b> hoje, nenhuma mais pela frente.",
+      "noMeetings": "Nenhuma reunião hoje.",
+      "pending_one": "<b>{{count}} gravação</b> esperando revisão.",
+      "pending_other": "<b>{{count}} gravações</b> esperando revisão."
+    },
+    "agenda": {
+      "title": "Agenda de hoje",
+      "all": "Ver todas",
+      "allDay": "dia todo",
+      "outlook": "Outlook",
+      "people_one": "{{count}} pessoa",
+      "people_other": "{{count}} pessoas",
+      "onlyYou": "só você",
+      "recorded": "gravada",
+      "transcribed": "transcrita",
+      "noRecording": "sem gravação",
+      "prepare": "Preparar",
+      "open": "Abrir",
+      "empty": "Nada marcado para hoje.",
+      "emptyNoOutlook": "Nada marcado para hoje. Conecte o Outlook para ver seus compromissos aqui.",
+      "connect": "Conectar Outlook",
+      "loadError": "Não deu para carregar as reuniões.",
+      "calendarError": "Não deu para ler a agenda do Outlook."
+    },
+    "review": {
+      "title": "A revisar",
+      "failed_one": "transcrição falhou",
+      "failed_other": "transcrições falharam",
+      "notx_one": "sem transcrição",
+      "notx_other": "sem transcrição",
+      "more": "e mais {{count}}",
+      "empty": "Tudo revisado.",
+      "loadError": "Não deu para ver o que falta revisar."
+    },
+    "notes": {
+      "title": "Notas recentes",
+      "open": "Workspace",
+      "untitled": "Sem título",
+      "today": "hoje {{time}}",
+      "yesterday": "ontem",
+      "empty": "Nenhuma nota ainda.",
+      "loadError": "Não deu para carregar as notas."
+    },
+    "workspace": {
+      "title": "Workspace",
+      "open": "Abrir",
+      "hint": "Abrir workspace",
+      "progress": "{{label}} {{pct}}%",
+      "cardLabel": "{{title}}, {{pct}}% feito",
+      "empty": "Nenhuma atividade no quadro ainda.",
+      "create": "Criar a primeira atividade",
+      "loadError": "Não deu para carregar o quadro."
+    },
+    "week": {
+      "title": "Esta semana",
+      "recorded": "{{duration}} gravadas",
+      "nothing": "nada gravado",
+      "summary": "{{meetings}} · {{transcribed}} · {{failed}}",
+      "meetings_one": "{{count}} reunião",
+      "meetings_other": "{{count}} reuniões",
+      "transcribed_one": "{{count}} transcrita",
+      "transcribed_other": "{{count}} transcritas",
+      "failed_one": "{{count}} falhou",
+      "failed_other": "{{count}} falharam",
+      "dayLabel": "{{day}}: {{duration}}",
+      "loadError": "Não deu para somar a semana.",
+      "transcribed_zero": "0 transcritas",
+      "failed_zero": "nenhuma falhou",
+      "none": "Nenhuma reunião esta semana."
+    },
+    "retry": "Tentar de novo",
+    "loading": "Carregando…"
+  }
+}

@@ -220,7 +220,11 @@ it('refreshes acknowledged metadata without reparsing the editor document', asyn
     note: { title: 'new title', tags: ['tag'], updated_at: '' },
   } as never;
   const view = render(<NoteEditor noteId="editor-load" content={firstContent} />);
-  await screen.findByTestId('editable');
+  // Snapshot the parse count only after the initial load finished parsing.
+  await waitFor(() =>
+    expect(screen.getByTestId('editable')).toHaveAttribute('data-editable', 'true')
+  );
+  await waitFor(() => expect(mocks.editor.tryParseMarkdownToBlocks).toHaveBeenCalled());
   const parsed = mocks.editor.tryParseMarkdownToBlocks.mock.calls.length;
   view.rerender(<NoteEditor noteId="editor-load" content={nextContent} />);
   expect(screen.getByTestId('metadata')).toHaveTextContent('new title tag');

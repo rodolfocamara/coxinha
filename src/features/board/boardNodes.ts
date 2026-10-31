@@ -1,90 +1,91 @@
+import type { CSSProperties } from 'react';
+import type { Edge, Node } from '@xyflow/react';
 import type { Note } from '../../lib/bindings';
-import type { Board, BoardItem } from './model';
-import { itemLayer, editingSize, progressColor } from './model';
+import { resolveNote } from '../workspace/workspaceModel';
 import { areaProgress } from './hierarchy';
+import { itemLayer, type Board, type BoardItem } from './model';
 import { childBounds } from './resizeBounds';
-import type { EditorFocusRequest } from '../notes/editorFocusRequest';
+
 type Args = {
   board: Board;
+  notes: Note[];
   measured: Map<string, { width: number; height: number }>;
   selected: string | null;
   dropTarget: string | null;
-  resolveNote: (item: BoardItem) => Note | undefined;
-  title: (item: BoardItem) => string;
-  editor: { editing: { cardId?: string; focusRequest: EditorFocusRequest } | null };
-  creation: {
-    pending: { item: BoardItem; failed: boolean } | null;
-    retry: () => void;
-    dismiss: () => void;
-  };
-  openNote: (id: string, cardId?: string) => Promise<void>;
-  closeEditor: () => void;
-  patch: (id: string, values: Partial<BoardItem>) => void;
-  layer: (id: string, direction: 'front' | 'back') => void;
+  pop: string | null;
+  promote: (id: string) => void;
+  label: (item: BoardItem, note: Note | undefined) => string;
 };
+
+/**
+ * Board items as React Flow nodes. The node wrapper is the element React Flow
+ * moves with a transform, so it carries the shared view-transition name
+ * (`card-<itemId>`, class `card`): Hoje's preview and the drawer morph into it.
+ */
 export function boardNodes({
   board,
+  notes,
   measured,
   selected,
   dropTarget,
-  resolveNote,
-  title,
-  editor,
-  creation,
-  openNote,
-  closeEditor,
-  patch,
-  layer,
-}: Args) {
-  return [...board.items, ...(creation.pending ? [creation.pending.item] : [])].map((i, index) => {
-    const note = resolveNote(i);
-    const editing = i.kind !== 'area' && !!note && editor.editing?.cardId === i.id;
-    const pending = creation.pending?.item.id === i.id;
-    const size = editing || pending ? editingSize(i) : i;
+  pop,
+  promote,
+  label,
+}: Args): Node[] {
+  return board.items.map((i, index) => {
+    const note = resolveNote(notes, i);
+    const card = i.kind !== 'area';
+    const style = {
+      width: i.width,
+      ...(card
+        ? { viewTransitionName: `card-${i.id}`, viewTransitionClass: 'card' }
+        : { height: i.height, viewTransitionName: `area-${i.id}` }),
+    } as CSSProperties;
     return {
       id: i.id,
       type: i.kind,
       position: { x: i.x, y: i.y },
-      data: {
-        label: title(i),
-        childBounds: i.kind === 'area' ? childBounds(board, i.id, measured) : undefined,
-        ...areaProgress(board, i.id),
-        dropTarget: dropTarget === i.id,
-        item: { ...i, noteId: note?.id ?? i.noteId },
-        editing,
-        focusRequest: editing ? editor.editing?.focusRequest : undefined,
-        pending,
-        failed: creation.pending?.failed,
-        retry: creation.retry,
-        dismiss: creation.dismiss,
-        edit: () => note && void openNote(note.id, i.id),
-        close: closeEditor,
-        progress:
-          i.kind === 'area'
-            ? areaProgress(board, i.id).progress
-            : (progress: number) => patch(i.id, { progress }),
-        layer: (direction: 'front' | 'back') => layer(i.id, direction),
-      },
-      measured: measured.get(i.id) ?? { width: size.width, height: size.height },
-      width: size.width,
-      height: i.kind === 'area' ? size.height : undefined,
-      style: {
-        width: size.width,
-        ...(i.kind === 'area'
-          ? {
-              height: size.height,
-              borderColor: areaProgress(board, i.id).count
-                ? progressColor(areaProgress(board, i.id).progress ?? 0)
-                : undefined,
-            }
-          : {}),
-      },
-      dragHandle: i.kind !== 'area' ? '.board-card-body' : undefined,
-      className: `board-${i.color} board-${i.kind}${editing ? ' board-editing' : ''}${dropTarget === i.id ? ' board-drop-target' : ''}`,
+      data: card
+        ? {
+            item: i,
+            title: note?.title ?? '',
+            noteId: note?.id ?? null,
+            missing: !note,
+            pop: pop === i.id,
+            promote: () => promote(i.id),
+          }
+        : {
+            label: i.label,
+            color: i.color,
+            ...areaProgress(board, i.id),
+            dropTarget: dropTarget === i.id,
+            childBounds: childBounds(board, i.id, measured),
+          },
+      measured: measured.get(i.id) ?? { width: i.width, height: i.height },
+      width: i.width,
+      height: card ? undefined : i.height,
+      style,
+      className: `ws-node ws-node-${i.kind}${dropTarget === i.id ? ' ws-drop-target' : ''}`,
       selected: i.id === selected,
-      draggable: !pending,
       zIndex: itemLayer(i, index),
-      ariaLabel: title(i),
-    };
+      ariaLabel: label(i, note),
+      ariaRole: 'button',
+    } as Node;
   });
+}
+
+export function boardEdges(
+  board: Board,
+  selectedEdge: string | null,
+  fresh: string | null,
+  label: (edge: { source: string; target: string }) => string
+): Edge[] {
+  return board.edges.map((e) => ({
+    ...e,
+    type: 'dependency',
+    selected: e.id === selectedEdge,
+    markerEnd: { type: 'arrowclosed' as never, width: 16, height: 16 },
+    data: { fresh: e.id === fresh },
+    ariaLabel: label(e),
+  }));
 }

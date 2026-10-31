@@ -96,3 +96,14 @@ export const boardSession = {
   },
 };
 registerSaveParticipant(() => boardSession.flush());
+
+/** Tests only: forget the process-wide board so each test loads its own. */
+export function resetBoardSessionForTests() {
+  current = null;
+  dirty = false;
+  running = null;
+  loading = null;
+  error = null;
+  generation = 0;
+  listeners = new Set();
+}

@@ -115,8 +115,9 @@ impl InventoryPager {
             token.after = row.get(0)?;
             let bytes: i64 = row.get(2)?;
             ensure!(bytes <= 1024 * 1024, CurationError::InventoryRow);
-            profiles
-                .push(json!({"personId":row.get::<_,String>(1)?,"name":row.get::<_,String>(3)?}));
+            let id: String = row.get(1)?;
+            let (active, meetings) = active_samples(store, &id)?;
+            profiles.push(json!({"personId":id,"name":row.get::<_,String>(3)?,"activeSamples":active,"sampleMeetings":meetings}));
         }
         let scanned = profiles.len();
         let next = if scanned > 0 && token.after < token.upper {
@@ -181,6 +182,16 @@ impl InventoryPager {
             json!({"profileGeneration":token.generation,"personId":person,"samples":samples,"nextCursor":next,"scannedRows":scanned}),
         )
     }
+}
+/// True per-person totals for the people list (spec 0096 decision): bounded by
+/// the page size, read in the same snapshot, and counted with the same rule as
+/// `sample_projection`'s "active" state. Malformed provenance never blocks it.
+fn active_samples(store: &Store, person: &str) -> Result<(i64, i64)> {
+    Ok(store.profiles.query_row(
+        "SELECT count(*), count(DISTINCT CASE WHEN json_valid(s.provenance_json) THEN json_extract(s.provenance_json,'$.meeting') END) FROM voice_sample s JOIN assignment a ON a.id=s.assignment_id WHERE s.person_id=?1 AND s.revoked=0 AND a.state='confirmed' AND a.revision=s.assignment_revision AND a.person_id=?1",
+        [person],
+        |r| Ok((r.get(0)?, r.get(1)?)),
+    )?)
 }
 fn sample_projection(store: &Store, id: &str, person: &str) -> Result<Value> {
     let mut q=store.profiles.prepare("SELECT s.id,s.assignment_id,s.assignment_revision,a.revision,s.revoked,a.state,a.person_id,s.space_id,s.provenance_json,s.created_at,e.model,e.revision,e.model_hash,e.preprocessing,e.dimension FROM voice_sample s LEFT JOIN assignment a ON a.id=s.assignment_id LEFT JOIN embedding_space e ON e.id=s.space_id WHERE s.id=?1 AND s.person_id=?2")?;

@@ -256,3 +256,41 @@ it('honors a fresh explicit open request for the already initialized board note'
   rendered.rerender(view(editorFocusRequest()));
   await waitFor(() => expect(mocks.editor.focus).toHaveBeenCalledTimes(2));
 });
+
+it('workspace variant: compact side panel with every note action, overlay and Workspace callbacks', async () => {
+  const onDeleted = vi.fn();
+  const onDuplicated = vi.fn();
+  const overlay = vi.fn(() => <p>checklist overlay</p>);
+  mocks.duplicate.mockResolvedValue({ id: 'copy-id' });
+  mocks.delete.mockResolvedValue(undefined);
+  const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
+  render(
+    <QueryClientProvider client={new QueryClient()}>
+      <NoteEditor
+        noteId="embedded-note"
+        content={content}
+        variant="workspace"
+        overlay={overlay}
+        onDeleted={onDeleted}
+        onDuplicated={onDuplicated}
+      />
+    </QueryClientProvider>
+  );
+  expect(await screen.findByText('checklist overlay')).toBeInTheDocument();
+  expect(overlay).toHaveBeenCalledWith(mocks.editor);
+  // No page heading (the Markdown H1 is the title); localized BlockNote UI.
+  expect(screen.queryByRole('heading', { name: 'Standalone title' })).toBeNull();
+  expect(mocks.dictionary).toBe(en);
+  expect(screen.getByTestId('note-editor-surface').parentElement).toHaveClass('cx-note-embedded');
+  // Backlinks render under the text instead of a column.
+  expect(mocks.backlinks).toHaveBeenCalled();
+  fireEvent.click(screen.getByRole('button', { name: 'More actions' }));
+  fireEvent.click(await screen.findByRole('menuitem', { name: /^Duplicate/ }));
+  await waitFor(() => expect(onDuplicated).toHaveBeenCalledWith('copy-id'));
+  fireEvent.click(screen.getByRole('button', { name: 'More actions' }));
+  fireEvent.click(await screen.findByRole('menuitem', { name: 'Move to Trash' }));
+  await waitFor(() => expect(onDeleted).toHaveBeenCalledOnce());
+  expect(mocks.delete).toHaveBeenCalledWith('embedded-note');
+  expect(mocks.navigate).not.toHaveBeenCalled();
+  confirm.mockRestore();
+});

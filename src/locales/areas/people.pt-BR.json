@@ -1,0 +1,162 @@
+{
+  "people": {
+    "title": "Pessoas",
+    "add": "Adicionar",
+    "refresh": "Atualizar lista",
+    "search": "Buscar pessoa",
+    "listLabel": "Pessoas",
+    "created": "Cadastro de {{name}} criado.",
+    "noMatch": "Ninguém com esse nome entre as pessoas carregadas.",
+    "loadMore": "Carregar mais pessoas",
+    "restart": "Recomeçar",
+    "retry": "Tentar de novo",
+    "row": {
+      "samples_one": "{{count}} amostra de voz",
+      "samples_other": "{{count}} amostras de voz",
+      "samplesPartial": "{{count}}+ amostras de voz",
+      "noSamples": "sem amostras",
+      "unknown": "abra para ver as amostras",
+      "meetings_one": "{{count}} reunião",
+      "meetings_other": "{{count}} reuniões",
+      "meetingsLabel": "Reuniões com amostras de voz"
+    },
+    "detail": {
+      "pick": "Escolha uma pessoa para ver as amostras de voz.",
+      "inMeetings_one": "em {{count}} reunião",
+      "inMeetings_other": "em {{count}} reuniões",
+      "samplesTitle": "Amostras de voz",
+      "samplesHint": "usadas só para sugerir quem fala",
+      "noSamples": "Nenhuma amostra de voz ainda. Elas são guardadas quando você confirma quem fala numa reunião e escolhe amostras para lembrar.",
+      "loadMore": "Carregar mais amostras",
+      "technical": "Detalhes técnicos",
+      "refresh": "Atualizar",
+      "revoked_one": "{{count}} revogada",
+      "revoked_other": "{{count}} revogadas",
+      "invalidated_one": "{{count}} invalidada",
+      "invalidated_other": "{{count}} invalidadas"
+    },
+    "sample": {
+      "saved": "guardada em {{date}}",
+      "unknownMeeting": "Gravação",
+      "listen": "Ouvir amostra",
+      "stop": "Parar de ouvir",
+      "playError": "Não deu para tocar esta amostra.",
+      "revoke": "Revogar",
+      "states": {
+        "revoked": "revogada",
+        "invalidated": "invalidada"
+      }
+    },
+    "revoke": {
+      "title": "Revogar esta amostra?",
+      "body": "Ela deixa de ser usada para sugerir quem fala. A gravação e o histórico continuam.",
+      "reason": "Motivo",
+      "reasonHint": "Obrigatório, uma linha curta.",
+      "confirm": "Revogar amostra",
+      "cancel": "Cancelar"
+    },
+    "inspector": {
+      "recent": "Reuniões recentes",
+      "none": "Nenhuma reunião com amostras ainda.",
+      "privacyTitle": "Privacidade",
+      "privacy": "As amostras ficam neste computador. Revogar uma amostra para de usá-la em sugestões.",
+      "teachTitle": "Como ensinar uma voz"
+    },
+    "settings": {
+      "title": "Ajustes",
+      "sectionsLabel": "Seções dos ajustes",
+      "sections": {
+        "general": "Geral",
+        "recording": "Gravação",
+        "transcription": "Transcrição local",
+        "integrations": "Integrações",
+        "shortcuts": "Atalhos",
+        "storage": "Armazenamento",
+        "diagnostics": "Diagnóstico"
+      },
+      "descriptions": {
+        "general": "Aparência.",
+        "recording": "Valem para o botão de gravar, para as reuniões e para chamadas detectadas.",
+        "transcription": "Roda neste computador, nada é enviado para fora.",
+        "integrations": "Opcional. Nada sai do computador sem você conectar.",
+        "shortcuts": "Os atalhos globais funcionam mesmo com a janela escondida.",
+        "storage": "Suas notas são arquivos Markdown nesta pasta.",
+        "diagnostics": "Texto para colar ao relatar um problema."
+      },
+      "theme": {
+        "title": "Tema",
+        "hint": "Automático segue o sistema.",
+        "auto": "Automático",
+        "light": "Claro",
+        "dark": "Escuro"
+      },
+      "ambient": {
+        "title": "Fundo com gradiente",
+        "hint": "Desligue para um fundo liso."
+      },
+      "mic": {
+        "title": "Microfone",
+        "hint": "Sua voz."
+      },
+      "output": {
+        "title": "Áudio do computador",
+        "hint": "O que os outros falam na chamada."
+      },
+      "devices": {
+        "systemDefault": "{{name}} (padrão do sistema)",
+        "none": "Nenhum dispositivo encontrado",
+        "loading": "Procurando dispositivos…",
+        "error": "Não deu para listar os dispositivos de áudio.",
+        "retry": "Tentar de novo",
+        "liveNote": "A gravação atual continua com os dispositivos de quando começou; a troca vale para a próxima."
+      },
+      "detection": {
+        "title": "Avisar quando uma chamada começar",
+        "hint": "Teams, Meet, Zoom. Linux com PipeWire ou PulseAudio."
+      },
+      "transcription": {
+        "engine": "Transcrição",
+        "diarizer": "Separação de falantes",
+        "configured": "Configurada",
+        "notConfigured": "Não configurada",
+        "perMeeting": "Cada reunião escolhe os modelos na aba Transcrição.",
+        "noDefault": "Nenhum modelo padrão nos ajustes do app."
+      },
+      "storage": {
+        "folder": "Pasta das notas"
+      },
+      "diagnostics": {
+        "title": "Informações de diagnóstico"
+      },
+      "shortcuts": {
+        "toggleRecording": "Gravar ou parar a gravação"
+      }
+    },
+    "palette": {
+      "title": "Paleta de comandos",
+      "placeholder": "Buscar notas ou executar uma ação",
+      "groups": {
+        "actions": "Ações",
+        "goTo": "Ir para",
+        "notes": "Notas"
+      },
+      "actions": {
+        "record": "Gravar agora",
+        "stop": "Parar gravação",
+        "newMeeting": "Nova reunião",
+        "newNote": "Nova nota",
+        "importAudio": "Importar áudio",
+        "toggleTheme": "Alternar tema claro ou escuro",
+        "deleteCurrentNote": "Excluir esta nota",
+        "deleteNote": "Excluir nota"
+      },
+      "empty": "Nada encontrado para “{{query}}”.",
+      "hints": {
+        "navigate": "navegar",
+        "open": "abrir",
+        "delete": "excluir nota",
+        "close": "fechar"
+      }
+    }
+  }
+}

@@ -1,9 +1,9 @@
 import { create } from 'zustand';
 import type { ActiveCall } from '../../lib/bindings';
 import { library } from '../meetings/library';
-import { selectDevice } from '../meetings/useCaptureDevices';
 import { sessions, type SessionInput } from '../sessions/sessions';
-import { startSessionCapture } from '../sessions/sessionCapture';
+import { loadDevices, startCapture, stopCapture } from '../capture/captureActions';
+import { useCaptureStore } from '../capture/captureStore';
 import type { CalendarEvent } from '../agenda/calendar';
 import { callKey, trackRecordedCall, useMeetingDetection } from './meetingDetection';
 
@@ -68,15 +68,13 @@ export async function recordDetectedCall(call: ActiveCall, title: string, event?
       failure = 'callEnded';
       throw new Error(failure);
     }
-    const status = await library.status();
-    if (status.active || status.processing) {
+    const { status, reachable } = useCaptureStore.getState();
+    if (!reachable || status?.active || status?.processing) {
       failure = 'captureBusy';
       throw new Error(failure);
     }
-    const sources = await library.sources();
-    const mic = selectDevice(sources, '', false),
-      output = selectDevice(sources, '', true);
-    if (!mic || !output) {
+    const devices = await loadDevices();
+    if (!devices?.mic || !devices.output) {
       failure = 'devicesMissing';
       throw new Error(failure);
     }
@@ -92,8 +90,8 @@ export async function recordDetectedCall(call: ActiveCall, title: string, event?
       failure = 'callEnded';
       throw new Error(failure);
     }
-    const next = await startSessionCapture(attempt.sessionId, mic, output);
-    if (!next.active) throw new Error('Capture was not acknowledged');
+    const next = await startCapture({ sessionId: attempt.sessionId, title: attempt.input.title });
+    if (!next?.active) throw new Error('Capture was not acknowledged');
     // Only the explicit start acknowledgement grants ownership. Metadata errors
     // below cannot retry or invalidate a successfully started capture.
     trackRecordedCall(call);
@@ -123,7 +121,7 @@ export async function stopDetectedCallRecording() {
   if (useDirectCapture.getState().busy) return;
   useDirectCapture.setState({ busy: true, error: null });
   try {
-    await library.stop();
+    if (!(await stopCapture())) throw new Error('stop failed');
     useDirectCapture.setState({ receipt: null, attempt: null });
     useMeetingDetection.setState({
       recording: false,
@@ -144,7 +142,7 @@ export async function switchToDetectedCall(call: ActiveCall, title: string, even
   if (useDirectCapture.getState().busy || !title.trim()) return;
   useDirectCapture.setState({ busy: true, error: null });
   try {
-    await library.stop();
+    if (!(await stopCapture())) throw new Error('stop failed');
     useDirectCapture.setState({ receipt: null, attempt: null, busy: false });
     useMeetingDetection.setState({
       recording: false,
@@ -159,7 +157,3 @@ export async function switchToDetectedCall(call: ActiveCall, title: string, even
   }
   await recordDetectedCall(call, title, event);
 }
-
-export const useRecordingStatusHost = create<{ activeMounted: boolean }>(() => ({
-  activeMounted: false,
-}));

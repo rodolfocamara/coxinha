@@ -35,6 +35,7 @@ file. Lean format (look at any existing ADR as a template).
 | 0018 | [Biblioteca local e identidade confirmada](./0018-meeting-library-and-identity.md) | Accepted |
 
 | 0021 | [Separate durable capture from local incremental inference](./0021-local-incremental-asr.md) | Accepted |
+| 0022 | [Reconcile orphan captures when the library opens](./0022-orphan-capture-reconciliation.md) | Accepted |
 
 ## Template
 

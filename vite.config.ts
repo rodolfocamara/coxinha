@@ -24,7 +24,8 @@ export default defineConfig(async () => ({
       ? { protocol: 'ws', host, port: 1421 }
       : undefined,
     watch: {
-      ignored: ['**/src-tauri/**'],
+      // Cargo output and docs never feed the frontend; watching them exhausts inotify.
+      ignored: ['**/src-tauri/**', '**/target/**', '**/docs/**'],
     },
   },
 

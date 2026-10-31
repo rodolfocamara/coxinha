@@ -123,7 +123,9 @@
     "refreshDevices": "Atualizar dispositivos",
     "useSystemDefaults": "Usar padrões do sistema",
     "loadingDevices": "Detectando dispositivos de áudio…",
-    "devicesFailed": "Não foi possível atualizar os dispositivos. Verifique o serviço de áudio e tente novamente."
+    "devicesFailed": "Não foi possível atualizar os dispositivos. Verifique o serviço de áudio e tente novamente.",
+    "import": "Importar áudio WAV",
+    "importTitle": "Título da reunião importada"
   },
   "noteError": {
     "title": "Nota indisponível",
@@ -282,25 +284,7 @@
       "heading": "Atalhos de teclado",
       "rebindComingSoon": "Atalhos globais configurados. A edição pelo aplicativo estará disponível em uma próxima versão."
     },
-    "layout": {
-      "description": "Seu espaço de trabalho, aparência e preferências.",
-      "sections": "Seções das configurações"
-    },
-    "title": "Configurações",
-    "loading": "Carregando preferências…",
-    "appearance": {
-      "heading": "Aparência",
-      "themeHint": "Automático acompanha o tema do sistema.",
-      "theme": {
-        "auto": "Automático",
-        "light": "Claro",
-        "dark": "Escuro"
-      }
-    },
-    "integrations": {
-      "heading": "Integrações",
-      "description": "Contas externas que o Coxinha lê. Nada é conectado até você escolher Conectar."
-    }
+    "loading": "Carregando preferências…"
   },
   "calendar": {
     "accountChanged": "A conta da conexão mudou. Desconecte e conecte novamente.",
@@ -407,7 +391,9 @@
     "recordingPending": "Detalhes da gravação pendentes",
     "transcriptPending": "Gravação confirmada. A transcrição ficará disponível aqui após a captura e o processamento local.",
     "activeAudioFailed": "A gravação está ativa nesta sessão. Uma atualização falhou. Tente novamente aqui ou use os controles de gravação desta sessão.",
-    "ownedCaptureHelp": "Esta sessão está gravando. Pause ou pare e salve aqui."
+    "ownedCaptureHelp": "Esta sessão está gravando. Pause ou pare e salve aqui.",
+    "recordThis": "Gravar esta reunião",
+    "controlsInStrip": "controles na barra de gravação, no topo"
   },
   "noteMenu": {
     "title": "Ações da nota",
@@ -642,9 +628,6 @@
     }
   },
   "meetingDetection": {
-    "settings": "Detecção de reuniões",
-    "enable": "Avisar quando uma possível reunião começar",
-    "description": "Reconhece fluxos de áudio de chamadas e pergunta antes de gravar. Nada começa sem a sua confirmação.",
     "unsupported": "A detecção automática está disponível no Linux com PulseAudio ou PipeWire.",
     "unavailable": "Detecção de reuniões indisponível. Verifique o serviço de áudio; o Coxinha tentará novamente.",
     "title": "Possível reunião",
@@ -703,14 +686,9 @@
   },
   "peopleDirectory": {
     "title": "Pessoas e vozes",
-    "description": "Um cadastro local para todas as reuniões. Mantenha as pessoas e as amostras de voz que você confirmou.",
-    "created": "{{name}} adicionado ao cadastro global.",
     "training": "Para ensinar uma voz, abra uma reunião, identifique o falante e selecione as amostras que deseja guardar. Cadastrar uma pessoa, por si só, não treina o reconhecimento.",
-    "search": "Buscar nas pessoas carregadas",
     "meetingContext": "Identifique quem falou nesta reunião. As pessoas e amostras confirmadas pertencem ao cadastro global Pessoas e vozes.",
-    "noMatch": "Nenhuma correspondência entre as pessoas carregadas. Carregue mais pessoas para continuar buscando.",
     "addPerson": "Adicionar pessoa",
-    "refreshList": "Atualizar lista",
     "form": {
       "title": "Nova pessoa",
       "description": "Fica apenas no cadastro local. Cadastrar uma pessoa não registra a voz dela.",
@@ -725,8 +703,7 @@
     "empty": {
       "title": "Nenhuma pessoa ainda",
       "description": "Adicione as pessoas com quem você se reúne e depois ensine as vozes a partir de uma reunião."
-    },
-    "personId": "ID {{id}}"
+    }
   },
   "recordingLayout": {
     "transport": "Ações da gravação"

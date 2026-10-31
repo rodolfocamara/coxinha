@@ -111,7 +111,7 @@ fn setup() -> anyhow::Result<(tempfile::TempDir, Library, String, String, String
         person
     );
     drop(store);
-    let library = Library::open(root)?;
+    let library = Library::open(root, None)?;
     Ok((d, library, query.job, person, sample))
 }
 fn request(

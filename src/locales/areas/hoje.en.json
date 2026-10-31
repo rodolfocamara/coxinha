@@ -1,0 +1,89 @@
+{
+  "hoje": {
+    "title": "Today",
+    "greeting": {
+      "morning": "Good morning.",
+      "afternoon": "Good afternoon.",
+      "evening": "Good evening."
+    },
+    "lede": {
+      "date": "{{date}}.",
+      "live": "<b>Recording {{title}}</b> now.",
+      "liveUntitled": "<b>Recording</b> now.",
+      "meetingsNext_one": "<b>{{count}} meeting</b> today, the next at {{time}}.",
+      "meetingsNext_other": "<b>{{count}} meetings</b> today, the next at {{time}}.",
+      "meetingsDone_one": "<b>{{count}} meeting</b> today, none left.",
+      "meetingsDone_other": "<b>{{count}} meetings</b> today, none left.",
+      "noMeetings": "No meetings today.",
+      "pending_one": "<b>{{count}} recording</b> waiting for review.",
+      "pending_other": "<b>{{count}} recordings</b> waiting for review."
+    },
+    "agenda": {
+      "title": "Today's agenda",
+      "all": "See all",
+      "allDay": "all day",
+      "outlook": "Outlook",
+      "people_one": "{{count}} person",
+      "people_other": "{{count}} people",
+      "onlyYou": "just you",
+      "recorded": "recorded",
+      "transcribed": "transcribed",
+      "noRecording": "no recording",
+      "prepare": "Prepare",
+      "open": "Open",
+      "empty": "Nothing scheduled today.",
+      "emptyNoOutlook": "Nothing scheduled today. Connect Outlook to see your events here.",
+      "connect": "Connect Outlook",
+      "loadError": "Could not load meetings.",
+      "calendarError": "Could not read the Outlook calendar."
+    },
+    "review": {
+      "title": "To review",
+      "failed_one": "transcription failed",
+      "failed_other": "transcriptions failed",
+      "notx_one": "without transcript",
+      "notx_other": "without transcript",
+      "more": "and {{count}} more",
+      "empty": "All reviewed.",
+      "loadError": "Could not check what needs review."
+    },
+    "notes": {
+      "title": "Recent notes",
+      "open": "Workspace",
+      "untitled": "Untitled",
+      "today": "today {{time}}",
+      "yesterday": "yesterday",
+      "empty": "No notes yet.",
+      "loadError": "Could not load notes."
+    },
+    "workspace": {
+      "title": "Workspace",
+      "open": "Open",
+      "hint": "Open workspace",
+      "progress": "{{label}} {{pct}}%",
+      "cardLabel": "{{title}}, {{pct}}% done",
+      "empty": "No activities on the board yet.",
+      "create": "Create the first activity",
+      "loadError": "Could not load the board."
+    },
+    "week": {
+      "title": "This week",
+      "recorded": "{{duration}} recorded",
+      "nothing": "nothing recorded",
+      "summary": "{{meetings}} · {{transcribed}} · {{failed}}",
+      "meetings_one": "{{count}} meeting",
+      "meetings_other": "{{count}} meetings",
+      "transcribed_one": "{{count}} transcribed",
+      "transcribed_other": "{{count}} transcribed",
+      "failed_one": "{{count}} failed",
+      "failed_other": "{{count}} failed",
+      "dayLabel": "{{day}}: {{duration}}",
+      "loadError": "Could not total the week.",
+      "transcribed_zero": "0 transcribed",
+      "failed_zero": "none failed",
+      "none": "No meetings this week."
+    },
+    "retry": "Try again",
+    "loading": "Loading…"
+  }
+}

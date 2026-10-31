@@ -4,6 +4,7 @@ import App from './App';
 import './lib/i18n';
 import { applyTheme, getThemePreference, resolveThemePreference } from './lib/theme';
 import './index.css';
+import './styles/motion.css';
 
 // Paint the right theme before React mounts — otherwise the first
 // frame flashes light-on-dark (or the other way). The persistent

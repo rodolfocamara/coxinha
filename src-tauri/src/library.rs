@@ -70,7 +70,7 @@ struct Worker {
     finalization_failed: Option<String>,
 }
 impl Library {
-    pub fn open(root: PathBuf) -> anyhow::Result<Self> {
+    pub fn open(root: PathBuf, notify: Option<Notifier>) -> anyhow::Result<Self> {
         let (sender, receiver) = mpsc::sync_channel::<Request>(16);
         let (ready_tx, ready_rx) = mpsc::sync_channel(1);
         std::thread::Builder::new()
@@ -78,6 +78,7 @@ impl Library {
             .spawn(move || {
                 let store = match Store::open(root).and_then(|store| {
                     store.recover_jobs()?;
+                    watch::reconcile_orphans(&store);
                     Ok(store)
                 }) {
                     Ok(store) => {
@@ -98,6 +99,7 @@ impl Library {
                     error: None,
                     finalization_failed: None,
                 };
+                let mut watch = watch::CaptureWatch::new(&worker, notify);
                 loop {
                     #[cfg(target_os = "linux")]
                     let wait = if worker.active.is_some() { 0 } else { 100 };
@@ -122,6 +124,7 @@ impl Library {
                         }
                     }
                     worker.pump();
+                    watch.observe(&worker);
                 }
             })?;
         ready_rx
@@ -342,8 +345,10 @@ mod commands;
 mod note_deletion;
 mod processing;
 mod sessions;
+mod watch;
 pub use commands::*;
 pub use sessions::*;
+pub use watch::Notifier;
 
 #[cfg(test)]
 mod tests;
