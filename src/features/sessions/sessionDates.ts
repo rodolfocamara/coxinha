@@ -80,7 +80,7 @@ function instant(value: string | null | undefined): Date | null {
   return Number.isFinite(date.getTime()) ? date : null;
 }
 /** Only this boundary accepts meeting.created_at's exact SQLite UTC schema default. */
-function recordingInstant(value: string | null | undefined): Date | null {
+export function recordingInstant(value: string | null | undefined): Date | null {
   const normalized = value?.replace(/^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2})$/, '$1T$2Z');
   return instant(normalized);
 }

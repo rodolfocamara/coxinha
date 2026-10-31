@@ -21,9 +21,7 @@ const bridge = vi.hoisted(() => ({
 vi.mock('@tauri-apps/api/core', () => ({ isTauri: () => bridge.native }));
 vi.mock('@tauri-apps/api/window', () => ({ getCurrentWindow: () => bridge }));
 import { WindowChrome } from './WindowChrome';
-import { AppShell } from './AppShell';
-import { useSidebar } from '../../lib/sidebar';
-vi.mock('./RecordingStatus', () => ({ RecordingStatus: () => null }));
+import { ShellFrame } from '../Shell/Shell';
 import { useWindowChrome } from './useWindowChrome';
 import { renderHook } from '@testing-library/react';
 
@@ -31,7 +29,6 @@ beforeEach(() => {
   vi.clearAllMocks();
   bridge.native = true;
   bridge.maximized = false;
-  useSidebar.getState().setOpen(true);
 });
 afterEach(cleanup);
 
@@ -181,41 +178,46 @@ describe('integrated window chrome', () => {
   });
 });
 
-it('shares native brand/header dragging, isolates controls and reports drag failures', async () => {
+it('drags from the recorder strip blank area, isolates controls and reports drag failures', async () => {
   const parentMouseDown = vi.fn();
   const view = render(
     <div onMouseDown={parentMouseDown}>
-      <AppShell rail={<button>Navigation</button>}>
+      <ShellFrame
+        strip={
+          <header>
+            <span>Coxinha</span>
+            <WindowChrome>
+              <button>Pause</button>
+            </WindowChrome>
+          </header>
+        }
+        nav={<button>Navigation</button>}
+      >
         <p>Workspace</p>
-      </AppShell>
+      </ShellFrame>
     </div>
   );
   await waitFor(() => expect(bridge.onResized).toHaveBeenCalledOnce());
-  const brandRegion = screen.getByTestId('brand-drag-region');
-  expect(fireEvent.mouseDown(brandRegion, { button: 0, detail: 1 })).toBe(false);
+  const region = screen.getByTestId('window-drag-region');
+  expect(fireEvent.mouseDown(region, { button: 0, detail: 1 })).toBe(false);
   expect(parentMouseDown).not.toHaveBeenCalled();
   expect(bridge.startDragging).toHaveBeenCalledOnce();
-  fireEvent.mouseDown(brandRegion, { button: 0, detail: 2 });
-  fireEvent.mouseDown(brandRegion, { button: 2, detail: 1 });
+  fireEvent.mouseDown(region, { button: 0, detail: 2 });
+  fireEvent.mouseDown(region, { button: 2, detail: 1 });
   const nestedContent = document.createElement('span');
-  brandRegion.appendChild(nestedContent);
+  region.appendChild(nestedContent);
   fireEvent.mouseDown(nestedContent, { button: 0, detail: 1 });
   nestedContent.remove();
   fireEvent.mouseDown(screen.getByText('Coxinha'), { button: 0, detail: 1 });
   fireEvent.mouseDown(screen.getByRole('button', { name: 'Navigation' }), { button: 0, detail: 1 });
-  fireEvent.mouseDown(screen.getByRole('button', { name: 'Collapse sidebar' }), {
-    button: 0,
-    detail: 1,
-  });
+  fireEvent.mouseDown(screen.getByRole('button', { name: 'Pause' }), { button: 0, detail: 1 });
   expect(bridge.startDragging).toHaveBeenCalledOnce();
   expect(bridge.toggleMaximize).toHaveBeenCalledOnce();
   bridge.startDragging.mockRejectedValueOnce(new Error('compositor unavailable'));
-  fireEvent.mouseDown(brandRegion, { button: 0, detail: 1 });
+  fireEvent.mouseDown(region, { button: 0, detail: 1 });
   expect(await screen.findByRole('alert')).toHaveTextContent('Window action failed');
-  fireEvent.mouseDown(screen.getByTestId('window-drag-region'), { button: 0, detail: 1 });
+  fireEvent.mouseDown(region, { button: 0, detail: 1 });
   await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
-  fireEvent.click(screen.getByRole('button', { name: 'Collapse sidebar' }));
-  expect(screen.getByRole('button', { name: 'Expand sidebar' })).toHaveFocus();
   expect(bridge.onResized).toHaveBeenCalledOnce();
   view.unmount();
   expect(bridge.stop).toHaveBeenCalledOnce();

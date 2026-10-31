@@ -4,7 +4,11 @@ import i18n from '../../lib/i18n';
 import { PeopleDirectory } from './PeopleDirectory';
 import { library } from './library';
 import { voiceCuration } from './voiceCuration';
-vi.mock('./library', () => ({ library: { available: vi.fn(), createPerson: vi.fn() } }));
+vi.mock('./library', () => ({
+  library: { available: vi.fn(), createPerson: vi.fn(), list: vi.fn() },
+}));
+vi.mock('@tanstack/react-router', () => ({ useNavigate: () => vi.fn() }));
+vi.mock('../sessions/sessions', () => ({ useSessions: () => ({ data: [] }) }));
 vi.mock('./voiceCuration', async (original) => ({
   ...(await original<typeof import('./voiceCuration')>()),
   voiceCuration: { profilesPage: vi.fn(), samplesPage: vi.fn(), revoke: vi.fn() },
@@ -14,6 +18,14 @@ beforeEach(async () => {
   vi.resetAllMocks();
   await i18n.changeLanguage('en');
   vi.mocked(library.available).mockReturnValue(true);
+  vi.mocked(library.list).mockResolvedValue([]);
+  vi.mocked(voiceCuration.samplesPage).mockImplementation(async (personId) => ({
+    profileGeneration: 1,
+    personId,
+    samples: [],
+    nextCursor: null,
+    scannedRows: 0,
+  }));
   vi.mocked(voiceCuration.profilesPage).mockResolvedValue({
     profileGeneration: 1,
     profiles: [],
@@ -23,7 +35,7 @@ beforeEach(async () => {
 });
 async function openSheet() {
   render(<PeopleDirectory />);
-  const add = screen.getAllByRole('button', { name: tr('peopleDirectory.addPerson') })[0];
+  const add = await screen.findByRole('button', { name: tr('people.add') });
   expect(add).toHaveAttribute('data-variant', 'primary');
   fireEvent.click(add);
   return screen.findByRole('dialog', { name: tr('peopleDirectory.form.title') });
@@ -74,7 +86,7 @@ it('cancels without any IPC and keeps the registry untouched', async () => {
   expect(library.createPerson).not.toHaveBeenCalled();
   expect(voiceCuration.profilesPage).toHaveBeenCalledTimes(1);
 });
-it('creates through the same IPC, closes the sheet and offers creation from the empty registry', async () => {
+it('creates through the same IPC, closes the sheet and opens the new person', async () => {
   vi.mocked(library.createPerson).mockResolvedValue('ana');
   const dialog = await openSheet();
   fireEvent.change(within(dialog).getByRole('textbox', { name: /Person name/ }), {
@@ -90,6 +102,15 @@ it('creates through the same IPC, closes the sheet and offers creation from the 
   );
   await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
   expect(library.createPerson).toHaveBeenCalledExactlyOnceWith('Ana', 'Written permission');
-  expect(await screen.findByText('Ana added to the global registry.')).toBeVisible();
+  expect(await screen.findByText(tr('people.created').replace('{{name}}', 'Ana'))).toBeVisible();
+  // The new person opens at once, even before their profile page is listed.
+  expect(await screen.findByRole('heading', { level: 2, name: 'Ana' })).toBeVisible();
+});
+it('offers creation from the empty registry', async () => {
+  render(<PeopleDirectory />);
   expect(await screen.findByText(tr('peopleDirectory.empty.title'))).toBeVisible();
+  expect(screen.getByRole('button', { name: tr('peopleDirectory.addPerson') })).toHaveAttribute(
+    'data-variant',
+    'primary'
+  );
 });

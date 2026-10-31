@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { invoke, isTauri } from '@tauri-apps/api/core';
-import { library } from '../meetings/library';
+import { useCaptureStore } from '../capture/captureStore';
 import {
   acceptDetectionStatus,
   useMeetingDetection,
@@ -20,9 +20,12 @@ export function CallDetectionController() {
     const poll = async () => {
       try {
         const status = await invoke<DetectionStatus>('call_detection_status');
-        // A busy/unavailable library cannot be assumed idle.
-        const capture = await library.status().catch(() => ({ active: true, processing: true }));
-        publish(status, !!capture.active || !!capture.processing);
+        // Capture state comes from the single controller; an unreachable library is not idle.
+        const capture = useCaptureStore.getState();
+        publish(
+          status,
+          !capture.reachable || !!capture.status?.active || !!capture.status?.processing
+        );
       } catch {
         if (live) useMeetingDetection.setState({ failed: true });
       } finally {

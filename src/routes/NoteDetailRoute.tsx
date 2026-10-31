@@ -1,77 +1,41 @@
-import { Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, type ErrorComponentProps, useParams, useRouter } from '@tanstack/react-router';
-import { queryOptions, useQuery } from '@tanstack/react-query';
-
-import { AppShell } from '../components/AppShell';
-import { commands, type NoteContent } from '../lib/bindings';
-import { NoteEditor, NoteLoadingSkeleton } from '../features/notes/NoteEditor';
+import { type ErrorComponentProps, useNavigate, useRouter } from '@tanstack/react-router';
+import { Button } from '../components/ui';
 import { noteFileRecoveryKey } from '../lib/noteFileErrors';
 import { NoteFileSettingsLink } from '../features/notes/NoteFileSettingsLink';
 import { NoteFileDiagnosticDetail } from '../features/notes/NoteFileDiagnosticDetail';
 
-export function noteContentQueryOptions(noteId: string) {
-  return queryOptions({
-    queryKey: ['note', noteId] as const,
-    queryFn: async (): Promise<NoteContent> => {
-      const r = await commands.getNote(noteId);
-      if (r.status === 'error') throw new Error(r.error);
-      return r.data;
-    },
-    // Keep cached content fresh until a save invalidates it.
-    staleTime: Infinity,
-  });
-}
-
-export function NoteDetailRoute() {
-  const { noteId } = useParams({ from: '/notes/$noteId' });
-  return (
-    <Suspense fallback={<NoteLoadingSkeleton />}>
-      <NoteDetailInner noteId={noteId} />
-    </Suspense>
-  );
-}
-
-function NoteDetailInner({ noteId }: { noteId: string }) {
-  const { t } = useTranslation();
-  const { data } = useQuery(noteContentQueryOptions(noteId));
-  if (!data) {
-    return <NoteLoadingSkeleton />;
-  }
-  const title = data.note.title || t('sidebar.untitled');
-  return (
-    <AppShell
-      trail={[t('nav.notes').toLowerCase(), `${title}.md`]}
-      tabs={[{ id: `note-${noteId}`, label: `${title}.md`, active: true }]}
-    >
-      <NoteEditor noteId={noteId} content={data} />
-    </AppShell>
-  );
-}
+// `/workspace/$noteId` renders the Workspace (side editor); the router still
+// preloads the note through these options and shows `NoteDetailError` when
+// the file cannot be read.
+export { noteContentQueryOptions } from '../features/notes/noteQuery';
 
 export function NoteDetailError({ error, reset }: ErrorComponentProps) {
   const { t } = useTranslation();
   const router = useRouter();
+  const navigate = useNavigate();
   const guidance = noteFileRecoveryKey(error);
   return (
-    <AppShell trail={[t('nav.notes').toLowerCase()]}>
-      <section className="p-8 space-y-4">
-        <h1>{t('noteError.title')}</h1>
-        <p role="alert">{t(guidance ?? 'noteError.description')}</p>
-        {guidance ? (
-          <NoteFileDiagnosticDetail error={error} />
-        ) : (
-          <p className="text-sm break-words">{error.message}</p>
-        )}
-        <div className="flex gap-4">
-          <Link to="/meetings">{t('noteError.meetings')}</Link>
-          <Link to="/notes">{t('noteError.notes')}</Link>
-          {guidance && <NoteFileSettingsLink />}
-          <button type="button" onClick={() => void router.invalidate().then(reset)}>
-            {t('noteError.retry')}
-          </button>
-        </div>
-      </section>
-    </AppShell>
+    <section className="p-8 space-y-4 max-w-[640px]">
+      <h1 className="text-lg font-semibold">{t('noteError.title')}</h1>
+      <p role="alert">{t(guidance ?? 'noteError.description')}</p>
+      {guidance ? (
+        <NoteFileDiagnosticDetail error={error} />
+      ) : (
+        <p className="text-sm break-words text-muted-foreground">{error.message}</p>
+      )}
+      {guidance && <NoteFileSettingsLink />}
+      <div className="flex flex-wrap gap-2">
+        <Button size="sm" variant="primary" onClick={() => void router.invalidate().then(reset)}>
+          {t('noteError.retry')}
+        </Button>
+        <Button size="sm" onClick={() => void navigate({ to: '/workspace' })}>
+          {t('noteError.notes')}
+        </Button>
+        <Button size="sm" variant="ghost" onClick={() => void navigate({ to: '/meetings' })}>
+          {t('noteError.meetings')}
+        </Button>
+      </div>
+    </section>
   );
 }

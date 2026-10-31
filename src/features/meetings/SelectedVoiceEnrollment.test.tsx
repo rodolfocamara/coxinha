@@ -97,6 +97,9 @@ for (const locale of ['en', 'pt-BR'])
     fireEvent.change(screen.getByRole('textbox'), {
       target: { value: 'Consent permits reuse; reviewed this sample' },
     });
+    // Under parallel load the selection can commit a render after the click event.
+    await waitFor(() => expect(screen.getAllByRole('checkbox')[1]).toBeChecked());
+    await waitFor(() => expect(submit()).toBeEnabled());
     fireEvent.click(submit());
     await waitFor(() =>
       expect(voiceCuration.enroll).toHaveBeenCalledWith({

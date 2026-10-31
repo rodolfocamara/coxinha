@@ -5,7 +5,7 @@ export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;
-  size?: 'sm' | 'md';
+  size?: 'xs' | 'sm' | 'md';
   /** Leading icon; for `iconOnly` buttons pass an `aria-label`. */
   icon?: ReactNode;
   iconOnly?: boolean;

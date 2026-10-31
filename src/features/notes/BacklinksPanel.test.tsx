@@ -72,7 +72,7 @@ describe('BacklinksPanel', () => {
     await user.click(await screen.findByRole('button', { name: 'Alpha' }));
 
     expect(navigate).toHaveBeenCalledWith({
-      to: '/notes/$noteId',
+      to: '/workspace/$noteId',
       params: { noteId: 'a' },
     });
   });

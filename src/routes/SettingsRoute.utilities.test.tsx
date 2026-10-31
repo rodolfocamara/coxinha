@@ -7,9 +7,6 @@ vi.mock('@tanstack/react-router', () => ({
   useNavigate: () => router.navigate,
   useLocation: () => ({ hash: router.hash }),
 }));
-vi.mock('../components/AppShell', () => ({
-  AppShell: ({ children }: { children: React.ReactNode }) => children,
-}));
 const view = vi.hoisted(() => ({ props: {} as Record<string, unknown> }));
 vi.mock('../features/settings/SettingsView', () => ({
   SettingsView: (props: { onOpenAgenda?: () => void }) => {
@@ -20,24 +17,24 @@ vi.mock('../features/settings/SettingsView', () => ({
 beforeEach(() => {
   router.navigate.mockReset();
   router.hash = '';
+  view.props = {};
 });
 afterEach(cleanup);
 
-it('scrolls settings inside the shell canvas, which clips its own overflow', () => {
-  render(<SettingsRoute />);
-  expect(screen.getByTestId('settings-scroll')).toHaveClass('h-full', 'overflow-auto');
-});
-
-it('keeps features in Settings sections, not footer text links', () => {
+it('renders only the settings view inside the shell, without the old frame or footer links', () => {
   render(<SettingsRoute />);
   expect(screen.queryAllByRole('link')).toHaveLength(0);
-  expect(screen.queryByRole('navigation')).toBeNull();
+  expect(view.props.initialSection).toBeUndefined();
 });
 
-it('lets the Outlook integration open the agenda and honours a requested section', () => {
+it('passes the hash as the section to land on, including legacy heading ids', () => {
   router.hash = 'integrations-heading';
   render(<SettingsRoute />);
   expect(view.props.initialSection).toBe('integrations-heading');
+});
+
+it('opens Reuniões (which absorbed the agenda) from the Outlook integration', () => {
+  render(<SettingsRoute />);
   fireEvent.click(screen.getByRole('button', { name: 'open agenda' }));
-  expect(router.navigate).toHaveBeenCalledWith({ to: '/agenda' });
+  expect(router.navigate).toHaveBeenCalledWith({ to: '/meetings' });
 });

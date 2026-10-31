@@ -4,27 +4,20 @@ import {
   createRoute,
   createMemoryHistory,
   Outlet,
+  redirect,
 } from '@tanstack/react-router';
 import { QueryClient } from '@tanstack/react-query';
 
 import { waitForNotePersistence } from './lib/noteSessions';
 import { AppError } from './lib/AppError';
 import { RootLayout } from './routes/__root';
-import { SessionRoute } from './routes/SessionRoute';
-import { HomeRoute } from './routes/HomeRoute';
-import { NotesIndexRoute } from './routes/NotesIndexRoute';
-import {
-  NoteDetailRoute,
-  NoteDetailError,
-  noteContentQueryOptions,
-} from './routes/NoteDetailRoute';
-import { CalendarRoute } from './routes/CalendarRoute';
+import { NoteDetailError, noteContentQueryOptions } from './routes/NoteDetailRoute';
+import { HojeRoute } from './features/hoje/HojeRoute';
+import { MeetingsHubRoute } from './features/meetingsHub/MeetingsHubRoute';
+import { validateMeetingsSearch } from './features/meetingsHub/meetingsSearch';
+import { WorkspaceRoute } from './features/workspace/WorkspaceRoute';
 import { PeopleRoute } from './routes/PeopleRoute';
-import { AgendaRoute } from './routes/AgendaRoute';
-import { MeetingsRoute } from './routes/MeetingsRoute';
 import { SettingsRoute } from './routes/SettingsRoute';
-import { DevMenuPreviewRoute } from './routes/DevMenuPreviewRoute';
-import { DevShellPreviewRoute } from './routes/DevShellPreviewRoute';
 
 export interface RouterContext {
   queryClient: QueryClient;
@@ -37,10 +30,24 @@ const rootRoute = createRootRouteWithContext<RouterContext>()({
   errorComponent: AppError,
 });
 
+// Spec 0096 information architecture: Hoje at `/`, Workspace (board + notes)
+// at `/workspace`, Reuniões at `/meetings`. Legacy paths redirect.
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
-  component: NotesIndexRoute,
+  component: HojeRoute,
+});
+
+const workspaceRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: 'workspace',
+  component: () => <Outlet />,
+});
+
+const workspaceIndexRoute = createRoute({
+  getParentRoute: () => workspaceRoute,
+  path: '/',
+  component: WorkspaceRoute,
 });
 
 const notesRoute = createRoute({
@@ -52,37 +59,66 @@ const notesRoute = createRoute({
 const notesIndexRoute = createRoute({
   getParentRoute: () => notesRoute,
   path: '/',
-  component: NotesIndexRoute,
+  beforeLoad: () => {
+    throw redirect({ to: '/workspace' });
+  },
+});
+
+const legacyNoteRoute = createRoute({
+  getParentRoute: () => notesRoute,
+  path: '$noteId',
+  beforeLoad: ({ params }) => {
+    throw redirect({ to: '/workspace/$noteId', params: { noteId: params.noteId } });
+  },
 });
 
 const noteDetailRoute = createRoute({
-  getParentRoute: () => notesRoute,
+  getParentRoute: () => workspaceRoute,
   path: '$noteId',
   loader: async ({ params, context }) => {
     // The editor owns recovery of retained unsaved text when a write fails.
     await waitForNotePersistence(params.noteId).catch(() => {});
     return context.queryClient.ensureQueryData(noteContentQueryOptions(params.noteId));
   },
-  component: NoteDetailRoute,
+  component: WorkspaceRoute,
   errorComponent: NoteDetailError,
 });
 
+// Spec 0096 P4: the Outlook agenda and the calendar live in Reuniões.
 const agendaRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'agenda',
-  component: AgendaRoute,
+  beforeLoad: () => {
+    throw redirect({ to: '/meetings' });
+  },
 });
 
 const calendarRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'calendar',
-  component: CalendarRoute,
+  beforeLoad: () => {
+    throw redirect({ to: '/meetings', search: { tab: 'month' } });
+  },
 });
 
 const meetingsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'meetings',
-  component: MeetingsRoute,
+  component: () => <Outlet />,
+});
+
+const meetingsIndexRoute = createRoute({
+  getParentRoute: () => meetingsRoute,
+  path: '/',
+  validateSearch: validateMeetingsSearch,
+  component: MeetingsHubRoute,
+});
+
+const meetingDetailRoute = createRoute({
+  getParentRoute: () => meetingsRoute,
+  path: '$sessionId',
+  validateSearch: validateMeetingsSearch,
+  component: MeetingsHubRoute,
 });
 
 const peopleRoute = createRoute({
@@ -94,12 +130,16 @@ const peopleRoute = createRoute({
 const legacyHomeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'home',
-  component: HomeRoute,
+  beforeLoad: () => {
+    throw redirect({ to: '/' });
+  },
 });
 const sessionRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'sessions/$sessionId',
-  component: SessionRoute,
+  beforeLoad: ({ params }) => {
+    throw redirect({ to: '/meetings/$sessionId', params: { sessionId: params.sessionId } });
+  },
 });
 
 const settingsRoute = createRoute({
@@ -108,35 +148,19 @@ const settingsRoute = createRoute({
   component: SettingsRoute,
 });
 
-// Dev-only preview routes (stripped from prod bundle by the
-// `import.meta.env.DEV` guard below). Let Playwright + humans
-// visually check UI primitives without a real note.
-const devMenuPreviewRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: 'dev/menu-preview',
-  component: DevMenuPreviewRoute,
-});
-
-const devShellPreviewRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: 'dev/shell-preview',
-  component: DevShellPreviewRoute,
-});
-
 const baseChildren = [
   indexRoute,
   legacyHomeRoute,
   sessionRoute,
-  notesRoute.addChildren([notesIndexRoute, noteDetailRoute]),
+  workspaceRoute.addChildren([workspaceIndexRoute, noteDetailRoute]),
+  notesRoute.addChildren([notesIndexRoute, legacyNoteRoute]),
   agendaRoute,
   calendarRoute,
   peopleRoute,
-  meetingsRoute,
+  meetingsRoute.addChildren([meetingsIndexRoute, meetingDetailRoute]),
   settingsRoute,
 ];
-const routeTree = rootRoute.addChildren(
-  import.meta.env.DEV ? [...baseChildren, devMenuPreviewRoute, devShellPreviewRoute] : baseChildren
-);
+const routeTree = rootRoute.addChildren(baseChildren);
 
 export function createAppRouter(queryClient: QueryClient) {
   // Memory history in F1 Tauri — no address bar, URL is internal

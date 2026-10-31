@@ -37,6 +37,16 @@
   --color-border: oklch(var(--fg-primary) / 0.08);
   --color-input: oklch(var(--fg-primary) / 0.55);
   --color-ring: oklch(var(--accent));
+  /* Status hues (spec 0096): red only for live capture, amber attention,
+     green done, blue Outlook. Each has a soft fill for pills and rows. */
+  --color-live: oklch(var(--live));
+  --color-live-soft: oklch(var(--live) / 0.16);
+  --color-warning: oklch(var(--warning));
+  --color-warning-soft: oklch(var(--warning) / 0.16);
+  --color-success: oklch(var(--success));
+  --color-success-soft: oklch(var(--success) / 0.14);
+  --color-info: oklch(var(--info));
+  --color-info-soft: oklch(var(--info) / 0.14);
 
   /* Control text size between text-xs (12px) and text-sm (14px), spec 0095. */
   --text-ui: 0.8125rem;
@@ -58,17 +68,20 @@
   --shell-rail-width: 256px;
   --shell-chrome-height: 48px;
   --shell-panel-width: 380px;
+  /* Redesigned shell (spec 0096): labelled icon rail and recorder strip. */
+  --shell-nav-width: 68px;
+  --shell-strip-height: 38px;
 }
 
 @layer base {
   :root {
     color-scheme: light;
     /* Light: warm off-white with readable secondary text. */
-    --bg-canvas: 0.96981 0.00541 95.1;
-    --bg-surface: 0.99668 0.00537 95.1;
-    --bg-surface-2: 0.93945 0.00676 97.36;
-    --bg-sunken: 0.92101 0.00811 98.89;
-    --bg-overlay: 0.99668 0.00537 95.1;
+    --bg-canvas: 0.9667 0.0027 84.6;
+    --bg-surface: 0.9958 0.0016 84.6;
+    --bg-surface-2: 0.9405 0.0035 84.6;
+    --bg-sunken: 0.9232 0.0045 84.6;
+    --bg-overlay: 0.9958 0.0016 84.6;
 
     --fg-primary: 0.28518 0.00564 271.22;
     --fg-secondary: 0.45364 0.00658 274.85;
@@ -82,9 +95,34 @@
     --accent-hover: 0.64 0.15 55;
     --accent-soft: 0.935 0.035 65;
 
-    --success: 0.62 0.08 150;
-    --warning: 0.72 0.11 80;
+    --success: 0.55 0.11 158;
+    --warning: 0.6 0.12 75;
     --danger: 0.56 0.12 30;
+    --live: 0.6 0.19 31;
+    --info: 0.52 0.14 258;
+
+    /* Ambient gradient blobs behind the app; Ajustes can switch it off. */
+    --blob-a: 0.84 0.09 55 / 0.2;
+    --blob-b: 0.85 0.07 180 / 0.14;
+    --blob-c: 0.8 0.08 265 / 0.14;
+
+    /* Person hues for speakers and avatars: ink on a soft fill. */
+    --p1: 0.6 0.13 50;
+    --p1-bg: 0.9 0.04 55;
+    --p2: 0.52 0.14 345;
+    --p2-bg: 0.89 0.04 345;
+    --p3: 0.54 0.08 225;
+    --p3-bg: 0.9 0.03 220;
+    --p4: 0.56 0.11 135;
+    --p4-bg: 0.91 0.04 135;
+
+    /* Motion (spec 0096): speed first, only transform and opacity. */
+    --m-instant: 80ms;
+    --m-fast: 140ms;
+    --m-med: 200ms;
+    --m-zoom: 380ms;
+    --e-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+    --e-spring: cubic-bezier(0.34, 1.5, 0.5, 1);
 
     /* Motion tokens — see DESIGN.md §6. */
     --dur-fast: 120ms;
@@ -97,11 +135,11 @@
   .dark,
   [data-theme='dark'] {
     color-scheme: dark;
-    --bg-canvas: 0.26465 0.00575 271.2;
-    --bg-surface: 0.29633 0.00613 258.36;
-    --bg-surface-2: 0.33637 0.00752 264.47;
-    --bg-sunken: 0.24794 0.00585 271.18;
-    --bg-overlay: 0.31671 0.00764 264.46;
+    --bg-canvas: 0.1645 0.0055 271;
+    --bg-surface: 0.2085 0.0065 271;
+    --bg-surface-2: 0.2455 0.0075 271;
+    --bg-sunken: 0.1495 0.005 271;
+    --bg-overlay: 0.2235 0.007 271;
 
     --fg-primary: 0.94548 0.00675 97.35;
     --fg-secondary: 0.81001 0.00837 98.91;
@@ -113,10 +151,26 @@
     --accent-hover: 0.81 0.135 55;
     --accent-soft: 0.32 0.06 55;
 
+    --success: 0.8 0.11 158;
+    --warning: 0.84 0.11 80;
+    --live: 0.69 0.19 33;
+    --info: 0.76 0.11 258;
+    --blob-a: 0.74 0.14 55 / 0.13;
+    --blob-b: 0.74 0.11 190 / 0.09;
+    --blob-c: 0.6 0.15 268 / 0.09;
+    --p1: 0.78 0.11 55;
+    --p1-bg: 0.33 0.04 55;
+    --p2: 0.72 0.11 340;
+    --p2-bg: 0.31 0.04 340;
+    --p3: 0.77 0.07 220;
+    --p3-bg: 0.33 0.04 220;
+    --p4: 0.81 0.1 135;
+    --p4-bg: 0.34 0.05 135;
+
     /* Keep surface edges visible without turning dividers into chrome. */
     --danger: 0.75 0.11 30;
     --color-destructive-foreground: oklch(var(--fg-on-accent));
-    --color-border: oklch(0.58 0.006 80 / 0.48);
+    --color-border: oklch(1 0 0 / 0.08);
   }
 
   * {

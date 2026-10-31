@@ -1,117 +1,132 @@
-/* Layered (spec 0095) so utilities in JSX override these defaults. */
+/* Ajustes (spec 0096 P6): row grammar, switch and segmented control. */
 /* Declare Tailwind's layer order first: whichever file loads first fixes it. */
 @layer theme, base, components, utilities;
 @layer components {
-  .settings-page {
-    max-width: 1080px;
-    margin: 0 auto;
-    padding: 24px;
-  }
-  .settings-page > header {
-    margin-bottom: 24px;
-  }
-  .settings-page h1 {
-    font-size: 22px;
-    font-weight: 600;
-  }
-  .settings-page > header p {
-    margin-top: 5px;
-    color: var(--color-muted-foreground);
-    font-size: 13px;
-  }
-  .settings-layout {
-    display: grid;
-    grid-template-columns: 160px minmax(0, 1fr);
-    gap: 32px;
-    align-items: start;
-  }
-  .settings-navigation {
-    position: sticky;
-    top: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .settings-navigation a {
-    display: flex;
-    gap: 9px;
-    align-items: center;
-    padding: 9px 10px;
-    border-radius: var(--radius-md);
-    color: var(--color-muted-foreground);
-    font-size: 13px;
-  }
-  .settings-navigation a:hover,
-  .settings-navigation a:focus-visible {
-    color: var(--color-foreground);
-    background: var(--color-secondary);
-  }
-  .settings-content {
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-  }
-  .settings-content > section,
-  .settings-content > fieldset {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: 20px;
-    min-width: 0;
-    background: var(--color-card);
-  }
-  /* Sections that hold their own cards (Integrations) skip the outer frame. */
-  .settings-content > section.settings-plain {
-    border: 0;
-    padding: 0;
-    background: none;
-  }
-  .settings-content > fieldset > legend {
-    float: left;
-    width: 100%;
-    margin-bottom: 12px;
-  }
-  .settings-content h2,
-  .settings-content legend {
-    font-size: 14px;
-    font-weight: 600;
-    scroll-margin-top: 24px;
-  }
-  .settings-content code,
-  .settings-content pre {
-    overflow-wrap: anywhere;
-  }
-  .settings-content li {
-    border-bottom: 1px solid var(--color-border);
-    padding-block: 10px;
-  }
-  .settings-content li:last-child {
-    border-bottom: 0;
-  }
-  @media (max-width: 1000px) {
-    .settings-layout {
-      grid-template-columns: minmax(0, 1fr);
-      gap: 16px;
-    }
-    .settings-navigation {
-      position: static;
-      flex-direction: row;
-      flex-wrap: wrap;
-    }
-    .settings-page {
-      padding: 16px;
-    }
+  .cx-settings-row + .cx-settings-row {
+    border-top: 1px solid var(--color-border);
   }
 
-  .settings-advanced > summary {
+  .cx-settings-nav-item {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    padding: 9px 14px;
+    border-left: 2px solid transparent;
+    font-weight: 550;
+    text-align: left;
+    transition:
+      background-color var(--m-instant),
+      border-color var(--m-instant);
+  }
+  .cx-settings-nav-item:hover {
+    background: var(--color-card);
+  }
+  .cx-settings-nav-item[aria-current='true'] {
+    background: var(--color-secondary);
+    border-left-color: var(--color-primary);
+  }
+  .cx-settings-nav-item:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: -2px;
+  }
+
+  /* Switch: the native checkbox stays focusable, the track draws it. */
+  .cx-switch {
+    position: relative;
+    display: inline-flex;
+    flex-shrink: 0;
     cursor: pointer;
-    font-size: 13px;
+  }
+  .cx-switch-input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: inherit;
+  }
+  .cx-switch-track {
+    position: relative;
+    width: 34px;
+    height: 20px;
+    border-radius: 999px;
+    background: oklch(var(--fg-primary) / 0.18);
+    transition: background-color var(--m-fast) var(--e-out);
+  }
+  .cx-switch-track::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
+    transition: transform var(--m-fast) var(--e-out);
+  }
+  .cx-switch-input:checked + .cx-switch-track {
+    background: var(--color-primary);
+  }
+  .cx-switch-input:checked + .cx-switch-track::after {
+    transform: translateX(14px);
+  }
+  .cx-switch-input:focus-visible + .cx-switch-track {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+  .cx-switch-input:disabled + .cx-switch-track {
+    opacity: 0.45;
+  }
+
+  /* Segmented: equal columns so the thumb only translates. */
+  .cx-segmented {
+    position: relative;
+    display: inline-grid;
+    grid-template-columns: repeat(var(--count), minmax(0, 1fr));
+    padding: 2px;
+    border-radius: 9px;
+    background: var(--color-secondary);
+  }
+  .cx-segmented-thumb {
+    position: absolute;
+    top: 2px;
+    bottom: 2px;
+    left: 2px;
+    width: calc((100% - 4px) / var(--count));
+    border-radius: 7px;
+    background: var(--color-card);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
+    transform: translateX(calc(var(--index) * 100%));
+    transition: transform var(--m-fast) var(--e-out);
+  }
+  .cx-segmented-option {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    height: 26px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 10px;
+    border-radius: 7px;
     color: var(--color-muted-foreground);
+    font-size: var(--text-ui);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color var(--m-instant);
   }
-  .settings-advanced[open] > summary {
-    margin-bottom: 16px;
+  .cx-segmented-option[data-on='true'] {
+    color: var(--color-foreground);
   }
-  .settings-advanced > * + * {
-    margin-top: 16px;
+  .cx-segmented-option:focus-within {
+    outline: 2px solid var(--color-ring);
+    outline-offset: -2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cx-segmented-thumb,
+    .cx-switch-track,
+    .cx-switch-track::after {
+      transition: none;
+    }
   }
 }

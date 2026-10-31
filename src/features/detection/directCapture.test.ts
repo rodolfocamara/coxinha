@@ -2,7 +2,7 @@ import { beforeEach, expect, it, vi } from 'vitest';
 import { invoke } from '@tauri-apps/api/core';
 import { library } from '../meetings/library';
 import { sessions } from '../sessions/sessions';
-import { sessionCaptureCache } from '../sessions/sessionCapture';
+import { initialCaptureState, useCaptureStore } from '../capture/captureStore';
 import { acceptDetectionStatus, callKey, useMeetingDetection } from './meetingDetection';
 import { invitedPeople, recordDetectedCall, useDirectCapture } from './directCapture';
 import { nearbyInvitations } from './MeetingDetails';
@@ -33,7 +33,7 @@ beforeEach(() => {
   useMeetingDetection.setState({ enabled: true, dismissed: [] });
   acceptDetectionStatus(status, false);
   useDirectCapture.setState({ busy: false, attempt: null, error: null, receipt: null });
-  sessionCaptureCache.setState({ bySession: new Map() });
+  useCaptureStore.setState({ ...initialCaptureState });
   vi.mocked(invoke)
     .mockReset()
     .mockImplementation(async (command) => {
@@ -72,7 +72,7 @@ it('single-flight survives remount/store reads and retains the acknowledged owne
   resolve(active);
   await pending;
   expect(start).toHaveBeenCalledOnce();
-  expect(sessionCaptureCache.getState().bySession.get('session')).toBe('meeting');
+  expect(useCaptureStore.getState().liveSession?.sessionId).toBe('session');
   await recordDetectedCall(call, 'Again');
   expect(start).toHaveBeenCalledOnce();
 });
@@ -85,7 +85,7 @@ it('failed start reuses its session on an explicit retry and establishes no owne
   });
   await recordDetectedCall(call, 'Original');
   expect(useDirectCapture.getState().error).toBe('startFailed');
-  expect(sessionCaptureCache.getState().bySession.size).toBe(0);
+  expect(useCaptureStore.getState().liveSession).toBeNull();
   fails = false;
   await recordDetectedCall(call, 'Changed');
   expect(count('library_create_session')).toBe(1);
@@ -115,11 +115,19 @@ it.each(['ended', 'disabled'])(
   }
 );
 it('active foreign recording and failed status cannot cause a new capture', async () => {
-  vi.spyOn(library, 'status').mockResolvedValue(active as never);
+  const meter = { peak: 0, lastBlockMs: null, error: null };
+  useCaptureStore.setState({
+    status: {
+      active: { meetingId: 'other', paused: false, elapsedMs: 0, mic: meter, output: meter },
+      error: null,
+    },
+  });
   await recordDetectedCall(call, 'Title');
   expect(useDirectCapture.getState().error).toBe('captureBusy');
-  vi.spyOn(library, 'status').mockRejectedValue(new Error('offline'));
+  // An unreachable library is never assumed idle.
+  useCaptureStore.setState({ status: null, reachable: false });
   await recordDetectedCall(call, 'Title');
+  expect(useDirectCapture.getState().error).toBe('captureBusy');
   expect(count('library_create_session')).toBe(0);
   expect(count('library_start_session')).toBe(0);
 });
@@ -144,7 +152,7 @@ it('metadata failure after acknowledgement cannot repeat capture or erase owners
   });
   await recordDetectedCall(call, 'Again');
   expect(count('library_start_session')).toBe(1);
-  expect(sessionCaptureCache.getState().bySession.get('session')).toBe('meeting');
+  expect(useCaptureStore.getState().liveSession?.sessionId).toBe('session');
   expect(useMeetingDetection.getState().dismissed).toContain(callKey(call));
 });
 it('offers cached invitations without automatically choosing an ambiguous event', () => {

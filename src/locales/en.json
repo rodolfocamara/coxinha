@@ -35,21 +35,6 @@
       "title": "Related sources"
     }
   },
-  "home": {
-    "greeting": {
-      "morning": "Good morning,",
-      "afternoon": "Good afternoon,",
-      "evening": "Good evening,"
-    },
-    "thingsToday": {
-      "title": "{{count}} things for you today",
-      "empty": "Nothing scheduled for today."
-    },
-    "recents": {
-      "title": "Recents",
-      "continue": "Continue from yesterday"
-    }
-  },
   "agendaPanel": {
     "upcoming": "Upcoming",
     "empty": "Nothing scheduled.",
@@ -81,28 +66,6 @@
     "askPlaceholder": "Ask…"
   },
   "palette": {
-    "title": "Command palette",
-    "placeholder": "Search notes, run a command…",
-    "empty": "No results for \"{{query}}\".",
-    "sections": {
-      "notes": "Notes",
-      "actions": "Actions"
-    },
-    "actions": {
-      "newNote": "New note",
-      "openAgenda": "Open agenda",
-      "openMeetings": "Open meetings",
-      "openSettings": "Open settings",
-      "toggleTheme": "Toggle theme",
-      "deleteCurrentNote": "Delete this note",
-      "deleteThisNote": "Delete note"
-    },
-    "hints": {
-      "navigate": "navigate",
-      "open": "open",
-      "delete": "delete",
-      "close": "close"
-    },
     "deleteConfirm": "Delete \"{{title}}\"? This moves the file out of the vault and cannot be undone yet."
   },
   "sidebar": {
@@ -180,17 +143,6 @@
       "missingOrMoved": "Rebuilding stopped because an expected file is missing or moved. Check the paths below, restore or reconcile the files, then explicitly rebuild. The previous index was kept.",
       "changedExternally": "Rebuilding stopped because file continuity could not be verified. Check the paths below and reconcile external changes before explicitly rebuilding. The previous index was kept."
     },
-    "title": "Settings",
-    "comingSoon": "Coming soon: engines (Whisper/Parakeet), diarization, LLM provider, shortcuts.",
-    "appearance": {
-      "heading": "Appearance",
-      "themeHint": "Auto follows your OS; pick light or dark to override.",
-      "theme": {
-        "auto": "Auto",
-        "light": "Light",
-        "dark": "Dark"
-      }
-    },
     "shortcuts": {
       "heading": "Global shortcuts",
       "rebindComingSoon": "Configured global shortcuts. Editing these in the app will be available in a later version.",
@@ -234,15 +186,7 @@
       "diagnosticError": "Diagnostics unavailable.",
       "vaultSwitch": "Folder switching is disabled: this version keeps its initial storage. Existing files remain in their current folder."
     },
-    "layout": {
-      "description": "Your workspace, appearance and preferences.",
-      "sections": "Settings sections"
-    },
-    "loading": "Loading preferences…",
-    "integrations": {
-      "heading": "Integrations",
-      "description": "External accounts Coxinha reads from. Nothing connects until you choose Connect."
-    }
+    "loading": "Loading preferences…"
   },
   "editor": {
     "loading": "Loading note…",
@@ -386,7 +330,9 @@
     "refreshDevices": "Refresh devices",
     "useSystemDefaults": "Use system defaults",
     "loadingDevices": "Detecting audio devices…",
-    "devicesFailed": "Could not refresh audio devices. Check the audio service and try again."
+    "devicesFailed": "Could not refresh audio devices. Check the audio service and try again.",
+    "import": "Import WAV audio",
+    "importTitle": "Imported meeting title"
   },
   "noteError": {
     "title": "Note unavailable",
@@ -557,7 +503,9 @@
     "recordingPending": "Recording details pending",
     "transcriptPending": "Recording acknowledged. The transcript will be available here after capture and local processing.",
     "activeAudioFailed": "Recording is active in this session. An update failed. Retry here or use this session’s recording controls.",
-    "ownedCaptureHelp": "This session is recording. Pause or stop and save here."
+    "ownedCaptureHelp": "This session is recording. Pause or stop and save here.",
+    "recordThis": "Record this meeting",
+    "controlsInStrip": "controls are in the recording bar at the top"
   },
   "sessionCalendar": {
     "activities": "Activities",
@@ -757,9 +705,6 @@
     }
   },
   "meetingDetection": {
-    "settings": "Meeting detection",
-    "enable": "Remind me when a possible meeting starts",
-    "description": "Recognizes local calling audio streams and asks before recording. Nothing starts without your confirmation.",
     "unsupported": "Automatic detection is currently available on Linux with PulseAudio or PipeWire.",
     "unavailable": "Meeting detection is unavailable. Check the audio service; Coxinha will retry automatically.",
     "title": "Possible meeting",
@@ -818,14 +763,9 @@
   },
   "peopleDirectory": {
     "title": "People & voices",
-    "description": "One local registry for all meetings. Maintain people and the voice samples you have confirmed.",
-    "created": "{{name}} added to the global registry.",
     "training": "To teach a voice, open a meeting, identify its speaker and select the samples to remember. Creating a person alone does not train recognition.",
-    "search": "Find in loaded people",
     "meetingContext": "Identify the speakers in this meeting. People and confirmed voice samples belong to the global People & voices registry.",
-    "noMatch": "No match among the loaded people. Load more people to continue searching.",
     "addPerson": "Add person",
-    "refreshList": "Refresh list",
     "form": {
       "title": "New person",
       "description": "Stored only in the local registry. Creating a person does not enroll a voice.",
@@ -840,8 +780,7 @@
     "empty": {
       "title": "No people yet",
       "description": "Add the people you meet with, then teach their voices from a meeting."
-    },
-    "personId": "ID {{id}}"
+    }
   },
   "recordingLayout": {
     "transport": "Recording actions"

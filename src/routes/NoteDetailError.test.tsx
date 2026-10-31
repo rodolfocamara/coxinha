@@ -9,12 +9,10 @@ import ptBR from '../locales/pt-BR.json';
 const invalidate = vi.fn().mockResolvedValue(undefined);
 vi.mock('@tanstack/react-router', () => ({
   useRouter: () => ({ invalidate }),
+  useNavigate: () => vi.fn(),
   Link: ({ children, to, hash }: { children: ReactNode; to: string; hash?: string }) => (
     <a href={`${to}${hash ? `#${hash}` : ''}`}>{children}</a>
   ),
-}));
-vi.mock('../components/AppShell', () => ({
-  AppShell: ({ children }: { children: ReactNode }) => <main>{children}</main>,
 }));
 vi.mock('../features/notes/NoteEditor', () => ({
   NoteEditor: () => null,

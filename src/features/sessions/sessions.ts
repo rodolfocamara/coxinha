@@ -20,6 +20,8 @@ export type Session = SessionInput & {
   processing_state?: string | null;
   processing?: { phase: string; meetingId: string } | null;
   recording: LibraryMeeting | null;
+  /** Backend truth for a running capture of this session (spec 0096 P1). */
+  live?: { paused: boolean } | null;
 };
 export const sessions = {
   available: isTauri,
@@ -64,6 +66,11 @@ async function loadSessions(force = false): Promise<void> {
 function invalidateSessions() {
   dirtyGeneration++;
   return loadSessions(true);
+}
+/** Refreshes the shared list without subscribing to polling (capture controller). */
+export function refreshSessionList() {
+  if (!sessions.available()) return Promise.resolve();
+  return invalidateSessions();
 }
 export function useSessions() {
   const state = sessionListCache();

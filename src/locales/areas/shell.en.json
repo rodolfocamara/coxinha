@@ -1,0 +1,66 @@
+{
+  "shell": {
+    "nav": {
+      "hoje": "Today",
+      "meetings": "Meetings",
+      "workspace": "Workspace",
+      "people": "People",
+      "search": "Search",
+      "settings": "Settings"
+    },
+    "record": {
+      "start": "Record now",
+      "startHint": "Record now (Ctrl+Alt+W)",
+      "stop": "Stop and save the recording",
+      "quickTitle": "Recording"
+    }
+  },
+  "recorder": {
+    "label": "Recording",
+    "ready": "Ready to record · Ctrl+Alt+W",
+    "untitled": "Untitled meeting",
+    "openMeeting": "Open the meeting",
+    "recording": "Recording {{time}}",
+    "paused": "Paused {{time}}",
+    "pause": "Pause",
+    "resume": "Resume",
+    "stop": "Stop and save",
+    "stopping": "Saving…",
+    "levels": "Microphone and computer audio level",
+    "metadataFailed": "Outlook invitees were not attached",
+    "nextCall": "New call in {{app}}",
+    "stillRecording": "still recording {{title}}",
+    "stillRecordingFor": "still recording {{title}} · {{time}}",
+    "recordNew": "Record the new one",
+    "sameMeeting": "Same meeting",
+    "callEnded": "The {{app}} call ended",
+    "keepRecording": "Keep recording",
+    "processing": {
+      "validation": "Checking audio and models",
+      "inference": "Transcribing",
+      "stopping": "Stopping transcription",
+      "running": "Processing"
+    },
+    "background": "continues in the background",
+    "detected": "Call in {{app}}",
+    "detectedHelp": "records microphone and computer audio",
+    "record": "Record",
+    "starting": "Starting…",
+    "details": "Details",
+    "ignore": "Ignore",
+    "interrupted": "Recording interrupted",
+    "interruptedHelp": "what was recorded is saved and can be recovered",
+    "review": "Review",
+    "dismiss": "Dismiss notice",
+    "badgeLive": "recording",
+    "badgePaused": "paused",
+    "failure": {
+      "start": "Could not start recording.",
+      "pause": "Could not pause.",
+      "stop": "Could not stop. Try again.",
+      "devices": "Could not list audio devices.",
+      "devicesMissing": "No microphone or computer audio found.",
+      "captureBusy": "A recording or transcription is already running."
+    }
+  }
+}

@@ -1,11 +1,12 @@
 import { Alert, Button, Field, Select, Textarea } from '../../components/ui';
 import { voiceCurationErrorText } from './voiceCurationError';
 import { SpeakerReview } from './SpeakerReview';
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useProcessing } from './useProcessing';
 import type { ExcerptPlayback } from './useBoundedPlayback';
 import { useTranslation } from 'react-i18next';
 import { library, type CaptureStatus, type ProcessingConfig } from './library';
+import { rememberProcessingConfig } from './processingConfigMemory';
 
 const message = (e: unknown) => (e instanceof Error ? e.message : String(e));
 function ProcessingPanelForMeeting({
@@ -75,6 +76,14 @@ function ProcessingPanelForMeeting({
     /* Backend validation is shown after explicit processing. */
   }
   const report = data?.report;
+  // New transcript lines rise in (spec 0096 motion); lines present at first paint do not.
+  const seenSegments = useRef<Set<string> | null>(null);
+  useEffect(() => {
+    if (!report) return;
+    const seen = seenSegments.current ?? new Set<string>();
+    for (const segment of report.segments) seen.add(segment.id);
+    seenSegments.current = seen;
+  }, [report]);
   const versionSelector = data &&
     data.jobs.filter((item) => item.state === 'succeeded').length > 1 && (
       <Field label={k('version')}>
@@ -115,6 +124,7 @@ function ProcessingPanelForMeeting({
           <p className="text-sm text-muted-foreground">{k('notice')}</p>
           <Field label={k('configFile')}>
             <input
+              data-processing-config
               type="file"
               accept="application/json,.json"
               className="block text-ui file:mr-3 file:h-8 file:rounded-sm file:border file:border-border file:bg-card file:px-3 file:text-xs file:text-foreground"
@@ -163,6 +173,7 @@ function ProcessingPanelForMeeting({
               void act(async () => {
                 const config = JSON.parse(configText) as ProcessingConfig;
                 onStatus(await library.process(meetingId, config));
+                rememberProcessingConfig(config);
               })
             }
           >
@@ -245,7 +256,10 @@ function ProcessingPanelForMeeting({
             <>
               <h4 className="text-sm font-semibold">{k('transcript')}</h4>
               {report.segments.map((segment) => (
-                <div key={segment.id} className="space-y-2 border-b border-border pb-3">
+                <div
+                  key={segment.id}
+                  className={`space-y-2 border-b border-border pb-3 ${seenSegments.current && !seenSegments.current.has(segment.id) ? 'cx-rise' : ''}`}
+                >
                   <Button
                     size="sm"
                     variant="ghost"

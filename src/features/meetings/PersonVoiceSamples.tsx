@@ -1,51 +1,14 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  voiceCuration,
-  validVoiceOrigin,
-  type ProfilesPage,
-  type PersonSamples,
-} from './voiceCuration';
-import { useVoiceInventoryPages } from './useVoiceInventoryPages';
+import { validVoiceOrigin, type ProfilesPage } from './voiceCuration';
 import { voiceCurationErrorText } from './voiceCurationError';
 import { ChevronRight } from 'lucide-react';
 import { Alert, Button, Field, Input } from '../../components/ui';
 import { voiceTime } from './voiceControls';
 import { VoiceSpaceInfo } from './VoiceSpaceInfo';
+import { usePersonSamples } from '../people/usePersonSamples';
 
-function loadedStats(samples: PersonSamples['samples']) {
-  const groups = new Map<
-    string,
-    { space: PersonSamples['samples'][number]['space']; count: number; duration: number }
-  >();
-  let revoked = 0;
-  let invalidated = 0;
-  let active = 0;
-  for (const sample of samples) {
-    if (sample.state === 'revoked') {
-      revoked++;
-      continue;
-    }
-    if (sample.state === 'invalidated') {
-      invalidated++;
-      continue;
-    }
-    active++;
-    const space = sample.space;
-    const key = JSON.stringify([
-      space.model,
-      space.revision,
-      space.model_hash,
-      space.preprocessing,
-      space.dimension,
-    ]);
-    const group = groups.get(key) ?? { space, count: 0, duration: 0 };
-    group.count++;
-    group.duration += sample.endMs - sample.startMs;
-    groups.set(key, group);
-  }
-  return { active, revoked, invalidated, groups: [...groups.entries()] };
-}
+/** Collapsible sample inventory for one person (meeting speaker review). */
 export function PersonVoiceSamples({
   person,
   version,
@@ -65,55 +28,23 @@ export function PersonVoiceSamples({
   const k = (name: string) => t(`voiceCuration.${name}`);
   const [open, setOpen] = useState(false);
   const [origin, setOrigin] = useState('');
-  const [busy, setBusy] = useState(false);
-  const pending = useRef(false);
-  const [error, setError] = useState<unknown>(null);
-  const query = useVoiceInventoryPages(
-    open,
-    person.personId,
+  const samples = usePersonSamples({
+    personId: person.personId,
+    enabled: open,
     version,
-    async (cursor) => {
-      const page = await voiceCuration.samplesPage(person.personId, cursor);
-      if (page.personId !== person.personId) throw new Error('voice_curation_refresh_required');
-      return { ...page, items: page.samples };
-    },
-    (sample) => sample.sampleId,
-    { generation, onStale }
-  );
+    generation,
+    onStale,
+    disabled,
+    act,
+  });
+  const { query, stats, busy, locked, error } = samples;
   useEffect(() => {
     if (query.stale) setOrigin('');
   }, [query.stale]);
-  const stats = loadedStats(query.items);
-  const locked = disabled || busy || !query.fresh;
   async function revoke(sampleId: string) {
-    if (
-      locked ||
-      pending.current ||
-      !validVoiceOrigin(origin) ||
-      !query.items.some((sample) => sample.sampleId === sampleId && sample.state === 'active')
-    )
-      return;
-    pending.current = true;
-    setBusy(true);
-    setError(null);
-    try {
-      await act(async () => {
-        try {
-          await voiceCuration.revoke(person.personId, sampleId, origin.trim());
-        } catch (failure) {
-          setError(failure);
-          throw failure;
-        } finally {
-          setOrigin('');
-          query.invalidate();
-        }
-      });
-    } catch (failure) {
-      setError(failure);
-    } finally {
-      pending.current = false;
-      setBusy(false);
-    }
+    const attempted = validVoiceOrigin(origin) && !locked;
+    await samples.revoke(sampleId, origin);
+    if (attempted) setOrigin('');
   }
   return (
     <details
@@ -138,17 +69,14 @@ export function PersonVoiceSamples({
             </p>
           )}
           {query.stale && <Alert tone="warning">{k('staleView')}</Alert>}
-          {!!(error || query.error) && (
-            <Alert tone="error">{voiceCurationErrorText(error || query.error, t)}</Alert>
-          )}
+          {!!error && <Alert tone="error">{voiceCurationErrorText(error, t)}</Alert>}
           <Button
             size="sm"
             variant="ghost"
             disabled={disabled || busy || query.loading}
             onClick={() => {
               setOrigin('');
-              setError(null);
-              query.restart();
+              samples.restart();
             }}
           >
             {k(query.stale ? 'restartSamples' : 'refresh')}

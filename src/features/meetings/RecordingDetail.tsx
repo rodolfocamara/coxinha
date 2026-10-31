@@ -21,6 +21,8 @@ export function RecordingDetail({
   onRevealAudio,
   audioExpanded = true,
   audioPanelId,
+  showRecover = true,
+  seekRef,
 }: {
   detail: LibraryDetail;
   status: CaptureStatus;
@@ -35,6 +37,10 @@ export function RecordingDetail({
   onRevealAudio?: () => void;
   audioExpanded?: boolean;
   audioPanelId?: string;
+  /** False when the screen offers recovery elsewhere (Reuniões finding banner). */
+  showRecover?: boolean;
+  /** Lets a parent (speaker lanes) seek the same players the transcript uses. */
+  seekRef?: React.RefObject<((track: string, seconds: number) => void) | null>;
 }) {
   const { t } = useTranslation();
   const key = (name: string) => t(`library.${name}`);
@@ -68,6 +74,31 @@ export function RecordingDetail({
     setSeparate(false);
   }, [detail.meeting.id]);
   const active = status.active;
+  const seek = (track: string, start: number) => {
+    const player = players.current[track];
+    if (!player) {
+      setError(key('playbackError'));
+      return;
+    }
+    setError(null);
+    // Preserve legacy full-track listening when it already owns playback.
+    if (joint.active.current) joint.release();
+    if (playback.current) playback.stop();
+    setSeparate(true);
+    player.currentTime = start;
+    if (!audioVisible) {
+      if (onRevealAudio) onRevealAudio();
+      else setSeekReveal(true);
+    }
+    setSeekFocus({ meeting: detail.meeting.id, track });
+  };
+  useLayoutEffect(() => {
+    if (!seekRef) return;
+    seekRef.current = seek;
+    return () => {
+      seekRef.current = null;
+    };
+  });
   const errorText = (error: unknown) => String(error);
   return (
     <section className={compact ? 'space-y-2' : 'space-y-4'}>
@@ -143,25 +174,27 @@ export function RecordingDetail({
         {detail.manifest && (!compact || audioVisible) && (
           <p className="text-xs text-muted-foreground break-words">{detail.manifest.alignment}</p>
         )}
-        {['recording', 'interrupted'].includes(detail.meeting.captureState) && !active && (
-          <Button
-            variant="primary"
-            disabled={busy}
-            onClick={async () => {
-              setBusy(true);
-              setError(null);
-              try {
-                await onRecover();
-              } catch (e) {
-                setError(errorText(e));
-              } finally {
-                setBusy(false);
-              }
-            }}
-          >
-            {key('recover')}
-          </Button>
-        )}
+        {showRecover &&
+          ['recording', 'interrupted'].includes(detail.meeting.captureState) &&
+          !active && (
+            <Button
+              variant="primary"
+              disabled={busy}
+              onClick={async () => {
+                setBusy(true);
+                setError(null);
+                try {
+                  await onRecover();
+                } catch (e) {
+                  setError(errorText(e));
+                } finally {
+                  setBusy(false);
+                }
+              }}
+            >
+              {key('recover')}
+            </Button>
+          )}
         <div
           hidden={!showProcessing && !people}
           id={people ? 'session-panel-people' : processingPanelId}
@@ -191,24 +224,7 @@ export function RecordingDetail({
               },
             }}
             onTranscript={onTranscript}
-            onSeek={(track, start) => {
-              const player = players.current[track];
-              if (!player) {
-                setError(key('playbackError'));
-                return;
-              }
-              setError(null);
-              // Preserve legacy full-track listening when it already owns playback.
-              if (joint.active.current) joint.release();
-              if (playback.current) playback.stop();
-              setSeparate(true);
-              player.currentTime = start;
-              if (!audioVisible) {
-                if (onRevealAudio) onRevealAudio();
-                else setSeekReveal(true);
-              }
-              setSeekFocus({ meeting: detail.meeting.id, track });
-            }}
+            onSeek={seek}
           />
         </div>
       </>

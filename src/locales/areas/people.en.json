@@ -1,0 +1,162 @@
+{
+  "people": {
+    "title": "People",
+    "add": "Add",
+    "refresh": "Refresh list",
+    "search": "Search people",
+    "listLabel": "People",
+    "created": "{{name}} was added.",
+    "noMatch": "No one with that name among the loaded people.",
+    "loadMore": "Load more people",
+    "restart": "Start over",
+    "retry": "Try again",
+    "row": {
+      "samples_one": "{{count}} voice sample",
+      "samples_other": "{{count}} voice samples",
+      "samplesPartial": "{{count}}+ voice samples",
+      "noSamples": "no voice samples",
+      "unknown": "open to see voice samples",
+      "meetings_one": "{{count}} meeting",
+      "meetings_other": "{{count}} meetings",
+      "meetingsLabel": "Meetings with voice samples"
+    },
+    "detail": {
+      "pick": "Choose a person to see their voice samples.",
+      "inMeetings_one": "in {{count}} meeting",
+      "inMeetings_other": "in {{count}} meetings",
+      "samplesTitle": "Voice samples",
+      "samplesHint": "used only to suggest who is speaking",
+      "noSamples": "No voice samples yet. They are saved when you confirm who is speaking in a meeting and choose samples to remember.",
+      "loadMore": "Load more samples",
+      "technical": "Technical details",
+      "refresh": "Refresh",
+      "revoked_one": "{{count}} revoked",
+      "revoked_other": "{{count}} revoked",
+      "invalidated_one": "{{count}} invalidated",
+      "invalidated_other": "{{count}} invalidated"
+    },
+    "sample": {
+      "saved": "saved {{date}}",
+      "unknownMeeting": "Recording",
+      "listen": "Listen to sample",
+      "stop": "Stop playback",
+      "playError": "Could not play this sample.",
+      "revoke": "Revoke",
+      "states": {
+        "revoked": "revoked",
+        "invalidated": "invalidated"
+      }
+    },
+    "revoke": {
+      "title": "Revoke this sample?",
+      "body": "It stops being used to suggest who is speaking. The recording and its history stay.",
+      "reason": "Reason",
+      "reasonHint": "Required, one short line.",
+      "confirm": "Revoke sample",
+      "cancel": "Cancel"
+    },
+    "inspector": {
+      "recent": "Recent meetings",
+      "none": "No meetings with voice samples yet.",
+      "privacyTitle": "Privacy",
+      "privacy": "Samples stay on this computer. Revoking a sample stops using it in suggestions.",
+      "teachTitle": "Teaching a voice"
+    },
+    "settings": {
+      "title": "Settings",
+      "sectionsLabel": "Settings sections",
+      "sections": {
+        "general": "General",
+        "recording": "Recording",
+        "transcription": "Local transcription",
+        "integrations": "Integrations",
+        "shortcuts": "Shortcuts",
+        "storage": "Storage",
+        "diagnostics": "Diagnostics"
+      },
+      "descriptions": {
+        "general": "Appearance.",
+        "recording": "Used by the record button, by meetings and by detected calls.",
+        "transcription": "Runs on this computer, nothing is sent out.",
+        "integrations": "Optional. Nothing leaves this computer until you connect.",
+        "shortcuts": "Global shortcuts work even when the window is hidden.",
+        "storage": "Your notes are plain Markdown files in this folder.",
+        "diagnostics": "Text to paste when reporting a problem."
+      },
+      "theme": {
+        "title": "Theme",
+        "hint": "Automatic follows the system.",
+        "auto": "Automatic",
+        "light": "Light",
+        "dark": "Dark"
+      },
+      "ambient": {
+        "title": "Gradient background",
+        "hint": "Turn off for a plain background."
+      },
+      "mic": {
+        "title": "Microphone",
+        "hint": "Your voice."
+      },
+      "output": {
+        "title": "Computer audio",
+        "hint": "What the others say on the call."
+      },
+      "devices": {
+        "systemDefault": "{{name}} (system default)",
+        "none": "No device found",
+        "loading": "Looking for devices…",
+        "error": "Could not list the audio devices.",
+        "retry": "Try again",
+        "liveNote": "The current recording keeps the devices it started with; a change applies to the next one."
+      },
+      "detection": {
+        "title": "Notify when a call starts",
+        "hint": "Teams, Meet, Zoom. Linux with PipeWire or PulseAudio."
+      },
+      "transcription": {
+        "engine": "Transcription",
+        "diarizer": "Speaker separation",
+        "configured": "Configured",
+        "notConfigured": "Not configured",
+        "perMeeting": "Each meeting chooses its models in its Transcription tab.",
+        "noDefault": "No default model in the app config."
+      },
+      "storage": {
+        "folder": "Notes folder"
+      },
+      "diagnostics": {
+        "title": "Diagnostic information"
+      },
+      "shortcuts": {
+        "toggleRecording": "Start or stop recording"
+      }
+    },
+    "palette": {
+      "title": "Command palette",
+      "placeholder": "Search notes or run an action",
+      "groups": {
+        "actions": "Actions",
+        "goTo": "Go to",
+        "notes": "Notes"
+      },
+      "actions": {
+        "record": "Record now",
+        "stop": "Stop recording",
+        "newMeeting": "New meeting",
+        "newNote": "New note",
+        "importAudio": "Import audio",
+        "toggleTheme": "Switch light or dark theme",
+        "deleteCurrentNote": "Delete this note",
+        "deleteNote": "Delete note"
+      },
+      "empty": "Nothing found for “{{query}}”.",
+      "hints": {
+        "navigate": "navigate",
+        "open": "open",
+        "delete": "delete note",
+        "close": "close"
+      }
+    }
+  }
+}

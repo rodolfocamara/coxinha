@@ -13,7 +13,7 @@ import {
   periodRange,
   sessionDate,
 } from './sessionDates';
-import { matchesTranscript, transcriptStatus } from './sessionNavigation';
+import { matchesTranscript, transcriptStatus } from './transcriptStatus';
 
 describe('local civil dates', () => {
   it.each([

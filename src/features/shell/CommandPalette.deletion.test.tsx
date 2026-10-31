@@ -6,7 +6,11 @@ import { useAppStore } from '../../lib/store';
 import { deleteAfterPendingSaves } from '../../lib/noteSessions';
 import { CommandPalette } from './CommandPalette';
 const navigate = vi.hoisted(() => vi.fn());
-vi.mock('@tauri-apps/api/core', () => ({ invoke: vi.fn() }));
+vi.mock('@tauri-apps/api/core', () => ({
+  invoke: vi.fn(),
+  isTauri: () => false,
+  convertFileSrc: (path: string) => path,
+}));
 vi.mock('@tanstack/react-router', () => ({
   useNavigate: () => navigate,
   useLocation: <T,>({ select }: { select: (s: { pathname: string }) => T }) =>
@@ -40,7 +44,9 @@ it.each(['en', 'pt-BR'])(
     const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
     const close = vi.fn();
     render(<CommandPalette open onClose={close} />);
-    fireEvent.click(screen.getByRole('button', { name: i18n.t('palette.actions.deleteThisNote') }));
+    fireEvent.click(
+      screen.getByRole('button', { name: i18n.t('people.palette.actions.deleteNote') })
+    );
     expect(await screen.findByRole('alert')).toHaveTextContent(
       i18n.t('editor.sessionNoteDeleteRequiresDetach')
     );

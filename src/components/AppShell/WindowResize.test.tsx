@@ -25,9 +25,8 @@ const bridge = vi.hoisted(() => ({
 }));
 vi.mock('@tauri-apps/api/core', () => ({ isTauri: () => bridge.native }));
 vi.mock('@tauri-apps/api/window', () => ({ getCurrentWindow: () => bridge }));
-vi.mock('./RecordingStatus', () => ({ RecordingStatus: () => null }));
-import { AppShell } from './AppShell';
-import { useSidebar } from '../../lib/sidebar';
+import { ShellFrame } from '../Shell/Shell';
+import { WindowChrome } from './WindowChrome';
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -36,7 +35,6 @@ beforeEach(() => {
   bridge.fullscreen = false;
   bridge.scale = 1;
   vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue('Linux WebKitGTK');
-  useSidebar.getState().setOpen(true);
 });
 afterEach(async () => {
   cleanup();
@@ -46,12 +44,19 @@ afterEach(async () => {
 
 function shell() {
   return render(
-    <AppShell rail={<button>Navigation</button>}>
+    <ShellFrame
+      strip={
+        <header>
+          <WindowChrome />
+        </header>
+      }
+      nav={<button>Navigation</button>}
+    >
       <button>Board action</button>
       <div data-testid="scrollable" style={{ overflow: 'auto' }}>
         Scrollable workspace
       </div>
-    </AppShell>
+    </ShellFrame>
   );
 }
 const directions = [
@@ -72,7 +77,16 @@ describe('desktop resize perimeter', () => {
       const parent = vi.fn();
       render(
         <div onMouseDown={parent}>
-          <AppShell rail={<span>Navigation</span>}>Workspace</AppShell>
+          <ShellFrame
+            strip={
+              <header>
+                <WindowChrome />
+              </header>
+            }
+            nav={<span>Navigation</span>}
+          >
+            Workspace
+          </ShellFrame>
         </div>
       );
       const edge = await screen.findByTestId(`window-resize-${direction}`);

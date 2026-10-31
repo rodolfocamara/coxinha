@@ -83,7 +83,8 @@ export type PersonSamples = {
 // Contract SHA-256 cd5d968b871f440da8c8492248b7b558e37126a8f8a9e99752e14d9a599db9ee
 export type ProfilesPage = {
   profileGeneration: number;
-  profiles: { personId: string; name: string }[];
+  /** Totals per person: active (confirmed, unrevoked) samples and the meetings they come from. */
+  profiles: { personId: string; name: string; activeSamples?: number; sampleMeetings?: number }[];
   nextCursor: string | null;
   scannedRows: number;
 };
