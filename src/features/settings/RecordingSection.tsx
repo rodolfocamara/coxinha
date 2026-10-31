@@ -4,6 +4,7 @@ import { Alert, Button, Select } from '../../components/ui';
 import { chooseDevices, loadDevices } from '../capture/captureActions';
 import { useCaptureStore } from '../capture/captureStore';
 import { DetectionSettings } from '../detection/DetectionSettings';
+import { AutoRecordSettings } from '../detection/AutoRecordSettings';
 import { library, type Source } from '../meetings/library';
 import { SettingsCard, SettingsRow, SettingsSection } from './controls';
 
@@ -131,6 +132,7 @@ export function RecordingSection() {
           below={status}
         />
         <DetectionSettings />
+        <AutoRecordSettings />
       </SettingsCard>
     </SettingsSection>
   );

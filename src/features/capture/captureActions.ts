@@ -3,6 +3,7 @@ import { library, type CaptureStatus } from '../meetings/library';
 import { selectDevice } from '../meetings/useCaptureDevices';
 import { sessions } from '../sessions/sessions';
 import { useCaptureStore, type CaptureFailure } from './captureStore';
+import { updateAutoRecord } from './autoRecord';
 
 const SESSIONS_CHANGED = 'coxinha:sessions-changed';
 const MIC_PREF = 'coxinha:capture-mic';
@@ -69,6 +70,12 @@ export function chooseDevices(next: { mic?: string; output?: string }) {
   if (next.mic !== undefined) writePref(MIC_PREF, next.mic);
   if (next.output !== undefined) writePref(OUTPUT_PREF, next.output);
   useCaptureStore.setState(next);
+  // The backend starts automatic captures without the webview (spec 0097).
+  const devices = {
+    ...(next.mic !== undefined && { micSource: next.mic || null }),
+    ...(next.output !== undefined && { outputSource: next.output || null }),
+  };
+  void updateAutoRecord(devices).catch(() => {});
 }
 
 async function run(

@@ -115,6 +115,24 @@
       : [],
   });
   f.set_call_detection_enabled = ({ enabled }) => ({ ...f.call_detection_status(), enabled });
+  // Spec 0097: state.auto = on | stop (countdown after the bound call ended).
+  const autoSettings = { enabled: !!state.auto, stopWhenCallEnds: true, micSource: null, outputSource: null };
+  f.auto_record_status = () => ({
+    settings: autoSettings,
+    binding:
+      state.auto === 'stop'
+        ? { sessionId: 's-weekly', meetingId: 'm-weekly', keep: false, call: { app_name: 'Microsoft Teams', process_name: 'teams', pid: 42, is_browser: false, detected_at: at(0, 10) } }
+        : null,
+    stopInMs: state.auto === 'stop' ? 18_000 : null,
+  });
+  f.set_auto_record = ({ settings }) => {
+    Object.assign(autoSettings, settings);
+    return f.auto_record_status();
+  };
+  f.auto_record_keep = () => {
+    state.auto = 'on';
+    return f.auto_record_status();
+  };
   f.calendar_status = () => ({
     account: 'rodolfo@example.com',
     syncedAt: at(0, 8),

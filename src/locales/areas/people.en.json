@@ -130,6 +130,13 @@
       },
       "shortcuts": {
         "toggleRecording": "Start or stop recording"
+      },
+      "autoRecord": {
+        "title": "Record calls automatically",
+        "hint": "Starts recording when a call is detected, even with the window closed. Tell participants: you are responsible for the recording. Coxinha shows REC and a notification for every recording.",
+        "stopTitle": "Stop when the call ends",
+        "stopHint": "Waits 20 seconds after the call ends and shows a countdown so you can keep recording.",
+        "needsDetection": "Turning on automatic recording also turns on call detection."
       }
     },
     "palette": {

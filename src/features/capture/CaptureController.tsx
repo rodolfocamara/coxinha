@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { library } from '../meetings/library';
 import { refreshSessionList } from '../sessions/sessions';
 import { refreshCapture } from './captureActions';
+import { refreshAutoRecord } from './autoRecord';
 import { useCaptureStore } from './captureStore';
 
 /** Emitted by the library worker when capture or processing state changes (ADR 0022). */
@@ -45,7 +46,7 @@ export function CaptureController() {
       }
       inFlight = true;
       clearTimeout(timer);
-      await refreshCapture();
+      await Promise.all([refreshCapture(), refreshAutoRecord()]);
       inFlight = false;
       if (!live) return;
       if (again) {
@@ -61,6 +62,7 @@ export function CaptureController() {
         void queryClient.invalidateQueries({ queryKey: ['session'] });
       }
       const active = !!useCaptureStore.getState().status?.active;
+      // Auto-record state also arrives through `capture-changed`.
       timer = setTimeout(() => void tick(), active ? LIVE_POLL_MS : IDLE_POLL_MS);
     };
     void tick();
