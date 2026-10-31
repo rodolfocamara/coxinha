@@ -44,6 +44,7 @@ impl Worker {
             .meeting_summaries()?
             .into_iter()
             .find(|m| Some(m["id"].as_str().unwrap_or("")) == session.meeting_id.as_deref()));
+        value["live"] = self.live(session.meeting_id.as_deref());
         Ok(value)
     }
     pub(super) fn session_action(&self, action: SessionAction) -> anyhow::Result<Value> {
@@ -91,6 +92,7 @@ impl Worker {
                     } else {
                         Value::Null
                     };
+                    value["live"] = self.live(session.meeting_id.as_deref());
                     values.push(value);
                 }
                 Ok(json!(values))

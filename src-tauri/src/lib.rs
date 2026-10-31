@@ -100,7 +100,11 @@ pub fn run() {
                 None => app.path().app_data_dir()?.join("meeting-library"),
             };
             app.manage(desktop::Desktop::new(logs)?);
-            app.manage(library::Library::open(library)?);
+            let handle = app.handle().clone();
+            let notify: library::Notifier = Box::new(move || {
+                let _ = tauri_specta::Event::emit(&events::CaptureChanged::now(), &handle);
+            });
+            app.manage(library::Library::open(library, Some(notify))?);
             #[cfg(target_os = "linux")]
             app.manage(Arc::new(native_audio::NativeAudio::start(
                 native_audio::app_origins(app.config()),
@@ -261,6 +265,7 @@ pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
         .events(tauri_specta::collect_events![
             events::Navigate,
             events::CallDetected,
+            events::CaptureChanged,
             events::RecordingProgress,
             events::TranscriptionProgress,
         ])

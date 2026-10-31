@@ -218,11 +218,13 @@ async listNotesByTag(tag: string) : Promise<Result<Note[], string>> {
 
 export const events = __makeEvents__<{
 callDetected: CallDetected,
+captureChanged: CaptureChanged,
 navigate: Navigate,
 recordingProgress: RecordingProgress,
 transcriptionProgress: TranscriptionProgress
 }>({
 callDetected: "call-detected",
+captureChanged: "capture-changed",
 navigate: "navigate",
 recordingProgress: "recording-progress",
 transcriptionProgress: "transcription-progress"
@@ -242,6 +244,10 @@ export type AppConfig = { vault_path: string;
  */
 locale?: string; transcriber: TranscriberConfig; diarizer: DiarizerConfig; llm: LlmProvider; autostart: boolean; shortcuts: ShortcutsConfig }
 export type CallDetected = { app_name: string; process_name: string }
+/**
+ * Live capture or processing state changed; payload-free signal to refetch `library_status`.
+ */
+export type CaptureChanged = { at_ms: number }
 export type DiarizerConfig = { engine: "none" } | { engine: "pyannote"; segmentation_model: string; embedding_model: string } | { engine: "speakrs"; model_dir: string; accelerator: Accelerator }
 export type LlmProvider = { kind: "ollama"; endpoint: string; model: string } | { kind: "claude"; model: string } | { kind: "open_ai"; model: string } | { kind: "groq"; model: string } | { kind: "open_router"; model: string }
 export type Meeting = { id: string; title: string; started_at: string; ended_at: string | null; duration_seconds: number | null; participants: string[]; recording_path: string | null; has_transcript: boolean; has_summary: boolean; source_app: string | null }

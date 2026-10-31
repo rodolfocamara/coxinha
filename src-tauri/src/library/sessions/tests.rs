@@ -9,7 +9,7 @@ pub(super) async fn fixture() -> (tempfile::TempDir, Arc<Storage>, Library) {
         d.path().into(),
         Arc::new(Db::open(&d.path().join("index.db")).unwrap()),
     ));
-    let library = Library::open(d.path().join("library")).unwrap();
+    let library = Library::open(d.path().join("library"), None).unwrap();
     (d, storage, library)
 }
 #[tokio::test]
@@ -34,7 +34,7 @@ async fn no_audio_full_worker_flow_concurrent_ensure_and_restart() {
         .await
         .is_err());
     library.shutdown().await.unwrap();
-    let library = Library::open(d.path().join("library")).unwrap();
+    let library = Library::open(d.path().join("library"), None).unwrap();
     assert_eq!(
         library
             .ask(Action::Session(SessionAction::Detail(id)))
@@ -125,7 +125,7 @@ async fn startup_conflict_is_per_session_and_does_not_disable_other_notes() {
         .await
         .unwrap();
     library.shutdown().await.unwrap();
-    let library = Library::open(d.path().join("library")).unwrap();
+    let library = Library::open(d.path().join("library"), None).unwrap();
     library.reconcile_session_notes(storage.clone());
     for _ in 0..100 {
         if library
@@ -203,7 +203,7 @@ async fn existing_session_uses_original_processing_job_and_private_context_stays
     let output=serde_json::from_value(json!({"segments":[{"id":"synthetic-segment","track":"mic","start_ms":0,"end_ms":1,"text":"Synthetic transcript fixture","speaker":null}],"turns":[],"warnings":[]})).unwrap();
     store.commit_processing(&prepared, output).unwrap();
     drop(store);
-    let library = Library::open(d.path().into()).unwrap();
+    let library = Library::open(d.path().into(), None).unwrap();
     let sessions = library
         .ask(Action::Session(SessionAction::List))
         .await

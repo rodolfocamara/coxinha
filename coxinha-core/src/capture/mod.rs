@@ -2,12 +2,14 @@
 mod committed;
 #[cfg(target_os = "linux")]
 mod pulse;
+mod reconcile;
 mod recording;
 pub use committed::{CommittedTrack, MAX_READ_FRAMES};
 #[cfg(target_os = "linux")]
 pub use pulse::PulseCapture;
 #[cfg(target_os = "linux")]
 mod sources;
+pub use reconcile::OrphanReport;
 pub use recording::{CaptureManifest, Recording, Track};
 #[cfg(target_os = "linux")]
 pub use sources::{list_sources, Source};

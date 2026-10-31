@@ -15,7 +15,7 @@ async fn worker_reopens_closed_audio_and_rejects_unknown_or_traversal_ids() {
         .unwrap();
     recording.finish(&store, false).unwrap();
     drop(store);
-    let library = Library::open(temp.path().into()).unwrap();
+    let library = Library::open(temp.path().into(), None).unwrap();
     assert_eq!(
         library.ask(Action::List).await.unwrap()[0]["captureState"],
         "finished"
@@ -82,8 +82,11 @@ async fn worker_recovers_unclean_capture_without_promoting_it_to_success() {
         .unwrap();
     drop(recording);
     drop(store);
-    let library = Library::open(temp.path().into()).unwrap();
-    assert!(library.ask(Action::Detail(id.clone())).await.unwrap()["audio"].is_null());
+    let library = Library::open(temp.path().into(), None).unwrap();
+    // Boot reconciliation recovers the orphan; explicit recovery stays idempotent.
+    let reconciled = library.ask(Action::Detail(id.clone())).await.unwrap();
+    assert_eq!(reconciled["meeting"]["captureState"], "interrupted");
+    assert!(reconciled["audio"].is_object());
     let recovered = library.ask(Action::Recover(id.clone())).await.unwrap();
     assert_eq!(recovered["meeting"]["captureState"], "interrupted");
     assert_eq!(recovered["manifest"]["tracks"][0]["frames"], 960);
@@ -123,7 +126,7 @@ async fn worker_recovers_interrupted_inference_for_explicit_retry() {
         .unwrap();
     assert!(store.claim(&job).unwrap());
     drop(store);
-    let library = Library::open(temp.path().into()).unwrap();
+    let library = Library::open(temp.path().into(), None).unwrap();
     let detail = library.ask(Action::Processing(id, None)).await.unwrap();
     assert_eq!(detail["jobs"][0]["state"], "pending");
     assert_eq!(detail["jobs"][0]["error"], "interrupted before completion");
@@ -135,7 +138,7 @@ async fn worker_recovers_interrupted_inference_for_explicit_retry() {
 #[tokio::test]
 async fn missing_engines_are_an_actionable_failure() {
     let temp = tempfile::tempdir().unwrap();
-    let library = Library::open(temp.path().into()).unwrap();
+    let library = Library::open(temp.path().into(), None).unwrap();
     let error = library
         .ask(Action::Process(uuid::Uuid::new_v4().to_string(), json!({})))
         .await
@@ -159,7 +162,7 @@ async fn worker_imports_single_track_and_keeps_manual_candidates_private() {
         wav.write_sample(10i16).unwrap();
     }
     wav.finalize().unwrap();
-    let library = Library::open(temp.path().join("library")).unwrap();
+    let library = Library::open(temp.path().join("library"), None).unwrap();
     let detail = library
         .ask(Action::ImportAudio(
             "single".into(),
