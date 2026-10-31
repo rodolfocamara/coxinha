@@ -60,6 +60,7 @@ fn validate(board: &Board) -> Result<(), String> {
     }
     let mut ids = HashSet::new();
     let mut cards = HashSet::new();
+    let mut notes = HashSet::new();
     for item in &board.items {
         if item.id.is_empty()
             || item.id.len() > 100
@@ -91,6 +92,7 @@ fn validate(board: &Board) -> Result<(), String> {
                 {
                     return Err("invalid note path".into());
                 }
+                notes.insert(&item.id);
                 if item.kind == "card" {
                     cards.insert(&item.id);
                 }
@@ -119,8 +121,10 @@ fn validate(board: &Board) -> Result<(), String> {
         if edge.id.is_empty()
             || !edges.insert(&edge.id)
             || edge.source == edge.target
-            || !cards.contains(&edge.source)
-            || !cards.contains(&edge.target)
+            // Links join note-backed items and at least one side is an activity.
+            || !notes.contains(&edge.source)
+            || !notes.contains(&edge.target)
+            || !(cards.contains(&edge.source) || cards.contains(&edge.target))
             || !pairs.insert((&edge.source, &edge.target))
         {
             return Err("invalid dependency".into());
@@ -302,6 +306,42 @@ mod tests {
             note_id: Some("bad".into()),
             note_path: Some("../notes.md".into()),
         });
+        assert!(validate(&b).is_err());
+    }
+
+    #[test]
+    fn links_need_an_activity_on_at_least_one_side() {
+        let item = |id: &str, kind: &str, n: u128| Item {
+            id: id.into(),
+            kind: kind.into(),
+            x: 0.,
+            y: 0.,
+            width: 200.,
+            height: 100.,
+            color: "neutral".into(),
+            label: "".into(),
+            progress: 0,
+            parent_id: None,
+            note_id: Some(uuid::Uuid::from_u128(n).to_string()),
+            note_path: Some(format!("{id}.md")),
+        };
+        let edge = |source: &str, target: &str| Edge {
+            id: format!("{source}-{target}"),
+            source: source.into(),
+            target: target.into(),
+        };
+        let mut b = Board {
+            version: 3,
+            items: vec![
+                item("c", "card", 1),
+                item("t", "text", 2),
+                item("u", "text", 3),
+            ],
+            edges: vec![edge("t", "c"), edge("c", "t")],
+            ..Board::default()
+        };
+        assert!(validate(&b).is_ok());
+        b.edges.push(edge("t", "u"));
         assert!(validate(&b).is_err());
     }
 }
