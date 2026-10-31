@@ -57,6 +57,13 @@ impl Detector {
     pub fn stop(&self) {
         self.stop.notify_one();
     }
+    /// Auto-record needs detection (ADR 0023); the frontend toggle follows.
+    pub fn enable_for_auto_record(&self) {
+        self.set_enabled(true);
+    }
+    pub fn active_calls(&self) -> Vec<ActiveCall> {
+        self.status().calls.clone()
+    }
     fn set_enabled(&self, enabled: bool) -> DetectionStatus {
         let mut status = self.status();
         if status.enabled != enabled {
@@ -115,10 +122,13 @@ pub async fn run_loop(app: AppHandle) -> anyhow::Result<()> {
                 Err(_) => {
                     status.unavailable = true;
                     episodes.failed();
+                    drop(status);
+                    crate::auto_record::unreliable(&app);
                     continue;
                 }
             }
         };
+        crate::auto_record::observe(&app, &active).await;
         if let Some(state) = app.try_state::<Arc<tokio::sync::Mutex<crate::config::AppState>>>() {
             let mut state = state.lock().await;
             if state.active_calls != active {

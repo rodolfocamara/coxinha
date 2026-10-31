@@ -13,6 +13,7 @@
 mod app_paths;
 #[allow(dead_code)]
 mod audio_toolkit;
+mod auto_record;
 mod board;
 mod calendar;
 mod call_detector;
@@ -137,7 +138,16 @@ pub fn run() {
                 window::show_main(app.handle());
             }
 
-            app.manage(call_detector::Detector::default());
+            let auto_record = auto_record::AutoRecord::load(match &test_profile {
+                Some(profile) => profile.root.join("app-data/auto-record.json"),
+                None => app.path().app_data_dir()?.join("auto-record.json"),
+            });
+            let detector = call_detector::Detector::default();
+            if auto_record.enabled() {
+                detector.enable_for_auto_record();
+            }
+            app.manage(auto_record);
+            app.manage(detector);
             let handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {
                 if let Err(e) = call_detector::run_loop(handle).await {
@@ -252,6 +262,9 @@ pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
             commands::get_active_calls,
             call_detector::set_call_detection_enabled,
             call_detector::call_detection_status,
+            auto_record::auto_record_status,
+            auto_record::set_auto_record,
+            auto_record::auto_record_keep,
             commands::save_attachment,
             commands::get_config,
             commands::update_config,

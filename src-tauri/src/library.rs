@@ -340,6 +340,7 @@ mod curation_worker;
 mod detail;
 mod recording_storage;
 pub use curation::*;
+mod auto;
 mod capture;
 mod commands;
 mod note_deletion;
