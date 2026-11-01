@@ -31,6 +31,9 @@ mod recorder;
 mod shortcuts;
 mod storage;
 mod summarizer;
+// Spec 0097 P4: the meeting actor wires this in; nothing calls it yet.
+#[allow(dead_code, unused_imports)]
+mod titles;
 mod transcriber;
 mod tray;
 mod window;
