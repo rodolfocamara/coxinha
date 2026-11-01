@@ -9,7 +9,7 @@ use std::{
 
 pub const RATE: u32 = 48000;
 pub const MAX_SAMPLES: usize = 4096;
-#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum Track {
     Mic,
     Output,
