@@ -53,6 +53,26 @@ impl Library {
         )
         .await
     }
+    /// Single conditional update in the actor: a manual rename always wins.
+    pub(crate) async fn retitle_if(
+        &self,
+        storage: &Arc<Storage>,
+        session: &str,
+        expected: &str,
+        title: &str,
+    ) -> Result<bool, String> {
+        let value = mutate(
+            self,
+            storage,
+            Action::Session(SessionAction::RetitleIf(
+                session.to_owned(),
+                expected.to_owned(),
+                title.to_owned(),
+            )),
+        )
+        .await?;
+        Ok(value.as_bool().unwrap_or(false))
+    }
     pub(crate) async fn set_participants(
         &self,
         meeting: &str,

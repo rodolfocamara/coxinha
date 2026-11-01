@@ -42,7 +42,11 @@ async fn stalled_query_case(cancel_caller: bool) {
     real.shutdown().await.unwrap();
     let before = protected_snapshot(dir.path(), &protected);
     let (sender, receiver) = std::sync::mpsc::sync_channel::<Request>(16);
-    let mock = Library { sender };
+    let mock = Library {
+        sender,
+        root: Default::default(),
+        live: Default::default(),
+    };
     let st = storage.clone();
     let id = protected.id;
     let mut delete = tokio::spawn(async move { mock.delete_note(st, id).await });

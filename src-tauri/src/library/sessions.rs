@@ -14,6 +14,7 @@ pub(super) enum SessionAction {
     Failed(String, String),
     Pending,
     ProtectsNote(uuid::Uuid, Option<String>),
+    RetitleIf(String, String, String),
 }
 impl Worker {
     fn session_value(&self, id: &str) -> anyhow::Result<Value> {
@@ -119,6 +120,9 @@ impl Worker {
                 .store
                 .personal_note_is_protected(id, path.as_deref())?)),
             SessionAction::Pending => Ok(json!(self.store.pending_personal_notes()?)),
+            SessionAction::RetitleIf(id, expected, title) => {
+                Ok(json!(self.store.retitle_if(&id, &expected, &title)?))
+            }
         }
     }
 }

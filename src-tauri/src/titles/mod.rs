@@ -13,6 +13,7 @@ mod transport;
 
 pub use excerpt::{build_excerpt, estimate_tokens, ExcerptMode, TranscriptLine};
 pub use sanitize::sanitize_title;
+pub mod watch;
 
 /// ADR 0024 item 1: at most this many transcript tokens per request.
 pub const MAX_EXCERPT_TOKENS: usize = 1500;

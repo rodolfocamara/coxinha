@@ -222,3 +222,18 @@ fn reserved_uuid_creation_is_idempotent_and_preserves_later_links_and_edits() ->
     assert_eq!(s.list_sessions()?.len(), 2);
     Ok(())
 }
+
+#[test]
+fn retitle_if_only_replaces_the_expected_automatic_title() -> Result<()> {
+    let d = tempfile::tempdir()?;
+    let s = Store::open(d.path())?;
+    let session = s.create_session(&NewSession::manual("Reunião no Microsoft Teams"))?;
+    assert!(s.retitle_if(&session.id, "Reunião no Microsoft Teams", "Migração do CRM")?);
+    assert_eq!(s.session(&session.id)?.unwrap().title, "Migração do CRM");
+    // The user renamed it: a later suggestion never overwrites that.
+    s.update_session(&session.id, &NewSession::manual("Meu título"))?;
+    assert!(!s.retitle_if(&session.id, "Migração do CRM", "Outro título")?);
+    assert_eq!(s.session(&session.id)?.unwrap().title, "Meu título");
+    assert!(s.retitle_if(&session.id, "Meu título", "  ").is_err());
+    Ok(())
+}

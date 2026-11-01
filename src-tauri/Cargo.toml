@@ -149,6 +149,8 @@ default = []
 # STT engines (one or more)
 stt-whisper = ["dep:whisper-rs", "coxinha-core/stt-whisper"]
 stt-parakeet = ["dep:transcribe-rs"]
+# Live transcript with the Tagarela GGUF on transcribe.cpp 0.2.4 (spec 0097 P3)
+stt-tagarela = ["coxinha-core/stt-tagarela"]
 
 # GPU acceleration (each engine picks what it needs)
 cuda = ["whisper-rs/cuda"]
@@ -166,6 +168,7 @@ diarize-pyannote = ["dep:pyannote-rs"]
 full-release = [
     "stt-whisper",
     "stt-parakeet",
+    "stt-tagarela",
     "cuda",
     "diarize-pyannote",
 ]

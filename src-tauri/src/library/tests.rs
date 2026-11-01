@@ -66,6 +66,8 @@ fn playback_rejects_symlink_to_private_file_even_with_valid_checksum() {
         active: None,
         error: None,
         finalization_failed: None,
+        live: Default::default(),
+        root: Default::default(),
     };
     let error = worker.detail(&id).unwrap_err().to_string();
     assert!(error.contains("symlink"), "{error}");
@@ -226,6 +228,8 @@ fn failed_finalization_blocks_exit_until_matching_recovery() {
         active: None,
         error: None,
         finalization_failed: Some("unrecovered-recording".into()),
+        live: Default::default(),
+        root: Default::default(),
     };
     assert!(worker
         .execute(Action::Shutdown {
@@ -260,6 +264,8 @@ fn explicit_exit_after_failed_finalization_preserves_raw_and_next_start_recovery
         active: None,
         error: None,
         finalization_failed: Some(id.clone()),
+        live: Default::default(),
+        root: Default::default(),
     };
     assert!(worker
         .execute(Action::Shutdown {
@@ -291,7 +297,11 @@ async fn shutdown_waits_for_saturated_queue_without_blocking_async_executor() {
             reply,
         })
         .unwrap();
-    let library = Library { sender };
+    let library = Library {
+        sender,
+        root: Default::default(),
+        live: Default::default(),
+    };
     let (release, gate) = mpsc::channel();
     let worker = std::thread::spawn(move || {
         gate.recv().unwrap();

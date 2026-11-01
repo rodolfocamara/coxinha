@@ -63,3 +63,16 @@ impl CaptureChanged {
         Self { at_ms }
     }
 }
+
+/// Session rows changed outside an IPC mutation (a suggested title was applied).
+#[derive(Debug, Clone, Serialize, Deserialize, Type, Event)]
+pub struct SessionsChanged {
+    pub at_ms: u64,
+}
+impl SessionsChanged {
+    pub fn now() -> Self {
+        Self {
+            at_ms: CaptureChanged::now().at_ms,
+        }
+    }
+}

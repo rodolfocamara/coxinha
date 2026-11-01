@@ -17,6 +17,8 @@ fn worker(store: Store) -> Worker {
         active: None,
         error: None,
         finalization_failed: None,
+        live: Default::default(),
+        root: Default::default(),
     }
 }
 fn counter() -> (Arc<AtomicUsize>, Notifier) {

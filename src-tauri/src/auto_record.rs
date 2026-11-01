@@ -208,7 +208,15 @@ async fn execute(app: &AppHandle, command: Command) {
     };
     let state = app.state::<AutoRecord>();
     match begin(app, &call).await {
-        Ok((binding, title)) => {
+        Ok((binding, title, named_by_event)) => {
+            if !named_by_event {
+                crate::titles::watch::watch(
+                    app.clone(),
+                    binding.session.clone(),
+                    binding.meeting.clone(),
+                    title.clone(),
+                );
+            }
             lock(&state.policy).started(binding);
             notify(
                 app,
@@ -259,7 +267,7 @@ async fn sources() -> Result<Value, String> {
 
 /// Devices, calendar title, session, start, invitees. Each step can fail
 /// once; there is no retry loop and the strip prompt stays available.
-async fn begin(app: &AppHandle, call: &ActiveCall) -> Result<(Binding, String), String> {
+async fn begin(app: &AppHandle, call: &ActiveCall) -> Result<(Binding, String, bool), String> {
     let settings = lock(&app.state::<AutoRecord>().settings).clone();
     let devices = sources().await?;
     let mic = plan::pick_source(&devices, false, settings.mic_source.as_deref())
@@ -322,5 +330,5 @@ async fn begin(app: &AppHandle, call: &ActiveCall) -> Result<(Binding, String), 
         session,
         keep: false,
     };
-    Ok((binding, title))
+    Ok((binding, title, event.is_some()))
 }

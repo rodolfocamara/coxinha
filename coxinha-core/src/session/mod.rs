@@ -224,6 +224,16 @@ impl Store {
         Ok(())
     }
 
+    /// Changes the title only while it still equals `expected`, so a title the
+    /// user typed meanwhile always wins (spec 0097 P4, single statement).
+    pub fn retitle_if(&self, id: &str, expected: &str, title: &str) -> Result<bool> {
+        NewSession::manual(title).validate()?;
+        Ok(self.db.execute(
+            "UPDATE session SET title=?3 WHERE id=?1 AND title=?2",
+            params![id, expected, title],
+        )? == 1)
+    }
+
     pub fn session(&self, id: &str) -> Result<Option<Session>> {
         Ok(self
             .db
