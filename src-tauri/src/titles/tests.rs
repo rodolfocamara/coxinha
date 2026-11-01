@@ -93,7 +93,8 @@ fn ssh_args_use_stdio_forwarding_hardened_options_and_end_options_before_the_tar
     .collect();
     let expected = "-W 127.0.0.1:8123 -o BatchMode=yes -o ControlMaster=no -o ControlPath=none \
         -o StrictHostKeyChecking=yes -o ConnectTimeout=5 -o ServerAliveInterval=5 \
-        -o ForwardAgent=no -o PermitLocalCommand=no -- macserver@192.168.15.66";
+        -o ForwardAgent=no -o PermitLocalCommand=no -o ClearAllForwardings=yes \
+        -- macserver@192.168.15.66";
     assert_eq!(args.join(" "), expected);
     assert!(
         !args.iter().any(|a| a == "-L" || a == "-R" || a == "-D"),

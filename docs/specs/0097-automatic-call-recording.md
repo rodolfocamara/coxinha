@@ -159,6 +159,8 @@ OpenAI-compatible rapid-mlx server on `127.0.0.1:8000`, reached over SSH.
 See [ADR 0024](../architecture/decisions/0024-user-owned-llm-over-ssh-for-titles.md).
 P4 needs P3; with P3 off there is no title suggestion.
 
+- **Setting.** Ajustes › Integrações › Título sugerido, off by default and
+  separate from P3: local ASR and SSH egress are distinct opt-ins.
 - **Knowledge vs Memory** (B5, ADR 0015).
   - The LLM output is a *suggestion* stored in Memory: `outputs/live/title.json`
     with `{title, source: "llm", model, endpoint_host, at, input_tokens}`.
@@ -243,8 +245,41 @@ pending (spec 0083).
   - Privacy decided by the owner on 2026-10-31: sending excerpts of any
     meeting to the owner's own host is acceptable (ADR 0024).
   - Open: the Windows stress test and the 2-hour benchmark.
-- **Gemini 4 Argon.** The Antigravity quota was exhausted. The owner
-  approved running it through Cursor; the review of ae6279c is in progress.
+- **Gemini 4 Argon (via Cursor, approved by the owner), design ae6279c,**
+  checked against the code at 3e9a38c:
+  - B1 (stitching at pauses and End, seam words, livelock): already in the
+    code. Terminal windows commit everything, words belong to the window
+    holding their midpoint, and the cursor always advances by at least 1 s.
+  - B2 (refined title and Desfazer): already in the code. The refined title
+    replaces the last applied suggestion, and a dismissal blocks any later
+    one.
+  - B3 (Committed before the manifest rename):
+    - on Linux a stale read is benign, because the worker reopens the
+      manifest on every wake and re-checks every 5 s;
+    - on Windows, Rust's `File::open` shares delete, so `MoveFileExW`
+      replacing the manifest does not fail while it is open;
+    - capture is still Linux-only.
+    - Kept as is, recorded here.
+  - S1 fixed: silent and zero-word windows append a hidden marker line, and
+    `transcript_progress` drives `complete`. "Transcrever o resto" shows
+    only when something is left.
+  - S2 and S3 were already in the code: voice activity on the uncommitted
+    range, an incremental journal offset, and pause offsets in `start_ms`.
+  - S4: unclosed `<think>`, char-safe caps, the response limit and the
+    timeout were already there. Added `ClearAllForwardings=yes`. The P4
+    toggle lives in Ajustes › Integrações, off by default.
+  - S5 fixed:
+    - an idle loaded model is released before manual Process;
+    - Recover is refused while the live slot is busy;
+    - "Transcrever o resto" is refused during a capture, so backfill never
+      queues ahead of a live call;
+    - exit waits the 250 ms grace.
+    - `Store::backup` is only reachable from the CLI binary, not the app.
+  - Open:
+    - N1, model provenance per window (path, hash and runtime version are
+      not yet in `transcript.jsonl`);
+    - preempting a backfill that is already running when a capture starts;
+    - installing the `CancelToken`.
 
 ## Evidence (P3–P4 implementation, 2026-10-31)
 

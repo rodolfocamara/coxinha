@@ -119,6 +119,8 @@ fn ssh_args(settings: &TitleLlmSettings) -> Vec<OsString> {
         "ServerAliveInterval=5",
         "ForwardAgent=no",
         "PermitLocalCommand=no",
+        // Forwardings from the user's ssh config never ride along (review S4).
+        "ClearAllForwardings=yes",
     ] {
         args.push("-o".into());
         args.push(option.into());

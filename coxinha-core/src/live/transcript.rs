@@ -34,9 +34,31 @@ pub fn read_transcript(root: &Path, meeting: &str) -> Result<Vec<LiveSegment>> {
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(Vec::new()),
         Err(e) => return Err(e.into()),
     };
-    let mut segments = parse(&bytes).0;
+    // Empty lines only advance a track over silence (review S1); they are not text.
+    let mut segments: Vec<_> = parse(&bytes)
+        .0
+        .into_iter()
+        .filter(|s| !s.text.is_empty())
+        .collect();
     segments.sort_by_key(|s| (s.start_ms, s.track));
     Ok(segments)
+}
+
+/// Last transcribed frame of each track, silence markers included, so a
+/// finished meeting is complete when both reach the committed frame count.
+pub fn transcript_progress(root: &Path, meeting: &str) -> Result<[u64; 2]> {
+    let path = live_directory(root, meeting)?.join("transcript.jsonl");
+    let bytes = match std::fs::read(path) {
+        Ok(bytes) => bytes,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok([0; 2]),
+        Err(e) => return Err(e.into()),
+    };
+    let mut cursors = [0; 2];
+    for s in parse(&bytes).0 {
+        let i = super::timing::index(s.track);
+        cursors[i] = cursors[i].max(s.end_frame);
+    }
+    Ok(cursors)
 }
 
 pub(crate) struct TranscriptWriter {

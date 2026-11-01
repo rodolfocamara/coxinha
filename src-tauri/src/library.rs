@@ -285,6 +285,11 @@ impl Worker {
                 );
                 #[cfg(target_os = "linux")]
                 anyhow::ensure!(self.active.is_none(), "stop active capture before recovery");
+                // Recovery rewrites the tracks the live worker may be reading.
+                anyhow::ensure!(
+                    !self.live.busy(),
+                    "live transcript still running; try again when it finishes"
+                );
                 self.store.recover_capture(&id)?;
                 if self.finalization_failed.as_deref() == Some(&id) {
                     self.finalization_failed = None;

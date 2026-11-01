@@ -83,7 +83,9 @@ pub(crate) fn drain(inner: &Inner, meeting: &str, asr: &mut dyn Asr) -> Result<(
         let pcm = tracks[i].read_frames(read_start, read_end)?;
         let new = &pcm[(window.cursor - read_start) as usize..(window.end - read_start) as usize];
         if !dsp::has_voice(new) {
-            cursors[i] = window.commit_limit.unwrap_or(window.end);
+            let next = window.commit_limit.unwrap_or(window.end);
+            writer.append(&silence(TRACKS[i], window.cursor, next))?;
+            cursors[i] = next;
             continue;
         }
         let input = dsp::decimate(&pcm, read_start, window.start, window.end);
@@ -106,7 +108,22 @@ pub(crate) fn drain(inner: &Inner, meeting: &str, asr: &mut dyn Asr) -> Result<(
                     .collect::<Vec<_>>()
                     .join(" "),
             })?;
+        } else if commit.next > window.cursor {
+            writer.append(&silence(TRACKS[i], window.cursor, commit.next))?;
         }
         cursors[i] = commit.next;
+    }
+}
+
+/// Marks a span with no committed words so resume and completeness move past
+/// it (review S1). `read_transcript` hides these lines.
+fn silence(track: Track, start: u64, end: u64) -> LiveSegment {
+    LiveSegment {
+        track,
+        start_frame: start,
+        end_frame: end,
+        start_ms: start / FRAMES_PER_MS,
+        end_ms: end / FRAMES_PER_MS,
+        text: String::new(),
     }
 }

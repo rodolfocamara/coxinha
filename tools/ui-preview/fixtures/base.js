@@ -135,7 +135,7 @@
     { track: 'Mic', startFrame: 0, endFrame: 480000, startMs: 9500, endMs: 14000, text: 'Precisamos fechar o contrato até quinta.' },
     { track: 'Output', startFrame: 480000, endFrame: 960000, startMs: 15000, endMs: 22000, text: 'O plano de rollback ainda não está pronto e a segurança pediu revisão.' },
   ];
-  f.library_live_transcript = () => ({ segments: state.live ? liveSegments : [], state: state.live === 'running' ? 'running' : 'idle', error: null, behindMs: 0, paused: false });
+  f.library_live_transcript = () => ({ segments: state.live ? liveSegments : [], state: state.live === 'running' ? 'running' : 'idle', error: null, behindMs: 0, paused: false, complete: state.live !== 'running' });
   f.library_live_status = () => ({ meeting: state.live === 'running' ? 'm-weekly' : null, state: state.live === 'running' ? 'running' : 'idle', error: null, behindMs: 0, queued: [] });
   f.library_title_suggestion = () =>
     state.suggested ? { title: 'Weekly de TI', placeholder: 'Reunião no Microsoft Teams', sessionId: 's-weekly', source: 'llm', model: 'qwen3.5-4b', endpointHost: '192.168.15.66', at: at(0, 10, 5), inputTokens: 320, stage: 'first', applied: true, dismissed: false } : null;

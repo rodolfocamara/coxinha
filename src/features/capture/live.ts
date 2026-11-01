@@ -17,6 +17,8 @@ export type LiveTranscript = {
   error: string | null;
   behindMs: number;
   paused: boolean;
+  /** Both tracks transcribed up to the end of the recording (silence included). */
+  complete: boolean;
 };
 export type LiveSnapshot = {
   meeting: string | null;

@@ -39,6 +39,7 @@ const transcript = (over: Partial<LiveTranscript> = {}): LiveTranscript => ({
   error: null,
   behindMs: 0,
   paused: false,
+  complete: false,
   ...over,
 });
 const route = (handlers: Record<string, (args: unknown) => unknown>) =>
@@ -72,6 +73,12 @@ it('offers to transcribe the rest after the recording, and keeps the old note wh
   fireEvent.click(await screen.findByRole('button', { name: 'Transcrever o resto' }));
   await waitFor(() => expect(invoke).toHaveBeenCalledWith('library_live_resume', { meetingId: M }));
   view.unmount();
+  // Fully transcribed, silence included: nothing left to offer.
+  route({ library_live_transcript: () => transcript({ state: 'idle', complete: true }) });
+  const done = render(<LiveTranscriptPanel meetingId={M} recording={false} />);
+  expect(await screen.findByText('Bom dia, a pauta é o CRM.')).toBeVisible();
+  expect(screen.queryByRole('button', { name: 'Transcrever o resto' })).toBeNull();
+  done.unmount();
   route({ library_live_transcript: () => transcript({ state: 'idle', segments: [] }) });
   render(<LiveTranscriptPanel meetingId={M} recording />);
   expect(await screen.findByRole('status')).toHaveTextContent('Gravando agora');

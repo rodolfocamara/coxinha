@@ -16,7 +16,7 @@ use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "stt-tagarela")]
 pub use tagarela::TagarelaFactory;
-pub use transcript::read_transcript;
+pub use transcript::{read_transcript, transcript_progress};
 pub use worker::LiveTranscriber;
 
 /// A word with times in milliseconds relative to the start of the 16 kHz input.

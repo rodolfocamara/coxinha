@@ -96,3 +96,32 @@ fn resume_after_a_crash_mid_append_neither_loses_nor_repeats() -> Result<()> {
         .all(|l| serde_json::from_slice::<LiveSegment>(l).is_ok()));
     Ok(())
 }
+
+/// Review S1: silence markers move a track forward without showing as text.
+#[test]
+fn silence_markers_advance_progress_but_are_hidden() -> Result<()> {
+    let dir = tempfile::tempdir()?;
+    let meeting = uuid::Uuid::new_v4().to_string();
+    let live = dir.path().join("raw").join(&meeting).join("outputs/live");
+    std::fs::create_dir_all(&live)?;
+    let mut body = Vec::new();
+    for s in [
+        segment(Track::Mic, 0, 100, "fala"),
+        segment(Track::Mic, 480_000, 10_000, ""),
+        segment(Track::Output, 0, 0, ""),
+    ] {
+        body.extend(serde_json::to_vec(&s)?);
+        body.push(b'\n');
+    }
+    std::fs::write(live.join("transcript.jsonl"), body)?;
+    let texts: Vec<_> = read_transcript(dir.path(), &meeting)?
+        .into_iter()
+        .map(|s| s.text)
+        .collect();
+    assert_eq!(texts, ["fala"]);
+    assert_eq!(
+        super::transcript_progress(dir.path(), &meeting)?,
+        [960_000, 480_000]
+    );
+    Ok(())
+}

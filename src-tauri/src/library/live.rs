@@ -121,10 +121,23 @@ impl LiveSlot {
     pub(super) fn busy(&self) -> bool {
         self.transcriber.as_ref().is_some_and(|(_, t)| t.is_busy())
     }
-    /// Exit: never join. The worker never touches the Store, so an exit is a crash for B2.
+    /// Before manual processing: an idle but loaded model leaves now, so at
+    /// most one ASR model is resident (review S5).
+    pub(super) fn release_idle(&mut self) {
+        if self.transcriber.as_ref().is_some_and(|(_, t)| !t.is_busy()) {
+            self.shutdown();
+        }
+    }
+    /// Exit: cancel, then the 250 ms grace of spec 0089. A run still inside the
+    /// engine is not joined; the worker never touches the Store, so it counts
+    /// as a crash for the dedupe-on-read rule.
     pub(super) fn shutdown(&mut self) {
         if let Some((_, t)) = self.transcriber.take() {
             t.cancel();
+            let deadline = std::time::Instant::now() + std::time::Duration::from_millis(250);
+            while !t.is_finished() && std::time::Instant::now() < deadline {
+                std::thread::sleep(std::time::Duration::from_millis(10));
+            }
         }
         self.publish();
     }
@@ -137,10 +150,11 @@ impl Worker {
             Action::LivePause(paused) => self.live.pause(paused),
             Action::LiveResume(meeting) => {
                 uuid::Uuid::parse_str(&meeting)?;
+                // Backfill never queues ahead of a live call (review S5).
                 #[cfg(target_os = "linux")]
                 anyhow::ensure!(
-                    self.active.as_ref().is_none_or(|a| a.id != meeting),
-                    "meeting is still recording"
+                    self.active.is_none(),
+                    "finish the recording before transcribing the rest"
                 );
                 self.live.resume(&self.root, &meeting);
             }
@@ -160,8 +174,10 @@ impl Library {
         let root = self.root.clone();
         let transcriber = self.live.lock().unwrap_or_else(|e| e.into_inner()).clone();
         let id = meeting.clone();
-        let segments = tauri::async_runtime::spawn_blocking(move || {
-            coxinha_core::live::read_transcript(&root, &id).map_err(|e| format!("{e:#}"))
+        let (segments, complete) = tauri::async_runtime::spawn_blocking(move || {
+            let segments =
+                coxinha_core::live::read_transcript(&root, &id).map_err(|e| format!("{e:#}"))?;
+            Ok::<_, String>((segments, transcript_complete(&root, &id)))
         })
         .await
         .map_err(|e| e.to_string())??;
@@ -174,11 +190,26 @@ impl Library {
             "error": if mine { snapshot.error.clone() } else { None },
             "behindMs": if mine { snapshot.behind_ms } else { 0 },
             "paused": snapshot.state == "paused",
+            "complete": complete,
         }))
     }
     pub(crate) fn live_root(&self) -> &std::path::Path {
         &self.root
     }
+}
+
+/// Both tracks transcribed up to their committed frames (silence included).
+fn transcript_complete(root: &std::path::Path, meeting: &str) -> bool {
+    use coxinha_core::capture::{CommittedTrack, Track};
+    let Ok(progress) = coxinha_core::live::transcript_progress(root, meeting) else {
+        return false;
+    };
+    [Track::Mic, Track::Output]
+        .iter()
+        .zip(progress)
+        .all(|(track, done)| {
+            CommittedTrack::open(root, meeting, *track).is_ok_and(|t| done >= t.frames())
+        })
 }
 
 fn settings_path(app: &tauri::AppHandle) -> Result<PathBuf, String> {

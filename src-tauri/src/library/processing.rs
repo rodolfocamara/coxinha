@@ -37,6 +37,7 @@ impl Worker {
             !self.live.busy(),
             "live transcript still running; try again when it finishes"
         );
+        self.live.release_idle();
         #[cfg(target_os = "linux")]
         anyhow::ensure!(self.active.is_none(), "finish capture before processing");
         #[cfg(not(feature = "local-processing"))]

@@ -60,7 +60,7 @@ export function LiveTranscriptPanel({
             ` · ${k('behind', { time: formatElapsed(data.behindMs) })}`}
         </span>
         <span className="flex-1" />
-        {!recording && !active && (
+        {!recording && !active && !data.complete && (
           <Button
             size="xs"
             variant="secondary"
