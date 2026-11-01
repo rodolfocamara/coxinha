@@ -13,6 +13,8 @@ rusqlite = { version = "0.39", features = ["bundled", "backup"] }
 sha2 = "0.10"
 hound = "3.5"
 whisper-rs = { version = "0.16", default-features = false, optional = true }
+# The default feature enables Metal; spec 0097 P3 runs Tagarela on CPU.
+transcribe-cpp = { version = "=0.2.4", default-features = false, optional = true }
 
 pyannote-rs = { version = "0.3.4", optional = true }
 ort = { version = "=2.0.0-rc.10", default-features = false, features = ["load-dynamic"], optional = true }
@@ -22,6 +24,7 @@ default = []
 local-processing = ["stt-whisper", "diarization-onnx"]
 diarization-onnx = ["dep:pyannote-rs", "dep:ort"]
 stt-whisper = ["dep:whisper-rs"]
+stt-tagarela = ["dep:transcribe-cpp"]
 
 [dev-dependencies]
 tempfile = "3"
