@@ -8,6 +8,8 @@ use tauri::{Manager, State};
 #[derive(Clone)]
 pub struct Library {
     sender: mpsc::SyncSender<Request>,
+    root: PathBuf,
+    live: live::SharedLive,
 }
 struct Request {
     action: Action,
@@ -46,6 +48,9 @@ enum Action {
     },
     Pause(bool),
     Stop,
+    LiveConfigure(live::LiveSettings),
+    LivePause(bool),
+    LiveResume(String),
     Shutdown {
         allow_interrupted: bool,
     },
@@ -68,11 +73,17 @@ struct Worker {
     active: Option<Active>,
     error: Option<String>,
     finalization_failed: Option<String>,
+    live: live::LiveSlot,
+    root: PathBuf,
 }
 impl Library {
     pub fn open(root: PathBuf, notify: Option<Notifier>) -> anyhow::Result<Self> {
         let (sender, receiver) = mpsc::sync_channel::<Request>(16);
         let (ready_tx, ready_rx) = mpsc::sync_channel(1);
+        let live_slot = live::LiveSlot::default();
+        let live = live_slot.shared.clone();
+        let library_root = root.clone();
+        let worker_root = root.clone();
         std::thread::Builder::new()
             .name("meeting-library".into())
             .spawn(move || {
@@ -98,6 +109,8 @@ impl Library {
                     active: None,
                     error: None,
                     finalization_failed: None,
+                    live: live_slot,
+                    root: worker_root,
                 };
                 let mut watch = watch::CaptureWatch::new(&worker, notify);
                 loop {
@@ -117,6 +130,7 @@ impl Library {
                         Err(mpsc::RecvTimeoutError::Disconnected) => {
                             worker.cancel_comparison();
                             let _ = worker.finish(true);
+                            worker.live.shutdown();
                             let _ = worker.interrupt_processing();
                             // Join before dropping Store even when cooperative grace expired.
                             drop(worker.processing.take());
@@ -131,7 +145,11 @@ impl Library {
             .recv()
             .map_err(|e| anyhow::anyhow!(e))?
             .map_err(anyhow::Error::msg)?;
-        Ok(Self { sender })
+        Ok(Self {
+            sender,
+            root: library_root,
+            live,
+        })
     }
     pub async fn shutdown(&self) -> Result<(), String> {
         self.shutdown_mode(false).await.map(|_| ())
@@ -267,11 +285,19 @@ impl Worker {
                 );
                 #[cfg(target_os = "linux")]
                 anyhow::ensure!(self.active.is_none(), "stop active capture before recovery");
+                // Recovery rewrites the tracks the live worker may be reading.
+                anyhow::ensure!(
+                    !self.live.busy(),
+                    "live transcript still running; try again when it finishes"
+                );
                 self.store.recover_capture(&id)?;
                 if self.finalization_failed.as_deref() == Some(&id) {
                     self.finalization_failed = None;
                 }
                 self.detail(&id)
+            }
+            action @ (Action::LiveConfigure(_) | Action::LivePause(_) | Action::LiveResume(_)) => {
+                self.live_action(action)
             }
             action @ (Action::Start { .. }
             | Action::Pause(_)
@@ -282,7 +308,15 @@ impl Worker {
     fn finish(&mut self, interrupted: bool) -> anyhow::Result<()> {
         #[cfg(target_os = "linux")]
         if let Some(a) = self.active.take() {
-            match a.capture.finish(&self.store, interrupted) {
+            let result = a.capture.finish(&self.store, interrupted);
+            // B1: every outcome is terminal for the live worker.
+            let end = match &result {
+                Ok(m) if m.state == "interrupted" => coxinha_core::live::EndState::Interrupted,
+                Ok(_) => coxinha_core::live::EndState::Finished,
+                Err(_) => coxinha_core::live::EndState::Failed,
+            };
+            self.live.ended(&a.id, end);
+            match result {
                 Ok(m) if m.state == "interrupted" => {
                     self.error = Some("capture interrupted; inspect recording details".into());
                     if !interrupted {
@@ -308,13 +342,18 @@ impl Worker {
         self.pump_processing();
         #[cfg(target_os = "linux")]
         if let Some(a) = self.active.as_mut() {
+            let mut checkpointed = false;
             let result = (|| {
                 if a.checkpoint.elapsed().as_secs() >= 1 {
                     a.capture.recording.request_checkpoint()?;
                     a.checkpoint = Instant::now();
+                    checkpointed = true;
                 }
                 a.capture.pump()
             })();
+            if checkpointed {
+                self.live.committed(&a.id);
+            }
             match result {
                 Ok(Some((track, peak))) => {
                     let i = if matches!(track, coxinha_core::capture::Track::Mic) {
@@ -340,7 +379,10 @@ mod curation_worker;
 mod detail;
 mod recording_storage;
 pub use curation::*;
+mod auto;
 mod capture;
+mod live;
+pub use live::*;
 mod commands;
 mod note_deletion;
 mod processing;

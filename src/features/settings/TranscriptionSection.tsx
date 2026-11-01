@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Badge } from '../../components/ui';
 import type { AppConfig } from '../../lib/bindings';
 import { SettingsCard, SettingsRow, SettingsSection } from './controls';
+import { LiveSettings } from '../live/LiveSettings';
 
 const NONE = { engine: 'none' } as const;
 const file = (path: string) => path.split(/[\\/]/).filter(Boolean).pop() ?? path;
@@ -56,6 +57,9 @@ export function TranscriptionSection({ config }: { config: AppConfig }) {
         {row('diarizer', s('transcription.diarizer'), config.diarizer ?? NONE)}
       </SettingsCard>
       <p className="mt-2 text-xs text-muted-foreground">{s('transcription.perMeeting')}</p>
+      <div className="mt-4">
+        <LiveSettings />
+      </div>
     </SettingsSection>
   );
 }

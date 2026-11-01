@@ -1,5 +1,5 @@
 import { voiceCurationErrorText } from './voiceCurationError';
-import { useEffect, useId, useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { voiceCuration, validVoiceOrigin } from './voiceCuration';
 import { useCurationRead } from './useCurationRead';
@@ -53,10 +53,14 @@ export function SelectedVoiceEnrollment({
     data.assignmentId === assignment.id &&
     data.personId === assignment.person_id &&
     data.assignmentRevision !== null;
-  useEffect(() => {
+  // Reset while rendering, not in an effect: a deferred effect could wipe a
+  // selection the user made right after the candidates appeared.
+  const [shown, setShown] = useState({ data, open });
+  if (shown.data !== data || shown.open !== open) {
+    setShown({ data, open });
     setSelected([]);
     setOrigin('');
-  }, [data, open]);
+  }
   const eligible = matches
     ? selected.filter((id) => data.turns.some((turn) => turn.turnId === id && turn.eligible))
     : [];

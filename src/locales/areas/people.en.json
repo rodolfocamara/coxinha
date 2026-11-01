@@ -130,6 +130,35 @@
       },
       "shortcuts": {
         "toggleRecording": "Start or stop recording"
+      },
+      "autoRecord": {
+        "title": "Record calls automatically",
+        "hint": "Starts recording when a call is detected, even with the window closed. Tell participants: you are responsible for the recording. Coxinha shows REC and a notification for every recording.",
+        "stopTitle": "Stop when the call ends",
+        "stopHint": "Waits 20 seconds after the call ends and shows a countdown so you can keep recording.",
+        "needsDetection": "Turning on automatic recording also turns on call detection."
+      },
+      "live": {
+        "title": "Transcribe during the call",
+        "hint": "Uses Tagarela on this computer while recording. The text is provisional and nothing leaves the machine.",
+        "needsModel": "Choose the model file to turn it on.",
+        "model": "Tagarela model",
+        "modelHint": "Parakeet pt-BR .gguf file. Read-only: Coxinha never changes Handy's file.",
+        "useHandy": "Use Handy's",
+        "threads": "Transcript threads",
+        "threadsHint": "Fewer threads leave more CPU for the call and for Handy."
+      },
+      "titles": {
+        "title": "Suggested title",
+        "hint": "Titles automatic recordings without a calendar event, using your own server over SSH.",
+        "target": "SSH target",
+        "port": "Port",
+        "model": "Model",
+        "privacy": "Sends only transcript text excerpts, never audio.",
+        "test": "Test",
+        "testing": "Testing…",
+        "testOk": "It worked: {{title}}",
+        "testFailed": "It did not work: {{error}}"
       }
     },
     "palette": {

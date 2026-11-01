@@ -46,7 +46,11 @@ async fn completion_errors_never_dispatch_a_durable_conflict() {
             .unwrap();
         real.shutdown().await.unwrap();
         let (sender, receiver) = std::sync::mpsc::sync_channel::<Request>(16);
-        let mock = Library { sender };
+        let mock = Library {
+            sender,
+            root: Default::default(),
+            live: Default::default(),
+        };
         let worker = std::thread::spawn(move || {
             let reserve = receiver.recv().unwrap();
             assert!(matches!(

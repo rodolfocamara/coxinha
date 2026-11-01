@@ -139,7 +139,8 @@
       "participantsAfterRecording": "Os convidados viram candidatos a falante quando a reunião é gravada.",
       "actions": "Ações",
       "importAudio": "Importar áudio para esta reunião",
-      "transcribeAgain": "Transcrever de novo"
+      "transcribeAgain": "Transcrever de novo",
+      "transcriptLiveNow": "ao vivo, provisória"
     },
     "month": {
       "previous": "Mês anterior",
@@ -178,6 +179,25 @@
       "description": "Candidatos a falante desta gravação. Ficam só neste computador.",
       "copyInvitees_one": "Trazer {{count}} convidado do Outlook",
       "copyInvitees_other": "Trazer {{count}} convidados do Outlook"
+    },
+    "live": {
+      "title": "Transcrição ao vivo",
+      "queued": "na fila",
+      "loading": "carregando o modelo",
+      "running": "transcrevendo · provisória",
+      "draining": "terminando o fim da gravação",
+      "paused": "pausada",
+      "provisional": "provisória, feita durante a gravação",
+      "failed": "falhou: {{error}}",
+      "behind": "atrasada {{time}}",
+      "resume": "Transcrever o resto",
+      "me": "Você",
+      "others": "Outros"
+    },
+    "suggested": {
+      "label": "título sugerido",
+      "undo": "Desfazer",
+      "source": "Sugerido por {{model}} em {{host}} a partir da transcrição"
     }
   }
 }

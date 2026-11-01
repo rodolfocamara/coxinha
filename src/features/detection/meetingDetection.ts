@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { isTauri } from '@tauri-apps/api/core';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import type { ActiveCall } from '../../lib/bindings';
+import { autoStopsCall, updateAutoRecord, useAutoRecord } from '../capture/autoRecord';
 
 const preference = 'coxinha:meeting-detection';
 function enabledPreference() {
@@ -54,6 +55,9 @@ export const useMeetingDetection = create<{
 }));
 
 export function setDetectionEnabled(enabled: boolean) {
+  // ADR 0023: without detection there is nothing to record automatically.
+  if (!enabled && useAutoRecord.getState().status?.settings.enabled)
+    void updateAutoRecord({ enabled: false }).catch(() => {});
   try {
     localStorage.setItem(preference, String(enabled));
   } catch {
@@ -117,9 +121,12 @@ export function acceptDetectionStatus(status: DetectionStatus, recording: boolea
       recordedCallKey = callKey(status.calls[0]);
       callEndedPrompt = null;
     } else if (trackedCall && !keys.has(callKey(trackedCall))) {
-      callEndedPrompt = trackedCall;
+      // With automatic stop on, the strip shows the backend countdown instead.
+      if (!autoStopsCall(trackedCall)) {
+        callEndedPrompt = trackedCall;
+        shouldFocus = true;
+      }
       trackedCall = null;
-      shouldFocus = true;
     }
     const nextCalls = recordedCallKey
       ? status.calls.filter(

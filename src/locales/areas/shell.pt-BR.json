@@ -61,6 +61,11 @@
       "devices": "Não foi possível listar os dispositivos de áudio.",
       "devicesMissing": "Nenhum microfone ou áudio do computador encontrado.",
       "captureBusy": "Já existe uma gravação ou transcrição em andamento."
-    }
+    },
+    "autoStopIn": "parando sozinho em {{time}}",
+    "stopNow": "Parar agora",
+    "auto": "automática",
+    "livePause": "Pausar transcrição",
+    "liveResume": "Retomar transcrição"
   }
 }

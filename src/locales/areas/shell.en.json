@@ -61,6 +61,11 @@
       "devices": "Could not list audio devices.",
       "devicesMissing": "No microphone or computer audio found.",
       "captureBusy": "A recording or transcription is already running."
-    }
+    },
+    "autoStopIn": "stopping on its own in {{time}}",
+    "stopNow": "Stop now",
+    "auto": "automatic",
+    "livePause": "Pause transcript",
+    "liveResume": "Resume transcript"
   }
 }

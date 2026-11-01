@@ -64,6 +64,8 @@ fn private_curation_actions_preserve_old_confirm_and_revoke_commands() -> anyhow
         processing: None,
         error: None,
         finalization_failed: None,
+        live: Default::default(),
+        root: Default::default(),
         #[cfg(target_os = "linux")]
         active: None,
     };

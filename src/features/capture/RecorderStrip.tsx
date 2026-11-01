@@ -1,4 +1,3 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { AlertTriangle, ChevronRight, Mic, Pause, Phone, Play, Square, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -9,32 +8,30 @@ import { sessionListCache } from '../sessions/sessions';
 import {
   acknowledgeCallEnded,
   callKey,
-  dismissCall,
   trackRecordedCall,
   useMeetingDetection,
 } from '../detection/meetingDetection';
 import {
-  recordDetectedCall,
   stopDetectedCallRecording,
   switchToDetectedCall,
   useDirectCapture,
 } from '../detection/directCapture';
-import { MeetingDetails } from '../detection/MeetingDetails';
-import type { CalendarEvent } from '../agenda/calendar';
 import { dismissCaptureError, pauseCapture, stopCapture } from './captureActions';
 import { capturePhase, useCaptureStore } from './captureStore';
 import '../../components/Shell/shell.css';
+import { useAutoStop } from './autoRecord';
+import {
+  AutoStopNotice,
+  DetectedCall,
+  LiveToggle,
+  Levels,
+  formatElapsed,
+  processingPhase,
+  useChanged,
+  type View,
+} from './recorderParts';
 
-export function formatElapsed(ms: number) {
-  const s = Math.max(0, Math.floor(ms / 1000));
-  const h = Math.floor(s / 3600);
-  const mm = String(Math.floor((s % 3600) / 60)).padStart(h ? 2 : 1, '0');
-  const ss = String(s % 60).padStart(2, '0');
-  return h ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
-}
-
-type Tone = 'idle' | 'live' | 'attention' | 'busy';
-type View = { key: string; tone: Tone; content: ReactNode; actions?: ReactNode };
+export { formatElapsed };
 
 /** Title of what is being recorded: start request first, then the session list. */
 function useLiveTitle() {
@@ -66,6 +63,7 @@ export function RecorderStrip() {
   const detection = useMeetingDetection();
   const direct = useDirectCapture();
   const { title, sessionId } = useLiveTitle();
+  const autoStop = useAutoStop();
   const phase = capturePhase(status);
   const active = status?.active;
 
@@ -148,6 +146,18 @@ export function RecorderStrip() {
         </>
       ),
     };
+  } else if (active && autoStop && autoStop.binding.meetingId === active.meetingId) {
+    view = {
+      key: 'auto-stop',
+      tone: 'attention',
+      content: (
+        <AutoStopNotice
+          app={autoStop.binding.call.app_name}
+          stopAt={autoStop.stopAt}
+          busy={!!busy}
+        />
+      ),
+    };
   } else if (active && detecting && detection.callEndedPrompt) {
     view = {
       key: 'ended',
@@ -199,6 +209,7 @@ export function RecorderStrip() {
       ),
       actions: (
         <>
+          <LiveToggle meetingId={active.meetingId} />
           <Button
             size="xs"
             variant={active.paused ? 'primary' : 'secondary'}
@@ -312,90 +323,5 @@ export function RecorderStrip() {
         </div>
       </WindowChrome>
     </header>
-  );
-}
-
-function processingPhase(phase: string) {
-  return ['validation', 'inference', 'stopping'].includes(phase) ? phase : 'running';
-}
-
-/** True for one render after the strip changes state, so the sweep plays once. */
-function useChanged(key: string) {
-  const previous = useRef(key);
-  const [changed, setChanged] = useState(false);
-  useEffect(() => {
-    if (previous.current === key) return;
-    previous.current = key;
-    setChanged(true);
-    const timer = setTimeout(() => setChanged(false), 400);
-    return () => clearTimeout(timer);
-  }, [key]);
-  return changed;
-}
-
-function Levels({ mic, output, paused }: { mic: number; output: number; paused: boolean }) {
-  const { t } = useTranslation();
-  const level = (peak: number) => (paused ? 0.2 : Math.max(0.2, Math.min(1, peak * 3)));
-  const bars = [mic, (mic + output) / 2, output];
-  return (
-    <span className="cx-levels" role="img" aria-label={t('recorder.levels')}>
-      {bars.map((peak, i) => (
-        <i key={i} style={{ transform: `scaleY(${level(peak)})`, opacity: paused ? 0.5 : 1 }} />
-      ))}
-    </span>
-  );
-}
-
-function DetectedCall({ call }: { call: ActiveCall }) {
-  const { t } = useTranslation();
-  const { busy, error, attempt } = useDirectCapture();
-  const [details, setDetails] = useState(false);
-  const [title, setTitle] = useState(() => t('meetingDetection.newTitle', { app: call.app_name }));
-  const [event, setEvent] = useState<CalendarEvent>();
-  const sameAttempt = attempt?.key === callKey(call);
-  return (
-    <>
-      <Phone size={14} aria-hidden="true" />
-      <b role="status">{t('recorder.detected', { app: call.app_name })}</b>
-      <span className="cx-strip-muted truncate">
-        {event ? event.title : t('recorder.detectedHelp')}
-      </span>
-      <Button
-        size="xs"
-        variant="primary"
-        icon={<Mic size={13} aria-hidden="true" />}
-        disabled={busy || !title.trim()}
-        onClick={() => void recordDetectedCall(call, title, event)}
-      >
-        {t(busy ? 'recorder.starting' : 'recorder.record')}
-      </Button>
-      <Button
-        size="xs"
-        variant="ghost"
-        aria-expanded={details}
-        onClick={() => setDetails(!details)}
-      >
-        {t('recorder.details')}
-      </Button>
-      <Button size="xs" variant="ghost" disabled={busy} onClick={() => dismissCall(callKey(call))}>
-        {t('recorder.ignore')}
-      </Button>
-      {sameAttempt && error && (
-        <span role="alert" className="text-live">
-          {t(`meetingDetection.${error}`)}
-        </span>
-      )}
-      {details && (
-        <div className="cx-glass absolute left-3 top-[calc(var(--shell-strip-height)+6px)] z-40 w-[420px] rounded-md p-4 shadow-xl">
-          <MeetingDetails
-            title={title}
-            setTitle={setTitle}
-            event={event}
-            setEvent={setEvent}
-            disabled={busy || !!(sameAttempt && attempt.sessionId)}
-          />
-        </div>
-      )}
-    </>
   );
 }

@@ -115,6 +115,36 @@
       : [],
   });
   f.set_call_detection_enabled = ({ enabled }) => ({ ...f.call_detection_status(), enabled });
+  // Spec 0097: state.auto = on | stop (countdown after the bound call ended).
+  const autoSettings = { enabled: !!state.auto, stopWhenCallEnds: true, micSource: null, outputSource: null };
+  f.auto_record_status = () => ({
+    settings: autoSettings,
+    binding:
+      state.auto === 'stop'
+        ? { sessionId: 's-weekly', meetingId: 'm-weekly', keep: false, call: { app_name: 'Microsoft Teams', process_name: 'teams', pid: 42, is_browser: false, detected_at: at(0, 10) } }
+        : null,
+    stopInMs: state.auto === 'stop' ? 18_000 : null,
+  });
+  f.set_auto_record = ({ settings }) => {
+    Object.assign(autoSettings, settings);
+    return f.auto_record_status();
+  };
+  // Spec 0097 P3/P4: state.live = running | idle, state.suggested = 1.
+  const liveSegments = [
+    { track: 'Output', startFrame: 0, endFrame: 480000, startMs: 2000, endMs: 9000, text: 'Bom dia. A pauta de hoje é a migração do CRM e o contrato da API v2.' },
+    { track: 'Mic', startFrame: 0, endFrame: 480000, startMs: 9500, endMs: 14000, text: 'Precisamos fechar o contrato até quinta.' },
+    { track: 'Output', startFrame: 480000, endFrame: 960000, startMs: 15000, endMs: 22000, text: 'O plano de rollback ainda não está pronto e a segurança pediu revisão.' },
+  ];
+  f.library_live_transcript = () => ({ segments: state.live ? liveSegments : [], state: state.live === 'running' ? 'running' : 'idle', error: null, behindMs: 0, paused: false, complete: state.live !== 'running' });
+  f.library_live_status = () => ({ meeting: state.live === 'running' ? 'm-weekly' : null, state: state.live === 'running' ? 'running' : 'idle', error: null, behindMs: 0, queued: [] });
+  f.library_title_suggestion = () =>
+    state.suggested ? { title: 'Weekly de TI', placeholder: 'Reunião no Microsoft Teams', sessionId: 's-weekly', source: 'llm', model: 'qwen3.5-4b', endpointHost: '192.168.15.66', at: at(0, 10, 5), inputTokens: 320, stage: 'first', applied: true, dismissed: false } : null;
+  f.live_settings = () => ({ enabled: true, modelPath: '/home/rodolfo/.local/share/com.pais.handy/models/parakeet-v3-ptbr-tagarela-matched-q8.gguf', nThreads: 4 });
+  f.title_llm_settings = () => ({ enabled: true, sshTarget: 'macserver@192.168.15.66', remotePort: 8000, model: 'qwen3.5-4b' });
+  f.auto_record_keep = () => {
+    state.auto = 'on';
+    return f.auto_record_status();
+  };
   f.calendar_status = () => ({
     account: 'rodolfo@example.com',
     syncedAt: at(0, 8),

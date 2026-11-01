@@ -32,6 +32,12 @@ impl Worker {
         config: Value,
     ) -> anyhow::Result<Value> {
         anyhow::ensure!(self.processing.is_none(), "local processing already active");
+        // B3: one ASR model resident; the live drain finishes first.
+        anyhow::ensure!(
+            !self.live.busy(),
+            "live transcript still running; try again when it finishes"
+        );
+        self.live.release_idle();
         #[cfg(target_os = "linux")]
         anyhow::ensure!(self.active.is_none(), "finish capture before processing");
         #[cfg(not(feature = "local-processing"))]

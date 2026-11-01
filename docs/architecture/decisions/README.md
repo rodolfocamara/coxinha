@@ -36,6 +36,8 @@ file. Lean format (look at any existing ADR as a template).
 
 | 0021 | [Separate durable capture from local incremental inference](./0021-local-incremental-asr.md) | Accepted |
 | 0022 | [Reconcile orphan captures when the library opens](./0022-orphan-capture-reconciliation.md) | Accepted |
+| 0023 | [Opt-in automatic recording of detected calls](./0023-opt-in-automatic-call-recording.md) | Accepted |
+| 0024 | [Meeting titles from a user-owned LLM over SSH](./0024-user-owned-llm-over-ssh-for-titles.md) | Accepted |
 
 ## Template
 

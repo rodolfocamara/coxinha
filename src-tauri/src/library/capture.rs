@@ -42,6 +42,7 @@ impl Worker {
                         }
                     };
                     self.error = None;
+                    self.live.started(&self.root, &id);
                     self.active = Some(Active {
                         capture,
                         id,
@@ -89,6 +90,7 @@ impl Worker {
                     // Do not acknowledge library shutdown while an inference thread
                     // remains alive. ADR 0020 may still explicitly exit the process.
                     self.interrupt_processing()?;
+                    self.live.shutdown();
                     let processing_failed = false;
                     return Ok(
                         json!({"captureRecoveryRequired":capture_failed,"processingRecoveryRequired":processing_failed}),
@@ -100,6 +102,7 @@ impl Worker {
                 );
                 self.finish(false)?;
                 self.interrupt_processing()?;
+                self.live.shutdown();
                 Ok(self.status())
             }
             Action::Stop => {

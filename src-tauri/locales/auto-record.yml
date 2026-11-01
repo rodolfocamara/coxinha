@@ -1,0 +1,22 @@
+_version: 2
+autoRecord.title:
+  en: "Meeting in %{app}"
+  pt-BR: "Reunião no %{app}"
+autoRecord.started:
+  en: "Recording %{title}"
+  pt-BR: "Gravando %{title}"
+autoRecord.startedBody:
+  en: "Started automatically for the %{app} call. Stop it from Coxinha at any time."
+  pt-BR: "Começou sozinha pela chamada no %{app}. Dá para parar no Coxinha a qualquer momento."
+autoRecord.stopped:
+  en: "Recording saved"
+  pt-BR: "Gravação salva"
+autoRecord.stoppedBody:
+  en: "The %{app} call ended, so the recording stopped."
+  pt-BR: "A chamada no %{app} terminou e a gravação parou."
+autoRecord.failed:
+  en: "Could not record automatically"
+  pt-BR: "Não deu para gravar sozinho"
+autoRecord.failedBody:
+  en: "Open Coxinha to record the %{app} call."
+  pt-BR: "Abra o Coxinha para gravar a chamada no %{app}."

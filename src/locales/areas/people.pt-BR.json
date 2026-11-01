@@ -130,6 +130,35 @@
       },
       "shortcuts": {
         "toggleRecording": "Gravar ou parar a gravação"
+      },
+      "autoRecord": {
+        "title": "Gravar chamadas automaticamente",
+        "hint": "Começa a gravar quando uma chamada é detectada, mesmo com a janela fechada. Avise os participantes: você é responsável pela gravação. O Coxinha mostra REC e uma notificação a cada gravação.",
+        "stopTitle": "Parar quando a chamada terminar",
+        "stopHint": "Espera 20 segundos depois do fim da chamada e mostra a contagem para você continuar, se quiser.",
+        "needsDetection": "Ligar a gravação automática também liga o aviso de chamadas."
+      },
+      "live": {
+        "title": "Transcrever durante a chamada",
+        "hint": "Usa o Tagarela neste computador enquanto grava. O texto é provisório e nada sai da máquina.",
+        "needsModel": "Escolha o arquivo do modelo para ligar.",
+        "model": "Modelo Tagarela",
+        "modelHint": "Arquivo .gguf do Parakeet pt-BR. Só leitura: o Coxinha nunca altera o arquivo do Handy.",
+        "useHandy": "Usar o do Handy",
+        "threads": "Threads da transcrição",
+        "threadsHint": "Menos threads deixam mais CPU para a chamada e para o Handy."
+      },
+      "titles": {
+        "title": "Título sugerido",
+        "hint": "Gera o título das gravações automáticas sem evento na agenda, com o seu servidor via SSH.",
+        "target": "Destino SSH",
+        "port": "Porta",
+        "model": "Modelo",
+        "privacy": "Envia só trechos de texto da transcrição, nunca áudio.",
+        "test": "Testar",
+        "testing": "Testando…",
+        "testOk": "Funcionou: {{title}}",
+        "testFailed": "Não funcionou: {{error}}"
       }
     },
     "palette": {

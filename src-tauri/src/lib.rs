@@ -13,6 +13,7 @@
 mod app_paths;
 #[allow(dead_code)]
 mod audio_toolkit;
+mod auto_record;
 mod board;
 mod calendar;
 mod call_detector;
@@ -30,6 +31,9 @@ mod recorder;
 mod shortcuts;
 mod storage;
 mod summarizer;
+// Spec 0097 P4: the meeting actor wires this in; nothing calls it yet.
+mod settings_file;
+mod titles;
 mod transcriber;
 mod tray;
 mod window;
@@ -105,6 +109,14 @@ pub fn run() {
                 let _ = tauri_specta::Event::emit(&events::CaptureChanged::now(), &handle);
             });
             app.manage(library::Library::open(library, Some(notify))?);
+            // Spec 0097 P3: the actor learns the persisted live settings once at start.
+            {
+                let settings = library::load_live_settings(app.handle());
+                let live = app.state::<library::Library>().inner().clone();
+                tauri::async_runtime::spawn(async move {
+                    let _ = live.configure_live(settings).await;
+                });
+            }
             #[cfg(target_os = "linux")]
             app.manage(Arc::new(native_audio::NativeAudio::start(
                 native_audio::app_origins(app.config()),
@@ -137,7 +149,16 @@ pub fn run() {
                 window::show_main(app.handle());
             }
 
-            app.manage(call_detector::Detector::default());
+            let auto_record = auto_record::AutoRecord::load(match &test_profile {
+                Some(profile) => profile.root.join("app-data/auto-record.json"),
+                None => app.path().app_data_dir()?.join("auto-record.json"),
+            });
+            let detector = call_detector::Detector::default();
+            if auto_record.enabled() {
+                detector.enable_for_auto_record();
+            }
+            app.manage(auto_record);
+            app.manage(detector);
             let handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {
                 if let Err(e) = call_detector::run_loop(handle).await {
@@ -252,6 +273,20 @@ pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
             commands::get_active_calls,
             call_detector::set_call_detection_enabled,
             call_detector::call_detection_status,
+            auto_record::auto_record_status,
+            auto_record::set_auto_record,
+            auto_record::auto_record_keep,
+            library::live_settings,
+            library::set_live_settings,
+            library::library_live_transcript,
+            library::library_live_status,
+            library::library_live_pause,
+            library::library_live_resume,
+            titles::watch::title_llm_settings,
+            titles::watch::set_title_llm_settings,
+            titles::watch::title_llm_test,
+            titles::watch::library_title_suggestion,
+            titles::watch::library_dismiss_title_suggestion,
             commands::save_attachment,
             commands::get_config,
             commands::update_config,
@@ -266,6 +301,7 @@ pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
             events::Navigate,
             events::CallDetected,
             events::CaptureChanged,
+            events::SessionsChanged,
             events::RecordingProgress,
             events::TranscriptionProgress,
         ])

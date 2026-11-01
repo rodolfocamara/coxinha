@@ -273,7 +273,11 @@ async fn cancelled_delete_keeps_exit_barrier_until_canonical_check_and_mutation_
         .unwrap();
     real.shutdown().await.unwrap();
     let (sender, receiver) = std::sync::mpsc::sync_channel::<Request>(16);
-    let mock = Library { sender };
+    let mock = Library {
+        sender,
+        root: Default::default(),
+        live: Default::default(),
+    };
     let (observed, observation) = tokio::sync::oneshot::channel();
     let (resume, resumed) = std::sync::mpsc::channel();
     let worker = std::thread::spawn(move || {

@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { OutlookConnectionCard } from '../agenda/OutlookConnectionCard';
 import { useOutlookConnection } from '../agenda/useOutlookConnection';
 import { SettingsSection } from './controls';
+import { TitleLlmCard } from '../live/TitleLlmCard';
 
 /** External accounts. Mounting reads only local caches; nothing connects implicitly. */
 export function IntegrationsSection({ onOpenAgenda }: { onOpenAgenda?: () => void }) {
@@ -19,6 +20,9 @@ export function IntegrationsSection({ onOpenAgenda }: { onOpenAgenda?: () => voi
         onOpenAgenda={onOpenAgenda}
         titleId="integrations-outlook-heading"
       />
+      <div className="mt-4">
+        <TitleLlmCard />
+      </div>
     </SettingsSection>
   );
 }
