@@ -1,6 +1,6 @@
 # 0097 — Automatic call recording, live transcript and meeting titles
 
-Status: in-progress (P1–P2 implemented; P3–P4 designed, implementation under review gate)
+Status: in-progress (P1–P2 implemented; P3–P4 revised after design review, implementation in progress, off by default)
 Phase: F1
 Date: 2026-10-31
 
@@ -17,7 +17,8 @@ The owner forgets to click Record. They asked for three things:
 ## Non-goals
 
 - Bots or Teams/Graph meeting APIs.
-- Cloud ASR or LLM. Every model runs on this computer (ADR 0021 item 8).
+- Cloud ASR or LLM. ASR runs on this computer. Title suggestions may use
+  one user-owned host over SSH (ADR 0024), text only.
 - Automatic voice enrollment.
 - Recording while the setting is off. The off state behaves exactly like
   specs 0083 and 0087.
@@ -70,89 +71,117 @@ See [ADR 0023](../architecture/decisions/0023-opt-in-automatic-call-recording.md
 
 Decided 2026-10-31: the user's Handy model
 `parakeet-v3-ptbr-tagarela-matched-q8.gguf`. It runs on the transcribe.cpp
-runtime, pinned to `transcribe-cpp = "=0.2.4"`, the schema the file was
-converted to.
+runtime, pinned to `transcribe-cpp = "=0.2.4"` with `default-features =
+false` (no Metal), the schema the file was converted to.
 
 Spike on this host (CPU only, synthetic pt-BR TTS clip):
 
 - load in 0.56 s;
-- 14.7 s of audio transcribed in 1.5 s, about 10x real time;
-- one error ("rouback").
+- 14.7 s of audio transcribed in 1.5 s;
+- `supports_streaming: false`, so offline windows (spec 0089).
 
-The model reports `supports_streaming: false`, so P3 uses bounded windows
-(spec 0089), not native streaming.
+The engine has no mmap, so each process keeps its own copy of the weights
+(~740 MB). Abort is only observed before a run starts (Parakeet
+`model.cpp:969`).
 
-- **Model file.** Configured in Ajustes › Transcrição local with the Handy
-  path as the suggestion. It is opened read-only and never copied, renamed or
-  converted. Its SHA-256, size and runtime version are recorded with every
-  output. If it fails to load, live transcription stops before the first
-  window and the recording itself is unaffected.
-- **Setting.** **Transcrever durante a chamada**, persisted next to the
-  model path.
-- **Worker.** One worker thread per capture:
-  - started by the library worker after a capture starts, never by the UI;
-  - holds its own `Model` and `Session`, loaded at start and dropped after
-    the drain;
-  - runs at lower priority (Linux `nice` 10) with a bounded number of
-    inference threads;
-  - never holds the recorder or library locks, and reads PCM only through
-    `CommittedTrack` snapshots on independent descriptors.
-- **Windows.** Each track has its own cursor on the 48 kHz capture clock.
-  - A window is dispatched when at least 8 s of new committed audio exist.
-  - It ends at the quietest 100 ms inside its last 2 s, and is forced at
-    20 s.
-  - Silent windows (RMS below −50 dBFS) are skipped and only advance the
-    cursor.
-  - Decimation 48→16 kHz uses a fixed windowed-sinc FIR.
-- **Output.** Appended to `raw/<meeting>/live/transcript.jsonl`, one segment
-  per line: `{track, start_ms, end_ms, text}` on the capture clock. After
-  each window, `live/cursor.json` is replaced atomically, so a crash resumes
-  without duplicating or losing text.
-  - Segments are provisional. They are never used as confirmed speaker
-    identity or task evidence.
-  - The manual post-call pipeline (Whisper and diarization) is unchanged and
-    still optional.
-- **Stop.** The worker drains what is left of the committed audio (manifest
-  `finished`) and then exits. A cancel request is checked between windows. A
-  run already in progress finishes, because transcribe.cpp holds one
-  in-flight call per model.
-- **Priority.** Capture, autosave and Stop never wait for inference. If the
-  worker falls behind, it skips nothing; it reports its backlog
-  (`behindMs`). It never drops audio.
-- **IPC.** `library_live_transcript(meetingId)` returns segments, state
-  (`idle | running | draining | done | failed`) and `behindMs`. Changes
-  reuse `capture-changed`. The meeting page shows the live text with
-  "provisório" while recording.
-- **Gate.** Spec 0089 requires independent design reviews (Claude Opus 5.5
-  Work, Gemini 4 Argon) before inference runs during capture. The setting
-  ships off and is not enabled by default until both reviews are addressed.
+Revised after the Claude Opus 5.5 design review of 330c10a, which found
+blocking items B1–B5.
 
-### P4 Automatic title from the macserver LLM
+- **One slot, owned by the actor** (B3, B4).
+  - The library worker owns a single `LiveTranscriber` slot, the same way it
+    owns `ProcessingTask`. It holds one long-lived thread, one model and a
+    FIFO of meetings to drain. The model is unloaded after 2 minutes idle.
+  - The actor only spawns, sends messages and checks `is_finished()`. It
+    never runs model load, hashing, file reads or joins.
+  - Manual `Process` (Whisper and diarization) is refused while the slot is
+    busy. A new capture during a drain only queues its meeting, so at most
+    one ASR model is resident.
+- **Explicit lifecycle messages** (B1).
+  - After each successful checkpoint the actor sends `Committed{meeting}`.
+    When a capture ends it sends `End{meeting, state}`, where `state` is
+    `finished | interrupted | failed`. All three are terminal: the worker
+    drains up to the last committed frame and closes the meeting.
+  - The worker never polls the manifest to detect the end.
+  - After a crash, nothing resumes automatically. The meeting page offers
+    "Transcrever o resto", which queues the meeting from its last segment.
+- **Durable output without a two-file protocol** (B2).
+  - Each line of `outputs/live/transcript.jsonl` carries
+    `{track, start_frame, end_frame, start_ms, end_ms, text}`. Lines are
+    appended and fsynced per window.
+  - Readers drop a trailing partial line and deduplicate by
+    `(track, start_frame)`. Resume continues from the largest `end_frame`
+    per track.
+  - There is no cursor file. `outputs/` keeps `verify_raw` and deletion
+    rules intact (N3). Deleting a meeting cancels and dequeues it first.
+- **Windows.**
+  - Fixed decode windows of about 10 s with 1.5 s of left context.
+  - Only tokens that end before `window_end − 0.5 s` are committed, using
+    the per-token timestamps of the TDT decoder. The rest is decoded again
+    in the next window.
+  - When the backlog grows, windows grow up to 20 s.
+  - Voice activity is judged on 50 ms frames (any frame above −50 dBFS
+    keeps the window), not on the window's mean.
+  - Windows never cross a pause or resume event from `timing.jsonl`. Paused
+    frames are not in the file, so timestamps are capture-frame based and
+    the pause offsets are added back for display.
+  - The two tracks are merged by `arrival_ns`.
+  - Decimation 48→16 kHz: linear-phase windowed-sinc FIR with its group
+    delay compensated, aligned to absolute frame index ≡ 0 (mod 3), using
+    the 48 context frames spec 0089 allows on each side. An impulse test
+    proves timestamp error below 1 ms.
+- **Resources.**
+  - `n_threads` is a visible, persisted setting (default 4). On Linux with
+    autogroup, `nice` alone does not yield CPU to other apps.
+  - A `CancelToken` is installed anyway. When a cancel is pending, the next
+    window is shortened.
+  - On exit the worker is only asked to cancel and is not joined. Since it
+    never touches the Store, an exit counts as a crash for B2 (ADR 0020).
+- **Controls.**
+  - Ajustes: **Transcrever durante a chamada** (off), the model file (Handy
+    path suggested, opened read-only, hash cached by path, size and mtime),
+    and the number of threads.
+  - The strip offers Pausar transcrição, independent of the capture. Each
+    meeting can turn live transcription off.
+- **IPC.** `library_live_transcript(meetingId)` reads a snapshot shared with
+  the worker, never files on the actor, and returns segments, state and
+  `behindMs`. Updates reuse `capture-changed`, and the UI does not poll at
+  capture rate (N4).
+- **Default.** Off. Turning it on by default needs B1–B4 tests, a 2-hour
+  synthetic two-track run (no gaps, Stop P95 unchanged, ASR duty ≤ 50%, RSS
+  measured with Handy loaded, no sustained thermal throttling), WER within 2
+  points of offline Tagarela, and Windows validation once capture exists
+  there.
 
-Decided 2026-10-31: the user's own Qwen endpoint on the macserver. It is an
-OpenAI-compatible rapid-mlx server on `127.0.0.1:8000`, reached through SSH
-(`macserver@192.168.15.66`). See
-[ADR 0024](../architecture/decisions/0024-user-owned-llm-over-ssh-for-titles.md).
+### P4 Suggested title from the macserver LLM
 
-Measured: a 112-token prompt took 1.4 s end to end through a tunnel. The
-server limits prompts to 8192 tokens. It currently serves
-`gemma-4-e4b-4bit` under the name `qwen3.5-4b`.
+Decided 2026-10-31: the user's own endpoint on the macserver. It is an
+OpenAI-compatible rapid-mlx server on `127.0.0.1:8000`, reached over SSH.
+See [ADR 0024](../architecture/decisions/0024-user-owned-llm-over-ssh-for-titles.md).
+P4 needs P3; with P3 off there is no title suggestion.
 
-- **Settings** (Ajustes › Integrações, off by default): SSH target, remote
-  port, model name. The tunnel is
-  `ssh -N -o BatchMode=yes -o ExitOnForwardFailure=yes -L 127.0.0.1:<free>:127.0.0.1:<port>`.
-  It opens on demand, is closed after each request, and uses the system's
-  SSH keys. Coxinha stores no secret.
-- **Which sessions.** Only sessions the auto-record executor created without
-  a calendar event. Their placeholder title is remembered in
-  `live/title.json`. A title is replaced only while the session title still
-  equals the last automatic one, so a manual rename always wins.
-- **First title.** When the live transcript covers 5 minutes of audio, the
-  first 5 minutes of text from both tracks go to the LLM. The prompt asks for
-  a pt-BR title of at most 8 words, without quotes.
-- **Final title.** After the drain at Stop, the whole transcript is used,
-  capped at about 6000 tokens (head plus evenly sampled lines).
-- **Failure.** The placeholder stays and a warning is logged. No retry loop.
+- **Knowledge vs Memory** (B5, ADR 0015).
+  - The LLM output is a *suggestion* stored in Memory: `outputs/live/title.json`
+    with `{title, source: "llm", model, endpoint_host, at, input_tokens}`.
+  - It is applied to the session only while the session still has the
+    automatic placeholder. The apply is a single
+    `UPDATE … WHERE title = ?placeholder` in the actor, so a manual rename
+    always wins (N5).
+  - The meeting heading shows "título sugerido" with Desfazer, which restores
+    the placeholder and dismisses the suggestion.
+- **Transport** (should-fix 9).
+  - `ssh -W 127.0.0.1:<port>` over stdio: no local port and no listener.
+  - Options: `-o BatchMode=yes -o ControlMaster=no -o ControlPath=none -o StrictHostKeyChecking=yes -o ConnectTimeout=5 -o ServerAliveInterval=5 -o ForwardAgent=no -o PermitLocalCommand=no`, and `--` before the target. The target must match `user@host` without a leading dash.
+  - One HTTP/1.1 request per process. The child is killed on drop.
+- **Input** (should-fix 10, 12, N6).
+  - The first title uses the first 5 minutes; the refined one, after the
+    drain, uses evenly sampled lines.
+  - Both are capped at 1500 tokens, counted conservatively at 3 characters
+    per token.
+  - The transcript is sent in a delimited block, as data.
+- **Output** is sanitized: one line, `<think>` blocks removed, no quotes,
+  `[[ ]]`, Markdown, URLs or control characters, at most 80 characters, then
+  `NewSession` validation.
+- **Failure.** The placeholder stays. No retry loop, and no other host.
 
 ## Acceptance
 
@@ -201,3 +230,17 @@ pending (spec 0083).
 - Not covered by tests: the executor that drives the real library (start,
   stop, notifications). It reuses `library_start_session` actions and needs
   the native acceptance with a real call.
+
+## Design reviews
+
+- **Claude Opus 5.5 (Claude Work), 330c10a.**
+  - Blocking items B1–B5 were accepted and the design revised above (actor
+    lifecycle messages, dedupe on read, a single slot, a non-blocking actor,
+    title as a Memory suggestion).
+  - Should-fix items were folded in: windows with token-time stitching,
+    frame-level voice activity, pause boundaries, FIR, `n_threads`, Pausar
+    transcrição, `ssh -W`, output sanitizing, 1500-token cap.
+  - Open: the privacy decision on sending Teams content to a personal host
+    (owner), the Windows stress test, and the 2-hour benchmark.
+- **Gemini 4 Argon (Antigravity).** Not run: the Antigravity quota was
+  exhausted. Pending the owner's choice of route.
