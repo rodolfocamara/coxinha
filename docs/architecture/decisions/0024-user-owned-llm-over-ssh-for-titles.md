@@ -1,7 +1,9 @@
 # ADR-0024: Meeting titles from a user-owned LLM over SSH
 
 - Date: 2026-10-31
-- Status: Accepted (requested by the owner on 2026-10-31 with spec 0097 P4)
+- Status: Accepted (requested by the owner on 2026-10-31 with spec 0097 P4;
+  scope confirmed the same day: acceptable for every meeting, including
+  third-party speech in work calls, on the owner's own host)
 
 ## Context
 

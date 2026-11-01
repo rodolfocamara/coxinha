@@ -240,7 +240,8 @@ pending (spec 0083).
   - Should-fix items were folded in: windows with token-time stitching,
     frame-level voice activity, pause boundaries, FIR, `n_threads`, Pausar
     transcrição, `ssh -W`, output sanitizing, 1500-token cap.
-  - Open: the privacy decision on sending Teams content to a personal host
-    (owner), the Windows stress test, and the 2-hour benchmark.
-- **Gemini 4 Argon (Antigravity).** Not run: the Antigravity quota was
-  exhausted. Pending the owner's choice of route.
+  - Privacy decided by the owner on 2026-10-31: sending excerpts of any
+    meeting to the owner's own host is acceptable (ADR 0024).
+  - Open: the Windows stress test and the 2-hour benchmark.
+- **Gemini 4 Argon.** The Antigravity quota was exhausted. The owner
+  approved running it through Cursor; the review of ae6279c is in progress.
