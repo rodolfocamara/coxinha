@@ -23,6 +23,7 @@ import { useAutoStop } from './autoRecord';
 import {
   AutoStopNotice,
   DetectedCall,
+  LiveToggle,
   Levels,
   formatElapsed,
   processingPhase,
@@ -208,6 +209,7 @@ export function RecorderStrip() {
       ),
       actions: (
         <>
+          <LiveToggle meetingId={active.meetingId} />
           <Button
             size="xs"
             variant={active.paused ? 'primary' : 'secondary'}

@@ -221,12 +221,14 @@ callDetected: CallDetected,
 captureChanged: CaptureChanged,
 navigate: Navigate,
 recordingProgress: RecordingProgress,
+sessionsChanged: SessionsChanged,
 transcriptionProgress: TranscriptionProgress
 }>({
 callDetected: "call-detected",
 captureChanged: "capture-changed",
 navigate: "navigate",
 recordingProgress: "recording-progress",
+sessionsChanged: "sessions-changed",
 transcriptionProgress: "transcription-progress"
 })
 
@@ -307,6 +309,10 @@ export type Route =
  * Toggle recording — handled by the recorder, not a view.
  */
 "toggle-recording"
+/**
+ * Session rows changed outside an IPC mutation (a suggested title was applied).
+ */
+export type SessionsChanged = { at_ms: number }
 export type ShortcutsConfig = { new_note: string; open_app: string; agenda: string; meetings: string; toggle_recording: string }
 export type TagCount = { tag: string; count: number }
 export type TranscriberConfig = 

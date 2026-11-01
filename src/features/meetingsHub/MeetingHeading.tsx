@@ -4,6 +4,7 @@ import { PenLine } from 'lucide-react';
 import { Alert, Button, Field, Input } from '../../components/ui';
 import { sessions, type Session } from '../sessions/sessions';
 import { claimTitleMorph } from './meetingsSheets';
+import { TitleSuggestionNote } from '../live/TitleSuggestionNote';
 
 /**
  * Meeting title with explicit rename (sessions only). Rename opens only from
@@ -60,6 +61,9 @@ export function MeetingHeading({
               setFailed(false);
             }}
           />
+        )}
+        {session?.meeting_id && draft === null && (
+          <TitleSuggestionNote meetingId={session.meeting_id} title={title} />
         )}
         <span className="flex-1" />
         {actions}

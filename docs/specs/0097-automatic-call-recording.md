@@ -140,8 +140,8 @@ blocking items B1–B5.
   - Ajustes: **Transcrever durante a chamada** (off), the model file (Handy
     path suggested, opened read-only, hash cached by path, size and mtime),
     and the number of threads.
-  - The strip offers Pausar transcrição, independent of the capture. Each
-    meeting can turn live transcription off.
+  - The strip offers Pausar transcrição, independent of the capture. It
+    applies to the current meeting; the next capture starts unpaused.
 - **IPC.** `library_live_transcript(meetingId)` reads a snapshot shared with
   the worker, never files on the actor, and returns segments, state and
   `behindMs`. Updates reuse `capture-changed`, and the UI does not poll at
@@ -245,3 +245,45 @@ pending (spec 0083).
   - Open: the Windows stress test and the 2-hour benchmark.
 - **Gemini 4 Argon.** The Antigravity quota was exhausted. The owner
   approved running it through Cursor; the review of ae6279c is in progress.
+
+## Evidence (P3–P4 implementation, 2026-10-31)
+
+- Core (`coxinha-core/src/live/`, feature `stt-tagarela`):
+  - 17 tests: FIR impulse alignment, frame-level voice activity, window
+    planning and stitching (no lost or duplicated words), pause boundaries
+    from the journal, dedupe and partial-line recovery, worker lifecycle
+    (End{Interrupted,Failed} terminal, FIFO with one model load, idle
+    unload, cancel without join);
+  - one test on the real recorder with concurrent checkpoints;
+  - an ignored test ran the real Tagarela file.
+- Desktop: the `library/live.rs` slot. The actor only spawns and messages.
+  `Process` is refused while the slot is busy. Committed is sent after each
+  checkpoint, End from `finish` with all three outcomes, and exit cancels
+  without joining.
+- Titles (`src-tauri/src/titles/`):
+  - 31 tests: validate, excerpt and 1500-token cap, sanitize, `ssh -W`
+    transport through a fake ssh (Content-Length, chunked, HTTP 500, timeout
+    kills the child, ssh exit, missing binary);
+  - an ignored test against the real macserver returned "Revisão Migração
+    CRM para API v2" in 2.19 s;
+  - `retitle_if` is a single conditional UPDATE, and its test covers a
+    manual rename winning;
+  - the watcher stores the suggestion as Memory in
+    `outputs/live/title.json`; Desfazer restores the placeholder.
+- UI, `src/features/live/live.test.tsx` (6 tests):
+  - the live panel with speakers, status and behind;
+  - "Transcrever o resto";
+  - the old note when empty;
+  - the suggested-title label and Desfazer;
+  - the Handy path before enabling;
+  - the title server test;
+  - the strip "Pausar transcrição" without touching capture.
+- Totals: Rust 467 passed, Vitest 685 passed, clippy clean with and without
+  `stt-tagarela`.
+- Not done:
+  - native run with a real call;
+  - the 2-hour two-track benchmark;
+  - WER of windows against offline Tagarela;
+  - RSS with Handy loaded;
+  - the Windows stress test;
+  - the `CancelToken` is not installed (the `Asr` trait has no hook).

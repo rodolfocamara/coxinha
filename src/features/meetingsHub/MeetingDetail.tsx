@@ -18,6 +18,8 @@ import { FindingBanner, findingFor } from './FindingBanner';
 import { SpeakerLanes } from './SpeakerLanes';
 import { MeetingInspector } from './MeetingInspector';
 import { TabBar } from './TabBar';
+import { LiveTranscriptPanel } from '../live/LiveTranscriptPanel';
+import { useLiveStatus } from '../capture/live';
 import { MediaPlaceholder, NotesPlaceholder } from './DetailPlaceholders';
 import { useMeetingMedia } from './useMeetingMedia';
 import { useMeetingActions } from './useMeetingActions';
@@ -176,8 +178,12 @@ function LoadedDetail({
         ? { until: untilLabel(startDate, now, t), people: event?.attendees.length ?? 0 }
         : null,
   });
+  const liveTranscribing = useLiveStatus(
+    (state) =>
+      !!meetingId && state.snapshot?.meeting === meetingId && state.snapshot.state !== 'failed'
+  );
   const transcriptLabel = live
-    ? k('inspector.transcriptLive')
+    ? k(liveTranscribing ? 'inspector.transcriptLiveNow' : 'inspector.transcriptLive')
     : processingHere || (latestJob && ['queued', 'running'].includes(latestJob.state))
       ? k('inspector.transcriptRunning')
       : report
@@ -318,10 +324,8 @@ function LoadedDetail({
       <div className="mh-dbody">
         <div className="mh-pane">
           {panel('notes', notes)}
-          {live && tab === 'transcript' && (
-            <p className="mh-live-note cx-rise" role="status">
-              {k('liveTranscript')}
-            </p>
+          {tab === 'transcript' && meetingId && (
+            <LiveTranscriptPanel meetingId={meetingId} recording={live} />
           )}
           {meetingId && media.detail ? (
             <>

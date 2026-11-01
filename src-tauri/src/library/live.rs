@@ -93,6 +93,8 @@ impl LiveSlot {
             self.publish();
         }
         if let Some((_, t)) = &self.transcriber {
+            // "Pausar transcrição" applies to one meeting; a new capture starts unpaused.
+            t.pause(false);
             t.enqueue(meeting);
         }
     }

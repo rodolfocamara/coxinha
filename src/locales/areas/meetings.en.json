@@ -139,7 +139,8 @@
       "participantsAfterRecording": "Invitees become speaker candidates once the meeting is recorded.",
       "actions": "Actions",
       "importAudio": "Import audio for this meeting",
-      "transcribeAgain": "Transcribe again"
+      "transcribeAgain": "Transcribe again",
+      "transcriptLiveNow": "live, provisional"
     },
     "month": {
       "previous": "Previous month",
@@ -178,6 +179,25 @@
       "description": "Speaker candidates for this recording. They stay on this computer.",
       "copyInvitees_one": "Bring {{count}} invitee from Outlook",
       "copyInvitees_other": "Bring {{count}} invitees from Outlook"
+    },
+    "live": {
+      "title": "Live transcript",
+      "queued": "queued",
+      "loading": "loading the model",
+      "running": "transcribing · provisional",
+      "draining": "finishing the end of the recording",
+      "paused": "paused",
+      "provisional": "provisional, made during the recording",
+      "failed": "failed: {{error}}",
+      "behind": "behind by {{time}}",
+      "resume": "Transcribe the rest",
+      "me": "You",
+      "others": "Others"
+    },
+    "suggested": {
+      "label": "suggested title",
+      "undo": "Undo",
+      "source": "Suggested by {{model}} on {{host}} from the transcript"
     }
   }
 }

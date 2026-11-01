@@ -87,7 +87,9 @@ it('leaves the ended prompt to the backend countdown only when auto-stop owns th
   acceptDetectionStatus({ ...detection, calls: [] }, true);
   expect(useMeetingDetection.getState().callEndedPrompt).toBeNull();
   // Auto-stop off: the usual ended prompt asks the user.
-  useAutoRecord.setState({ status: status({ settings: { ...settings, stopWhenCallEnds: false } }) });
+  useAutoRecord.setState({
+    status: status({ settings: { ...settings, stopWhenCallEnds: false } }),
+  });
   useMeetingDetection.setState({ trackedCall: null, recordedCallKey: null });
   acceptDetectionStatus(detection, true);
   acceptDetectionStatus({ ...detection, calls: [] }, true);
@@ -102,7 +104,9 @@ it('turning auto-record on also turns detection on, and detection off turns it o
     settings: (args as { settings: AutoRecordStatus['settings'] }).settings,
   }));
   render(<AutoRecordSettings />);
-  expect(screen.getByText('Ligar a gravação automática também liga o aviso de chamadas.')).toBeVisible();
+  expect(
+    screen.getByText('Ligar a gravação automática também liga o aviso de chamadas.')
+  ).toBeVisible();
   fireEvent.click(screen.getByRole('checkbox', { name: 'Gravar chamadas automaticamente' }));
   await waitFor(() =>
     expect(invoke).toHaveBeenCalledWith('set_auto_record', {
@@ -110,7 +114,9 @@ it('turning auto-record on also turns detection on, and detection off turns it o
     })
   );
   expect(useMeetingDetection.getState().enabled).toBe(true);
-  expect(await screen.findByRole('checkbox', { name: 'Parar quando a chamada terminar' })).toBeChecked();
+  expect(
+    await screen.findByRole('checkbox', { name: 'Parar quando a chamada terminar' })
+  ).toBeChecked();
   const { setDetectionEnabled } = await import('../detection/meetingDetection');
   setDetectionEnabled(false);
   await waitFor(() =>

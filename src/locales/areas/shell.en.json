@@ -64,6 +64,8 @@
     },
     "autoStopIn": "stopping on its own in {{time}}",
     "stopNow": "Stop now",
-    "auto": "automatic"
+    "auto": "automatic",
+    "livePause": "Pause transcript",
+    "liveResume": "Resume transcript"
   }
 }

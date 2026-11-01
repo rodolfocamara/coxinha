@@ -5,10 +5,12 @@ import { library } from '../meetings/library';
 import { refreshSessionList } from '../sessions/sessions';
 import { refreshCapture } from './captureActions';
 import { refreshAutoRecord } from './autoRecord';
+import { refreshLiveStatus } from './live';
 import { useCaptureStore } from './captureStore';
 
 /** Emitted by the library worker when capture or processing state changes (ADR 0022). */
 export const CAPTURE_CHANGED_EVENT = 'capture-changed';
+export const SESSIONS_CHANGED_EVENT = 'sessions-changed';
 const LIVE_POLL_MS = 333;
 const IDLE_POLL_MS = 3000;
 
@@ -46,7 +48,7 @@ export function CaptureController() {
       }
       inFlight = true;
       clearTimeout(timer);
-      await Promise.all([refreshCapture(), refreshAutoRecord()]);
+      await Promise.all([refreshCapture(), refreshAutoRecord(), refreshLiveStatus()]);
       inFlight = false;
       if (!live) return;
       if (again) {
@@ -75,12 +77,25 @@ export function CaptureController() {
       .catch(() => {
         /* Polling alone still converges. */
       });
+    // A suggested title changed a session outside any IPC mutation (spec 0097 P4).
+    let unlistenSessions: (() => void) | undefined;
+    void listen(SESSIONS_CHANGED_EVENT, () => {
+      window.dispatchEvent(new Event('coxinha:sessions-changed'));
+      void refreshSessionList();
+      void queryClient.invalidateQueries({ queryKey: ['session'] });
+    })
+      .then((stop) => {
+        if (live) unlistenSessions = stop;
+        else stop();
+      })
+      .catch(() => {});
     const onRefresh = () => void tick();
     window.addEventListener('coxinha:capture-refresh', onRefresh);
     return () => {
       live = false;
       clearTimeout(timer);
       unlisten?.();
+      unlistenSessions?.();
       window.removeEventListener('coxinha:capture-refresh', onRefresh);
     };
   }, [queryClient]);

@@ -8,6 +8,7 @@ import { recordDetectedCall, useDirectCapture } from '../detection/directCapture
 import { MeetingDetails } from '../detection/MeetingDetails';
 import type { CalendarEvent } from '../agenda/calendar';
 import { keepAutoRecording } from './autoRecord';
+import { live, refreshLiveStatus, useLiveStatus } from './live';
 import { stopCapture } from './captureActions';
 
 export function formatElapsed(ms: number) {
@@ -142,5 +143,27 @@ export function AutoStopNotice({
         {t('recorder.keepRecording')}
       </Button>
     </>
+  );
+}
+
+/** "Pausar transcrição": independent of the capture (spec 0097 P3). */
+export function LiveToggle({ meetingId }: { meetingId: string }) {
+  const { t } = useTranslation();
+  const state = useLiveStatus((s) => (s.snapshot?.meeting === meetingId ? s.snapshot.state : null));
+  if (state !== 'running' && state !== 'paused' && state !== 'loading') return null;
+  const paused = state === 'paused';
+  return (
+    <Button
+      size="xs"
+      variant="ghost"
+      onClick={() =>
+        void live
+          .pause(!paused)
+          .then(refreshLiveStatus)
+          .catch(() => {})
+      }
+    >
+      {t(paused ? 'recorder.liveResume' : 'recorder.livePause')}
+    </Button>
   );
 }
