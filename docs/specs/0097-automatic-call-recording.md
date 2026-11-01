@@ -1,6 +1,6 @@
 # 0097 — Automatic call recording, live transcript and meeting titles
 
-Status: in-progress (P1–P2 implemented; P3–P4 waiting on engine decisions)
+Status: in-progress (P1–P2 implemented; P3–P4 designed, implementation under review gate)
 Phase: F1
 Date: 2026-10-31
 
@@ -66,25 +66,93 @@ See [ADR 0023](../architecture/decisions/0023-opt-in-automatic-call-recording.md
   manual flow.
 - No match: the title is "Reunião no {app}" and the session is marked for P4.
 
-### P3 Live transcript (waiting on decisions)
+### P3 Live transcript with Tagarela
 
-Windowed local ASR over committed checkpoint ranges (`CommittedTrack`, spec
-0089) while recording, with provisional segments stored next to the capture
-and shown in the meeting page. Open items:
+Decided 2026-10-31: the user's Handy model
+`parakeet-v3-ptbr-tagarela-matched-q8.gguf`. It runs on the transcribe.cpp
+runtime, pinned to `transcribe-cpp = "=0.2.4"`, the schema the file was
+converted to.
 
-- which engine and model to use (Whisper ggml, which exists today, or
-  Tagarela GGUF, which needs a new runtime);
-- the spec 0089 gate of independent design reviews before capture and
-  inference run concurrently.
+Spike on this host (CPU only, synthetic pt-BR TTS clip):
 
-### P4 Automatic title (waiting on decisions)
+- load in 0.56 s;
+- 14.7 s of audio transcribed in 1.5 s, about 10x real time;
+- one error ("rouback").
 
-- After about 5 minutes of live transcript, ask a local LLM for a short pt-BR
-  title. Refine it from the full transcript after Stop.
-- Applies only when P2 found no event and the user has not renamed the
-  session.
-- Open item: the local LLM runtime. Ollama is not installed on this machine;
-  a GGUF such as Qwen3.5-4B could run embedded instead.
+The model reports `supports_streaming: false`, so P3 uses bounded windows
+(spec 0089), not native streaming.
+
+- **Model file.** Configured in Ajustes › Transcrição local with the Handy
+  path as the suggestion. It is opened read-only and never copied, renamed or
+  converted. Its SHA-256, size and runtime version are recorded with every
+  output. If it fails to load, live transcription stops before the first
+  window and the recording itself is unaffected.
+- **Setting.** **Transcrever durante a chamada**, persisted next to the
+  model path.
+- **Worker.** One worker thread per capture:
+  - started by the library worker after a capture starts, never by the UI;
+  - holds its own `Model` and `Session`, loaded at start and dropped after
+    the drain;
+  - runs at lower priority (Linux `nice` 10) with a bounded number of
+    inference threads;
+  - never holds the recorder or library locks, and reads PCM only through
+    `CommittedTrack` snapshots on independent descriptors.
+- **Windows.** Each track has its own cursor on the 48 kHz capture clock.
+  - A window is dispatched when at least 8 s of new committed audio exist.
+  - It ends at the quietest 100 ms inside its last 2 s, and is forced at
+    20 s.
+  - Silent windows (RMS below −50 dBFS) are skipped and only advance the
+    cursor.
+  - Decimation 48→16 kHz uses a fixed windowed-sinc FIR.
+- **Output.** Appended to `raw/<meeting>/live/transcript.jsonl`, one segment
+  per line: `{track, start_ms, end_ms, text}` on the capture clock. After
+  each window, `live/cursor.json` is replaced atomically, so a crash resumes
+  without duplicating or losing text.
+  - Segments are provisional. They are never used as confirmed speaker
+    identity or task evidence.
+  - The manual post-call pipeline (Whisper and diarization) is unchanged and
+    still optional.
+- **Stop.** The worker drains what is left of the committed audio (manifest
+  `finished`) and then exits. A cancel request is checked between windows. A
+  run already in progress finishes, because transcribe.cpp holds one
+  in-flight call per model.
+- **Priority.** Capture, autosave and Stop never wait for inference. If the
+  worker falls behind, it skips nothing; it reports its backlog
+  (`behindMs`). It never drops audio.
+- **IPC.** `library_live_transcript(meetingId)` returns segments, state
+  (`idle | running | draining | done | failed`) and `behindMs`. Changes
+  reuse `capture-changed`. The meeting page shows the live text with
+  "provisório" while recording.
+- **Gate.** Spec 0089 requires independent design reviews (Claude Opus 5.5
+  Work, Gemini 4 Argon) before inference runs during capture. The setting
+  ships off and is not enabled by default until both reviews are addressed.
+
+### P4 Automatic title from the macserver LLM
+
+Decided 2026-10-31: the user's own Qwen endpoint on the macserver. It is an
+OpenAI-compatible rapid-mlx server on `127.0.0.1:8000`, reached through SSH
+(`macserver@192.168.15.66`). See
+[ADR 0024](../architecture/decisions/0024-user-owned-llm-over-ssh-for-titles.md).
+
+Measured: a 112-token prompt took 1.4 s end to end through a tunnel. The
+server limits prompts to 8192 tokens. It currently serves
+`gemma-4-e4b-4bit` under the name `qwen3.5-4b`.
+
+- **Settings** (Ajustes › Integrações, off by default): SSH target, remote
+  port, model name. The tunnel is
+  `ssh -N -o BatchMode=yes -o ExitOnForwardFailure=yes -L 127.0.0.1:<free>:127.0.0.1:<port>`.
+  It opens on demand, is closed after each request, and uses the system's
+  SSH keys. Coxinha stores no secret.
+- **Which sessions.** Only sessions the auto-record executor created without
+  a calendar event. Their placeholder title is remembered in
+  `live/title.json`. A title is replaced only while the session title still
+  equals the last automatic one, so a manual rename always wins.
+- **First title.** When the live transcript covers 5 minutes of audio, the
+  first 5 minutes of text from both tracks go to the LLM. The prompt asks for
+  a pt-BR title of at most 8 words, without quotes.
+- **Final title.** After the drain at Stop, the whole transcript is used,
+  capped at about 6000 tokens (head plus evenly sampled lines).
+- **Failure.** The placeholder stays and a warning is logged. No retry loop.
 
 ## Acceptance
 
