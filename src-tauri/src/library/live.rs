@@ -103,7 +103,9 @@ impl LiveSlot {
         }
     }
     pub(super) fn backlog_on(&self) -> bool {
-        self.settings.enabled && self.settings.backlog && !self.settings.model_path.trim().is_empty()
+        self.settings.enabled
+            && self.settings.backlog
+            && !self.settings.model_path.trim().is_empty()
     }
     /// Calls and manual processing outrank the backlog: a running backfill is
     /// cancelled and resumes later from its cursor, so nothing queues behind it.
@@ -234,10 +236,22 @@ pub(super) fn transcript_complete(root: &std::path::Path, meeting: &str) -> bool
 fn settings_path(app: &tauri::AppHandle) -> Result<PathBuf, String> {
     crate::settings_file::app_file(app, "live-transcription.json")
 }
+/// An empty model path means "the best local model" (spec 0099): Handy's,
+/// else one downloaded into the app. A fresh install with one starts on.
 pub fn load_live_settings(app: &tauri::AppHandle) -> LiveSettings {
-    settings_path(app)
-        .map(|p| crate::settings_file::load(&p))
-        .unwrap_or_default()
+    let Ok(path) = settings_path(app) else {
+        return LiveSettings::default();
+    };
+    let saved = path.exists();
+    let mut settings: LiveSettings = crate::settings_file::load(&path);
+    if settings.model_path.trim().is_empty() {
+        let models = crate::settings_file::app_file(app, "models");
+        if let Some(found) = models.ok().and_then(|d| crate::speech_models::detect(&d)) {
+            settings.model_path = found.display().to_string();
+            settings.enabled |= !saved;
+        }
+    }
+    settings
 }
 
 #[tauri::command]

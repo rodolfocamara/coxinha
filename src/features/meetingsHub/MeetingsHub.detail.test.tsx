@@ -221,9 +221,22 @@ it('sends "Transcrever" to the transcript configuration when no configuration is
     name: 'Transcribe',
   });
   fireEvent.click(button);
-  expect(tab('Transcript')).toHaveAttribute('aria-selected', 'true');
+  await waitFor(() => expect(tab('Transcript')).toHaveAttribute('aria-selected', 'true'));
   expect(calledWith(db, 'library_process')).toHaveLength(0);
   await waitFor(() => expect(screen.getByLabelText('Model configuration')).toHaveFocus());
+});
+
+it('transcribes with the bundled configuration when none was chosen in this run', async () => {
+  const config = { engine_version: 'live', models: {}, parameters: { transcript: 'live' } };
+  db.defaultConfig = config;
+  renderAt('/meetings/daily');
+  const button = await within(await screen.findByRole('article')).findByRole('button', {
+    name: 'Transcribe',
+  });
+  fireEvent.click(button);
+  await waitFor(() =>
+    expect(calledWith(db, 'library_process')).toEqual([{ meetingId: 'm-daily', config }])
+  );
 });
 
 it('records a planned meeting only through startCapture with the session', async () => {

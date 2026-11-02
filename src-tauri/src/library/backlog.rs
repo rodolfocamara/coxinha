@@ -1,9 +1,10 @@
 //! Automatic transcription of recordings without a complete transcript
 //! (spec 0098). Runs only while idle, one meeting at a time through the live
-//! slot, so at most one ASR model is resident. A call preempts it.
+//! slot, so at most one ASR model is resident. A call preempts it. Once every
+//! transcript is complete, the same loop separates speakers (spec 0099).
+use super::live::transcript_complete;
 use super::*;
 use std::collections::BTreeSet;
-use super::live::transcript_complete;
 use std::sync::mpsc::TryRecvError;
 
 const SCAN_EVERY: std::time::Duration = std::time::Duration::from_secs(20);
@@ -12,6 +13,8 @@ struct Scan {
     /// The previous meeting is still incomplete after its run: it failed.
     failed: Option<String>,
     next: Option<String>,
+    /// Speaker separation over a complete live transcript, with its config.
+    diarize: Option<(String, Value)>,
 }
 
 #[derive(Default)]
@@ -19,7 +22,7 @@ pub(super) struct Backlog {
     scan: Option<mpsc::Receiver<Scan>>,
     last: Option<Instant>,
     pub(super) current: Option<String>,
-    /// Failed once in this session; retried after a restart.
+    /// Failed once, or already handed to processing, in this session.
     skipped: BTreeSet<String>,
 }
 impl Backlog {
@@ -82,6 +85,12 @@ impl Worker {
                 tracing::info!(meeting, "automatic transcription queued");
                 self.live.backlog.current = Some(meeting.clone());
                 self.live.resume(&self.root, &meeting);
+            } else if let Some((meeting, config)) = scan.diarize {
+                tracing::info!(meeting, "automatic speaker separation queued");
+                self.live.backlog.skipped.insert(meeting.clone());
+                if let Err(error) = self.start_processing(meeting.clone(), config) {
+                    tracing::warn!(meeting, "automatic speaker separation: {error:#}");
+                }
             }
             return;
         }
@@ -102,6 +111,16 @@ impl Worker {
             .filter(|m| matches!(m["captureState"].as_str(), Some("finished" | "interrupted")))
             .filter_map(|m| m["id"].as_str().map(str::to_owned))
             .collect();
+        // Any local-processing job, even a failed one, means "leave it to the user".
+        let undiarized: Vec<String> = candidates
+            .iter()
+            .filter(|m| {
+                self.store
+                    .meeting_processing_jobs(m)
+                    .is_ok_and(|jobs| jobs.is_empty())
+            })
+            .cloned()
+            .collect();
         let previous = self.live.backlog.current.take();
         let mut skipped = self.live.backlog.skipped.clone();
         let root = self.root.clone();
@@ -117,7 +136,28 @@ impl Worker {
                     |m| eligible(&root, m),
                     |m| transcript_complete(&root, m),
                 );
-                let _ = send.send(Scan { failed, next });
+                let diarize = if next.is_none() {
+                    undiarized
+                        .into_iter()
+                        .find(|m| !skipped.contains(m) && transcript_complete(&root, m))
+                        .and_then(|m| {
+                            let dir = crate::speech_models::speaker_dir()?;
+                            match crate::speech_models::processing_config(&dir) {
+                                Ok(config) => Some((m, config)),
+                                Err(error) => {
+                                    tracing::warn!("speaker models unusable: {error:#}");
+                                    None
+                                }
+                            }
+                        })
+                } else {
+                    None
+                };
+                let _ = send.send(Scan {
+                    failed,
+                    next,
+                    diarize,
+                });
             });
         if spawned.is_ok() {
             self.live.backlog.scan = Some(receive);
@@ -135,9 +175,15 @@ mod tests {
         let complete = |m: &str| m == "done";
         let eligible = |m: &str| m != "broken";
         let none = BTreeSet::new();
-        assert_eq!(choose(&all, &none, eligible, complete).as_deref(), Some("new"));
+        assert_eq!(
+            choose(&all, &none, eligible, complete).as_deref(),
+            Some("new")
+        );
         let skipped = BTreeSet::from(["new".to_string()]);
-        assert_eq!(choose(&all, &skipped, eligible, complete).as_deref(), Some("old"));
+        assert_eq!(
+            choose(&all, &skipped, eligible, complete).as_deref(),
+            Some("old")
+        );
         let everything = BTreeSet::from(["new".to_string(), "old".to_string()]);
         assert_eq!(choose(&all, &everything, eligible, complete), None);
     }

@@ -5,7 +5,7 @@ use super::{
     timing::Timing,
     transcript::TranscriptWriter,
     worker::Inner,
-    Asr, LiveSegment,
+    Asr, LiveSegment, LiveWord,
 };
 use crate::capture::{CommittedTrack, Track};
 use anyhow::Result;
@@ -107,6 +107,15 @@ pub(crate) fn drain(inner: &Inner, meeting: &str, asr: &mut dyn Asr) -> Result<(
                     .map(|w| w.2.as_str())
                     .collect::<Vec<_>>()
                     .join(" "),
+                words: commit
+                    .words
+                    .iter()
+                    .map(|(t0, t1, text)| LiveWord {
+                        start_ms: t0 / FRAMES_PER_MS,
+                        end_ms: t1 / FRAMES_PER_MS,
+                        text: text.clone(),
+                    })
+                    .collect(),
             })?;
         } else if commit.next > window.cursor {
             writer.append(&silence(TRACKS[i], window.cursor, commit.next))?;
@@ -125,5 +134,6 @@ fn silence(track: Track, start: u64, end: u64) -> LiveSegment {
         start_ms: start / FRAMES_PER_MS,
         end_ms: end / FRAMES_PER_MS,
         text: String::new(),
+        words: Vec::new(),
     }
 }

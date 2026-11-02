@@ -27,6 +27,8 @@ export type Db = {
   contexts: Record<string, { name: string; email: string | null }[]>;
   failSessions: number;
   failImport: boolean;
+  /** Spec 0099: config the backend builds from bundled speaker models. */
+  defaultConfig: unknown;
   failUpdate: boolean;
   calls: { command: string; args: Record<string, unknown> }[];
 };
@@ -41,6 +43,7 @@ export function freshDb(): Db {
     contexts: {},
     failSessions: 0,
     failImport: false,
+    defaultConfig: null,
     failUpdate: false,
     calls: [],
   };
@@ -114,6 +117,9 @@ export function backend(db: Db) {
       }
       case 'library_processing':
         return db.processing[String(args.meetingId)] ?? { jobs: [], report: null, people: [] };
+      case 'speech_default_processing_config':
+        if (!db.defaultConfig) throw new Error('Speaker models are not bundled with this build');
+        return db.defaultConfig;
       case 'library_process':
         return {
           active: null,

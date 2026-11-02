@@ -146,6 +146,8 @@ export const library = {
     invoke<LibraryDetail>('library_recover', { meetingId }).then(acceptAudio),
   processing: (meetingId: string, jobId?: string) =>
     invoke<ProcessingDetail>('library_processing', { meetingId, jobId }),
+  /** Spec 0099: bundled speaker models over the live transcript. */
+  defaultProcessingConfig: () => invoke<ProcessingConfig>('speech_default_processing_config'),
   process: (meetingId: string, config: ProcessingConfig) =>
     invoke<CaptureStatus>('library_process', { meetingId, config }),
   createPerson: (name: string, consentOrigin: string) =>

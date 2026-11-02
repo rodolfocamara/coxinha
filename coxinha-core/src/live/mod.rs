@@ -61,6 +61,19 @@ pub struct LiveSegment {
     pub start_ms: u64,
     pub end_ms: u64,
     pub text: String,
+    /// Word timings on the raw WAV clock (paused audio excluded), the clock of
+    /// speaker turns, so processing can attribute words (spec 0099). Empty on
+    /// older lines.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub words: Vec<LiveWord>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LiveWord {
+    pub start_ms: u64,
+    pub end_ms: u64,
+    pub text: String,
 }
 
 /// Cheap view of the worker, copied from shared state.

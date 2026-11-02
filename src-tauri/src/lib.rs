@@ -33,6 +33,8 @@ mod storage;
 mod summarizer;
 // Spec 0097 P4: the meeting actor wires this in; nothing calls it yet.
 mod settings_file;
+mod speech_download;
+mod speech_models;
 mod titles;
 mod transcriber;
 mod tray;
@@ -279,6 +281,8 @@ pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
             auto_record::auto_record_keep,
             library::live_settings,
             library::set_live_settings,
+            speech_download::speech_model_download,
+            speech_download::speech_default_processing_config,
             library::library_live_transcript,
             library::library_live_status,
             library::library_live_pause,

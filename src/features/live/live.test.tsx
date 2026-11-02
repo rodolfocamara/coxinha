@@ -10,6 +10,13 @@ import { TitleLlmCard } from './TitleLlmCard';
 import { TitleSuggestionNote } from './TitleSuggestionNote';
 
 vi.mock('@tauri-apps/api/core', () => ({ invoke: vi.fn(), isTauri: () => true }));
+const progress = vi.hoisted(() => ({ emit: (_percent: number) => {} }));
+vi.mock('@tauri-apps/api/event', () => ({
+  listen: async (_event: string, handler: (e: { payload: number }) => void) => {
+    progress.emit = (payload) => handler({ payload });
+    return () => {};
+  },
+}));
 vi.mock('@tauri-apps/api/path', () => ({
   homeDir: async () => '/home/r',
   join: async (...parts: string[]) => parts.join('/'),
@@ -138,6 +145,24 @@ it('fills the Handy model path and only then allows turning live transcription o
     })
   );
   expect(toggle).toBeEnabled();
+});
+
+it('downloads the fallback model on request, with progress, and turns live on', async () => {
+  let finish: (value: unknown) => void = () => {};
+  route({
+    live_settings: () => ({ enabled: false, modelPath: '', nThreads: 4, backlog: true }),
+    speech_model_download: () => new Promise((resolve) => (finish = resolve)),
+  });
+  render(<LiveSettings />);
+  fireEvent.click(await screen.findByRole('button', { name: 'Baixar modelo' }));
+  await waitFor(() => expect(invoke).toHaveBeenCalledWith('speech_model_download'));
+  progress.emit(42);
+  expect(await screen.findByRole('button', { name: 'Baixando… 42%' })).toBeDisabled();
+  finish({ enabled: true, modelPath: '/data/models/v3.gguf', nThreads: 4, backlog: true });
+  expect(
+    await screen.findByRole('checkbox', { name: 'Transcrever durante a chamada' })
+  ).toBeChecked();
+  expect(screen.queryByRole('button', { name: /Baixar modelo/ })).toBeNull();
 });
 
 it('turns the automatic transcription of earlier recordings off, only while live is on', async () => {

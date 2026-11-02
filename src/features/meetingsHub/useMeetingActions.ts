@@ -21,7 +21,8 @@ export function createSessionFromEvent(event: CalendarEvent) {
 /**
  * Actions offered by meeting detail. Capture only starts through
  * `startCapture`; transcription repeats the configuration chosen earlier in
- * this run, otherwise it sends the user to the transcript tab to pick one.
+ * this run, else uses the bundled one (spec 0099), else sends the user to the
+ * transcript tab to pick one.
  */
 export function useMeetingActions({
   session,
@@ -88,12 +89,14 @@ export function useMeetingActions({
         await afterRecover(await library.recover(meetingId));
       }),
     transcribe: () => {
-      const config = recalledProcessingConfig();
-      if (!config || !meetingId) {
-        onChooseConfig();
-        return;
-      }
+      if (!meetingId) return;
       void run(async () => {
+        const config =
+          recalledProcessingConfig() ?? (await library.defaultProcessingConfig().catch(() => null));
+        if (!config) {
+          onChooseConfig();
+          return;
+        }
         useCaptureStore.setState({ status: await library.process(meetingId, config) });
         afterProcess();
       });

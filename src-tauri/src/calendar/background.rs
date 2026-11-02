@@ -1,6 +1,6 @@
 //! Keeps the Outlook cache fresh while connected (spec 0098). Connecting is
 //! the user's opt-in to Graph; auto-record names calls from this cache.
-use super::{calendar_status, calendar_sync, cache_path, Snapshot};
+use super::{cache_path, calendar_status, calendar_sync, Snapshot};
 use chrono::{DateTime, Duration, Utc};
 
 const EVERY: std::time::Duration = std::time::Duration::from_secs(15 * 60);

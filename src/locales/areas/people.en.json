@@ -141,14 +141,16 @@
       "live": {
         "title": "Transcribe during the call",
         "hint": "Uses Tagarela on this computer while recording. The text is provisional and nothing leaves the machine.",
-        "needsModel": "Choose the model file to turn it on.",
+        "needsModel": "No model found on this computer. Download the public Parakeet v3 (740 MB, CC-BY-4.0) or choose a file below.",
         "model": "Tagarela model",
         "modelHint": "Parakeet pt-BR .gguf file. Read-only: Coxinha never changes Handy's file.",
         "useHandy": "Use Handy's",
         "threads": "Transcript threads",
         "threadsHint": "Fewer threads leave more CPU for the call and for Handy.",
         "backlog": "Transcribe earlier recordings",
-        "backlogHint": "While nothing is recording, transcribes meetings without a complete transcript on its own, newest first. A call or processing goes first."
+        "backlogHint": "While nothing is recording, transcribes meetings without a complete transcript on its own, newest first, and then separates who spoke. A call or processing goes first.",
+        "download": "Download model",
+        "downloading": "Downloading… {{percent}}%"
       },
       "titles": {
         "title": "Suggested title",
