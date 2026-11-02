@@ -340,6 +340,7 @@ impl Worker {
     fn pump(&mut self) {
         self.pump_comparison();
         self.pump_processing();
+        self.pump_backlog();
         #[cfg(target_os = "linux")]
         if let Some(a) = self.active.as_mut() {
             let mut checkpointed = false;
@@ -380,6 +381,7 @@ mod detail;
 mod recording_storage;
 pub use curation::*;
 mod auto;
+mod backlog;
 mod capture;
 mod live;
 pub use live::*;

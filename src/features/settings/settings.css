@@ -18,6 +18,26 @@
       background-color var(--m-instant),
       border-color var(--m-instant);
   }
+  .cx-settings-nav-icon {
+    flex-shrink: 0;
+    margin-right: 10px;
+    color: var(--color-muted-foreground);
+  }
+  .cx-settings-nav-item[aria-current='true'] .cx-settings-nav-icon {
+    color: var(--color-primary);
+  }
+  .cx-settings-row-icon {
+    display: inline-flex;
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    margin-top: 1px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: var(--color-secondary);
+    color: var(--color-muted-foreground);
+  }
   .cx-settings-nav-item:hover {
     background: var(--color-card);
   }

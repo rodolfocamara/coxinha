@@ -1,5 +1,5 @@
 import { useNavigate } from '@tanstack/react-router';
-import { AlertTriangle, ChevronRight, Mic, Pause, Phone, Play, Square, X } from 'lucide-react';
+import { AlertTriangle, ChevronRight, Eye, Mic, Pause, Phone, Play, Square, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../components/ui';
 import { WindowChrome } from '../../components/AppShell/WindowChrome';
@@ -267,7 +267,12 @@ export function RecorderStrip() {
       ),
       actions: (
         <>
-          <Button size="xs" variant="primary" onClick={() => void navigate({ to: '/meetings' })}>
+          <Button
+            size="xs"
+            variant="primary"
+            onClick={() => void navigate({ to: '/meetings' })}
+            icon={<Eye size={14} aria-hidden="true" />}
+          >
             {t('recorder.review')}
           </Button>
           <Button

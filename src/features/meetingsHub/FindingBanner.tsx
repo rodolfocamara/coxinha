@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { AudioLines } from 'lucide-react';
+import { AudioLines, Eye, LifeBuoy, RotateCw } from 'lucide-react';
 import { Button } from '../../components/ui';
 import type { LibraryMeeting, ProcessingDetail } from '../meetings/library';
 import { durationLabel } from './format';
@@ -76,7 +76,13 @@ export function FindingBanner({
           {pill('live', k('recoverPill'))}
           <span>{k('recover')}</span>
           <span className="flex-1" />
-          <Button size="xs" variant="primary" disabled={busy} onClick={onRecover}>
+          <Button
+            size="xs"
+            variant="primary"
+            disabled={busy}
+            onClick={onRecover}
+            icon={<LifeBuoy size={14} aria-hidden="true" />}
+          >
             {k('recoverAction')}
           </Button>
         </>
@@ -98,7 +104,13 @@ export function FindingBanner({
             {finding.error ? k('failedWith', { error: finding.error }) : k('failed')}
           </span>
           <span className="flex-1" />
-          <Button size="xs" variant="primary" disabled={busy} onClick={onTranscribe}>
+          <Button
+            size="xs"
+            variant="primary"
+            disabled={busy}
+            onClick={onTranscribe}
+            icon={<RotateCw size={14} aria-hidden="true" />}
+          >
             {k('retry')}
           </Button>
         </>
@@ -110,7 +122,7 @@ export function FindingBanner({
           {pill('warning', k('speakersPill'))}
           <span>{k('speakers', { count: finding.count })}</span>
           <span className="flex-1" />
-          <Button size="xs" onClick={onReview}>
+          <Button size="xs" onClick={onReview} icon={<Eye size={14} aria-hidden="true" />}>
             {k('review')}
           </Button>
         </>

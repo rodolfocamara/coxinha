@@ -146,7 +146,9 @@
         "modelHint": "Arquivo .gguf do Parakeet pt-BR. Só leitura: o Coxinha nunca altera o arquivo do Handy.",
         "useHandy": "Usar o do Handy",
         "threads": "Threads da transcrição",
-        "threadsHint": "Menos threads deixam mais CPU para a chamada e para o Handy."
+        "threadsHint": "Menos threads deixam mais CPU para a chamada e para o Handy.",
+        "backlog": "Transcrever gravações anteriores",
+        "backlogHint": "Quando nada estiver gravando, transcreve sozinho as reuniões que ainda não têm transcrição completa, da mais nova para a mais antiga. Uma chamada ou um processamento passam na frente."
       },
       "titles": {
         "title": "Título sugerido",

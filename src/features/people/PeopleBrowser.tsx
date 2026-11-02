@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
-import { UserPlus } from 'lucide-react';
+import { RotateCw, UserPlus } from 'lucide-react';
 import { Alert, Button, EmptyState } from '../../components/ui';
 import { voiceCuration } from '../meetings/voiceCuration';
 import { library } from '../meetings/library';
@@ -126,7 +126,12 @@ export function PeopleBrowser({
         <Alert
           tone="error"
           action={
-            <Button size="sm" disabled={query.loading} onClick={query.restart}>
+            <Button
+              size="sm"
+              disabled={query.loading}
+              onClick={query.restart}
+              icon={<RotateCw size={14} aria-hidden="true" />}
+            >
               {t('people.retry')}
             </Button>
           }

@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { Radar } from 'lucide-react';
 import { setDetectionEnabled, useMeetingDetection } from './meetingDetection';
 import { Alert } from '../../components/ui';
 import { SettingsRow, Switch } from '../settings/controls';
@@ -12,6 +13,7 @@ export function DetectionSettings() {
   return (
     <SettingsRow
       name="detection"
+      icon={Radar}
       titleId="detection-heading"
       title={t('people.settings.detection.title')}
       description={t('people.settings.detection.hint')}

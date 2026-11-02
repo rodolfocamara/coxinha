@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Cpu, FileAudio, History, Radio } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { homeDir, join } from '@tauri-apps/api/path';
 import { Alert, Button, Input, Select } from '../../components/ui';
@@ -44,6 +45,7 @@ export function LiveSettings() {
     <SettingsCard>
       <SettingsRow
         name="live"
+        icon={Radio}
         title={k('title')}
         description={k('hint')}
         control={
@@ -57,7 +59,22 @@ export function LiveSettings() {
         below={!settings.modelPath.trim() && <Alert tone="info">{k('needsModel')}</Alert>}
       />
       <SettingsRow
+        name="live-backlog"
+        icon={History}
+        title={k('backlog')}
+        description={k('backlogHint')}
+        control={
+          <Switch
+            name="live-backlog"
+            checked={settings.backlog}
+            disabled={!settings.enabled}
+            onChange={(backlog) => save({ backlog })}
+          />
+        }
+      />
+      <SettingsRow
         name="live-model"
+        icon={FileAudio}
         title={k('model')}
         description={k('modelHint')}
         control={
@@ -82,6 +99,7 @@ export function LiveSettings() {
       />
       <SettingsRow
         name="live-threads"
+        icon={Cpu}
         title={k('threads')}
         description={k('threadsHint')}
         control={

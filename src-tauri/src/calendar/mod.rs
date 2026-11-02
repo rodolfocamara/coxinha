@@ -10,8 +10,10 @@ use std::{
     time::Instant,
 };
 use tauri::Manager;
+mod background;
 mod graph;
 mod store;
+pub use background::{fresh, spawn as spawn_refresh};
 use graph::*;
 use store::*;
 

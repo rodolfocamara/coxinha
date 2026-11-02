@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Palette, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ambientEnabled, setAmbientEnabled } from '../../components/Shell/Shell';
 import { getThemePreference, setThemePreference, type ThemePreference } from '../../lib/theme';
@@ -20,6 +21,7 @@ export function GeneralSection() {
       <SettingsCard>
         <SettingsRow
           name="theme"
+          icon={Palette}
           title={s('theme.title')}
           description={s('theme.hint')}
           control={
@@ -39,6 +41,7 @@ export function GeneralSection() {
         />
         <SettingsRow
           name="ambient"
+          icon={Sparkles}
           title={s('ambient.title')}
           description={s('ambient.hint')}
           control={

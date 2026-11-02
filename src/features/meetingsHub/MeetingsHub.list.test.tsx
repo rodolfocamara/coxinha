@@ -45,6 +45,9 @@ vi.mock('../meetings/ProcessingPanel', () => ({
 
 let db: Db;
 beforeEach(async () => {
+  // Mid-month: fixtures sit days around "now" and must share the month grid.
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(new Date(2026, 9, 15, 12));
   resetState();
   await i18n.changeLanguage('en');
   db = freshDb();
@@ -105,6 +108,7 @@ beforeEach(async () => {
 });
 afterEach(async () => {
   cleanup();
+  vi.useRealTimers();
   await i18n.changeLanguage('en');
 });
 

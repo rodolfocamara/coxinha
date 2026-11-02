@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Plus, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Button, Field, Input, Select, Sheet } from '../../components/ui';
 import { refreshSessionList, sessions } from '../sessions/sessions';
@@ -86,10 +87,19 @@ export function NewMeetingSheet({
       closeLabel={t('meetingsHub.close')}
       footer={
         <>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+          <Button
+            variant="ghost"
+            onClick={() => onOpenChange(false)}
+            icon={<X size={14} aria-hidden="true" />}
+          >
             {t('meetingsHub.cancel')}
           </Button>
-          <Button variant="primary" disabled={busy || !title.trim()} onClick={() => void submit()}>
+          <Button
+            variant="primary"
+            disabled={busy || !title.trim()}
+            onClick={() => void submit()}
+            icon={<Plus size={14} aria-hidden="true" />}
+          >
             {k('create')}
           </Button>
         </>

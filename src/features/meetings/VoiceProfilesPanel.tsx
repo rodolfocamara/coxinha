@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { RefreshCw } from 'lucide-react';
+import { ChevronDown, RefreshCw } from 'lucide-react';
 import { Alert, Button } from '../../components/ui';
 import { voiceCuration } from './voiceCuration';
 import { useVoiceInventoryPages } from './useVoiceInventoryPages';
@@ -95,6 +95,7 @@ export function VoiceProfilesPanel({
               size="sm"
               disabled={disabled || query.loading || query.stale}
               onClick={query.loadMore}
+              icon={<ChevronDown size={14} aria-hidden="true" />}
             >
               {k('loadMorePeople')}
             </Button>

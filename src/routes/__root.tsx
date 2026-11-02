@@ -1,5 +1,6 @@
 import { CallDetectionController } from '../features/detection/CallDetectionController';
 import { useEffect, useState } from 'react';
+import { RotateCw } from 'lucide-react';
 import { Outlet, useNavigate } from '@tanstack/react-router';
 import type { UnlistenFn } from '@tauri-apps/api/event';
 
@@ -125,7 +126,11 @@ export function RootLayout() {
         {startupFailed && (
           <div role="alert" className="flex items-center gap-3 border-b px-4 py-2 text-sm">
             {t('desktopRecovery.startup')}
-            <Button size="sm" onClick={() => setStartupAttempt((n) => n + 1)}>
+            <Button
+              size="sm"
+              onClick={() => setStartupAttempt((n) => n + 1)}
+              icon={<RotateCw size={14} aria-hidden="true" />}
+            >
               {t('desktopRecovery.retry')}
             </Button>
           </div>

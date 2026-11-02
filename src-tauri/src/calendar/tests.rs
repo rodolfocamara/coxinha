@@ -256,3 +256,14 @@ fn legacy_utf16_migration_validates_metadata_and_rejects_garbage() {
         .collect();
     assert!(decode_credentials(&legacy).is_err());
 }
+
+#[test]
+fn the_cache_is_refreshed_before_a_call_only_when_older_than_ten_minutes() {
+    let now = chrono::DateTime::parse_from_rfc3339("2026-11-02T10:00:00Z")
+        .unwrap()
+        .with_timezone(&Utc);
+    assert!(background::stale(None, now));
+    assert!(background::stale(Some("garbage"), now));
+    assert!(background::stale(Some("2026-11-02T09:49:00Z"), now));
+    assert!(!background::stale(Some("2026-11-02T09:55:00+00:00"), now));
+}

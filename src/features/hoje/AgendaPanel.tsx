@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { Plug } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { Button } from '../../components/ui';
@@ -52,7 +53,11 @@ export function AgendaPanel(props: Props) {
         ) : (
           <PanelEmpty
             action={
-              <Button size="sm" onClick={go.integrations}>
+              <Button
+                size="sm"
+                onClick={go.integrations}
+                icon={<Plug size={14} aria-hidden="true" />}
+              >
                 {t('hoje.agenda.connect')}
               </Button>
             }

@@ -166,6 +166,7 @@ pub fn run() {
                 }
             });
 
+            calendar::spawn_refresh(app.handle().clone());
             info!("Coxinha ready");
             Ok(())
         })

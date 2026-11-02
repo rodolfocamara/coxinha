@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { RotateCw } from 'lucide-react';
 import { type ErrorComponentProps, useNavigate, useRouter } from '@tanstack/react-router';
 import { Button } from '../components/ui';
 import { noteFileRecoveryKey } from '../lib/noteFileErrors';
@@ -26,7 +27,12 @@ export function NoteDetailError({ error, reset }: ErrorComponentProps) {
       )}
       {guidance && <NoteFileSettingsLink />}
       <div className="flex flex-wrap gap-2">
-        <Button size="sm" variant="primary" onClick={() => void router.invalidate().then(reset)}>
+        <Button
+          size="sm"
+          variant="primary"
+          onClick={() => void router.invalidate().then(reset)}
+          icon={<RotateCw size={14} aria-hidden="true" />}
+        >
           {t('noteError.retry')}
         </Button>
         <Button size="sm" onClick={() => void navigate({ to: '/workspace' })}>

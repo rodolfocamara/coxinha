@@ -2,7 +2,13 @@ import { create } from 'zustand';
 import { invoke, isTauri } from '@tauri-apps/api/core';
 
 /** Spec 0097 P3: live transcript with the Tagarela model, off by default. */
-export type LiveSettings = { enabled: boolean; modelPath: string; nThreads: number };
+export type LiveSettings = {
+  enabled: boolean;
+  modelPath: string;
+  nThreads: number;
+  /** Spec 0098: transcribe earlier recordings while idle. */
+  backlog: boolean;
+};
 export type LiveSegment = {
   track: 'Mic' | 'Output';
   startFrame: number;

@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { CalendarDays, Plus, RefreshCw, Search, Settings2, Upload } from 'lucide-react';
+import { CalendarDays, Plus, RefreshCw, RotateCw, Search, Settings2, Upload } from 'lucide-react';
 import { Alert, Button, EmptyState, Input } from '../../components/ui';
 import { LiveBadge } from '../capture/LiveBadge';
 import type { OutlookConnection } from '../agenda/useOutlookConnection';
@@ -115,7 +115,11 @@ export function MeetingList(p: Props) {
             <Alert
               tone="error"
               action={
-                <Button size="sm" onClick={p.onRetry}>
+                <Button
+                  size="sm"
+                  onClick={p.onRetry}
+                  icon={<RotateCw size={14} aria-hidden="true" />}
+                >
                   {k('retry')}
                 </Button>
               }
@@ -265,7 +269,12 @@ function OutlookFooter({
         <span className="min-w-0 flex-1 truncate text-warning" title={connection.error}>
           {connection.error}
         </span>
-        <Button variant="ghost" size="xs" onClick={connection.retry}>
+        <Button
+          variant="ghost"
+          size="xs"
+          onClick={connection.retry}
+          icon={<RotateCw size={14} aria-hidden="true" />}
+        >
           {k('retry')}
         </Button>
         <Button

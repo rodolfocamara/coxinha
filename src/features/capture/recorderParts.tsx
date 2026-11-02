@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Mic, Phone, Square } from 'lucide-react';
+import { BellOff, Info, Mic, Phone, Square } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../components/ui';
 import type { ActiveCall } from '../../lib/bindings';
@@ -81,10 +81,17 @@ export function DetectedCall({ call }: { call: ActiveCall }) {
         variant="ghost"
         aria-expanded={details}
         onClick={() => setDetails(!details)}
+        icon={<Info size={14} aria-hidden="true" />}
       >
         {t('recorder.details')}
       </Button>
-      <Button size="xs" variant="ghost" disabled={busy} onClick={() => dismissCall(callKey(call))}>
+      <Button
+        size="xs"
+        variant="ghost"
+        disabled={busy}
+        onClick={() => dismissCall(callKey(call))}
+        icon={<BellOff size={14} aria-hidden="true" />}
+      >
         {t('recorder.ignore')}
       </Button>
       {sameAttempt && error && (

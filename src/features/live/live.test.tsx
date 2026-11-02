@@ -140,6 +140,24 @@ it('fills the Handy model path and only then allows turning live transcription o
   expect(toggle).toBeEnabled();
 });
 
+it('turns the automatic transcription of earlier recordings off, only while live is on', async () => {
+  route({
+    live_settings: () => ({ enabled: true, modelPath: '/m.gguf', nThreads: 4, backlog: true }),
+    set_live_settings: (a) => (a as { settings: unknown }).settings,
+  });
+  render(<LiveSettings />);
+  const backlog = await screen.findByRole('checkbox', { name: 'Transcrever gravações anteriores' });
+  expect(backlog).toBeChecked();
+  fireEvent.click(backlog);
+  await waitFor(() =>
+    expect(invoke).toHaveBeenCalledWith('set_live_settings', {
+      settings: { enabled: true, modelPath: '/m.gguf', nThreads: 4, backlog: false },
+    })
+  );
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Transcrever durante a chamada' }));
+  await waitFor(() => expect(backlog).toBeDisabled());
+});
+
 it('tests the title server with a synthetic excerpt and shows the result', async () => {
   const settings = {
     enabled: false,

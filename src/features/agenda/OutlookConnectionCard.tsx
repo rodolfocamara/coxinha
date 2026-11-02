@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { CalendarDays } from 'lucide-react';
+import { CalendarDays, Plug, RefreshCw, RotateCw, Unplug, X } from 'lucide-react';
 import {
   Alert,
   Badge,
@@ -105,7 +105,7 @@ export function OutlookConnectionCard({ connection, onOpenAgenda, titleId }: Pro
           <Alert
             tone="error"
             action={
-              <Button size="sm" onClick={c.retry}>
+              <Button size="sm" onClick={c.retry} icon={<RotateCw size={14} aria-hidden="true" />}>
                 {t('settings.recovery.retry')}
               </Button>
             }
@@ -116,24 +116,43 @@ export function OutlookConnectionCard({ connection, onOpenAgenda, titleId }: Pro
       </CardBody>
       <CardFooter>
         {c.connecting && (
-          <Button variant="ghost" onClick={c.cancel}>
+          <Button variant="ghost" onClick={c.cancel} icon={<X size={14} aria-hidden="true" />}>
             {t('outlook.cancel')}
           </Button>
         )}
         {(c.connected || hasCache) && (
-          <Button variant="danger" disabled={busy} onClick={c.disconnect}>
+          <Button
+            variant="danger"
+            disabled={busy}
+            onClick={c.disconnect}
+            icon={<Unplug size={14} aria-hidden="true" />}
+          >
             {t('outlook.disconnect')}
           </Button>
         )}
         {c.connected ? (
           <>
-            {onOpenAgenda && <Button onClick={onOpenAgenda}>{t('outlook.openAgenda')}</Button>}
-            <Button variant="primary" disabled={busy} onClick={c.sync}>
+            {onOpenAgenda && (
+              <Button onClick={onOpenAgenda} icon={<CalendarDays size={14} aria-hidden="true" />}>
+                {t('outlook.openAgenda')}
+              </Button>
+            )}
+            <Button
+              variant="primary"
+              disabled={busy}
+              onClick={c.sync}
+              icon={<RefreshCw size={14} aria-hidden="true" />}
+            >
               {t('outlook.sync')}
             </Button>
           </>
         ) : (
-          <Button variant="primary" disabled={busy || !c.clientId.trim()} onClick={c.connect}>
+          <Button
+            variant="primary"
+            disabled={busy || !c.clientId.trim()}
+            onClick={c.connect}
+            icon={<Plug size={14} aria-hidden="true" />}
+          >
             {t('outlook.connect')}
           </Button>
         )}

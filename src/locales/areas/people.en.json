@@ -146,7 +146,9 @@
         "modelHint": "Parakeet pt-BR .gguf file. Read-only: Coxinha never changes Handy's file.",
         "useHandy": "Use Handy's",
         "threads": "Transcript threads",
-        "threadsHint": "Fewer threads leave more CPU for the call and for Handy."
+        "threadsHint": "Fewer threads leave more CPU for the call and for Handy.",
+        "backlog": "Transcribe earlier recordings",
+        "backlogHint": "While nothing is recording, transcribes meetings without a complete transcript on its own, newest first. A call or processing goes first."
       },
       "titles": {
         "title": "Suggested title",

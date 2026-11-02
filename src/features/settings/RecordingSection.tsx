@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Mic, RotateCw, Volume2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Button, Select } from '../../components/ui';
 import { chooseDevices, loadDevices } from '../capture/captureActions';
@@ -82,7 +83,7 @@ export function RecordingSection() {
     <Alert
       tone="error"
       action={
-        <Button size="sm" onClick={refresh}>
+        <Button size="sm" onClick={refresh} icon={<RotateCw size={14} aria-hidden="true" />}>
           {s('devices.retry')}
         </Button>
       }
@@ -102,6 +103,7 @@ export function RecordingSection() {
       <SettingsCard>
         <SettingsRow
           name="mic"
+          icon={Mic}
           title={s('mic.title')}
           description={s('mic.hint')}
           control={
@@ -117,6 +119,7 @@ export function RecordingSection() {
         />
         <SettingsRow
           name="output"
+          icon={Volume2}
           title={s('output.title')}
           description={s('output.hint')}
           control={

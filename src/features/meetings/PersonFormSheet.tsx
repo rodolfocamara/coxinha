@@ -1,4 +1,5 @@
 import { useId, useRef, useState, type ReactNode } from 'react';
+import { UserPlus, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Button, Field, Input, Sheet, Textarea } from '../../components/ui';
 import { library } from './library';
@@ -72,13 +73,16 @@ export function PersonFormSheet({
       closeLabel={t('peopleDirectory.form.close')}
       footer={
         <>
-          <Button onClick={() => onOpenChange(false)}>{t('peopleDirectory.form.cancel')}</Button>
+          <Button onClick={() => onOpenChange(false)} icon={<X size={14} aria-hidden="true" />}>
+            {t('peopleDirectory.form.cancel')}
+          </Button>
           <Button
             type="submit"
             form={formId}
             variant="primary"
             disabled={blocked}
             aria-describedby={reason ? reasonId : undefined}
+            icon={<UserPlus size={14} aria-hidden="true" />}
           >
             {t('library.processing.createPerson')}
           </Button>

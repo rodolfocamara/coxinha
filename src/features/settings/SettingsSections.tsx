@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { Stethoscope } from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';
 import { useState } from 'react';
 import type { AppConfig } from '../../lib/bindings';
@@ -83,9 +84,14 @@ export function DiagnosticsSection() {
       <SettingsCard>
         <SettingsRow
           name="diagnostics"
+          icon={Stethoscope}
           title={t('people.settings.diagnostics.title')}
           control={
-            <Button size="sm" onClick={diagnostics.show}>
+            <Button
+              size="sm"
+              onClick={diagnostics.show}
+              icon={<Stethoscope size={14} aria-hidden="true" />}
+            >
               {t('settings.recovery.showDiagnostics')}
             </Button>
           }

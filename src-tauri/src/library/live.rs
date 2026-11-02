@@ -12,6 +12,8 @@ pub struct LiveSettings {
     pub enabled: bool,
     pub model_path: String,
     pub n_threads: u32,
+    /// Spec 0098: transcribe earlier recordings while idle, without a button.
+    pub backlog: bool,
 }
 impl Default for LiveSettings {
     fn default() -> Self {
@@ -19,6 +21,7 @@ impl Default for LiveSettings {
             enabled: false,
             model_path: String::new(),
             n_threads: 4,
+            backlog: true,
         }
     }
 }
@@ -56,6 +59,7 @@ pub(super) struct LiveSlot {
     settings: LiveSettings,
     transcriber: Option<(LiveSettings, Arc<LiveTranscriber>)>,
     pub(super) shared: SharedLive,
+    pub(super) backlog: super::backlog::Backlog,
 }
 impl LiveSlot {
     fn publish(&self) {
@@ -97,6 +101,21 @@ impl LiveSlot {
             t.pause(false);
             t.enqueue(meeting);
         }
+    }
+    pub(super) fn backlog_on(&self) -> bool {
+        self.settings.enabled && self.settings.backlog && !self.settings.model_path.trim().is_empty()
+    }
+    /// Calls and manual processing outrank the backlog: a running backfill is
+    /// cancelled and resumes later from its cursor, so nothing queues behind it.
+    pub(super) fn yield_backlog(&mut self) {
+        if self.backlog.current.is_some() && self.busy() {
+            self.shutdown();
+        }
+        self.backlog.reset();
+    }
+    pub(super) fn capture_started(&mut self, root: &std::path::Path, meeting: &str) {
+        self.yield_backlog();
+        self.started(root, meeting);
     }
     pub(super) fn committed(&self, meeting: &str) {
         if let Some((_, t)) = &self.transcriber {
@@ -199,7 +218,7 @@ impl Library {
 }
 
 /// Both tracks transcribed up to their committed frames (silence included).
-fn transcript_complete(root: &std::path::Path, meeting: &str) -> bool {
+pub(super) fn transcript_complete(root: &std::path::Path, meeting: &str) -> bool {
     use coxinha_core::capture::{CommittedTrack, Track};
     let Ok(progress) = coxinha_core::live::transcript_progress(root, meeting) else {
         return false;
