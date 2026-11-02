@@ -322,3 +322,31 @@ pending (spec 0083).
   - RSS with Handy loaded;
   - the Windows stress test;
   - the `CancelToken` is not installed (the `Asr` trait has no hook).
+
+## Evidence (native simulated call, 2026-11-02)
+
+- Release build `--features "local-processing stt-tagarela"` failed to link:
+  whisper-rs and transcribe.cpp each link their own static ggml (duplicate
+  `ggml_*` symbols). `full-release` had the same combination.
+  - Fix: `stt-tagarela-shared` builds transcribe.cpp as a shared library,
+    the same posture as Handy. On Linux the binary links with
+    `--exclude-libs,ALL` (`nm -D` shows no `ggml_*` or `whisper_*` exports,
+    so `libtranscribe` binds to its own `libggml`) and a
+    `$ORIGIN:$ORIGIN/../lib/Coxinha` runpath. `full-release` uses it.
+  - Packaging the `.so`/DLL files in the deb, AppImage and MSI bundles is
+    still open; the Windows build is unverified.
+- Simulated call on the real desktop, a throwaway profile and virtual
+  PipeWire devices: a Pulse client named `teams` opened a virtual mic, and
+  six minutes of a recorded pt-BR meeting (both tracks) played into the
+  virtual mic and a null sink.
+  - The call was detected and auto-record started a capture bound to it.
+  - Live Tagarela produced 973 words on both tracks, about 10–15 s behind the
+    audio. The mic track of the source is near silent (−57.7 dBFS RMS) and
+    gave two short lines.
+  - The 5-minute title came from the macserver (27.1 s, cold) and was
+    applied. The call ended, the capture stopped 40 s later (debounce plus
+    grace), and the final title (3.0 s) replaced it in the session row.
+  - No errors in the log. Peak RSS of the whole app with Tagarela loaded was
+    1.38 GB, with Handy running in its own process.
+- Still not done: a real Teams call, the 2-hour benchmark, WER against
+  offline Tagarela, Windows.

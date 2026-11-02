@@ -25,6 +25,9 @@ local-processing = ["stt-whisper", "diarization-onnx"]
 diarization-onnx = ["dep:pyannote-rs", "dep:ort"]
 stt-whisper = ["dep:whisper-rs"]
 stt-tagarela = ["dep:transcribe-cpp"]
+# transcribe.cpp as a shared library: its ggml cannot be linked statically
+# next to whisper-rs, whose static ggml defines the same symbols.
+stt-tagarela-shared = ["stt-tagarela", "transcribe-cpp/shared"]
 
 [dev-dependencies]
 tempfile = "3"

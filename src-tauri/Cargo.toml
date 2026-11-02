@@ -151,6 +151,9 @@ stt-whisper = ["dep:whisper-rs", "coxinha-core/stt-whisper"]
 stt-parakeet = ["dep:transcribe-rs"]
 # Live transcript with the Tagarela GGUF on transcribe.cpp 0.2.4 (spec 0097 P3)
 stt-tagarela = ["coxinha-core/stt-tagarela"]
+# Required whenever stt-whisper is also on (duplicate ggml symbols otherwise).
+# The binary looks for libtranscribe/libggml next to itself or in ../lib/Coxinha.
+stt-tagarela-shared = ["stt-tagarela", "coxinha-core/stt-tagarela-shared"]
 
 # GPU acceleration (each engine picks what it needs)
 cuda = ["whisper-rs/cuda"]
@@ -168,7 +171,7 @@ diarize-pyannote = ["dep:pyannote-rs"]
 full-release = [
     "stt-whisper",
     "stt-parakeet",
-    "stt-tagarela",
+    "stt-tagarela-shared",
     "cuda",
     "diarize-pyannote",
 ]

@@ -19,5 +19,12 @@ fn main() {
     println!("cargo:rerun-if-changed=src");
     println!("cargo:rerun-if-changed=locales");
     println!("cargo:rerun-if-changed=../dist");
+    let linux = std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("linux");
+    if linux && std::env::var_os("CARGO_FEATURE_STT_TAGARELA_SHARED").is_some() {
+        // whisper-rs links its own ggml statically: never export it, so the
+        // shared libtranscribe binds to the libggml it was built with.
+        println!("cargo:rustc-link-arg-bins=-Wl,--exclude-libs,ALL");
+        println!("cargo:rustc-link-arg-bins=-Wl,-rpath,$ORIGIN:$ORIGIN/../lib/Coxinha");
+    }
     tauri_build::build()
 }
