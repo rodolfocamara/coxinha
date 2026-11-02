@@ -1,6 +1,6 @@
 # 0098 — Automatic transcription of recordings, calendar refresh and icon pass
 
-Status: in-progress (P1–P3 implemented; batch model choice pending the benchmark)
+Status: in-progress (P1–P4 implemented; the owner's backlog is running)
 Phase: F1
 Date: 2026-11-02
 
@@ -71,13 +71,30 @@ After spec 0097 the owner used the app and asked for four things:
   transcript, diagnostics, review, recover, prepare, details, ignore, load
   more), through the existing `Button` `icon` prop.
 
-### P4 Batch model (pending)
+### P4 Batch model: Tagarela for live and batch
 
-A benchmark on this machine compares transcribe.cpp models for pt-BR batch
-use (FLEURS pt_br, a spontaneous pt-BR set, and 10 minutes of a real
-meeting through the windowed engine), with WER, speed, memory and
-word-timestamp support. The default model for the backlog follows its
-result.
+Benchmark on this machine (2026-11-02, CPU, 8 threads, transcribe.cpp; the
+harness lives outside the repo): FLEURS pt_br 40 clips (read speech), CORAA
+spontaneous pt-BR clips, long-form windowed CORAA, and 10 minutes of a real
+meeting through 10–20 s windows (agreement only, no reference; the copies
+were deleted).
+
+| model | WER FLEURS | WER CORAA | long-form CORAA | RTF CPU | peak RSS | timestamps |
+|---|---|---|---|---|---|---|
+| Tagarela (parakeet v3 pt-BR, Q8) | 4.5% | 12.6% | 15.8% | 0.15 | 1.3 GB | word |
+| parakeet v3 Q8 | 4.7% | 20.3% | — | 0.11 | 1.3 GB | word |
+| parakeet-ultra Q8 | 3.6% | 21.1% | 22.4% | 0.11 | 1.3 GB | word |
+| whisper large-v3-turbo | 3.9% | 22.9% | — | 2.53 | 1.0 GB | segment |
+| Cohere Transcribe Q5 | 4.4% | 21.0% | — | 0.33 | 3.0 GB | none |
+| Qwen3-ASR 1.7B Q8 | 4.9% | 21.5% | 25.7% | 0.50 | 3.5 GB | none |
+| Canary 1B v2 | 4.8% | 25.5% | — | 0.17 | 1.9 GB | none |
+| Granite Speech 4.1 2B | 7.3% | 67.2% | failed | 0.68 | 3.4 GB | none |
+
+On read speech every model is within about one point. On spontaneous
+speech, the case of meetings, Tagarela is 6 to 13 points better (95%
+intervals exclude zero for every pair), runs 0.15× real time on CPU and
+gives word timestamps, which the windowed engine needs. One model therefore
+serves live and batch, and the backlog uses the live model setting.
 
 ## Acceptance
 
@@ -93,5 +110,5 @@ result.
 - [x] The window buttons carry no negative margin (`WindowChrome.test.tsx`).
 - [x] Every settings section has a nav icon and a heading icon
       (`SettingsHub.test.tsx`).
-- [ ] Batch model chosen from the benchmark.
+- [x] Batch model chosen from the benchmark (Tagarela).
 - [ ] The owner's existing recordings transcribed by the installed app.
