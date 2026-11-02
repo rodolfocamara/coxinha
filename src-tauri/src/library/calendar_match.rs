@@ -40,8 +40,9 @@ fn same_title(a: &str, b: &str) -> bool {
 }
 
 /// The event each recording overlaps most, when the overlap is at least half
-/// the recording or 10 minutes. A session already named after a qualifying
-/// event is matched; a dismissed pair is never offered again.
+/// the recording or 10 minutes. Events without invitees (lunch, focus time)
+/// are personal blocks, not meetings. A session already named after a
+/// qualifying event is matched; a dismissed pair is never offered again.
 pub(super) fn propose<'a>(
     recordings: &[Recording],
     events: &'a [Event],
@@ -56,7 +57,9 @@ pub(super) fn propose<'a>(
         let needed = (length / 2).min(Duration::minutes(ENOUGH_OVERLAP_MINUTES));
         let candidates: Vec<_> = events
             .iter()
-            .filter(|e| !e.cancelled && !e.all_day && !e.title.trim().is_empty())
+            .filter(|e| {
+                !e.cancelled && !e.all_day && !e.title.trim().is_empty() && !e.attendees.is_empty()
+            })
             .filter_map(|e| {
                 let (start, end) = (instant(&e.starts_at)?, instant(&e.ends_at)?);
                 let overlap = end.min(recording.end) - start.max(recording.start);
@@ -233,7 +236,8 @@ mod tests {
         serde_json::from_value(json!({
             "id": id, "title": title,
             "startsAt": at(from.0, from.1).to_rfc3339(), "endsAt": at(to.0, to.1).to_rfc3339(),
-            "cancelled": false, "allDay": false, "attendees": [],
+            "cancelled": false, "allDay": false,
+            "attendees": [{ "name": "Ana", "email": "ana@x.com" }],
         }))
         .unwrap()
     }
@@ -288,6 +292,14 @@ mod tests {
         // A test clip under a minute is never offered.
         let clip = [recording("teste", (10, 0), (10, 0))];
         assert!(propose(&clip, &events, &none).is_empty());
+    }
+
+    #[test]
+    fn ignores_events_without_invitees() {
+        let mut lunch = event("lunch", "Lunch", (12, 0), (13, 0));
+        lunch.attendees.clear();
+        let recordings = [recording("Meeting in Google Chrome", (12, 0), (12, 50))];
+        assert!(propose(&recordings, &[lunch], &BTreeSet::new()).is_empty());
     }
 
     #[test]

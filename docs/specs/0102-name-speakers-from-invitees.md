@@ -45,11 +45,11 @@ person and then writing how the identity was verified.
 
 ## Acceptance
 
-- [ ] Invitees come first in the picker; one matching an existing person is
+- [x] Invitees come first in the picker; one matching an existing person is
       not duplicated (`SpeakerCard.invitees` tests).
-- [ ] Confirming an invitee creates the person with the calendar consent
+- [x] Confirming an invitee creates the person with the calendar consent
       origin and confirms the voice with the prefilled verification
       (`SpeakerCard.invitees` tests).
-- [ ] The review passes the meeting's participants to the cards
+- [x] The review passes the meeting's participants to the cards
       (`SpeakerReview` tests).
 - [ ] Owner's library: a separated meeting named from its invitees.

@@ -33,7 +33,10 @@ earlier recordings were left behind.
 - A recording qualifies when its session has a finished or interrupted
   capture of at least one minute. Its interval is `meeting.created_at`
   (UTC) plus the longest track in the manifest.
-- An event qualifies when it is not cancelled, not all-day and has a title.
+- An event qualifies when it is not cancelled, not all-day, has a title and
+  has at least one invitee. Events without invitees (lunch, focus time) are
+  personal blocks; the first run offered a lunch slot that a capture left
+  open had run into.
 - The proposal is the event with the longest overlap, if the overlap is at
   least half the recording or 10 minutes; ties go to the nearest start.
 - No proposal when the session already has the event's title, or when the
@@ -60,8 +63,9 @@ earlier recordings were left behind.
 
 ## Acceptance
 
-- [x] Overlap rule, minimum length, cancelled/all-day events, already named
-      sessions and dismissed pairs (`calendar_match` tests).
+- [x] Overlap rule, minimum length, cancelled/all-day events, events without
+      invitees, already named sessions and dismissed pairs
+      (`calendar_match` tests).
 - [x] Invitees merge into existing participants without duplicates
       (`calendar_match` tests).
 - [ ] Accepting retitles and sets the time; declining is remembered
