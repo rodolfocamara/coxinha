@@ -281,6 +281,8 @@ pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
             auto_record::auto_record_keep,
             library::live_settings,
             library::set_live_settings,
+            library::library_calendar_matches,
+            library::library_resolve_calendar_match,
             speech_download::speech_model_download,
             speech_download::speech_default_processing_config,
             library::library_live_transcript,

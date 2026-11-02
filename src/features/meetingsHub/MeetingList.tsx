@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CalendarDays, Plus, RefreshCw, RotateCw, Search, Settings2, Upload } from 'lucide-react';
 import { Alert, Button, EmptyState, Input } from '../../components/ui';
@@ -36,6 +37,8 @@ type Props = {
   loading: boolean;
   onRetry: () => void;
   desktop: boolean;
+  /** Shown above the list, e.g. calendar matches to review (spec 0100). */
+  banner?: ReactNode;
 };
 
 export function MeetingList(p: Props) {
@@ -110,6 +113,7 @@ export function MeetingList(p: Props) {
         role="tabpanel"
         aria-labelledby={`meetings-list-tab-${p.tab}`}
       >
+        {p.banner}
         {p.loadFailed && (
           <div className="p-3">
             <Alert

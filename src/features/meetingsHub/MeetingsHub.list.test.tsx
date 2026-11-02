@@ -304,3 +304,56 @@ it('speaks Portuguese', async () => {
   expect(screen.getByRole('tab', { name: 'Próximas e recentes' })).toBeInTheDocument();
   expect(await screen.findByRole('heading', { name: 'Anteriores' })).toBeInTheDocument();
 });
+
+it('asks whether earlier recordings are calendar meetings and sends both answers', async () => {
+  const committee = event({
+    id: 'e-committee',
+    title: 'IT committee',
+    startsAt: at(-2, 9),
+    endsAt: at(-2, 11),
+    attendees: [{ name: 'Ana', email: 'ana@example.com' }],
+  });
+  const lunch = event({ id: 'e-lunch', title: 'Lunch', startsAt: at(-2, 12), endsAt: at(-2, 13) });
+  db.calendarMatches = [
+    {
+      sessionId: 's-chrome',
+      meetingId: 'm-chrome',
+      title: 'Meeting in Google Chrome',
+      startsAt: at(-2, 9, 19),
+      endsAt: at(-2, 11, 8),
+      event: committee,
+    },
+    {
+      sessionId: 's-other',
+      meetingId: 'm-other',
+      title: 'Meeting in Google Chrome',
+      startsAt: at(-2, 12),
+      endsAt: at(-2, 12, 40),
+      event: lunch,
+    },
+  ];
+  renderAt('/meetings');
+  expect(
+    await screen.findByText('2 recordings look like meetings on your calendar.')
+  ).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Review' }));
+  const sheet = await screen.findByRole('dialog');
+  expect(within(sheet).getByText('IT committee')).toBeInTheDocument();
+  expect(within(sheet).getByText(/1 invitee/)).toBeInTheDocument();
+  fireEvent.click(within(sheet).getByRole('button', { name: 'Same meeting: IT committee' }));
+  await waitFor(() =>
+    expect(calledWith(db, 'library_resolve_calendar_match')).toEqual([
+      { sessionId: 's-chrome', eventId: 'e-committee', accept: true },
+    ])
+  );
+  fireEvent.click(await within(sheet).findByRole('button', { name: 'Not this one: Lunch' }));
+  await waitFor(() =>
+    expect(calledWith(db, 'library_resolve_calendar_match')[1]).toEqual({
+      sessionId: 's-other',
+      eventId: 'e-lunch',
+      accept: false,
+    })
+  );
+  expect(await within(sheet).findByText('Nothing left to review.')).toBeInTheDocument();
+  expect(screen.queryByText(/look like meetings on your calendar/)).toBeNull();
+});

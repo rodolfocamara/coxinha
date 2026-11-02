@@ -13,7 +13,7 @@ use std::time::Instant;
 use tauri::{AppHandle, Manager, State};
 use tauri_plugin_notification::NotificationExt;
 
-mod plan;
+pub(crate) mod plan;
 mod policy;
 pub use policy::Settings;
 use policy::{Binding, Capture, Command, Policy};

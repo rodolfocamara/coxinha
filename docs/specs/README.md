@@ -185,3 +185,4 @@ Pending decisions that block or shape the implementation.
 - [0097 — Automatic call recording, live transcript and meeting titles](0097-automatic-call-recording.md) — in-progress
 - [0098 — Automatic transcription of recordings, calendar refresh and icon pass](0098-automatic-transcription-and-calendar-refresh.md) — in-progress
 - [0099 — Speech models without setup and automatic speaker separation](0099-bundled-speech-models-and-automatic-speaker-separation.md) — in-progress
+- [0100 — Match past recordings to calendar events](0100-match-recordings-to-calendar-events.md) — in-progress

@@ -35,7 +35,8 @@ pub(super) async fn fetch(access: &str, attempt: Option<&str>) -> Result<Snapsho
     let now = Utc::now();
     let mut url = graph_url("https://graph.microsoft.com/v1.0/me/calendarView")?;
     url.query_pairs_mut().extend_pairs([
-        ("startDateTime", (now - Duration::days(1)).to_rfc3339()),
+        // Spec 0100: a month back, so earlier recordings can be matched.
+        ("startDateTime", (now - Duration::days(30)).to_rfc3339()),
         ("endDateTime", (now + Duration::days(30)).to_rfc3339()),
         ("$top", "100".into()),
         (

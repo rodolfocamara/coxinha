@@ -9,7 +9,12 @@ import { RouterProvider } from '@tanstack/react-router';
 import { createAppRouter } from '../../router';
 import type { Session } from '../sessions/sessions';
 import type { CalendarEvent } from '../agenda/calendar';
-import type { LibraryDetail, LibraryMeeting, ProcessingDetail } from '../meetings/library';
+import type {
+  CalendarMatch,
+  LibraryDetail,
+  LibraryMeeting,
+  ProcessingDetail,
+} from '../meetings/library';
 import { at, recording, session } from './meetingsHub.fixtures';
 
 export * from './meetingsHub.fixtures';
@@ -29,6 +34,8 @@ export type Db = {
   failImport: boolean;
   /** Spec 0099: config the backend builds from bundled speaker models. */
   defaultConfig: unknown;
+  /** Spec 0100: recordings the backend matched to calendar events. */
+  calendarMatches: CalendarMatch[];
   failUpdate: boolean;
   calls: { command: string; args: Record<string, unknown> }[];
 };
@@ -44,6 +51,7 @@ export function freshDb(): Db {
     failSessions: 0,
     failImport: false,
     defaultConfig: null,
+    calendarMatches: [],
     failUpdate: false,
     calls: [],
   };
@@ -117,6 +125,11 @@ export function backend(db: Db) {
       }
       case 'library_processing':
         return db.processing[String(args.meetingId)] ?? { jobs: [], report: null, people: [] };
+      case 'library_calendar_matches':
+        return db.calendarMatches;
+      case 'library_resolve_calendar_match':
+        db.calendarMatches = db.calendarMatches.filter((m) => m.sessionId !== args.sessionId);
+        return null;
       case 'speech_default_processing_config':
         if (!db.defaultConfig) throw new Error('Speaker models are not bundled with this build');
         return db.defaultConfig;

@@ -382,6 +382,8 @@ mod recording_storage;
 pub use curation::*;
 mod auto;
 mod backlog;
+mod calendar_match;
+pub use calendar_match::*;
 mod capture;
 mod live;
 pub use live::*;
