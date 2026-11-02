@@ -35,8 +35,11 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Fetch bundled speaker models
+        run: python scripts/fetch_speech_models.py --platform windows
+
       - name: Build Tauri (release + cuda)
-        run: pnpm tauri build --features full-release
+        run: pnpm tauri build --features full-release --config src-tauri/tauri.speech.conf.json
 
       - name: Upload MSI + NSIS
         uses: softprops/action-gh-release@v2

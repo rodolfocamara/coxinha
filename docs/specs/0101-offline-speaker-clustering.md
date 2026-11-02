@@ -1,6 +1,6 @@
 # 0101 — Offline speaker clustering and per-word attribution
 
-Status: in-progress (implemented; owner's library being separated again)
+Status: in-progress (implemented and accepted on the owner's library; awaiting merge)
 Phase: F1
 Date: 2026-11-02
 
@@ -52,6 +52,8 @@ without a speaker. Two causes:
 |---|---|---|
 | 30/10, 27 min, ~7 people | output 137 / 77% | output 6 / 4%, mic 1 |
 | 29/10, 30 min, 2 invitees | not measured | output 2 / 12%, mic 1 / 6% |
+| 29/10, 1h49, 18 invitees | not measured | output 7 main voices / 17% |
+| 26/10, 1h46 | not measured | output 1 main and 3 small voices / 28% |
 
 The 6 and 2 output voices hold from distance 0.6 to 0.75 on both meetings,
 so 0.7 sits on a plateau, not on an edge.
@@ -63,4 +65,5 @@ so 0.7 sits on a plateau, not on an edge.
 - [x] Unknown short turns neither split nor unlabel speech
       (`speech::live_words` tests).
 - [x] Only older automatic runs are redone (`speech_models` tests).
-- [ ] Owner's library separated again with the new engine.
+- [x] Owner's library separated again with the new engine: 8 automatic
+      runs succeeded on `coxinha-local-cpu-v3-live`, none failed.

@@ -77,17 +77,26 @@ const ORT_LIB: &str = "libonnxruntime.1.22.0.dylib";
 #[cfg(not(any(target_os = "windows", target_os = "macos")))]
 const ORT_LIB: &str = "libonnxruntime.so.1.22.0";
 
-/// The bundled speaker models: next to the binary, or in the package's lib dir.
+/// The bundled speaker models, where `tauri.speech.conf.json` puts them:
+/// next to the binary (Windows), in the package's lib dir (deb, AppImage) or
+/// in the bundle's resources (macOS).
 pub fn speaker_dir() -> Option<PathBuf> {
-    let exe = std::env::current_exe().ok()?;
+    speaker_dir_for(&std::env::current_exe().ok()?)
+}
+
+fn speaker_dir_for(exe: &Path) -> Option<PathBuf> {
     let base = exe.parent()?;
-    [base.join("speech"), base.join("../lib/Coxinha/speech")]
-        .into_iter()
-        .find(|d| {
-            ["segmentation.onnx", "wespeaker.onnx", ORT_LIB]
-                .iter()
-                .all(|f| d.join(f).is_file())
-        })
+    [
+        base.join("speech"),
+        base.join("../lib/Coxinha/speech"),
+        base.join("../Resources/speech"),
+    ]
+    .into_iter()
+    .find(|d| {
+        ["segmentation.onnx", "wespeaker.onnx", ORT_LIB]
+            .iter()
+            .all(|f| d.join(f).is_file())
+    })
 }
 
 /// Automatic runs end in `-live`; a meeting whose runs are all automatic and
@@ -127,6 +136,34 @@ pub fn processing_config(dir: &Path) -> anyhow::Result<serde_json::Value> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn finds_the_models_where_the_installer_puts_them() {
+        let config: serde_json::Value =
+            serde_json::from_str(include_str!("../tauri.speech.conf.json")).unwrap();
+        let resources = config["bundle"]["resources"].as_object().unwrap();
+        assert_eq!(resources["resources/speech/*"], "speech/");
+        for (binary, models) in [
+            ("Coxinha.exe", "speech"),
+            ("usr/bin/Coxinha", "usr/lib/Coxinha/speech"),
+            (
+                "Coxinha.app/Contents/MacOS/Coxinha",
+                "Coxinha.app/Contents/Resources/speech",
+            ),
+        ] {
+            let root = tempfile::tempdir().unwrap();
+            let exe = root.path().join(binary);
+            std::fs::create_dir_all(exe.parent().unwrap()).unwrap();
+            assert_eq!(speaker_dir_for(&exe), None, "{binary}: nothing installed");
+            let dir = root.path().join(models);
+            std::fs::create_dir_all(&dir).unwrap();
+            for file in ["segmentation.onnx", "wespeaker.onnx", ORT_LIB] {
+                std::fs::write(dir.join(file), b"x").unwrap();
+            }
+            let found = speaker_dir_for(&exe).unwrap().canonicalize().unwrap();
+            assert_eq!(found, dir.canonicalize().unwrap(), "{binary}");
+        }
+    }
 
     #[test]
     fn only_older_automatic_runs_are_redone() {

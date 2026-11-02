@@ -93,7 +93,12 @@ treatment on their own. The decisions taken:
       (`live.test.tsx`).
 - [x] "Transcrever" uses the bundled config when none was chosen
       (`MeetingsHub.detail.test.tsx`).
-- [ ] Packaging: the installer copies `speech/` next to the binary on Linux
-      and Windows.
-- [ ] Owner's library: every meeting transcribed with word timings and
-      separated by speaker without a click.
+- [x] Packaging: `scripts/fetch_speech_models.py` fetches the pinned files
+      (SHA-256 checked) and `tauri.speech.conf.json` ships them as `speech/`;
+      the lookup matches the Windows, deb/AppImage and macOS layouts
+      (`speech_models` tests). A Linux deb was built and holds
+      `usr/lib/Coxinha/speech/` with the three files.
+- [ ] Windows installer built by the release workflow and checked on a
+      Windows machine.
+- [x] Owner's library: every meeting transcribed with word timings and
+      separated by speaker without a click (8 automatic runs, spec 0101).
