@@ -1,7 +1,13 @@
 import { Select } from '../../components/ui/Select';
 import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { library, type ProcessingDetail, type ProcessingReport, type Recognition } from './library';
+import {
+  library,
+  type ParticipantCandidate,
+  type ProcessingDetail,
+  type ProcessingReport,
+  type Recognition,
+} from './library';
 import { SelectedVoiceEnrollment } from './SelectedVoiceEnrollment';
 import { voiceButton as speakerButton, voiceField as speakerField } from './voiceControls';
 import { speakerExcerpt } from './speakerExcerpt';
@@ -14,6 +20,7 @@ export function SpeakerCard({
   speaker,
   report,
   people,
+  invitees = [],
   recognition,
   disabled,
   act,
@@ -26,6 +33,8 @@ export function SpeakerCard({
   speaker: string;
   report: ProcessingReport;
   people: ProcessingDetail['people'];
+  /** The meeting's participants (spec 0102): listed first, created on confirm. */
+  invitees?: ParticipantCandidate[];
   recognition: Recognition | null;
   disabled: boolean;
   act: (action: () => Promise<unknown>) => Promise<void>;
@@ -37,10 +46,13 @@ export function SpeakerCard({
   const w = (name: string) => t(`speakers.${name}`);
   const helpId = useId();
   const [person, setPerson] = useState('');
-  const [origin, setOrigin] = useState('');
   const assignment = report.assignments.find(
     (a) => a.track === track && a.speaker === speaker && a.state === 'confirmed'
   );
+  // Prefilled only for a first naming: a revocation or correction needs its own reason.
+  const [origin, setOrigin] = useState(() => (assignment ? '' : w('defaultOrigin')));
+  const choices = personChoices(people, invitees);
+  const invitee = choices.find((c) => c.value === person)?.invitee;
   const unchangedIdentity = !!person && assignment?.person_id === person;
   const canConfirm = !disabled && !!person && !!origin.trim() && !unchangedIdentity;
   const suggestion = recognition?.speakers.find((a) => a.track === track && a.speaker === speaker);
@@ -103,9 +115,11 @@ export function SpeakerCard({
           onChange={(e) => setPerson(e.target.value)}
         >
           <option value="">{k('choosePerson')}</option>
-          {people.map((p) => (
-            <option key={p.id} value={p.id}>
-              {personOptionLabel(p, people)}
+          {choices.map((c) => (
+            <option key={c.value} value={c.value}>
+              {c.person
+                ? personOptionLabel(c.person, people)
+                : `${c.invitee!.name} · ${w('invitee')}`}
             </option>
           ))}
         </Select>
@@ -135,9 +149,12 @@ export function SpeakerCard({
           disabled={!canConfirm}
           onClick={() => {
             if (!canConfirm) return;
-            void act(() =>
-              library.confirmSpeaker(report.job, speaker, person, origin.trim(), false, track)
-            );
+            void act(async () => {
+              const id = invitee
+                ? await library.createPerson(invitee.name.trim(), w('inviteeConsent'))
+                : person;
+              await library.confirmSpeaker(report.job, speaker, id, origin.trim(), false, track);
+            });
           }}
         >
           {assignment ? k('correctIdentity') : k('confirm')}
@@ -174,6 +191,35 @@ export function SpeakerCard({
 }
 function formatTime(seconds: number) {
   return `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
+}
+
+type Choice = {
+  value: string;
+  person?: ProcessingDetail['people'][number];
+  invitee?: ParticipantCandidate;
+};
+
+/** Invitees first, as the existing person of the same name when there is one. */
+function personChoices(
+  people: ProcessingDetail['people'],
+  invitees: ParticipantCandidate[]
+): Choice[] {
+  const key = (name: string) =>
+    name.normalize('NFKD').replace(/\p{M}/gu, '').trim().replace(/\s+/g, ' ').toLocaleLowerCase();
+  const first: Choice[] = [];
+  const seen = new Set<string>();
+  invitees.forEach((invitee, index) => {
+    const name = key(invitee.name);
+    if (!name || seen.has(name)) return;
+    seen.add(name);
+    const person = people.find((p) => key(p.name) === name);
+    first.push(person ? { value: person.id, person } : { value: `invitee:${index}`, invitee });
+  });
+  const listed = new Set(first.map((c) => c.value));
+  return [
+    ...first,
+    ...people.filter((p) => !listed.has(p.id)).map((person) => ({ value: person.id, person })),
+  ];
 }
 
 function personOptionLabel(

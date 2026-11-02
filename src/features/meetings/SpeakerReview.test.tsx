@@ -250,11 +250,22 @@ it('resets row state and ignores recognition from an old meeting or job', async 
     <SpeakerReview {...props} meetingId="new" report={{ ...report, job: 'new-job' }} />
   );
   expect(within(card('mic')).getByRole('combobox')).toHaveValue('');
-  expect(within(card('mic')).getByRole('textbox')).toHaveValue('');
+  expect(within(card('mic')).getByRole('textbox')).toHaveValue(i18n.t('speakers.defaultOrigin'));
   expect(within(card('mic')).queryByRole('checkbox')).toBeNull();
   await act(async () => finish({ ...recognition, calibrationStatus: 'calibrated' }));
   expect(screen.queryByText('Suggested identity: Ana')).toBeNull();
   expect(screen.queryByText(i18n.t('speakers.calibrationReported'))).toBeNull();
+});
+it("offers the meeting's invitees to every speaker card", async () => {
+  render(<SpeakerReview {...props} />);
+  await waitFor(() => expect(library.participantContext).toHaveBeenCalledWith(props.meetingId));
+  fireEvent.click(within(card('output')).getByRole('combobox'));
+  expect(
+    await screen.findByRole('option', {
+      name: `Agenda name · ${i18n.t('speakers.invitee')}`,
+      hidden: true,
+    })
+  ).toBeInTheDocument();
 });
 it('reports unavailable suggestions and retries without changing identity', async () => {
   vi.mocked(library.recognition).mockRejectedValueOnce(new Error('suggestions offline'));
