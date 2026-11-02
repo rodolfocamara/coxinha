@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { open } from '@tauri-apps/plugin-shell';
-import { calendar, emptyCalendar, type CalendarSnapshot } from './calendar';
+import { calendar, emptyCalendar, onCalendarChanged, type CalendarSnapshot } from './calendar';
 
 type Options = {
   /** Called after a connection or disconnection replaces the cached snapshot. */
@@ -54,6 +54,7 @@ export function useOutlookConnection({ onReset }: Options = {}) {
       active = false;
     };
   }, [retry]);
+  useEffect(() => onCalendarChanged(() => setRetry((value) => value + 1)), []);
 
   async function run(action: () => Promise<void>) {
     setBusy(true);

@@ -1,4 +1,5 @@
 import { invoke, isTauri } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
 export type Candidate = { name: string; email: string | null };
 export type CalendarEvent = {
   id: string;
@@ -18,6 +19,15 @@ export type CalendarSnapshot = {
   syncedAt: string | null;
   events: CalendarEvent[];
 };
+/** Emitted whenever the backend rewrites or clears the Outlook cache. */
+export const CALENDAR_CHANGED = 'calendar-changed';
+
+/** Subscribe to cache changes; returns the unsubscribe function. */
+export function onCalendarChanged(handler: () => void): () => void {
+  if (!isTauri()) return () => {};
+  const pending = listen(CALENDAR_CHANGED, handler).catch(() => null);
+  return () => void pending.then((stop) => stop?.());
+}
 export const emptyCalendar: CalendarSnapshot = { account: null, syncedAt: null, events: [] };
 export const calendar = {
   status: () =>

@@ -6,6 +6,7 @@ import { IntegrationsSection } from './IntegrationsSection';
 
 vi.mock('../agenda/calendar', () => ({
   emptyCalendar: { account: null, syncedAt: null, events: [] },
+  onCalendarChanged: () => () => {},
   calendar: {
     status: vi.fn(),
     begin: vi.fn(),

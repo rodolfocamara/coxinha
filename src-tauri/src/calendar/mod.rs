@@ -363,6 +363,7 @@ pub async fn calendar_disconnect(app: tauri::AppHandle) -> Result<(), String> {
         if path.exists() {
             std::fs::remove_file(path).map_err(|_| SAFE_ERROR)?;
         }
+        changed(&app);
         Ok(())
     })
     .await
