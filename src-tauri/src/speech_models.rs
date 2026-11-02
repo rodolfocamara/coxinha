@@ -90,6 +90,16 @@ pub fn speaker_dir() -> Option<PathBuf> {
         })
 }
 
+/// Automatic runs end in `-live`; a meeting whose runs are all automatic and
+/// older than this one is separated again (spec 0101).
+pub const AUTOMATIC_ENGINE: &str = "coxinha-local-cpu-v3-live";
+
+pub fn superseded(versions: &[String]) -> bool {
+    versions
+        .iter()
+        .all(|v| v.ends_with("-live") && v != AUTOMATIC_ENGINE)
+}
+
 /// Processing config for automatic speaker separation over the live
 /// transcript. Hashing ~55 MB runs on the caller's (worker) thread.
 pub fn processing_config(dir: &Path) -> anyhow::Result<serde_json::Value> {
@@ -99,7 +109,7 @@ pub fn processing_config(dir: &Path) -> anyhow::Result<serde_json::Value> {
         Ok(serde_json::json!({ "path": path, "sha256": sha256, "provenance": provenance }))
     };
     Ok(serde_json::json!({
-        "engine_version": "coxinha-local-cpu-v2-live",
+        "engine_version": AUTOMATIC_ENGINE,
         "models": {
             "segmentation": model("segmentation.onnx", "https://huggingface.co/onnx-community/pyannote-segmentation-3.0/tree/733a93b6473d019a773298e08cefa686894b1854; declared license MIT; bundled with Coxinha")?,
             "embedding": model("wespeaker.onnx", "https://huggingface.co/WeSpeaker/wespeaker-voxceleb-resnet34-LM/tree/f0c48c298fd835726c27956a5d617bad7115627e; CC-BY-4.0; bundled with Coxinha")?,
@@ -117,6 +127,20 @@ pub fn processing_config(dir: &Path) -> anyhow::Result<serde_json::Value> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn only_older_automatic_runs_are_redone() {
+        let v = |items: &[&str]| items.iter().map(|s| s.to_string()).collect::<Vec<_>>();
+        assert!(superseded(&v(&[])));
+        assert!(superseded(&v(&["coxinha-local-cpu-v2-live"])));
+        assert!(!superseded(&v(&[
+            "coxinha-local-cpu-v2-live",
+            AUTOMATIC_ENGINE
+        ])));
+        // A run the owner configured by hand is never redone automatically.
+        assert!(!superseded(&v(&["coxinha-local-cpu-v1"])));
+        assert!(!superseded(&v(&[""])));
+    }
 
     #[test]
     fn prefers_tagarela_then_ultra_then_v3_and_ignores_other_files() {

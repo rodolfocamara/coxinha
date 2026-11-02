@@ -2,6 +2,8 @@
 #[cfg(feature = "stt-whisper")]
 mod abort;
 #[cfg(feature = "diarization-onnx")]
+mod clustering;
+#[cfg(feature = "diarization-onnx")]
 mod diarization;
 mod dsp;
 mod live_words;
@@ -147,8 +149,12 @@ impl ProcessingEngine for LocalSpeechEngine {
             result.warnings.push("Experimental anonymous clustering; similarity thresholds are parameters, not calibrated confidence. Overlap and ambiguous speech retain unknown attribution.".into());
         }
         control.check()?;
-        crate::processing::attribute_segments(&mut result.segments, &result.turns);
-        result.warnings.push("Text attribution overlap-v2: same track, union coverage >=70%, abstain on competing/unknown speech; not confidence.".into());
+        if live {
+            result.warnings.push("Text attribution live-words-v1: each word takes the labelled turn under it; a segment is attributed when labelled words cover half of it; not confidence.".into());
+        } else {
+            crate::processing::attribute_segments(&mut result.segments, &result.turns);
+            result.warnings.push("Text attribution overlap-v2: same track, union coverage >=70%, abstain on competing/unknown speech; not confidence.".into());
+        }
         control.check()?;
         Ok(result)
     }

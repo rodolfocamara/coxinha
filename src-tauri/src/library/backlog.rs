@@ -111,13 +111,14 @@ impl Worker {
             .filter(|m| matches!(m["captureState"].as_str(), Some("finished" | "interrupted")))
             .filter_map(|m| m["id"].as_str().map(str::to_owned))
             .collect();
-        // Any local-processing job, even a failed one, means "leave it to the user".
+        // A manual run, or an automatic one of this version even if it failed,
+        // leaves the meeting to the user; older automatic runs are redone.
         let undiarized: Vec<String> = candidates
             .iter()
             .filter(|m| {
                 self.store
-                    .meeting_processing_jobs(m)
-                    .is_ok_and(|jobs| jobs.is_empty())
+                    .processing_engine_versions(m)
+                    .is_ok_and(|v| crate::speech_models::superseded(&v))
             })
             .cloned()
             .collect();

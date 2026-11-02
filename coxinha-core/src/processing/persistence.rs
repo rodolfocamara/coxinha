@@ -31,6 +31,20 @@ impl Store {
         })?;
         Ok(rows.collect::<rusqlite::Result<_>>()?)
     }
+    /// `engine_version` of each local-processing job of the meeting; empty
+    /// when a job has no recorded run.
+    pub fn processing_engine_versions(&self, meeting: &str) -> Result<Vec<String>> {
+        let mut q = self.db.prepare("SELECT r.config_json FROM job j LEFT JOIN processing_run r ON r.job_id=j.id WHERE j.meeting_id=?1 AND j.stage='local-processing'")?;
+        let rows = q.query_map([meeting], |r| r.get::<_, Option<String>>(0))?;
+        let mut versions = Vec::new();
+        for config in rows {
+            let version = config?
+                .and_then(|c| serde_json::from_str::<serde_json::Value>(&c).ok())
+                .and_then(|c| c["engine_version"].as_str().map(str::to_owned));
+            versions.push(version.unwrap_or_default());
+        }
+        Ok(versions)
+    }
     pub fn meeting_processing_jobs(&self, meeting: &str) -> Result<Vec<serde_json::Value>> {
         let mut q=self.db.prepare("SELECT id,state,attempts,error FROM job WHERE meeting_id=?1 AND stage='local-processing' ORDER BY rowid DESC")?;
         let rows=q.query_map([meeting],|r|Ok(serde_json::json!({"id":r.get::<_,String>(0)?,"state":r.get::<_,String>(1)?,"attempts":r.get::<_,i64>(2)?,"error":r.get::<_,Option<String>>(3)?})))?;
