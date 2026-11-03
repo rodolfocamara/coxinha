@@ -204,3 +204,4 @@ Pending decisions that block or shape the implementation.
 - [0116 — Multilingual live transcript](0116-multilingual-live-transcript.md) — in-progress
 - [0117 — Faces for people](0117-faces-for-people.md) — draft
 - [0118 — A recording ends with its call](0118-recording-ends-with-its-call.md) — draft
+- [0119 — Agenda polish: repairs without the view, recordings in view, Outlook's colours and time zones](0119-agenda-polish.md) — in-progress
