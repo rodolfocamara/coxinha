@@ -7,9 +7,8 @@ import { CalendarBlock, blockTime, px, type GridActions } from './CalendarBlock'
 import { HOUR_PX, allDayKeys, initialScroll, isAllDay, layoutDay } from './weekLayout';
 import { atMinutes, type Range } from './gridSelect';
 import { useGridCreate } from './useGridCreate';
+import { TimeGutter, ZoneHeadings, gutterStyle, useExtraZones } from './TimeGutter';
 import './weekView.css';
-
-const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 
 /**
  * Outlook's time grid for any list of days (spec 0104): day columns on an
@@ -35,7 +34,8 @@ export function TimeGridView({
   const today = dayKey(now);
   const scroller = useRef<HTMLDivElement>(null);
   const allDay = rows.filter(isAllDay);
-  const columns = { '--mh-week-days': days.length } as CSSProperties;
+  const zones = useExtraZones();
+  const columns = { '--mh-week-days': days.length, ...gutterStyle(zones.length) } as CSSProperties;
   const create = useGridCreate(onCreate);
 
   const rangeKey = days.map(dayKey).join();
@@ -48,7 +48,7 @@ export function TimeGridView({
     <div className="mh-week-grid cx-glass" ref={scroller} style={columns}>
       <div className="mh-week-top">
         <div className="mh-week-head" aria-hidden="true">
-          <span />
+          <ZoneHeadings zones={zones} day={days[0]} locale={locale} />
           {days.map((day) => (
             <span
               key={dayKey(day)}
@@ -83,13 +83,7 @@ export function TimeGridView({
         </div>
       </div>
       <div className="mh-week-body" style={{ height: 24 * HOUR_PX }}>
-        <div className="mh-week-hours" aria-hidden="true">
-          {HOURS.map((hour) => (
-            <span key={hour} style={{ top: hour * HOUR_PX }}>
-              {hour === 0 ? '' : clockTime(new Date(2000, 0, 1, hour), locale)}
-            </span>
-          ))}
-        </div>
+        <TimeGutter zones={zones} day={days[0]} locale={locale} />
         {days.map((day) => (
           <section
             key={dayKey(day)}

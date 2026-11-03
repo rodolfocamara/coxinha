@@ -103,7 +103,7 @@ pub(super) fn merge(existing: Vec<Candidate>, invitees: Vec<Candidate>) -> Vec<C
 
 /// Sessions with a closed capture, timed by `created_at` (UTC) and the
 /// longest track of the manifest.
-fn recordings(root: &std::path::Path, sessions: &Value) -> Vec<Recording> {
+pub(super) fn recordings(root: &std::path::Path, sessions: &Value) -> Vec<Recording> {
     let Some(sessions) = sessions.as_array() else {
         return Vec::new();
     };
@@ -150,33 +150,10 @@ pub async fn library_calendar_matches(
     let events = crate::calendar::calendar_status(app.clone())
         .unwrap_or_default()
         .events;
-    super::absorb::sweep(&state, storage.inner(), &events).await;
-    let sessions = state.session_list().await?;
+    let recordings = super::reconcile::reconcile(&state, storage.inner(), &events).await?;
     let decisions: Decisions = crate::settings_file::app_file(&app, DECISIONS)
         .map(|p| crate::settings_file::load(&p))
         .unwrap_or_default();
-    let root = state.root.clone();
-    let (recordings, sessions) =
-        tauri::async_runtime::spawn_blocking(move || (recordings(&root, &sessions), sessions))
-            .await
-            .map_err(|e| e.to_string())?;
-    // Recordings closed before spec 0115 take their real span once.
-    for r in &recordings {
-        let unscheduled = sessions.as_array().is_some_and(|list| {
-            list.iter().any(|s| {
-                s["id"].as_str() == Some(r.session.as_str())
-                    && s["starts_at"].is_null()
-                    && s["ends_at"].is_null()
-            })
-        });
-        if unscheduled {
-            let end = r.end.format("%Y-%m-%dT%H:%M:%SZ").to_string();
-            let action = SessionAction::DateUnscheduled(r.meeting.clone(), end);
-            if let Err(error) = state.ask(Action::Session(action)).await {
-                tracing::warn!("recording kept no agenda time: {error}");
-            }
-        }
-    }
     tauri::async_runtime::spawn_blocking(move || {
         let proposals = propose(&recordings, &events, &decisions.dismissed);
         json!(proposals

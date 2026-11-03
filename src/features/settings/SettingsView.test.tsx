@@ -297,6 +297,7 @@ describe('SettingsView — section list and deep links', () => {
     expect(names).toEqual(
       [
         'general',
+        'calendar',
         'recording',
         'transcription',
         'integrations',

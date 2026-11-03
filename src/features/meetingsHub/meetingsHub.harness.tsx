@@ -27,6 +27,7 @@ import { forgetProcessingConfig } from '../meetings/processingConfigMemory';
 import { takePendingSheet } from './meetingsSheets';
 import { CALENDAR_PREF_KEYS } from './calendarViews';
 import { resetCalendarHome } from './calendarHome';
+import { resetTimeZones } from './timeZones';
 
 export type Db = {
   sessions: Session[];
@@ -274,7 +275,10 @@ export function resetState() {
   resetOutlookCategories();
   for (const key of CALENDAR_PREF_KEYS) window.localStorage.removeItem(key);
   window.localStorage.removeItem('coxinha:calendar-hidden-categories');
+  window.localStorage.removeItem('coxinha:calendar-time-zones');
+  window.localStorage.removeItem('coxinha:calendar-local-zone-label');
   resetCalendarHome();
+  resetTimeZones();
 }
 
 export function renderAt(path: string) {

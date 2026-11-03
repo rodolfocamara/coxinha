@@ -322,6 +322,8 @@ mod auto;
 mod backlog;
 mod calendar_match;
 pub use calendar_match::*;
+mod reconcile;
+pub use reconcile::reconcile_agenda;
 mod capture;
 #[cfg(target_os = "linux")]
 use capture::Active;

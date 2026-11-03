@@ -72,7 +72,8 @@
         "integrations": "Integrations",
         "shortcuts": "Shortcuts",
         "storage": "Storage",
-        "diagnostics": "Diagnostics"
+        "diagnostics": "Diagnostics",
+        "calendar": "Calendar"
       },
       "descriptions": {
         "general": "Appearance.",
@@ -81,7 +82,8 @@
         "integrations": "Optional. Nothing leaves this computer until you connect.",
         "shortcuts": "Global shortcuts work even when the window is hidden.",
         "storage": "Your notes are plain Markdown files in this folder.",
-        "diagnostics": "Text to paste when reporting a problem."
+        "diagnostics": "Text to paste when reporting a problem.",
+        "calendar": "How the week grid shows time. Saved on this computer."
       },
       "theme": {
         "title": "Theme",
@@ -165,6 +167,22 @@
         "testFailed": "It did not work: {{error}}",
         "summaries": "Generate summaries",
         "summariesPrivacy": "After each transcript, sends the whole transcript text, in parts, to this same server to write a summary with decisions and actions. Off by default; never audio."
+      },
+      "zones": {
+        "title": "Extra time zones",
+        "hint": "Shown beside the hours in the day and week views, up to {{count}}.",
+        "localTitle": "Label for this computer's time zone",
+        "localHint": "Heads its hour column when extra zones show. Empty uses the zone's short name.",
+        "zone": "Time zone (IANA name)",
+        "label": "Short label",
+        "placeholder": "Europe/Lisbon",
+        "add": "Add",
+        "addLabel": "Add a time zone",
+        "invalid": "Unknown or already listed time zone. Use an IANA name such as America/Mexico_City.",
+        "full": "Remove a time zone to add another.",
+        "up": "Move {{name}} up",
+        "down": "Move {{name}} down",
+        "remove": "Remove {{name}}"
       }
     },
     "palette": {

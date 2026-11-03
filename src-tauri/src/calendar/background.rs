@@ -19,14 +19,21 @@ pub(super) fn stale(synced_at: Option<&str>, now: DateTime<Utc>) -> bool {
         .is_none_or(|at| now - at.with_timezone(&Utc) > Duration::minutes(STALE_MINUTES))
 }
 
-/// Refreshes every 15 minutes; a failure waits for the next turn.
+/// Refreshes every 15 minutes; a failure waits for the next turn. Each
+/// refresh, and the cached agenda once at startup, reconcile the sessions
+/// (spec 0119 P1).
 pub fn spawn(app: tauri::AppHandle) {
     tauri::async_runtime::spawn(async move {
+        let cached = calendar_status(app.clone()).unwrap_or_default();
+        crate::library::reconcile_agenda(&app, &cached.events).await;
         tokio::time::sleep(FIRST).await;
         loop {
             if connected(&app) {
                 match calendar_sync(app.clone()).await {
-                    Ok(_) => tracing::debug!("calendar refreshed"),
+                    Ok(snapshot) => {
+                        tracing::debug!("calendar refreshed");
+                        crate::library::reconcile_agenda(&app, &snapshot.events).await;
+                    }
                     Err(code) => tracing::info!(code, "calendar refresh failed"),
                 }
             }
