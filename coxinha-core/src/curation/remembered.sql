@@ -1,0 +1,2 @@
+CREATE TABLE voice_enrollment(assignment_id TEXT NOT NULL REFERENCES assignment(id), assignment_revision INTEGER NOT NULL, state TEXT NOT NULL CHECK(state IN ('enrolled','failed')), samples INTEGER NOT NULL DEFAULT 0, error TEXT, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY(assignment_id,assignment_revision));
+CREATE TABLE voice_memory_off(person_id TEXT PRIMARY KEY REFERENCES person(id), human_origin TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);

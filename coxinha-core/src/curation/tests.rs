@@ -7,6 +7,7 @@ use crate::{
 mod comparison;
 mod enrollment;
 mod inventory;
+mod remembered;
 
 fn result() -> ProcessingResult {
     ProcessingResult {

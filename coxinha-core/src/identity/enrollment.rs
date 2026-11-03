@@ -1,7 +1,27 @@
 use super::*;
-pub(crate) struct VerifiedEnrollmentSource {
+pub struct VerifiedEnrollmentSource {
     pub(crate) manifest: crate::capture::CaptureManifest,
-    root: std::path::PathBuf,
+    pub(crate) root: std::path::PathBuf,
+}
+/// Hashes and decodes the raw tracks; slow, so callers may run it off the
+/// thread that owns the store (spec 0120 P1).
+pub fn verify_enrollment_source_at(
+    root: &std::path::Path,
+    meeting: &str,
+) -> Result<VerifiedEnrollmentSource> {
+    uuid::Uuid::parse_str(meeting)?;
+    let manifest: crate::capture::CaptureManifest = serde_json::from_reader(
+        std::fs::File::open(root.join("raw").join(meeting).join("manifest.json"))?,
+    )?;
+    ensure!(
+        manifest.meeting == meeting,
+        "sample source meeting mismatch"
+    );
+    manifest.verified_tracks(root)?;
+    Ok(VerifiedEnrollmentSource {
+        manifest,
+        root: root.to_path_buf(),
+    })
 }
 impl Store {
     pub fn enroll(
@@ -19,19 +39,7 @@ impl Store {
         &self,
         meeting: &str,
     ) -> Result<VerifiedEnrollmentSource> {
-        uuid::Uuid::parse_str(meeting)?;
-        let manifest: crate::capture::CaptureManifest = serde_json::from_reader(
-            std::fs::File::open(self.root.join("raw").join(meeting).join("manifest.json"))?,
-        )?;
-        ensure!(
-            manifest.meeting == meeting,
-            "sample source meeting mismatch"
-        );
-        manifest.verified_tracks(&self.root)?;
-        Ok(VerifiedEnrollmentSource {
-            manifest,
-            root: self.root.clone(),
-        })
+        verify_enrollment_source_at(&self.root, meeting)
     }
     pub(crate) fn recheck_enrollment_source(
         &self,

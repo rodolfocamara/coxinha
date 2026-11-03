@@ -6,10 +6,14 @@ use std::{collections::BTreeMap, path::PathBuf};
 mod alignment;
 mod control;
 pub use control::{ProcessingCancelled, ProcessingControl};
+mod levels;
+pub use levels::SpeakerLevel;
 mod persistence;
+mod report;
+mod speakers;
 mod publication;
 pub use alignment::attribute_segments;
-pub use persistence::{latest_report, report_for_job, AssignmentView, ProcessingReport};
+pub use report::{latest_report, report_for_job, AssignmentView, ProcessingReport, VoiceState};
 mod text;
 pub use text::{named_lines, named_transcript, NamedLine};
 #[derive(Clone, Debug, Serialize, Deserialize)]

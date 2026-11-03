@@ -18,7 +18,9 @@ pub use errors::CurationError;
 pub use paging::InventoryPager;
 mod comparison;
 mod inventory;
+mod remembered;
 mod selected;
+pub use remembered::{Remembered, MIN_SAMPLE_MS, PER_CONFIRMATION};
 pub use comparison::PreparedComparison;
 pub use selected::SelectedEnrollment;
 

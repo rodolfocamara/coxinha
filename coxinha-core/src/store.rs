@@ -19,7 +19,7 @@ impl DatabaseKind {
     fn maximum_version(self) -> u32 {
         match self {
             Self::Meetings => 6,
-            Self::Profiles => 4,
+            Self::Profiles => 5,
         }
     }
     fn validate_version(self, db: &Connection) -> Result<u32> {
@@ -102,6 +102,12 @@ fn migrate(path: &Path, schema: &str, kind: DatabaseKind) -> Result<Connection> 
         let tx = db.transaction()?;
         tx.execute_batch(include_str!("processing/publication.sql"))?;
         tx.pragma_update(None, "user_version", 4)?;
+        tx.commit()?;
+    }
+    if matches!(kind, DatabaseKind::Profiles) && version < 5 {
+        let tx = db.transaction()?;
+        tx.execute_batch(include_str!("curation/remembered.sql"))?;
+        tx.pragma_update(None, "user_version", 5)?;
         tx.commit()?;
     }
     Ok(db)

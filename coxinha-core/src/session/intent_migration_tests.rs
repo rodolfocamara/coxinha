@@ -48,7 +48,7 @@ fn captured_v4_upgrade_preserves_sessions_jobs_captures_edits_profiles_and_raw()
     assert_eq!(
         s.profiles
             .pragma_query_value(None, "user_version", |r| r.get::<_, u32>(0))?,
-        4
+        5
     );
     assert_eq!(snapshot(&public)?, before);
     assert_eq!(super::migration_tests::old_snapshot(&private)?, profiles);
