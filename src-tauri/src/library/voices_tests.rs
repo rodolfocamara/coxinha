@@ -125,7 +125,10 @@ async fn confirmations_from_before_a_restart_are_remembered_once() -> anyhow::Re
     let library = Library::open(root.clone(), None)?;
     let deadline = Instant::now() + std::time::Duration::from_secs(20);
     loop {
-        let status = library.ask(Action::Status).await.map_err(anyhow::Error::msg)?;
+        let status = library
+            .ask(Action::Status)
+            .await
+            .map_err(anyhow::Error::msg)?;
         if status["voices"]["generation"].as_u64() >= Some(1) {
             break;
         }

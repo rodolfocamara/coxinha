@@ -20,8 +20,8 @@ mod comparison;
 mod inventory;
 mod remembered;
 mod selected;
-pub use remembered::{Remembered, MIN_SAMPLE_MS, PER_CONFIRMATION};
 pub use comparison::PreparedComparison;
+pub use remembered::{Remembered, MIN_SAMPLE_MS, PER_CONFIRMATION};
 pub use selected::SelectedEnrollment;
 
 const MAX_REPORT_TURNS: usize = 4096;

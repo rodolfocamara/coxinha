@@ -10,9 +10,9 @@ pub fn verify_enrollment_source_at(
     meeting: &str,
 ) -> Result<VerifiedEnrollmentSource> {
     uuid::Uuid::parse_str(meeting)?;
-    let manifest: crate::capture::CaptureManifest = serde_json::from_reader(
-        std::fs::File::open(root.join("raw").join(meeting).join("manifest.json"))?,
-    )?;
+    let manifest: crate::capture::CaptureManifest = serde_json::from_reader(std::fs::File::open(
+        root.join("raw").join(meeting).join("manifest.json"),
+    )?)?;
     ensure!(
         manifest.meeting == meeting,
         "sample source meeting mismatch"

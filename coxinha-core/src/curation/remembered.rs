@@ -159,7 +159,7 @@ impl Store {
             )?)?)
         })();
         let unchanged = current
-            .and_then(|m| Ok(crate::processing::hash_json(&m)?))
+            .and_then(|m| crate::processing::hash_json(&m))
             .is_ok_and(|h| crate::processing::hash_json(&source.manifest).is_ok_and(|s| s == h));
         if !unchanged {
             drop(tx);

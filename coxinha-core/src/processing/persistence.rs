@@ -1,7 +1,7 @@
 use super::*;
+use crate::identity::SampleProvenance;
 use crate::store::Store;
 use anyhow::ensure;
-use crate::identity::SampleProvenance;
 use rusqlite::params;
 impl Store {
     pub fn list_people(&self) -> Result<Vec<serde_json::Value>> {

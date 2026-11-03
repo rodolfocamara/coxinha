@@ -22,7 +22,9 @@ pub fn level_windows(turns: &[(u64, u64)]) -> Vec<(u64, u64)> {
     sorted.sort();
     let n = sorted.len();
     let picked: Vec<_> = if n > LEVEL_TURNS {
-        (0..LEVEL_TURNS).map(|i| sorted[i * n / LEVEL_TURNS]).collect()
+        (0..LEVEL_TURNS)
+            .map(|i| sorted[i * n / LEVEL_TURNS])
+            .collect()
     } else {
         sorted
     };

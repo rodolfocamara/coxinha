@@ -6,7 +6,10 @@ fn windows_spread_over_the_meeting_and_stay_inside_each_turn() {
     let windows = level_windows(&many);
     assert_eq!(windows.len(), LEVEL_TURNS);
     assert_eq!(windows[0], (2_000, 4_000));
-    assert!(windows.last().unwrap().0 > 900_000, "late turns are sampled too");
+    assert!(
+        windows.last().unwrap().0 > 900_000,
+        "late turns are sampled too"
+    );
     assert_eq!(level_windows(&[(1_000, 1_400)]), vec![(1_000, 1_400)]);
     assert!(level_windows(&[(5, 5)]).is_empty());
 }

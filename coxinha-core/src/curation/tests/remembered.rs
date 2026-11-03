@@ -30,7 +30,14 @@ fn library() -> Result<Library> {
     }
     r.finish(&store, false)?;
     let mut turns: Vec<_> = (0..20u64)
-        .map(|i| turn(&format!("t{i:02}"), "speaker-0", i * 1400, i * 1400 + 1000 + (i % 4) * 100))
+        .map(|i| {
+            turn(
+                &format!("t{i:02}"),
+                "speaker-0",
+                i * 1400,
+                i * 1400 + 1000 + (i % 4) * 100,
+            )
+        })
         .collect();
     turns.push(turn("short", "speaker-0", 28_100, 28_600));
     turns.push(turn("overlapped", "speaker-0", 28_700, 29_900));
@@ -116,7 +123,9 @@ fn remembers_the_longest_eligible_turns_once() -> Result<()> {
     assert!(!ids.contains("short") && !ids.contains("overlapped"));
     // Fifteen 1.1–1.3 s turns, then the earliest of the five 1.0 s turns.
     assert!(ids.contains("t00"));
-    assert!(["t04", "t08", "t12", "t16"].iter().all(|id| !ids.contains(*id)));
+    assert!(["t04", "t08", "t12", "t16"]
+        .iter()
+        .all(|id| !ids.contains(*id)));
     assert_eq!(rows[0]["confirmation"]["assignmentId"], json!(assignment));
     assert_eq!(
         rows[0]["confirmation"]["humanOrigin"],
@@ -151,9 +160,10 @@ fn existing_samples_are_kept_and_failures_are_recorded_and_retryable() -> Result
 
     let mut l = library()?;
     let assignment = l.confirm(&l.person.clone())?;
-    let failed = l
-        .store
-        .remember_voices(&l.meeting, Err(anyhow::anyhow!("raw checksum or length mismatch")))?;
+    let failed = l.store.remember_voices(
+        &l.meeting,
+        Err(anyhow::anyhow!("raw checksum or length mismatch")),
+    )?;
     assert_eq!(failed[0].state, "failed");
     let voice = l.voice()?.unwrap();
     assert_eq!(voice.state, "failed");
@@ -180,14 +190,16 @@ fn existing_samples_are_kept_and_failures_are_recorded_and_retryable() -> Result
 #[test]
 fn a_speaker_without_eligible_turns_fails_visibly() -> Result<()> {
     let mut l = library()?;
-    l.store.profiles.execute(
-        "DELETE FROM processed_candidate WHERE turn_id<>'short'",
-        [],
-    )?;
+    l.store
+        .profiles
+        .execute("DELETE FROM processed_candidate WHERE turn_id<>'short'", [])?;
     l.confirm(&l.person.clone())?;
     let outcome = l.remember()?;
     assert_eq!(outcome[0].state, "failed");
-    assert_eq!(outcome[0].error.as_deref(), Some("no eligible voice samples"));
+    assert_eq!(
+        outcome[0].error.as_deref(),
+        Some("no eligible voice samples")
+    );
     assert_eq!(l.active()?, 0);
     Ok(())
 }
@@ -219,7 +231,10 @@ fn forgetting_a_voice_stops_remembering_it() -> Result<()> {
     assert_eq!(l.store.forget_voice(&l.person, "asked to forget")?, 16);
     assert_eq!(l.active()?, 0);
     let memory = l.store.voice_memory(&l.person)?;
-    assert_eq!((memory["off"].clone(), memory["pending"].clone()), (json!(true), json!(0)));
+    assert_eq!(
+        (memory["off"].clone(), memory["pending"].clone()),
+        (json!(true), json!(0))
+    );
     // A new decision for the same person is not remembered while off.
     let other = l.store.create_person("Other", &[], "test consent")?;
     l.confirm(&other)?;
@@ -244,7 +259,10 @@ fn a_rejected_speaker_is_never_remembered() -> Result<()> {
     )?;
     let report = l.store.processing_report_by_job(&l.job)?;
     let a = &report.assignments[0];
-    assert_eq!((a.state.as_str(), a.person_id.as_ref(), a.voice.as_ref()), ("rejected", None, None));
+    assert_eq!(
+        (a.state.as_str(), a.person_id.as_ref(), a.voice.as_ref()),
+        ("rejected", None, None)
+    );
     assert_eq!(l.store.next_voice_meeting(&BTreeSet::new())?, None);
     assert!(l.remember()?.is_empty());
     assert!(l

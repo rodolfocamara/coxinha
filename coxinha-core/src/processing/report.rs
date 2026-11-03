@@ -63,7 +63,11 @@ pub fn report_for_job(
         [],
         |r| r.get(0),
     )?;
-    let voice = if migrated { VOICE_COLUMNS } else { "NULL,NULL,0" };
+    let voice = if migrated {
+        VOICE_COLUMNS
+    } else {
+        "NULL,NULL,0"
+    };
     let mut q=profiles.prepare(&format!("SELECT a.id,a.speaker,a.person_id,a.state,p.name,{voice} FROM assignment a LEFT JOIN person p ON p.id=a.person_id WHERE a.meeting_id=?1 AND a.speaker LIKE ?2"))?;
     let prefix = format!("{job}:");
     let assignments = q
@@ -102,4 +106,3 @@ pub fn report_for_job(
         corrections,
     })
 }
-

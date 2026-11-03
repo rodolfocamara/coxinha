@@ -124,7 +124,10 @@ fn private_curation_actions_preserve_old_confirm_and_revoke_commands() -> anyhow
     );
     worker.execute(confirm())?;
     assert_eq!(
-        worker.store.processing_report_by_job(&prepared.job)?.assignments[0]
+        worker
+            .store
+            .processing_report_by_job(&prepared.job)?
+            .assignments[0]
             .voice
             .as_ref()
             .map(|v| (v.state.as_str(), v.samples)),
@@ -142,8 +145,7 @@ fn private_curation_actions_preserve_old_confirm_and_revoke_commands() -> anyhow
         "legacy revoke without track".into(),
     ))?;
     assert_eq!(
-        worker.execute(Action::Curation(CurationAction::Profiles))?["profiles"][0]
-            ["revokedCount"],
+        worker.execute(Action::Curation(CurationAction::Profiles))?["profiles"][0]["revokedCount"],
         1
     );
     Ok(())

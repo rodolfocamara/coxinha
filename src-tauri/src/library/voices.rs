@@ -8,7 +8,10 @@ use std::sync::mpsc::TryRecvError;
 
 const SCAN_EVERY: std::time::Duration = std::time::Duration::from_secs(10);
 
-type Verification = (String, mpsc::Receiver<anyhow::Result<VerifiedEnrollmentSource>>);
+type Verification = (
+    String,
+    mpsc::Receiver<anyhow::Result<VerifiedEnrollmentSource>>,
+);
 
 #[derive(Default)]
 pub(super) struct Voices {

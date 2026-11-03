@@ -364,9 +364,9 @@ mod summaries;
 mod voices;
 mod watch;
 pub use commands::*;
-pub use voices::*;
 pub use sessions::*;
 pub use summaries::{MeetingSummary, StoredSummaryInput, SummarySource};
+pub use voices::*;
 pub use watch::Notifier;
 
 #[cfg(test)]
