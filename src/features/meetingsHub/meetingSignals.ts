@@ -41,7 +41,8 @@ export type SignalItem =
         | 'memory';
     }
   | { id: 'speakers'; named: number; unnamed: number }
-  | { id: 'followUps'; linked: number; actions: number };
+  | { id: 'followUps'; linked: number; actions: number }
+  | { id: 'files'; count: number };
 
 /** A block that is not a meeting to prepare for never asks for preparation. */
 export function lacksPreparation(

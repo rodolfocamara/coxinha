@@ -1,103 +1,162 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ExternalLink, Video } from 'lucide-react';
+import {
+  Circle,
+  CircleCheck,
+  CircleHelp,
+  CircleX,
+  ExternalLink,
+  MapPin,
+  UserRound,
+  Video,
+} from 'lucide-react';
 import { Button } from '../../components/ui';
 import { calendar, type CalendarEvent } from '../agenda/calendar';
-import { attendeeGroups, myResponse } from './eventDetails';
+import { myResponse, type MyResponse } from './eventDetails';
+import { Disclosure } from './Disclosure';
+import { invitationText, shownLocation } from './invitationText';
 import './signals.css';
+import './meetingDetail.css';
 
-const OPEN_WHEN_AT_MOST = 8;
+const RESPONSE_ICONS: Record<MyResponse, ReactNode> = {
+  organizer: <UserRound size={14} aria-hidden="true" />,
+  accepted: <CircleCheck size={14} aria-hidden="true" />,
+  tentative: <CircleHelp size={14} aria-hidden="true" />,
+  declined: <CircleX size={14} aria-hidden="true" />,
+  none: <Circle size={14} aria-hidden="true" />,
+};
+
+export const isJoinable = (event: CalendarEvent | null, ended: boolean) =>
+  !!event?.joinUrl && !ended;
 
 /**
- * What Outlook knows about an event (spec 0124 P2). Everything here comes from
- * other people: names and the preview are text, and links open by event id.
+ * The event's join and Outlook links (spec 0124 P2): they open by event id only.
+ * Other actions of the head go between them, so the row reads main action first.
  */
-export function EventDetails({
+export function EventLinks({
   event,
   ended,
-  headingClassName = 'ch-peek-h',
+  primary,
+  children,
 }: {
-  event: CalendarEvent;
+  event: CalendarEvent | null;
   ended: boolean;
-  headingClassName?: string;
+  primary: boolean;
+  children?: ReactNode;
 }) {
   const { t } = useTranslation();
-  const k = (key: string, options?: Record<string, unknown>) =>
-    t(`meetingsHub.eventDetails.${key}`, options);
+  const k = (key: string) => t(`meetingsHub.eventDetails.${key}`);
   const [failed, setFailed] = useState(false);
-  const response = myResponse(event);
-  const invitees = attendeeGroups(event);
+  if (!event && !children) return null;
+  const joinable = isJoinable(event, ended);
   const open = (link: 'join' | 'outlook') => {
+    if (!event) return;
     setFailed(false);
     calendar.openLink(event.id, link).catch(() => setFailed(true));
   };
-  const flat = !invitees && event.attendees.length > 0;
   return (
-    <section className="ch-peek-sec" aria-label={k('label')}>
-      {response && <p className="ch-event-line">{k(`mine.${response}`)}</p>}
-      {event.location && (
-        <p className="ch-event-line">{k('location', { location: event.location })}</p>
-      )}
-      {(invitees || flat) && (
-        <h3 className={headingClassName}>
-          {invitees
-            ? k('inviteesCount', {
-                count: invitees.total,
-                required: invitees.required,
-                optional: invitees.optional,
-              })
-            : t('meetingsHub.home.invitees')}
-        </h3>
-      )}
-      {flat && (
-        <p className="ch-event-line">
-          {event.attendees
-            .slice(0, 6)
-            .map((p) => p.name || p.email)
-            .join(', ')}
-          {event.attendees.length > 6 ? ` +${event.attendees.length - 6}` : ''}
-        </p>
-      )}
-      {invitees?.groups.map((group) => (
-        <details
-          key={group.id}
-          className="ch-event-group"
-          open={group.people.length <= OPEN_WHEN_AT_MOST}
-        >
-          <summary>{k(`group.${group.id}`, { count: group.people.length })}</summary>
-          <p className="ch-event-line">
-            {group.people
-              .map((p) => (p.kind === 'optional' ? k('optionalPerson', { name: p.name }) : p.name))
-              .join(', ')}
-          </p>
-        </details>
-      ))}
-      {event.bodyPreview && <p className="ch-event-preview">{event.bodyPreview}</p>}
-      <div className="ch-event-actions">
-        {event.joinUrl && !ended && (
+    <>
+      <div className="ch-peek-primary">
+        {joinable && (
           <Button
-            variant="secondary"
-            size="sm"
-            icon={<Video size={14} aria-hidden="true" />}
+            variant={primary ? 'primary' : 'secondary'}
+            icon={<Video size={15} aria-hidden="true" />}
             onClick={() => open('join')}
           >
             {k('join')}
           </Button>
         )}
-        <Button
-          variant="ghost"
-          size="sm"
-          icon={<ExternalLink size={14} aria-hidden="true" />}
-          onClick={() => open('outlook')}
-        >
-          {k('openInOutlook')}
-        </Button>
+        {children}
+        {event &&
+          (joinable || children ? (
+            <Button
+              variant="ghost"
+              iconOnly
+              icon={<ExternalLink size={15} aria-hidden="true" />}
+              aria-label={k('openInOutlook')}
+              title={k('openInOutlook')}
+              onClick={() => open('outlook')}
+            />
+          ) : (
+            <Button
+              variant="ghost"
+              size="sm"
+              icon={<ExternalLink size={14} aria-hidden="true" />}
+              onClick={() => open('outlook')}
+            >
+              {k('openInOutlook')}
+            </Button>
+          ))}
       </div>
       {failed && (
         <p className="ch-peek-error" role="alert">
           {k('openFailed')}
         </p>
       )}
+    </>
+  );
+}
+
+/** My response, the place and who organizes it. Everything here is other people's text. */
+export function EventFacts({ event, joinable }: { event: CalendarEvent; joinable: boolean }) {
+  const { t } = useTranslation();
+  const k = (key: string, options?: Record<string, unknown>) =>
+    t(`meetingsHub.eventDetails.${key}`, options);
+  const response = myResponse(event);
+  const location = shownLocation(event.location, joinable);
+  const organizer = response !== 'organizer' ? event.organizer?.name : null;
+  if (!response && !location && !organizer) return null;
+  return (
+    <ul className="ch-facts" aria-label={k('label')}>
+      {response && (
+        <li data-response={response}>
+          {RESPONSE_ICONS[response]}
+          <span>{k(`mine.${response}`)}</span>
+        </li>
+      )}
+      {location && (
+        <li>
+          <MapPin size={14} aria-hidden="true" />
+          <span>
+            <span className="sr-only">{t('meetingDetail.facts.location')} </span>
+            {location}
+          </span>
+        </li>
+      )}
+      {organizer && (
+        <li>
+          <UserRound size={14} aria-hidden="true" />
+          <span>{t('meetingDetail.facts.organizer', { name: organizer })}</span>
+        </li>
+      )}
+    </ul>
+  );
+}
+
+/** What a person wrote in the invitation, never Teams' block (spec 0126 P4). */
+export function EventInvitation({
+  event,
+  collapsed = false,
+  headingClassName = 'ch-peek-h',
+}: {
+  event: CalendarEvent;
+  collapsed?: boolean;
+  headingClassName?: string;
+}) {
+  const { t } = useTranslation();
+  const text = invitationText(event.bodyPreview);
+  if (!text) return null;
+  const preview = <p className="ch-event-preview">{text}</p>;
+  if (collapsed)
+    return (
+      <Disclosure label={t('meetingDetail.invitation')} defaultOpen={false}>
+        {preview}
+      </Disclosure>
+    );
+  return (
+    <section className="ch-peek-sec">
+      <h3 className={headingClassName}>{t('meetingDetail.invitation')}</h3>
+      {preview}
     </section>
   );
 }

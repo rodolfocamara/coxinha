@@ -1,25 +1,27 @@
 import { useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { ClipboardList, Mic, X } from 'lucide-react';
+import { ClipboardList, Mic } from 'lucide-react';
 import { Button } from '../../components/ui';
 import { library, type CalendarMatch } from '../meetings/library';
 import type { CalendarEvent } from '../agenda/calendar';
 import { useCaptureStore } from '../capture/captureStore';
-import { colourVar, useEventColour } from '../agenda/categories';
-import { dayKey, localDay, nextDay } from '../sessions/sessionDates';
-import { attendeesOf, type MeetingRow } from './meetingRows';
-import { EventDetails } from './EventDetails';
-import { attendeeGroups } from './eventDetails';
+import { useEventColour } from '../agenda/categories';
+import type { MeetingRow } from './meetingRows';
+import { EventFacts, EventInvitation, EventLinks, isJoinable } from './EventDetails';
+import { eventLook } from './eventDetails';
+import { InviteeList } from './InviteeList';
+import { panelState } from './meetingDetail';
 import { PeekMeetingState } from './PeekMeetingState';
 import { sessionIdOf, signalItems, useSessionSignals } from './meetingSignals';
-import { SignalIcons } from './SignalIcons';
-import { durationLabel, whenLabel } from './format';
 import type { DetailPanel } from './meetingsSearch';
 import { useMeetingActions } from './useMeetingActions';
-import { PeekFilesAndLinks, PeekSummary, PeekTranscript, WhoCame } from './PeekSections';
+import { useMeetingOutcome } from './useMeetingOutcome';
+import { PeekOutcome, PeekPreparation, WhoCame } from './PeekSections';
 import { PeekCalendarMatch } from './PeekCalendarMatch';
+import { PeekHead } from './PeekHead';
 import './calendarPeek.css';
+import './meetingDetail.css';
 
 type Props = {
   row: MeetingRow;
@@ -36,9 +38,8 @@ type Props = {
 };
 
 /**
- * Outlook's preview card as a side panel (spec 0107): what a meeting has —
- * summary or notes, a transcript excerpt, files and activities — and the next
- * action for its time. Escape closes it.
+ * A meeting as a reading panel (spec 0126): before it, how to join and who is
+ * coming; after it, what came out. Escape closes it.
  */
 export function MeetingPeek({
   row,
@@ -52,17 +53,18 @@ export function MeetingPeek({
   onMatchResolved = () => undefined,
   onMatchFocus,
 }: Props) {
-  const { t, i18n } = useTranslation();
-  const locale = i18n.resolvedLanguage ?? i18n.language;
-  const k = (key: string, options?: Record<string, unknown>) =>
-    t(`meetingsHub.home.${key}`, options);
+  const { t } = useTranslation();
+  const k = (key: string) => t(`meetingsHub.home.${key}`);
   const heading = useRef<HTMLHeadingElement>(null);
   const session = row.kind === 'session' ? row.session : null;
   const event = row.kind === 'recording' ? null : row.event;
   const meetingId = session?.meeting_id ?? (row.kind === 'recording' ? row.recording.id : null);
   const colour = useEventColour(event);
   const capture = useCaptureStore((s) => s.status);
-  const signals = signalItems(row, useSessionSignals(sessionIdOf(row)), now);
+  const outcome = useMeetingOutcome(meetingId, session, row.start);
+  const items = signalItems(row, useSessionSignals(sessionIdOf(row)), now);
+  const count = outcome.files.length + outcome.references.length;
+  const signals = count ? [...items, { id: 'files' as const, count }] : items;
   const detail = useQuery({
     queryKey: ['peek-detail', meetingId],
     queryFn: () => library.detail(meetingId!),
@@ -95,141 +97,118 @@ export function MeetingPeek({
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
-  const title = row.title || t('meetingsHub.untitled');
-  // Rooms are invitees to Outlook, not people, once responses say which they are.
-  const peopleCount = (event && attendeeGroups(event)?.total) ?? attendeesOf(row).length;
   const durationMs = detail.data?.storage?.durationMs ?? null;
+  const state = panelState(row, now, !!meetingId);
+  const past = state === 'past';
   const ended = !!row.end && row.end <= now;
-  const started = !!row.start && row.start <= now;
-  const happening = started && !ended;
-  const past = ended || (!row.end && started && !!meetingId);
+  const joinable = isJoinable(event, ended);
   const canRecord =
-    happening &&
+    state === 'now' &&
     !live &&
     library.available() &&
     row.kind !== 'recording' &&
     !capture?.active &&
     !capture?.processing &&
     !meetingId;
+  // A meeting the owner said no to asks nothing of them: its actions stay, unstressed.
+  const quiet = !!event && (event.cancelled || eventLook(event) === 'declined');
+  const leads = quiet ? null : joinable ? 'join' : canRecord ? 'record' : 'main';
+  const mainInHead = past || (!joinable && !canRecord);
+  const main =
+    past || row.kind !== 'event' ? (
+      <Button
+        variant={leads === 'main' ? 'primary' : 'secondary'}
+        size={mainInHead ? 'md' : 'sm'}
+        onClick={() => onOpen(row)}
+      >
+        {k(past ? 'openMeeting' : 'prepare')}
+      </Button>
+    ) : (
+      <Button
+        variant={leads === 'main' ? 'primary' : 'secondary'}
+        size={mainInHead ? 'md' : 'sm'}
+        icon={<ClipboardList size={14} aria-hidden="true" />}
+        disabled={actions.busy}
+        onClick={actions.prepareNotes}
+      >
+        {k('prepare')}
+      </Button>
+    );
 
   return (
     <aside className="ch-peek" aria-labelledby="ch-peek-title">
-      <header className="ch-peek-head">
-        <span className="ch-peek-when">
-          {[whenLabel(row.start, row.end, now, locale, t), relative(row.start, now, locale)]
-            .filter(Boolean)
-            .join(' · ')}
-        </span>
-        <Button
-          variant="ghost"
-          size="xs"
-          iconOnly
-          icon={<X size={14} aria-hidden="true" />}
-          aria-label={k('closePeek')}
-          onClick={onClose}
-        />
-      </header>
-      <h2 id="ch-peek-title" ref={heading} tabIndex={-1} className="ch-peek-title">
-        {title}
-      </h2>
-      <div className="ch-peek-chips">
-        {colour && (
-          <span className="ch-peek-chip" data-static="">
-            <i
-              className="ch-cat-swatch"
-              aria-hidden="true"
-              style={{ background: colourVar(colour.preset) }}
+      <PeekHead
+        row={row}
+        title={row.title || t('meetingsHub.untitled')}
+        now={now}
+        state={state}
+        event={event}
+        colour={colour}
+        durationMs={durationMs}
+        headingRef={heading}
+        onClose={onClose}
+      >
+        <EventLinks event={event} ended={ended} primary={leads === 'join'}>
+          {canRecord && (
+            <Button
+              variant={leads === 'record' ? 'primary' : 'secondary'}
+              icon={<Mic size={14} aria-hidden="true" />}
+              disabled={actions.busy}
+              onClick={actions.record}
+            >
+              {k('record')}
+            </Button>
+          )}
+          {mainInHead && main}
+        </EventLinks>
+        {actions.error && (
+          <p className="ch-peek-error" role="alert">
+            {actions.error}
+          </p>
+        )}
+      </PeekHead>
+      <div className="ch-peek-body">
+        {past ? (
+          <>
+            <PeekOutcome
+              outcome={outcome}
+              signals={signals}
+              onFull={() => onOpen(row, 'transcript')}
             />
-            {colour.name}
-          </span>
-        )}
-        {peopleCount > 0 && (
-          <span className="ch-peek-chip" data-static="">
-            {t('meetingsHub.outlookPeople', { count: peopleCount })}
-          </span>
-        )}
-        {durationMs ? (
-          <span className="ch-peek-chip" data-static="">
-            {k('recorded', { duration: durationLabel(durationMs, t) })}
-          </span>
-        ) : null}
-        {event?.cancelled && (
-          <span className="ch-peek-chip" data-static="">
-            {t('meetingsHub.cancelled')}
-          </span>
+            {session && meetingId && !event && row.start && (
+              <PeekCalendarMatch
+                key={session.id}
+                sessionId={session.id}
+                start={row.start}
+                durationMs={durationMs}
+                events={events}
+                proposal={matches.find((m) => m.sessionId === session.id) ?? null}
+                onResolved={onMatchResolved}
+                onFocus={onMatchFocus}
+              />
+            )}
+            <WhoCame meetingId={meetingId} />
+            {event && <InviteeList event={event} past confirmed={outcome.confirmed} />}
+            {session && <PeekMeetingState sessionId={session.id} />}
+            {event && <EventFacts event={event} joinable={joinable} />}
+            {event && <EventInvitation event={event} collapsed />}
+          </>
+        ) : (
+          <>
+            {event && <EventFacts event={event} joinable={joinable} />}
+            {event && <InviteeList event={event} past={false} />}
+            {event && !event.attendees.length && (
+              <p className="ch-peek-note">{t('meetingDetail.noInvitees')}</p>
+            )}
+            <PeekPreparation
+              outcome={outcome}
+              signals={signals}
+              prepare={mainInHead ? undefined : main}
+            />
+            {event && <EventInvitation event={event} />}
+          </>
         )}
       </div>
-      <SignalIcons items={signals} labelled />
-      {event && <EventDetails key={event.id} event={event} ended={ended} />}
-      <WhoCame meetingId={meetingId} />
-      {session && meetingId && !event && row.start && past && (
-        <PeekCalendarMatch
-          key={session.id}
-          sessionId={session.id}
-          start={row.start}
-          durationMs={durationMs}
-          events={events}
-          proposal={matches.find((m) => m.sessionId === session.id) ?? null}
-          onResolved={onMatchResolved}
-          onFocus={onMatchFocus}
-        />
-      )}
-      <PeekSummary meetingId={meetingId} session={session} />
-      <PeekTranscript meetingId={meetingId} onFull={() => onOpen(row, 'transcript')} />
-      {session && <PeekFilesAndLinks session={session} start={row.start} />}
-      {session && past && <PeekMeetingState sessionId={session.id} />}
-      {actions.error && (
-        <p className="ch-peek-error" role="alert">
-          {actions.error}
-        </p>
-      )}
-      <footer className="ch-peek-actions">
-        {canRecord && (
-          <Button
-            variant="primary"
-            size="sm"
-            icon={<Mic size={14} aria-hidden="true" />}
-            disabled={actions.busy}
-            onClick={actions.record}
-          >
-            {k('record')}
-          </Button>
-        )}
-        {!past && row.kind === 'event' ? (
-          <Button
-            variant={canRecord ? 'secondary' : 'primary'}
-            size="sm"
-            icon={<ClipboardList size={14} aria-hidden="true" />}
-            disabled={actions.busy}
-            onClick={actions.prepareNotes}
-          >
-            {k('prepare')}
-          </Button>
-        ) : (
-          <Button
-            variant={canRecord ? 'secondary' : 'primary'}
-            size="sm"
-            onClick={() => onOpen(row)}
-          >
-            {k(past ? 'openMeeting' : 'prepare')}
-          </Button>
-        )}
-      </footer>
     </aside>
   );
-}
-
-/** "ontem", "amanhã" for the neighbouring days; today is already in the date. */
-function relative(start: Date | null, now: Date, locale: string) {
-  if (!start) return null;
-  const today = localDay(now.getFullYear(), now.getMonth(), now.getDate());
-  const offset =
-    dayKey(start) === dayKey(nextDay(today, -1))
-      ? -1
-      : dayKey(start) === dayKey(nextDay(today))
-        ? 1
-        : 0;
-  return offset
-    ? new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(offset, 'day')
-    : null;
 }

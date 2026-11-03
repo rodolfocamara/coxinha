@@ -301,16 +301,12 @@
         "declined": "Sua resposta: recusada",
         "none": "Sua resposta: sem resposta"
       },
-      "location": "Local: {{location}}",
-      "inviteesCount_one": "Convidados: {{count}} ({{required}} obrigatório, {{optional}} opcional)",
-      "inviteesCount_other": "Convidados: {{count}} ({{required}} obrigatórios, {{optional}} opcionais)",
       "group": {
         "accepted": "Aceitaram ({{count}})",
         "tentative": "Provisório ({{count}})",
         "declined": "Recusaram ({{count}})",
         "noAnswer": "Sem resposta ({{count}})"
       },
-      "optionalPerson": "{{name}} (opcional)",
       "join": "Entrar no Teams",
       "openInOutlook": "Abrir no Outlook",
       "openFailed": "Não foi possível abrir o link.",

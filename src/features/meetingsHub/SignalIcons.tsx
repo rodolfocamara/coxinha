@@ -5,6 +5,7 @@ import {
   ClipboardCheck,
   ClipboardX,
   FileText,
+  Files,
   ListChecks,
   NotebookPen,
   Shapes,
@@ -27,6 +28,7 @@ const ICONS: Record<SignalItem['id'], LucideIcon> = {
   diagram: Shapes,
   memory: Brain,
   followUps: ListChecks,
+  files: Files,
 };
 
 export function signalLabel(item: SignalItem, t: TFunction) {
@@ -36,8 +38,25 @@ export function signalLabel(item: SignalItem, t: TFunction) {
       return t(key, { named: item.named, unnamed: item.unnamed });
     case 'followUps':
       return t(key, { linked: item.linked, actions: item.actions });
+    case 'files':
+      return t('meetingDetail.signals.files', { count: item.count });
     default:
       return t(key);
+  }
+}
+
+/** The panel's narrow list; the full wording of spec 0124 stays as its tooltip. */
+export function signalShortLabel(item: SignalItem, t: TFunction) {
+  switch (item.id) {
+    case 'speakers':
+      return t('meetingDetail.signals.speakers', {
+        count: item.named + item.unnamed,
+        named: item.named,
+      });
+    case 'followUps':
+      return t('meetingDetail.signals.followUps', { count: item.linked + item.actions });
+    default:
+      return signalLabel(item, t);
   }
 }
 
@@ -58,15 +77,20 @@ export function SignalIcons({
   const size = labelled ? 13 : 11;
   const parts = items.map((item) => {
     const Icon = ICONS[item.id];
-    return { id: item.id, Icon, label: signalLabel(item, t) };
+    return { id: item.id, Icon, label: signalLabel(item, t), short: signalShortLabel(item, t) };
   });
   if (labelled)
     return (
       <ul className="ch-signals" data-labelled="" aria-label={t('meetingsHub.signals.label')}>
-        {parts.map(({ id, Icon, label }) => (
-          <li key={id} className="ch-signal" data-signal={id}>
+        {parts.map(({ id, Icon, label, short }) => (
+          <li
+            key={id}
+            className="ch-signal"
+            data-signal={id}
+            title={label === short ? undefined : label}
+          >
             <Icon size={size} aria-hidden="true" />
-            {label}
+            {short}
           </li>
         ))}
       </ul>

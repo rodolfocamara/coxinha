@@ -153,7 +153,7 @@ export function ItemLinks(props: Side & { headingClassName?: string }) {
         {k('link')}
       </Button>
       {picking && (
-        <div className="mt-1 grid gap-1">
+        <div className="mt-1 grid grid-cols-[minmax(0,1fr)] gap-1">
           <label htmlFor={searchId} className="sr-only">
             {k('search')}
           </label>
@@ -169,7 +169,7 @@ export function ItemLinks(props: Side & { headingClassName?: string }) {
           {results.length === 0 ? (
             <p className="text-xs text-muted-foreground">{k('noResults')}</p>
           ) : (
-            <ul className="grid" aria-label={k('results')}>
+            <ul className="grid grid-cols-[minmax(0,1fr)]" aria-label={k('results')}>
               {results.map((c) => (
                 <li key={c.id}>
                   <button

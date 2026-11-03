@@ -163,8 +163,8 @@ it('peeks on click, closes on Escape, and opens the page on double click or Ente
   expect(await within(card).findByText('• Ship the beta')).toBeInTheDocument();
   expect(within(card).getByRole('heading', { name: 'Summary' })).toBeInTheDocument();
   expect(
-    await within(card).findByText('[01:05] Rita: we ship the beta on Friday')
-  ).toBeInTheDocument();
+    (await within(card).findByText(/we ship the beta on Friday/)).closest('p')
+  ).toHaveTextContent('Rita 01:05 we ship the beta on Friday');
   expect(document.activeElement).toBe(within(card).getByRole('heading', { level: 2 }));
 
   fireEvent.keyDown(window, { key: 'Escape' });

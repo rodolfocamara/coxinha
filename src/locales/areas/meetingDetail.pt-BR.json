@@ -1,0 +1,34 @@
+{
+  "meetingDetail": {
+    "underWay": "Em andamento, faltam {{left}}",
+    "noOutcome": "Esta reunião ainda não gerou nada: sem resumo, notas, transcrição ou arquivos.",
+    "noInvitees": "Sem convidados: este bloco está só na sua agenda.",
+    "preparation": "Preparação",
+    "invitation": "Convite",
+    "memory": "Memória",
+    "facts": {
+      "location": "Local:",
+      "organizer": "Organizada por {{name}}"
+    },
+    "people": {
+      "coming": "Quem vem",
+      "invited": "Quem foi convidado",
+      "counts_one": "{{count}} convidado: {{required}} obrigatório, {{optional}} opcional",
+      "counts_other": "{{count}} convidados: {{required}} obrigatórios, {{optional}} opcionais",
+      "organizer": "Organizador",
+      "required": "Obrigatório",
+      "optional": "Opcional",
+      "spoke": "Confirmado na gravação",
+      "more_one": "e mais {{count}}",
+      "more_other": "e mais {{count}}"
+    },
+    "signals": {
+      "speakers_one": "{{count}} falante, {{named}} com nome",
+      "speakers_other": "{{count}} falantes, {{named}} com nome",
+      "followUps_one": "{{count}} follow-up",
+      "followUps_other": "{{count}} follow-ups",
+      "files_one": "{{count}} arquivo",
+      "files_other": "{{count}} arquivos"
+    }
+  }
+}

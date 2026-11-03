@@ -7,6 +7,7 @@ import { render } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider } from '@tanstack/react-router';
 import { createAppRouter } from '../../router';
+import type { ItemFilesData } from '../items/items';
 import type { Session } from '../sessions/sessions';
 import type { CalendarEvent, CategoryAccess, OutlookCategory } from '../agenda/calendar';
 import { resetOutlookCategories } from '../agenda/categories';
@@ -30,6 +31,8 @@ import { resetCalendarHome } from './calendarHome';
 import { resetTimeZones } from './timeZones';
 
 export type Db = {
+  /** Spec 0126: what the meeting's folder holds. */
+  itemFiles?: ItemFilesData;
   sessions: Session[];
   events: CalendarEvent[];
   account: string | null;
@@ -257,7 +260,7 @@ export function backend(db: Db) {
         db.links.push({ session: String(args.session), note: String(args.note), createdAt: 'now' });
         return null;
       case 'items_list':
-        return { folder: null, files: [], references: [] };
+        return db.itemFiles ?? { folder: null, files: [], references: [] };
       case 'library_meeting_summary':
         return db.summaries[String(args.meetingId)] ?? null;
       case 'library_meeting_signals':
