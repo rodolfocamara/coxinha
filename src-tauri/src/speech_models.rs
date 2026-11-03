@@ -196,10 +196,13 @@ mod tests {
             (v3.clone(), Some(tagarela.clone()))
         );
         assert_eq!(
-            pair(&tagarela, &[tagarela.clone()]),
+            pair(&tagarela, std::slice::from_ref(&tagarela)),
             (tagarela.clone(), None)
         );
-        assert_eq!(pair(&ultra, &[ultra.clone()]), (ultra.clone(), None));
+        assert_eq!(
+            pair(&ultra, std::slice::from_ref(&ultra)),
+            (ultra.clone(), None)
+        );
         let other = dir.join("whisper.gguf");
         assert_eq!(pair(&other, &all), (other.clone(), None));
     }
