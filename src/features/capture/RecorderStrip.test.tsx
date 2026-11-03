@@ -105,12 +105,15 @@ it('detection and dismissal never start capture; dismissal survives remount', ()
   render(<RecorderStrip />);
   expect(screen.queryByText('Call in Microsoft Teams')).toBeNull();
   expect(createSession).not.toHaveBeenCalled();
-  expect(invoke).not.toHaveBeenCalled();
+  // Only the calendar cache is read, to suggest the meeting.
+  expect(vi.mocked(invoke).mock.calls.filter(([name]) => name !== 'calendar_status')).toEqual([]);
 });
 
 it('one click records a detected call with default devices, without navigating', async () => {
   acceptDetectionStatus(detection, false);
   render(<RecorderStrip />);
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Record' })).toBeEnabled());
+  expect(screen.getByTestId('record-target')).toHaveTextContent('Record without a meeting');
   fireEvent.click(screen.getByRole('button', { name: 'Record' }));
   await waitFor(() =>
     expect(invoke).toHaveBeenCalledWith('library_start_session', {
@@ -190,4 +193,49 @@ it('explains a failed start without devices', () => {
   useCaptureStore.setState({ failure: 'devicesMissing' });
   render(<RecorderStrip />);
   expect(screen.getByRole('alert')).toHaveTextContent('No microphone or computer audio found.');
+});
+
+it('records into the calendar meeting under way, and the arrow offers recording alone', async () => {
+  const now = Date.now();
+  const at = (minutes: number) => new Date(now + minutes * 60_000).toISOString();
+  const roadmap = {
+    id: 'e-roadmap',
+    title: 'Roadmap with Yehuda',
+    startsAt: at(-5),
+    endsAt: at(55),
+    cancelled: false,
+    allDay: false,
+    attendees: [{ name: 'Yehuda', email: 'y@example.com' }],
+  };
+  const lunch = {
+    ...roadmap,
+    id: 'e-lunch',
+    title: 'Lunch',
+    startsAt: at(10),
+    endsAt: at(70),
+    attendees: [],
+  };
+  vi.mocked(invoke).mockImplementation(async (command: string) => {
+    if (command === 'calendar_status')
+      return { account: 'me@example.com', syncedAt: null, events: [lunch, roadmap] };
+    return live();
+  });
+  acceptDetectionStatus(detection, false);
+  render(<RecorderStrip />);
+  await waitFor(() =>
+    expect(screen.getByTestId('record-target')).toHaveTextContent('Roadmap with Yehuda')
+  );
+  fireEvent.click(screen.getByRole('button', { name: 'Which meeting to record into' }));
+  const items = screen.getAllByRole('menuitemradio');
+  expect(items.map((i) => i.getAttribute('aria-checked'))).toEqual(['true', 'false', 'false']);
+  expect(items[0]).toHaveTextContent('Roadmap with Yehuda');
+  expect(items[1]).toHaveTextContent('Lunch');
+  fireEvent.click(items[2]);
+  expect(screen.getByTestId('record-target')).toHaveTextContent('Record without a meeting');
+  fireEvent.click(screen.getByRole('button', { name: 'Record' }));
+  await waitFor(() => expect(createSession).toHaveBeenCalledOnce());
+  expect(createSession.mock.calls[0][0]).toMatchObject({
+    title: 'Meeting in Microsoft Teams',
+    starts_at: null,
+  });
 });

@@ -4,8 +4,9 @@ import { library } from '../meetings/library';
 import { sessions, type SessionInput } from '../sessions/sessions';
 import { loadDevices, startCapture, stopCapture } from '../capture/captureActions';
 import { useCaptureStore } from '../capture/captureStore';
-import type { CalendarEvent } from '../agenda/calendar';
+import { calendar, type CalendarEvent } from '../agenda/calendar';
 import { callKey, trackRecordedCall, useMeetingDetection } from './meetingDetection';
+import { likelyInvitation, preparedSession } from './invitations';
 
 type Failure = 'devicesMissing' | 'callEnded' | 'captureBusy' | 'startFailed';
 type Attempt = {
@@ -83,7 +84,10 @@ export async function recordDetectedCall(call: ActiveCall, title: string, event?
       throw new Error(failure);
     }
     if (!attempt.sessionId) {
-      attempt.sessionId = (await sessions.create(attempt.input)).id;
+      // The meeting prepared from this event takes the recording (spec 0113).
+      attempt.sessionId =
+        (attempt.event && (await preparedSession(attempt.event))) ||
+        (await sessions.create(attempt.input)).id;
       useDirectCapture.setState({ attempt: { ...attempt } });
     }
     if (!stillDetected(key)) {
@@ -155,5 +159,12 @@ export async function switchToDetectedCall(call: ActiveCall, title: string, even
     useDirectCapture.setState({ error: 'startFailed', busy: false });
     return;
   }
-  await recordDetectedCall(call, title, event);
+  // A new call while recording goes to the calendar meeting under way, as the first one does.
+  const target =
+    event ??
+    (await calendar
+      .status()
+      .then((c) => likelyInvitation(c.account ? c.events : []))
+      .catch(() => undefined));
+  await recordDetectedCall(call, target?.title ?? title, target);
 }

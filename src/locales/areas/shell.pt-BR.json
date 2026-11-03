@@ -66,6 +66,11 @@
     "stopNow": "Parar agora",
     "auto": "automática",
     "livePause": "Pausar transcrição",
-    "liveResume": "Retomar transcrição"
+    "liveResume": "Retomar transcrição",
+    "target": {
+      "choose": "Em qual reunião gravar",
+      "solo": "Gravar sem reunião",
+      "soloHelp": "Uma gravação nova, sem ligar à agenda"
+    }
   }
 }

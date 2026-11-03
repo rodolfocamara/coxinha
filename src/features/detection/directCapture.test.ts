@@ -170,3 +170,45 @@ it('offers cached invitations without automatically choosing an ambiguous event'
   ).toEqual(['event', 'other']);
   expect(invitedPeople(event)).toHaveLength(1);
 });
+
+it('records into the session prepared from the chosen event instead of creating one', async () => {
+  const base = vi.mocked(invoke).getMockImplementation()!;
+  vi.mocked(invoke).mockImplementation(async (command, args) => {
+    if (command === 'library_sessions')
+      return [
+        {
+          id: 'prepared',
+          title: 'Planning',
+          starts_at: '2026-10-26T12:00:00Z',
+          ends_at: '2026-10-26T13:00:00Z',
+          status: 'planned',
+          meeting_id: null,
+        },
+      ];
+    return base(command, args);
+  });
+  await recordDetectedCall(call, 'Planning', event);
+  expect(count('library_create_session')).toBe(0);
+  expect(
+    vi.mocked(invoke).mock.calls.find(([name]) => name === 'library_start_session')?.[1]
+  ).toMatchObject({ sessionId: 'prepared' });
+});
+
+it('prefers the meeting under way, then the one with invitees', async () => {
+  const { likelyInvitation } = await import('./invitations');
+  const now = Date.parse('2026-10-26T12:05:00Z');
+  const at = (id: string, start: string, end: string, attendees = event.attendees) => ({
+    ...event,
+    id,
+    startsAt: start,
+    endsAt: end,
+    attendees,
+  });
+  const started = at('started', '2026-10-26T12:00:00Z', '2026-10-26T12:30:00Z');
+  const soon = at('soon', '2026-10-26T12:10:00Z', '2026-10-26T12:40:00Z');
+  const block = at('block', '2026-10-26T12:03:00Z', '2026-10-26T13:00:00Z', []);
+  expect(likelyInvitation([soon, block, started], now)?.id).toBe('started');
+  expect(likelyInvitation([soon, block], now)?.id).toBe('block');
+  expect(likelyInvitation([soon], now)?.id).toBe('soon');
+  expect(likelyInvitation([], now)).toBeUndefined();
+});

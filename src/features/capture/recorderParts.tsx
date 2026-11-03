@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { BellOff, Info, Mic, Phone, Square } from 'lucide-react';
+import { BellOff, Info, Phone, Square } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../components/ui';
 import type { ActiveCall } from '../../lib/bindings';
 import { callKey, dismissCall } from '../detection/meetingDetection';
 import { recordDetectedCall, useDirectCapture } from '../detection/directCapture';
 import { MeetingDetails } from '../detection/MeetingDetails';
+import { RecordTarget } from '../detection/RecordTarget';
+import { useInvitations } from '../detection/invitations';
 import type { CalendarEvent } from '../agenda/calendar';
 import { keepAutoRecording } from './autoRecord';
 import { live, refreshLiveStatus, useLiveStatus } from './live';
@@ -58,24 +60,23 @@ export function DetectedCall({ call }: { call: ActiveCall }) {
   const { busy, error, attempt } = useDirectCapture();
   const [details, setDetails] = useState(false);
   const [title, setTitle] = useState(() => t('meetingDetection.newTitle', { app: call.app_name }));
-  const [event, setEvent] = useState<CalendarEvent>();
+  const invitations = useInvitations();
+  // undefined follows the likely calendar meeting; null records alone (spec 0113).
+  const [choice, setChoice] = useState<CalendarEvent | null>();
+  const event = choice === undefined ? invitations.likely : (choice ?? undefined);
   const sameAttempt = attempt?.key === callKey(call);
   return (
     <>
       <Phone size={14} aria-hidden="true" />
       <b role="status">{t('recorder.detected', { app: call.app_name })}</b>
-      <span className="cx-strip-muted truncate">
-        {event ? event.title : t('recorder.detectedHelp')}
-      </span>
-      <Button
-        size="xs"
-        variant="primary"
-        icon={<Mic size={13} aria-hidden="true" />}
-        disabled={busy || !title.trim()}
-        onClick={() => void recordDetectedCall(call, title, event)}
-      >
-        {t(busy ? 'recorder.starting' : 'recorder.record')}
-      </Button>
+      <RecordTarget
+        events={invitations.events}
+        target={event ?? null}
+        onTarget={setChoice}
+        onRecord={() => void recordDetectedCall(call, event?.title ?? title, event)}
+        busy={busy}
+        disabled={busy || !invitations.ready || !(event?.title ?? title).trim()}
+      />
       <Button
         size="xs"
         variant="ghost"
@@ -105,7 +106,7 @@ export function DetectedCall({ call }: { call: ActiveCall }) {
             title={title}
             setTitle={setTitle}
             event={event}
-            setEvent={setEvent}
+            setEvent={(next) => setChoice(next ?? null)}
             disabled={busy || !!(sameAttempt && attempt.sessionId)}
           />
         </div>

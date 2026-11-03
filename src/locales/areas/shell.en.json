@@ -66,6 +66,11 @@
     "stopNow": "Stop now",
     "auto": "automatic",
     "livePause": "Pause transcript",
-    "liveResume": "Resume transcript"
+    "liveResume": "Resume transcript",
+    "target": {
+      "choose": "Which meeting to record into",
+      "solo": "Record without a meeting",
+      "soloHelp": "A new recording, not tied to the calendar"
+    }
   }
 }

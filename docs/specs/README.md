@@ -198,3 +198,4 @@ Pending decisions that block or shape the implementation.
 - [0110 — Name speakers by typing, and people from the calendar](0110-name-speakers-by-typing.md) — in-progress
 - [0111 — Confirm a recording's meeting in the peek](0111-confirm-recordings-in-the-peek.md) — in-progress
 - [0112 — Board: rename, resize, delete and checklists on the canvas](0112-board-direct-editing.md) — in-progress
+- [0113 — Record a detected call into its calendar meeting](0113-record-into-the-calendar-meeting.md) — in-progress
