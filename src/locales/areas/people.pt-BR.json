@@ -72,7 +72,8 @@
         "integrations": "Integrações",
         "shortcuts": "Atalhos",
         "storage": "Armazenamento",
-        "diagnostics": "Diagnóstico"
+        "diagnostics": "Diagnóstico",
+        "calendar": "Agenda"
       },
       "descriptions": {
         "general": "Aparência.",
@@ -81,7 +82,8 @@
         "integrations": "Opcional. Nada sai do computador sem você conectar.",
         "shortcuts": "Os atalhos globais funcionam mesmo com a janela escondida.",
         "storage": "Suas notas são arquivos Markdown nesta pasta.",
-        "diagnostics": "Texto para colar ao relatar um problema."
+        "diagnostics": "Texto para colar ao relatar um problema.",
+        "calendar": "Como a grade da semana mostra as horas. Salvo neste computador."
       },
       "theme": {
         "title": "Tema",
@@ -165,6 +167,22 @@
         "testFailed": "Não funcionou: {{error}}",
         "summaries": "Gerar resumos",
         "summariesPrivacy": "Depois de cada transcrição, envia o texto inteiro da transcrição, em partes, para este mesmo servidor escrever um resumo com decisões e ações. Desligado por padrão; nunca áudio."
+      },
+      "zones": {
+        "title": "Fusos horários extras",
+        "hint": "Aparecem ao lado das horas nas visões de dia e semana, até {{count}}.",
+        "localTitle": "Rótulo do fuso deste computador",
+        "localHint": "Encabeça a coluna de horas quando há fusos extras. Vazio usa o nome curto do fuso.",
+        "zone": "Fuso horário (nome IANA)",
+        "label": "Rótulo curto",
+        "placeholder": "Europe/Lisbon",
+        "add": "Adicionar",
+        "addLabel": "Adicionar um fuso horário",
+        "invalid": "Fuso desconhecido ou já listado. Use um nome IANA como America/Mexico_City.",
+        "full": "Remova um fuso para adicionar outro.",
+        "up": "Subir {{name}}",
+        "down": "Descer {{name}}",
+        "remove": "Remover {{name}}"
       }
     },
     "palette": {

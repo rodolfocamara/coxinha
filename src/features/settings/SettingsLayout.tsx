@@ -5,6 +5,7 @@ import './settings.css';
 
 export const SETTINGS_SECTIONS = [
   'general',
+  'calendar',
   'recording',
   'transcription',
   'integrations',

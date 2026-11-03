@@ -49,6 +49,10 @@ export function blockTime(block: Block, day: Date, locale: string) {
   return `${start}–${at(block.bottom)}`;
 }
 
+/** A recording the calendar does not know: it gets its own tone (spec 0119 P2). */
+export const recordedOutsideCalendar = (row: MeetingRow) =>
+  row.kind === 'recording' || (row.kind === 'session' && !row.event && !!row.session.meeting_id);
+
 /**
  * A meeting on the time grid (spec 0104 P3): filled with its category, sized
  * by its block when it has one (all-day items have none).
@@ -83,7 +87,15 @@ export function CalendarBlock({
       type="button"
       className="mh-week-ev"
       data-category={tinted ? OUTLOOK_PRESETS[colour.preset] : undefined}
-      data-tone={live ? 'live' : event && !colour ? 'event' : undefined}
+      data-tone={
+        live
+          ? 'live'
+          : event && !colour
+            ? 'event'
+            : recordedOutsideCalendar(row)
+              ? 'recorded'
+              : undefined
+      }
       data-cancelled={event?.cancelled || undefined}
       data-key={row.key}
       style={{ ...(tinted ? colourStyle(colour.preset) : {}), ...position }}

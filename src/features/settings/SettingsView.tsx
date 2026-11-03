@@ -5,6 +5,7 @@ import { commands, type AppConfig, type ObsidianVault } from '../../lib/bindings
 import { Alert, Button } from '../../components/ui';
 import { SettingsLayout } from './SettingsLayout';
 import { GeneralSection } from './GeneralSection';
+import { CalendarSection } from './CalendarSection';
 import { RecordingSection } from './RecordingSection';
 import { TranscriptionSection } from './TranscriptionSection';
 import { IntegrationsSection } from './IntegrationsSection';
@@ -103,6 +104,7 @@ export function SettingsView({ onOpenAgenda, initialSection }: Props = {}) {
   return (
     <SettingsLayout ready={state.kind === 'ready'} initialSection={initialSection}>
       <GeneralSection />
+      <CalendarSection />
       <RecordingSection />
       {configSections}
     </SettingsLayout>

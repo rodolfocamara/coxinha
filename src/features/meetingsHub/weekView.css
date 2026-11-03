@@ -66,15 +66,45 @@
     position: relative;
   }
   .mh-week-hours {
-    position: relative;
+    display: flex;
   }
-  .mh-week-hours span {
+  .mh-week-zone {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+  }
+  .mh-week-hours[data-zones] .mh-week-zone + .mh-week-zone {
+    border-left: 1px solid var(--color-border);
+  }
+  /* Like Outlook: the label hangs just under its hour line, not across it. */
+  .mh-week-zone span {
     position: absolute;
     right: 8px;
-    transform: translateY(-50%);
+    padding-top: 4px;
     font-size: 10.5px;
+    line-height: 1.2;
     color: var(--color-muted-foreground);
     font-variant-numeric: tabular-nums;
+  }
+  .mh-week-hours[data-zones] .mh-week-zone span {
+    left: 0;
+    right: 0;
+    text-align: center;
+  }
+  .mh-week-zones {
+    display: flex;
+    align-items: flex-end;
+    padding-bottom: 6px;
+    font-size: 10.5px;
+    color: var(--color-muted-foreground);
+  }
+  .mh-week-zones span {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .mh-week-col {
     position: relative;
@@ -114,6 +144,10 @@
   }
   .mh-week-ev[data-tone='event'] {
     --cx-cat: var(--color-info);
+  }
+  .mh-week-ev[data-tone='recorded'] {
+    --cx-cat: var(--color-primary);
+    --cx-cat-bg: var(--color-accent);
   }
   .mh-week-ev[data-tone='live'] {
     --cx-cat: var(--color-live);
