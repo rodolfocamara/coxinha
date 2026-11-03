@@ -70,6 +70,7 @@ fn worker(store: Store) -> Worker {
         live: Default::default(),
         root: Default::default(),
         voices: Default::default(),
+        resume: Default::default(),
         #[cfg(target_os = "linux")]
         active: None,
     }
