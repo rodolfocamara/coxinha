@@ -3,7 +3,7 @@ use rusqlite::{types::Value, Connection};
 use std::collections::BTreeMap;
 fn snapshot(path: &std::path::Path) -> Result<BTreeMap<String, Vec<Vec<Value>>>> {
     let db = Connection::open(path)?;
-    let mut query=db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name != 'personal_note_intent' ORDER BY name")?;
+    let mut query=db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT IN ('personal_note_intent','meeting_summary') ORDER BY name")?;
     let tables = query
         .query_map([], |r| r.get::<_, String>(0))?
         .collect::<rusqlite::Result<Vec<_>>>()?;
@@ -43,7 +43,7 @@ fn captured_v4_upgrade_preserves_sessions_jobs_captures_edits_profiles_and_raw()
     let s = Store::open(d.path())?;
     assert_eq!(
         s.db.pragma_query_value(None, "user_version", |r| r.get::<_, u32>(0))?,
-        5
+        6
     );
     assert_eq!(
         s.profiles

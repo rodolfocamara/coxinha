@@ -143,7 +143,7 @@ fn migrates_v1_without_losing_human_edits() -> Result<()> {
     assert_eq!(s.latest_edit(&m, "old")?.as_deref(), Some("retained"));
     assert_eq!(
         s.db.pragma_query_value(None, "user_version", |r| r.get::<_, i64>(0))?,
-        5
+        6
     );
     Ok(())
 }
