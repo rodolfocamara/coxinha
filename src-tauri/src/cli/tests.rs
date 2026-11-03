@@ -9,10 +9,10 @@ fn strings(raw: &[&str]) -> Vec<String> {
     raw.iter().map(|s| s.to_string()).collect()
 }
 
-struct Fixture {
+pub(super) struct Fixture {
     _root: TempDir,
-    vault: String,
-    data: String,
+    pub(super) vault: String,
+    pub(super) data: String,
 }
 
 impl Fixture {
@@ -33,7 +33,7 @@ fn event(id: &str, title: &str, start: &str, end: &str, categories: &[&str]) -> 
 
 /// A library with two sessions (one recorded and transcribed), an Outlook
 /// cache, a vault index with an activity and a meeting note.
-fn fixture() -> Fixture {
+pub(super) fn fixture() -> Fixture {
     let root = tempfile::tempdir().unwrap();
     let vault = root.path().join("vault");
     let data = root.path().join("data");
@@ -254,7 +254,7 @@ fn search_matches_people_and_serves_the_app_with_explicit_paths() {
     assert_eq!(people["results"][0]["matches"][0]["field"], "people");
     assert_eq!(people["results"][0]["matches"][0]["snippet"], "Bruno Lima");
 
-    // `library_search` resolves these from the running app instead of flags.
+    // `universal_search` resolves these from the running app instead of flags.
     let paths = paths::Paths {
         vault: f.vault.clone().into(),
         data: f.data.clone().into(),
@@ -278,6 +278,7 @@ fn search_fields_come_in_a_fixed_order() {
         &search::Fields {
             title: "Headcount Q1",
             people: &people,
+            categories: &[],
             notes: Some("headcount aprovado"),
             summary: None,
             transcript: Some("[00:10] Rosana: o headcount"),
@@ -290,6 +291,7 @@ fn search_fields_come_in_a_fixed_order() {
         &search::Fields {
             title: "x",
             people: &people,
+            categories: &[],
             notes: None,
             summary: None,
             transcript: None,

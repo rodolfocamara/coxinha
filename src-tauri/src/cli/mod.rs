@@ -5,6 +5,7 @@ mod data;
 mod meetings;
 pub(crate) mod paths;
 pub(crate) mod search;
+pub(crate) mod universal;
 mod write;
 
 #[cfg(test)]
