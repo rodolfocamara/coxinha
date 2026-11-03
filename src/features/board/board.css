@@ -321,4 +321,72 @@
     font-size: 13px;
     transform: translateX(-50%);
   }
+
+  /* Excalidraw-style islands (spec 0112 P6): opaque, they float, so they cast a shadow. */
+  .ws-island {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 4px;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    background: var(--ws-card-bg);
+    box-shadow: 0 2px 10px oklch(0 0 0 / 0.14);
+  }
+  .ws-tools {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    z-index: 5;
+    transform: translateX(-50%);
+  }
+  .ws-tool {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 6px;
+    border: 0;
+    border-radius: 8px;
+    background: none;
+    color: var(--color-foreground);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+  }
+  .ws-tool:hover:not(:disabled) {
+    background: var(--color-secondary);
+  }
+  .ws-tool:active:not(:disabled) {
+    background: oklch(var(--accent) / 0.18);
+  }
+  .ws-tool:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 1px;
+  }
+  .ws-tool:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+  .ws-tool kbd {
+    position: absolute;
+    right: 3px;
+    bottom: 1px;
+    font: inherit;
+    font-size: 9px;
+    color: var(--color-muted-foreground);
+  }
+  .ws-zoom {
+    margin: 12px;
+  }
+  .ws-zoom-level {
+    min-width: 48px;
+  }
+  .ws-island-sep {
+    width: 1px;
+    height: 18px;
+    margin: 0 3px;
+    background: var(--color-border);
+  }
 }

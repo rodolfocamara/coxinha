@@ -285,6 +285,7 @@ pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
             commands::create_note,
             commands::update_note,
             commands::delete_note,
+            commands::restore_note,
             commands::list_notes,
             commands::get_note,
             commands::search_notes,
@@ -428,6 +429,19 @@ mod commands {
         id: Uuid,
     ) -> Result<(), String> {
         library.delete_note(storage.inner().clone(), id).await
+    }
+
+    /// Spec 0112 P3: a deleted note goes to `.coxinha/trash/`; this brings it back.
+    #[tauri::command]
+    #[specta::specta]
+    pub async fn restore_note(
+        storage: tauri::State<'_, Arc<Storage>>,
+        id: Uuid,
+    ) -> Result<Note, String> {
+        storage
+            .restore_note(id)
+            .await
+            .map_err(crate::note_errors::ipc_error)
     }
 
     #[tauri::command]

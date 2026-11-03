@@ -67,7 +67,8 @@ export function useWorkspace() {
   });
   const [focusRequest, setFocusRequest] = useState<EditorFocusRequest>();
   const [creating, setCreating] = useState<'idle' | 'busy' | 'failed'>('idle');
-  const [actionError, setActionError] = useState(false);
+  // true for the generic message, or a specific one (spec 0112 P3).
+  const [actionError, setActionError] = useState<boolean | string>(false);
   const [taskLinks, setTaskLinks] = useState(() => new Map<string, string>());
   const retryCreate = useRef<() => void>(() => {});
   const returnFocus = useRef<HTMLElement | null>(null);

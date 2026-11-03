@@ -23,6 +23,11 @@ vi.mock('@xyflow/react', async () => {
     ReactFlow: ReactFlowStub,
     Background: () => null,
     Controls: () => null,
+    Panel: ({ children, className }: { children: React.ReactNode; className?: string }) => (
+      <div className={className}>{children}</div>
+    ),
+    useReactFlow: () => ({ zoomIn: vi.fn(), zoomOut: vi.fn(), zoomTo: vi.fn(), fitView: vi.fn() }),
+    useViewport: () => ({ x: 0, y: 0, zoom: 1 }),
     MiniMap: () => null,
     Handle: () => null,
     NodeResizer: () => null,
@@ -379,24 +384,48 @@ it('searches note content from the drawer and drops a found note onto the canvas
   expect(Number.isFinite(dropped.x) && Number.isFinite(dropped.y)).toBe(true);
 });
 
-it('Delete takes the selected activity off the board and Undo brings it back with its links', async () => {
+it('Delete sends the selected activity to the trash and Undo brings note and card back', async () => {
   mount();
   fireEvent.click(await screen.findByTestId('node-c-api'));
   await screen.findByTestId('note-editor');
   fireEvent.keyDown(screen.getByTestId('node-c-api'), { key: 'Delete' });
+  await waitFor(() => expect(backend.trash.map((n) => n.id)).toEqual(['n-api']));
   expect(board().items.some((i) => i.id === 'c-api')).toBe(false);
   expect(board().edges).toEqual([]);
   expect(screen.queryByTestId('note-editor')).toBeNull();
   const notice = (
-    await screen.findByText(i18n.t('workspace.removed', { title: 'Contrato de API v2' }))
+    await screen.findByText(i18n.t('workspace.trashed', { title: 'Contrato de API v2' }))
   ).closest('.ws-undo') as HTMLElement;
   fireEvent.click(within(notice).getByRole('button', { name: i18n.t('workspace.undo') }));
-  expect(itemOf('c-api')).toMatchObject({ parentId: 'a-crm', noteId: 'n-api' });
+  await waitFor(() => expect(itemOf('c-api')).toBeDefined());
+  expect(backend.trash).toEqual([]);
+  expect(itemOf('c-api')).toMatchObject({
+    parentId: 'a-crm',
+    noteId: 'n-api',
+    notePath: 'notes/n-api (2).md',
+  });
   expect(
     board()
       .edges.map((e) => e.id)
       .sort()
   ).toEqual(['e-1', 'e-2']);
+});
+
+it("keeps a meeting's own note and its card when the trash refuses it", async () => {
+  backend.board.items.push({
+    ...backend.board.items[3],
+    id: 'c-rita',
+    noteId: 'n-rita',
+    notePath: 'notes/n-rita.md',
+    y: 400,
+  });
+  mount();
+  fireEvent.click(await screen.findByTestId('node-c-rita'));
+  fireEvent.keyDown(document.body, { key: 'Delete' });
+  expect(
+    await screen.findByText(i18n.t('editor.sessionNoteDeleteRequiresDetach'))
+  ).toBeInTheDocument();
+  expect(itemOf('c-rita')).toBeDefined();
 });
 
 it('removes an area with Backspace, frees its children, and Ctrl+Z puts them back inside', async () => {
@@ -454,4 +483,27 @@ it('shows every checklist line on an activity card', async () => {
     'Revisão de segurança na quinta',
     'Publicar contrato no portal',
   ]);
+});
+
+it('puts the tools in an island with number keys, and zoom in another', async () => {
+  mount();
+  const tools = await screen.findByRole('toolbar', { name: i18n.t('workspace.toolbar.tools') });
+  expect(
+    within(tools)
+      .getAllByRole('button')
+      .map((b) => b.getAttribute('aria-keyshortcuts'))
+  ).toEqual(['1', '2', '3']);
+  expect(
+    screen.getByRole('button', { name: i18n.t('workspace.canvas.resetZoom') })
+  ).toHaveTextContent('100%');
+  const before = board().items.filter((i) => i.kind === 'area').length;
+  fireEvent.keyDown(document.body, { key: '3' });
+  await waitFor(() =>
+    expect(board().items.filter((i) => i.kind === 'area')).toHaveLength(before + 1)
+  );
+  const field = document.createElement('input');
+  document.body.append(field);
+  fireEvent.keyDown(field, { key: '3' });
+  expect(board().items.filter((i) => i.kind === 'area')).toHaveLength(before + 1);
+  field.remove();
 });

@@ -119,7 +119,7 @@ impl Storage {
             .context("note_file_missing_or_moved")
     }
 
-    async fn read_note_snapshot(&self, path: &Path) -> Result<NoteSnapshot> {
+    pub(super) async fn read_note_snapshot(&self, path: &Path) -> Result<NoteSnapshot> {
         let relative = self.relative_note_path(path)?;
         let raw = fs::read_to_string(path).await?;
         let document = NoteFile::parse(&raw)?;
@@ -165,9 +165,9 @@ struct NoteIndexPlan {
     skipped: HashMap<String, anyhow::Error>,
 }
 
-struct NoteSnapshot {
+pub(super) struct NoteSnapshot {
     envelope_id: Option<Uuid>,
-    entry: NoteIndexEntry,
+    pub(super) entry: NoteIndexEntry,
 }
 
 fn allocate_legacy_id(path: &str, reserved: &mut HashMap<Uuid, String>) -> Result<Uuid> {

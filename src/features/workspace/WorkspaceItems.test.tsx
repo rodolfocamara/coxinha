@@ -24,6 +24,11 @@ vi.mock('@xyflow/react', async () => {
     ReactFlow: ReactFlowStub,
     Background: () => null,
     Controls: () => null,
+    Panel: ({ children, className }: { children: React.ReactNode; className?: string }) => (
+      <div className={className}>{children}</div>
+    ),
+    useReactFlow: () => ({ zoomIn: vi.fn(), zoomOut: vi.fn(), zoomTo: vi.fn(), fitView: vi.fn() }),
+    useViewport: () => ({ x: 0, y: 0, zoom: 1 }),
     MiniMap: () => null,
     Handle: () => null,
     NodeResizer: () => null,

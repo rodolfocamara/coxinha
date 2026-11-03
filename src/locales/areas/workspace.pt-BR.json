@@ -21,7 +21,8 @@
       "saved": "Salvo",
       "saving": "Salvando…",
       "notSaved": "Não salvo",
-      "creating": "Criando…"
+      "creating": "Criando…",
+      "tools": "Ferramentas do quadro"
     },
     "card": {
       "note": "nota",
@@ -143,7 +144,8 @@
       "minimap": "Minimapa do quadro",
       "moved": "Item movido: {{x}}, {{y}}.",
       "nodeHelp": "Enter abre no editor. Setas movem o item selecionado.",
-      "edgeHelp": "Selecione e aperte Delete para remover a dependência."
+      "edgeHelp": "Selecione e aperte Delete para remover a dependência.",
+      "resetZoom": "Voltar o zoom para 100%"
     },
     "a11y": {
       "activity": "{{title}}, atividade {{progress}}%",
@@ -152,6 +154,7 @@
       "edge": "{{source}} → {{target}}"
     },
     "removed": "“{{title}}” saiu do quadro.",
-    "undo": "Desfazer"
+    "undo": "Desfazer",
+    "trashed": "“{{title}}” foi para a lixeira."
   }
 }

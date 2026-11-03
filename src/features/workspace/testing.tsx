@@ -95,6 +95,7 @@ export function createBackend(invoke: {
       },
     ],
     links: [] as { session: string; note: string; createdAt: string }[],
+    trash: [] as ReturnType<typeof note>[],
     loadError: null as string | null,
     saveError: null as string | null,
     next: 1,
@@ -131,9 +132,21 @@ export function createBackend(invoke: {
         found.title = (args.content.match(/^#\s+(.+)$/m) ?? [, ''])[1];
         return { ...found };
       }
-      case 'delete_note':
+      case 'delete_note': {
+        if (args.id === 'n-rita') throw 'session_note_delete_requires_detach';
+        const found = state.notes.find((n) => n.id === args.id);
+        if (found) state.trash.push(found);
         state.notes = state.notes.filter((n) => n.id !== args.id);
         return null;
+      }
+      case 'restore_note': {
+        const found = state.trash.find((n) => n.id === args.id);
+        if (!found) throw 'note not found in the trash';
+        state.trash = state.trash.filter((n) => n.id !== args.id);
+        const back = { ...found, path: found.path.replace('.md', ' (2).md') };
+        state.notes.unshift(back);
+        return back;
+      }
       case 'library_sessions':
         return state.sessions;
       case 'search_notes':

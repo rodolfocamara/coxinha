@@ -21,7 +21,8 @@
       "saved": "Saved",
       "saving": "Saving…",
       "notSaved": "Not saved",
-      "creating": "Creating…"
+      "creating": "Creating…",
+      "tools": "Board tools"
     },
     "card": {
       "note": "note",
@@ -143,7 +144,8 @@
       "minimap": "Board minimap",
       "moved": "Item moved: {{x}}, {{y}}.",
       "nodeHelp": "Enter opens it in the editor. Arrow keys move the selected item.",
-      "edgeHelp": "Select it and press Delete to remove the dependency."
+      "edgeHelp": "Select it and press Delete to remove the dependency.",
+      "resetZoom": "Reset zoom to 100%"
     },
     "a11y": {
       "activity": "{{title}}, activity {{progress}}%",
@@ -152,6 +154,7 @@
       "edge": "{{source}} → {{target}}"
     },
     "removed": "“{{title}}” left the board.",
-    "undo": "Undo"
+    "undo": "Undo",
+    "trashed": "“{{title}}” went to the trash."
   }
 }

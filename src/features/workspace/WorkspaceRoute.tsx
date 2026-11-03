@@ -7,6 +7,9 @@ import { SideEditor } from './SideEditor';
 import { WorkspaceToolbar } from './WorkspaceToolbar';
 import { useWorkspace } from './useWorkspace';
 import { useRemoveShortcut } from './useRemoveShortcut';
+import { BoardTools } from './BoardTools';
+import { noteDeletionErrorKey } from '../../lib/noteFileErrors';
+import type { TFunction } from 'i18next';
 import './workspace.css';
 
 /**
@@ -19,11 +22,13 @@ export function WorkspaceRoute() {
   const ws = useWorkspace();
   const removal = useRemoveShortcut({
     selected: ws.item ?? null,
-    remove: (id) => {
-      ws.removeFromBoard(id);
+    remove: (item) => {
+      if (item.kind !== 'area' && item.noteId) return ws.forgetNote(item.noteId);
+      ws.removeFromBoard(item.id);
       ws.close();
     },
     title: ws.title,
+    onError: (error) => ws.setActionError(deletionError(error, t)),
   });
   if (ws.session.loadError)
     return (
@@ -67,9 +72,14 @@ export function WorkspaceRoute() {
             onCreateAt={(point) => ws.createNote(point)}
             onDropNote={(noteId, point) => ws.place(noteId, null, point)}
           >
+            <BoardTools ws={ws} />
             {removal.removed && (
               <div className="ws-undo" role="status">
-                <span>{t('workspace.removed', { title: removal.removed })}</span>
+                <span>
+                  {t(removal.removed.trashed ? 'workspace.trashed' : 'workspace.removed', {
+                    title: removal.removed.title,
+                  })}
+                </span>
                 <Button size="sm" variant="ghost" onClick={removal.undo}>
                   {t('workspace.undo')}
                 </Button>
@@ -100,4 +110,9 @@ export function WorkspaceRoute() {
       {ws.editorOpen && <SideEditor ws={ws} />}
     </div>
   );
+}
+
+function deletionError(error: unknown, t: TFunction) {
+  const key = noteDeletionErrorKey(error);
+  return key ? t(key) : t('workspace.errors.action');
 }

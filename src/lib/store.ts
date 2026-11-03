@@ -16,6 +16,8 @@ interface AppStore {
   saveNote: (id: string, markdown: string) => Promise<void>;
   duplicateNote: (id: string) => Promise<Note>;
   deleteNote: (id: string) => Promise<void>;
+  /** Spec 0112 P3: back from `.coxinha/trash/`, possibly under a new path. */
+  restoreNote: (id: string) => Promise<Note>;
   searchNotes: (query: string) => Promise<Note[]>;
   openDailyNote: (date?: string) => Promise<Note>;
 }
@@ -93,6 +95,14 @@ export const useAppStore = create<AppStore>((set) => ({
       activeNoteId: state.activeNoteId === id ? null : state.activeNoteId,
       notes: state.notes.filter((n) => n.id !== id),
     }));
+  },
+
+  async restoreNote(id) {
+    const note = await invoke<Note>('restore_note', { id });
+    set((state) => ({
+      notes: sortByUpdated([note, ...state.notes.filter((n) => n.id !== note.id)]),
+    }));
+    return note;
   },
 
   async searchNotes(query) {

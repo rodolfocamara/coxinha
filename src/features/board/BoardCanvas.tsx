@@ -2,7 +2,6 @@ import { useCallback, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Background,
-  Controls,
   MiniMap,
   ReactFlow,
   type EdgeChange,
@@ -17,6 +16,7 @@ import { useResolvedTheme } from '../../lib/useTheme';
 import { boardSession } from './persistence';
 import { canLink, connect, progressColor, type Board, type BoardItem } from './model';
 import { edgeTypes, nodeTypes } from './BoardNodes';
+import { BoardZoom } from './BoardZoom';
 import { boardEdges, boardNodes } from './boardNodes';
 import { boardDrag } from './boardDrag';
 import { boardGeometryChanges } from './boardGeometryChanges';
@@ -218,7 +218,7 @@ export function BoardCanvas({
         }}
       >
         <Background gap={22} size={1} color="var(--ws-dot)" />
-        <Controls fitViewOptions={{ maxZoom: 1 }} showInteractive={false} />
+        <BoardZoom />
         <MiniMap
           pannable
           zoomable

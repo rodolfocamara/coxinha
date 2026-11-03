@@ -243,8 +243,37 @@ async fn delete_note_removes_file_and_db_entry() {
 
     storage.delete_note(note.id).await.unwrap();
 
-    assert!(!abs.exists(), "file should be removed");
+    assert!(!abs.exists(), "file should leave the notes folder");
     assert!(storage.list_notes().await.unwrap().is_empty());
+    let day = chrono::Local::now().format("%Y-%m-%d").to_string();
+    let trashed = tmp.path().join(".coxinha/trash").join(day).join(&note.path);
+    assert!(trashed.exists(), "file should be in the trash");
+}
+
+#[tokio::test]
+async fn restore_note_brings_the_newest_trashed_copy_back_with_its_id() {
+    let (tmp, storage) = fresh_storage().await;
+    let note = storage.create_note("Plan", "# Plan\n\n- [ ] one\n").await.unwrap();
+    storage.delete_note(note.id).await.unwrap();
+    // A file now sits where the note was: the restored copy takes a free name.
+    std::fs::write(tmp.path().join(&note.path), "# Someone else\n").unwrap();
+
+    let restored = storage.restore_note(note.id).await.unwrap();
+
+    assert_eq!(restored.id, note.id);
+    assert_eq!(restored.title, "Plan");
+    assert_ne!(restored.path, note.path);
+    assert!(restored.path.ends_with(" (2).md"), "{}", restored.path);
+    let fetched = storage.get_note(note.id).await.unwrap();
+    assert_eq!(fetched.markdown, "# Plan\n\n- [ ] one\n");
+    assert!(storage.restore_note(note.id).await.is_err(), "already restored");
+}
+
+#[tokio::test]
+async fn restore_note_fails_when_nothing_was_trashed() {
+    let (_tmp, storage) = fresh_storage().await;
+    let error = storage.restore_note(uuid::Uuid::new_v4()).await.unwrap_err();
+    assert!(error.to_string().contains("not found in the trash"));
 }
 
 #[tokio::test]

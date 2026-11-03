@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useAppStore } from '../../lib/store';
 import { boardSession } from '../board/persistence';
 import type { Board, BoardItem } from '../board/model';
 
@@ -12,23 +13,31 @@ function typing(target: EventTarget | null) {
   );
 }
 
+type Removed = { board: Board; title: string; noteId: string | null };
+
 /**
- * Delete or Backspace takes the selected item off the board, as in
- * Excalidraw (spec 0112 P3). The note itself stays; the board before the
- * removal is kept for one undo (button or Ctrl+Z).
+ * Delete or Backspace removes the selected item, as in Excalidraw (spec 0112
+ * P3). An activity or note goes with its note file to `.coxinha/trash/`; an
+ * area only leaves the board. Undo (button or Ctrl+Z) restores both.
  */
 export function useRemoveShortcut({
   selected,
   remove,
   title,
+  onError,
 }: {
   selected: BoardItem | null;
-  remove: (id: string) => void;
+  /** Takes the item, and every card of its note, off the board and closes the editor. */
+  remove: (item: BoardItem) => void;
   title: (item: BoardItem) => string;
+  onError: (error: unknown) => void;
 }) {
-  const [removed, setRemoved] = useState<{ board: Board; title: string } | null>(null);
-  const latest = useRef({ selected, remove, title, removed });
-  latest.current = { selected, remove, title, removed };
+  const deleteNote = useAppStore((s) => s.deleteNote);
+  const restoreNote = useAppStore((s) => s.restoreNote);
+  const [removed, setRemoved] = useState<Removed | null>(null);
+  const busy = useRef(false);
+  const latest = useRef({ selected, remove, title, removed, onError, deleteNote, restoreNote });
+  latest.current = { selected, remove, title, removed, onError, deleteNote, restoreNote };
 
   useEffect(() => {
     if (!removed) return;
@@ -36,40 +45,80 @@ export function useRemoveShortcut({
     return () => clearTimeout(timer);
   }, [removed]);
 
+  async function removeSelected() {
+    const { selected, remove, title, onError, deleteNote } = latest.current;
+    const board = boardSession.get();
+    if (!selected || !board || busy.current) return;
+    busy.current = true;
+    const noteId = selected.kind === 'area' ? null : selected.noteId;
+    remove(selected);
+    try {
+      if (noteId) await deleteNote(noteId);
+      setRemoved({ board, title: title(selected), noteId });
+    } catch (error) {
+      // The note stays (a meeting's own note, a file in use): so does its card.
+      const current = boardSession.get();
+      if (current) boardSession.update(restore(current, board));
+      onError(error);
+    } finally {
+      busy.current = false;
+    }
+  }
+
+  async function undo() {
+    const { removed: snapshot, restoreNote, onError } = latest.current;
+    if (!snapshot || busy.current) return;
+    busy.current = true;
+    setRemoved(null);
+    try {
+      const note = snapshot.noteId ? await restoreNote(snapshot.noteId) : null;
+      const current = boardSession.get();
+      // Keep what changed since (moves, new items) and bring back what was removed.
+      const back = current ? restore(current, snapshot.board) : snapshot.board;
+      boardSession.update(
+        note
+          ? {
+              ...back,
+              items: back.items.map((i) =>
+                i.noteId === note.id ? { ...i, notePath: note.path } : i
+              ),
+            }
+          : back
+      );
+    } catch (error) {
+      onError(error);
+    } finally {
+      busy.current = false;
+    }
+  }
+
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.defaultPrevented || typing(event.target)) return;
-      const { selected, remove, title, removed } = latest.current;
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z' && removed) {
+      if (
+        (event.ctrlKey || event.metaKey) &&
+        event.key.toLowerCase() === 'z' &&
+        latest.current.removed
+      ) {
         event.preventDefault();
-        undo();
+        void undo();
         return;
       }
-      if ((event.key !== 'Delete' && event.key !== 'Backspace') || !selected) return;
-      const board = boardSession.get();
-      if (!board) return;
+      if ((event.key !== 'Delete' && event.key !== 'Backspace') || !latest.current.selected) return;
       event.preventDefault();
-      setRemoved({ board, title: title(selected) });
-      remove(selected.id);
+      void removeSelected();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
-  function undo() {
-    const snapshot = latest.current.removed;
-    if (!snapshot) return;
-    const current = boardSession.get();
-    // Keep what changed since (moves, new items) and bring back what was removed,
-    // with an area's children back inside it.
-    const restored = current ? restore(current, snapshot.board) : snapshot.board;
-    boardSession.update(restored);
-    setRemoved(null);
-  }
-
-  return { removed: removed?.title ?? null, undo, dismiss: () => setRemoved(null) };
+  return {
+    removed: removed ? { title: removed.title, trashed: !!removed.noteId } : null,
+    undo: () => void undo(),
+  };
 }
 
+/** `before` with the items and links that `current` lost, an area's children back inside. */
 export function restore(current: Board, before: Board): Board {
   const now = new Set(current.items.map((i) => i.id));
   const gone = new Set(before.items.filter((i) => !now.has(i.id)).map((i) => i.id));
@@ -89,6 +138,6 @@ export function restore(current: Board, before: Board): Board {
         (now.has(e.target) || gone.has(e.target))
     ),
   ];
-  // Areas sit under their children: restored areas go first so they stay behind.
+  // Restored areas go first so they stay behind the cards.
   return { ...current, items: [...back, ...items], edges };
 }

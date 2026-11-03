@@ -1,15 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  AlertTriangle,
-  Check,
-  CircleCheck,
-  LoaderCircle,
-  Plus,
-  RotateCw,
-  SquareDashed,
-  X,
-} from 'lucide-react';
+import { AlertTriangle, Check, LoaderCircle, RotateCw, X } from 'lucide-react';
 import { Alert, Button } from '../../components/ui';
 import { boardSession, errorCategory } from '../board/persistence';
 import type { Workspace } from './useWorkspace';
@@ -33,31 +24,6 @@ export function WorkspaceToolbar({ ws }: { ws: Workspace }) {
     <>
       <div className="ws-toolbar" role="toolbar" aria-label={t('workspace.toolbar.label')}>
         <h1 className="ws-toolbar-title">{t('workspace.title')}</h1>
-        <Button
-          size="sm"
-          variant="primary"
-          icon={<Plus size={14} aria-hidden="true" />}
-          disabled={!ws.board || ws.creating === 'busy'}
-          onClick={() => ws.createNote()}
-        >
-          {t('workspace.toolbar.note')}
-        </Button>
-        <Button
-          size="sm"
-          icon={<CircleCheck size={14} aria-hidden="true" />}
-          disabled={!ws.board || ws.creating === 'busy'}
-          onClick={ws.createActivity}
-        >
-          {t('workspace.toolbar.activity')}
-        </Button>
-        <Button
-          size="sm"
-          icon={<SquareDashed size={14} aria-hidden="true" />}
-          disabled={!ws.board}
-          onClick={ws.addArea}
-        >
-          {t('workspace.toolbar.area')}
-        </Button>
         <span className="flex-1" />
         {ws.creating === 'busy' && (
           <span role="status" className="ws-save">
@@ -122,7 +88,7 @@ export function WorkspaceToolbar({ ws }: { ws: Workspace }) {
             </Button>
           }
         >
-          {t('workspace.errors.action')}
+          {typeof ws.actionError === 'string' ? ws.actionError : t('workspace.errors.action')}
         </Alert>
       )}
       {error && (
