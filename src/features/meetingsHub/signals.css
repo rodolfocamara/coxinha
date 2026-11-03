@@ -1,0 +1,69 @@
+@layer theme, base, components, utilities;
+
+/* Spec 0124: what a meeting has, and what Outlook says about it. */
+@layer components {
+  .ch-signals {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 3px;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .ch-signal {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .ch-signal[data-signal='noPreparation'] {
+    color: color-mix(in oklab, currentColor 62%, transparent);
+  }
+  /* Whatever does not fit wraps out of view whole: an icon is never cut. */
+  .mh-week-ev .ch-signals {
+    flex: none;
+    height: 11px;
+    overflow: hidden;
+  }
+  .mh-week-ev[data-signals] {
+    padding-block: 2px;
+  }
+  .ch-signals[data-labelled] {
+    gap: 4px 10px;
+    font-size: 11.5px;
+    color: var(--color-muted-foreground);
+  }
+
+  .ch-event-line {
+    margin: 0;
+    font-size: 12.5px;
+    line-height: 1.45;
+  }
+  .ch-event-preview {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--color-muted-foreground);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .ch-event-group > summary {
+    font-size: 12px;
+    font-weight: 550;
+    cursor: pointer;
+  }
+  .ch-event-group > summary:focus-visible {
+    outline: 2px solid var(--color-ring);
+  }
+  .ch-event-actions,
+  .ch-mark {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .ch-mark .cx-btn[aria-pressed='true'] {
+    outline: 1.5px solid var(--color-foreground);
+    outline-offset: -1px;
+  }
+}

@@ -156,6 +156,21 @@ function acceptAudio(detail: LibraryDetail): LibraryDetail {
 
 /** Spec 0108: summary from the owner's LLM, kept with the transcript it came from. */
 export type MeetingSummary = { markdown: string; generatedAt: string };
+export type MeetingMark = 'useful' | 'notUseful';
+/** Spec 0124 P4: read with `useSignalsReport`. */
+export type MeetingSignals = {
+  sessionId: string;
+  transcript: boolean;
+  speakers: { named: number; unnamed: number };
+  note: boolean;
+  preparation: boolean;
+  diagram: boolean;
+  summary: boolean;
+  followUps: { linked: number; actions: number };
+  generatedContent: boolean;
+  mark: MeetingMark | null;
+};
+export type SignalsReport = { summariesOn: boolean; sessions: MeetingSignals[] };
 export const library = {
   available: isTauri,
   importAudio: (title: string, path: string) =>
@@ -169,6 +184,9 @@ export const library = {
   summary: (meetingId: string) =>
     invoke<MeetingSummary | null>('library_meeting_summary', { meetingId }),
   summarize: (meetingId: string) => invoke<MeetingSummary>('library_summarize', { meetingId }),
+  signals: () => invoke<SignalsReport>('library_meeting_signals'),
+  setMark: (sessionId: string, mark: MeetingMark | null) =>
+    invoke<void>('library_set_meeting_mark', { sessionId, mark }),
   sources: () => invoke<Source[]>('library_sources'),
   status: () => invoke<CaptureStatus>('library_status'),
   start: (title: string, micSource: string, outputSource: string) =>

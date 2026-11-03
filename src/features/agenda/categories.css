@@ -10,6 +10,8 @@
      itself and the fill is 55% of it over #141414 (Outlook blue #0772c9 fills
      #104776), darkened where light text would fall under 4.5:1. */
   :root {
+    /* Tentative's stripes (spec 0124 P3): away from the text colour of the theme. */
+    --cx-hatch: rgb(255 255 255 / 0.55);
     --outlook-cat-0: #c50f1f;
     --outlook-cat-0-bg: #f6d1d5;
     --outlook-cat-1: #da3b01;
@@ -63,6 +65,7 @@
   }
   .dark,
   [data-theme='dark'] {
+    --cx-hatch: rgb(0 0 0 / 0.24);
     --outlook-cat-0: #c50f1f;
     --outlook-cat-0-bg: #75111a;
     --outlook-cat-1: #da3b01;

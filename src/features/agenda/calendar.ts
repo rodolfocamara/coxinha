@@ -2,6 +2,17 @@ import { invoke, isTauri } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { publishCategories } from './categories';
 export type Candidate = { name: string; email: string | null };
+export type EventResponse =
+  | 'none'
+  | 'organizer'
+  | 'tentativelyAccepted'
+  | 'accepted'
+  | 'declined'
+  | 'notResponded';
+export type AttendeeResponse = Candidate & {
+  response: EventResponse | null;
+  kind: 'required' | 'optional' | 'resource' | null;
+};
 export type CalendarEvent = {
   id: string;
   title: string;
@@ -16,6 +27,15 @@ export type CalendarEvent = {
   originalStart?: string | null;
   /** Outlook category names, in Outlook's order (spec 0103). */
   categories?: string[];
+  /** Spec 0124 P1; absent in a cache from before it. */
+  response?: EventResponse | null;
+  attendeeResponses?: AttendeeResponse[];
+  location?: string | null;
+  joinUrl?: string | null;
+  bodyPreview?: string | null;
+  showAs?: 'free' | 'tentative' | 'busy' | 'oof' | 'workingElsewhere' | 'unknown' | null;
+  isOrganizer?: boolean;
+  webLink?: string | null;
 };
 /** A master-list category; `preset` is Outlook's colour 0–24, null for none. */
 export type OutlookCategory = { name: string; preset: number | null };
@@ -52,6 +72,9 @@ export const calendar = {
     invoke<{ id: string; url: string }>('calendar_begin', { clientId, tenant }),
   complete: (id: string) => published(invoke<CalendarSnapshot>('calendar_complete', { id })),
   cancel: (id?: string) => invoke<void>('calendar_cancel', { id: id ?? null }),
+  /** Spec 0124 P2: the backend opens it, and checks the URL again first. */
+  openLink: (eventId: string, link: 'join' | 'outlook') =>
+    invoke<void>('calendar_open_link', { eventId, link }),
   sync: () => published(invoke<CalendarSnapshot>('calendar_sync')),
   disconnect: () =>
     invoke<void>('calendar_disconnect').then(() => publishCategories(emptyCalendar)),

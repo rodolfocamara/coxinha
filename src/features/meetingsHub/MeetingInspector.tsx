@@ -11,6 +11,10 @@ import { normalize } from './meetingRows';
 import { EventCategories } from '../agenda/EventCategories';
 import { requestMeetingsSheet } from './meetingsSheets';
 import { ItemLinks } from '../items/ItemLinks';
+import { EventDetails } from './EventDetails';
+import { WhoCame } from './PeekSections';
+import { presentSignals, useSessionSignals } from './meetingSignals';
+import { SignalIcons } from './SignalIcons';
 
 type Props = {
   start: Date | null;
@@ -55,6 +59,7 @@ export function MeetingInspector(p: Props) {
   for (const attendee of p.event?.attendees ?? [])
     if (!people.some((person) => sameCandidate(person, attendee))) people.push(attendee);
   const audio = audioFacts(p, t);
+  const signals = useSessionSignals(p.sessionId);
   const laneOf = (name: string) =>
     p.lanes.find((l) => l.name && normalize(l.name) === normalize(name));
   const share = (name: string) => laneOf(name)?.share;
@@ -83,6 +88,16 @@ export function MeetingInspector(p: Props) {
           )}
         </dl>
       </div>
+      <SignalIcons items={presentSignals(signals)} labelled />
+      {p.event && (
+        <EventDetails
+          key={p.event.id}
+          event={p.event}
+          ended={!!p.end && p.end <= p.now}
+          headingClassName="mh-insp-h"
+        />
+      )}
+      <WhoCame meetingId={p.meetingId} headingClassName="mh-insp-h" />
       {p.event && (
         <EventCategories
           event={p.event}

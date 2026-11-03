@@ -5,6 +5,9 @@ import { durationLabel, rowTime } from './format';
 import { localDay, nextDay } from '../sessions/sessionDates';
 import { markProps, useEventColour } from '../agenda/categories';
 import { CategoryLabel } from '../agenda/CategoryLabel';
+import { eventLook } from './eventDetails';
+import { sessionIdOf, signalItems, useSessionSignals } from './meetingSignals';
+import { SignalIcons } from './SignalIcons';
 
 type Props = {
   rows: MeetingRow[];
@@ -33,6 +36,7 @@ function RowButton({ row, ...p }: Props & { row: MeetingRow }) {
   const locale = i18n.resolvedLanguage ?? i18n.language;
   const selected = p.selectedKey === row.key;
   const colour = useEventColour(row.kind === 'recording' ? null : row.event);
+  const signals = signalItems(row, useSessionSignals(sessionIdOf(row)), p.now);
   return (
     <button
       type="button"
@@ -49,6 +53,7 @@ function RowButton({ row, ...p }: Props & { row: MeetingRow }) {
       <span className="mh-row-time">{rowTime(row.start, p.now, locale)}</span>
       <span className="mh-row-meta">
         <RowMeta row={row} live={p.isLive(row)} attention={p.attention(row)} now={p.now} />
+        <SignalIcons items={signals} />
       </span>
     </button>
   );
@@ -78,6 +83,8 @@ function RowMeta({
   const started = !row.start || row.start < endOfToday;
   const parts: { text: string; tone?: 'live' | 'warning' }[] = [];
   const duration = scheduledMs(row);
+  const look = eventLook(row.kind === 'recording' ? null : row.event);
+  if (look) parts.push({ text: k(`eventDetails.look.${look}`) });
   if (live && row.kind !== 'event') {
     return (
       <>

@@ -85,6 +85,45 @@ export function PeekTranscript({
   );
 }
 
+/**
+ * Spec 0124 P2: speakers the owner confirmed on the recording, apart from who
+ * was invited. Silent or unnamed people are not here, so it never claims a
+ * full attendance; without a recording it claims nothing.
+ */
+export function WhoCame({
+  meetingId,
+  headingClassName = 'ch-peek-h',
+}: {
+  meetingId: string | null;
+  headingClassName?: string;
+}) {
+  const { t } = useTranslation();
+  const processing = useQuery({
+    queryKey: ['peek-processing', meetingId],
+    queryFn: () => library.processing(meetingId!),
+    enabled: !!meetingId && library.available(),
+    retry: false,
+  });
+  const report = processing.data?.report;
+  if (!report) return null;
+  const names = [
+    ...new Set(
+      report.assignments.flatMap((a) => (a.state === 'confirmed' && a.name ? [a.name] : []))
+    ),
+  ];
+  return (
+    <section className="ch-peek-sec">
+      <h3 className={headingClassName}>{t('meetingsHub.eventDetails.whoCame')}</h3>
+      <p className="ch-peek-line">
+        {names.length ? names.join(', ') : t('meetingsHub.eventDetails.nobodyConfirmed')}
+      </p>
+      {names.length > 0 && (
+        <p className="ch-event-preview">{t('meetingsHub.eventDetails.whoCameHint')}</p>
+      )}
+    </section>
+  );
+}
+
 /** Files of the meeting folder and linked activities (spec 0105), names only. */
 export function PeekFilesAndLinks({ session, start }: { session: Session; start: Date | null }) {
   const { t } = useTranslation();

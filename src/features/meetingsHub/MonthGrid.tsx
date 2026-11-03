@@ -5,6 +5,7 @@ import { clockTime } from './format';
 import { OUTLOOK_PRESETS, colourStyle, colourVar, useEventColour } from '../agenda/categories';
 import { CategoryLabel } from '../agenda/CategoryLabel';
 import { itemHandlers, type GridActions } from './CalendarBlock';
+import { eventLook } from './eventDetails';
 import './monthView.css';
 
 /**
@@ -87,11 +88,13 @@ function MonthItem({
   const locale = i18n.resolvedLanguage ?? i18n.language;
   const colour = useEventColour(row.kind === 'recording' ? null : row.event);
   const tinted = colour && !live;
+  const look = eventLook(row.kind === 'recording' ? null : row.event);
   return (
     <button
       type="button"
       className="mh-month-ev"
       data-key={row.key}
+      data-look={look ?? undefined}
       data-category={tinted ? OUTLOOK_PRESETS[colour.preset] : undefined}
       style={tinted ? colourStyle(colour.preset) : undefined}
       {...itemHandlers(row, actions)}
@@ -107,6 +110,7 @@ function MonthItem({
       <span className="sr-only">{clockTime(row.start!, locale)} </span>
       <span className="truncate">{row.title || t('meetingsHub.untitled')}</span>
       <CategoryLabel colour={colour} />
+      {look && <span className="sr-only">{t(`meetingsHub.eventDetails.look.${look}`)}</span>}
     </button>
   );
 }

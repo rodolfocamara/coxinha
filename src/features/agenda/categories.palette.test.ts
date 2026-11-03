@@ -57,3 +57,41 @@ it('keeps light text readable on every dark fill', () => {
   for (const [index] of OUTLOOK_PRESETS.entries())
     expect(contrast('#efeeea', dark[`${index}-bg`]), String(index)).toBeGreaterThanOrEqual(4.5);
 });
+
+const stripe = (selector: string) => {
+  const match = /--cx-hatch: rgb\((\d+) (\d+) (\d+) \/ ([\d.]+)\);/.exec(block(selector));
+  return { channel: Number(match![1]), alpha: Number(match![4]) };
+};
+const painted = (fill: string, { channel, alpha }: { channel: number; alpha: number }) =>
+  `#${[1, 3, 5]
+    .map((i) =>
+      Math.round(parseInt(fill.slice(i, i + 2), 16) * (1 - alpha) + channel * alpha)
+        .toString(16)
+        .padStart(2, '0')
+    )
+    .join('')}`;
+
+it('keeps text readable over the tentative stripes (spec 0124 P3)', () => {
+  const dark = values(block("[data-theme='dark'] {"));
+  const light = values(block(':root {'));
+  for (const [index] of OUTLOOK_PRESETS.entries()) {
+    const onDark = painted(dark[`${index}-bg`], stripe("[data-theme='dark'] {"));
+    expect(contrast('#efeeea', onDark), String(index)).toBeGreaterThanOrEqual(
+      contrast('#efeeea', dark[`${index}-bg`])
+    );
+    const onLight = painted(light[`${index}-bg`], stripe(':root {'));
+    expect(luminance(onLight), String(index)).toBeGreaterThanOrEqual(
+      luminance(light[`${index}-bg`])
+    );
+  }
+});
+
+it('never dims a declined block with opacity, which would dim its text', () => {
+  const week = readFileSync(
+    resolve(dirname(fileURLToPath(import.meta.url)), '../meetingsHub/weekView.css'),
+    'utf8'
+  );
+  const rules = week.split('}').filter((rule) => rule.includes("[data-look='declined']"));
+  expect(rules.length).toBeGreaterThan(0);
+  for (const rule of rules) expect(rule).not.toContain('opacity');
+});

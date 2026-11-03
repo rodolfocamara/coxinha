@@ -5,8 +5,15 @@ import type { MeetingRow } from './meetingRows';
 import { clockTime } from './format';
 import { OUTLOOK_PRESETS, colourStyle, useEventColour } from '../agenda/categories';
 import { HOUR_PX, type Block } from './weekLayout';
+import { eventLook } from './eventDetails';
+import { sessionIdOf, signalItems, useSessionSignals } from './meetingSignals';
+import { SignalIcons, signalLabel } from './SignalIcons';
 
 export const px = (minutes: number) => (minutes / 60) * HOUR_PX;
+/** An hour's block fits title, time and icons; below that, none rather than clipped. */
+const ICONS_FROM_PX = HOUR_PX;
+const ORGANIZER_FROM_PX = 52;
+const ORGANIZER_WITH_ICONS_FROM_PX = 66;
 
 export type GridActions = {
   onSelect: (row: MeetingRow) => void;
@@ -62,12 +69,14 @@ export function CalendarBlock({
   block,
   live,
   when,
+  now,
   ...actions
 }: GridActions & {
   row: MeetingRow;
   block?: Block;
   live: boolean;
   when: string;
+  now: Date;
 }) {
   const { t } = useTranslation();
   const event = row.kind === 'recording' ? null : row.event;
@@ -82,6 +91,9 @@ export function CalendarBlock({
     width: `calc(${100 / block.lanes}% - 4px)`,
   };
   const organizer = event?.organizer?.name || event?.organizer?.email;
+  const look = eventLook(event);
+  const signals = signalItems(row, useSessionSignals(sessionIdOf(row)), now);
+  const icons = !!block && height >= ICONS_FROM_PX && signals.length > 0;
   return (
     <button
       type="button"
@@ -97,17 +109,28 @@ export function CalendarBlock({
               : undefined
       }
       data-cancelled={event?.cancelled || undefined}
+      data-look={look ?? undefined}
+      data-signals={icons || undefined}
       data-key={row.key}
       style={{ ...(tinted ? colourStyle(colour.preset) : {}), ...position }}
       title={`${when} ${title}`}
-      aria-label={[when, title, colour && t('outlookCategories.mark', { name: colour.name })]
+      aria-label={[
+        when,
+        title,
+        colour && t('outlookCategories.mark', { name: colour.name }),
+        look && t(`meetingsHub.eventDetails.look.${look}`),
+        ...signals.map((item) => signalLabel(item, t)),
+      ]
         .filter(Boolean)
         .join(', ')}
       {...itemHandlers(row, actions)}
     >
       <b>{title}</b>
       {block && height >= 34 && <span className="mh-week-ev-meta">{when}</span>}
-      {block && height >= 52 && organizer && <span className="mh-week-ev-meta">{organizer}</span>}
+      {icons && <SignalIcons items={signals} />}
+      {block &&
+        height >= (icons ? ORGANIZER_WITH_ICONS_FROM_PX : ORGANIZER_FROM_PX) &&
+        organizer && <span className="mh-week-ev-meta">{organizer}</span>}
     </button>
   );
 }

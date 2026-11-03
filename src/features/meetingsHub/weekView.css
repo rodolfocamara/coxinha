@@ -166,6 +166,22 @@
   .mh-week-ev[data-cancelled] b {
     text-decoration: line-through;
   }
+  /* Spec 0124 P3, Outlook's styles. The text keeps its contrast: declined mixes
+     the fill towards the page and tentative's stripes move away from the text. */
+  .mh-week-ev[data-look='declined'] {
+    background: color-mix(in oklab, var(--cx-cat-bg) 35%, var(--color-background));
+    box-shadow: inset 3px 0 0 color-mix(in oklab, var(--cx-cat) 45%, var(--color-background));
+  }
+  .mh-week-ev[data-look='declined'] b {
+    text-decoration: line-through;
+  }
+  .mh-week-ev[data-look='tentative'] {
+    background-image: repeating-linear-gradient(135deg, var(--cx-hatch) 0 4px, transparent 4px 8px);
+  }
+  .mh-week-ev[data-look='free'] {
+    background: var(--color-background);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--cx-cat) 65%, var(--color-foreground));
+  }
   .mh-week-ev b,
   .mh-week-ev-meta {
     overflow: hidden;

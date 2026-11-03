@@ -73,6 +73,7 @@ export function TimeGridView({
                       key={row.key}
                       row={row}
                       live={false}
+                      now={now}
                       {...actions}
                       when={day.toLocaleDateString(locale, { weekday: 'long', day: 'numeric' })}
                     />
@@ -103,6 +104,7 @@ export function TimeGridView({
                 row={block.row}
                 block={block}
                 live={isLive(block.row)}
+                now={now}
                 {...actions}
                 when={blockTime(block, day, locale)}
               />

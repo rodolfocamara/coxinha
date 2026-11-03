@@ -291,6 +291,64 @@
       "none": "No summary yet. It is written after the transcript.",
       "setup": "To summarize, turn on the title model and \"Generate summaries\" in Settings › Integrations.",
       "failed": "The summary did not work: {{error}}"
+    },
+    "eventDetails": {
+      "label": "From Outlook",
+      "mine": {
+        "organizer": "You organize this meeting",
+        "accepted": "Your response: accepted",
+        "tentative": "Your response: tentative",
+        "declined": "Your response: declined",
+        "none": "Your response: not answered"
+      },
+      "location": "Location: {{location}}",
+      "inviteesCount_one": "Invitees: {{count}} ({{required}} required, {{optional}} optional)",
+      "inviteesCount_other": "Invitees: {{count}} ({{required}} required, {{optional}} optional)",
+      "group": {
+        "accepted": "Accepted ({{count}})",
+        "tentative": "Tentative ({{count}})",
+        "declined": "Declined ({{count}})",
+        "noAnswer": "No answer ({{count}})"
+      },
+      "optionalPerson": "{{name}} (optional)",
+      "join": "Join in Teams",
+      "openInOutlook": "Open in Outlook",
+      "openFailed": "Could not open the link.",
+      "whoCame": "Confirmed on the recording",
+      "whoCameHint": "Speakers you confirmed. People who stayed silent or are not named yet are not listed.",
+      "nobodyConfirmed": "No speaker confirmed yet, so who came is unknown.",
+      "look": {
+        "declined": "declined",
+        "tentative": "tentative",
+        "free": "free"
+      }
+    },
+    "signals": {
+      "label": "What this meeting has",
+      "useful": "Marked useful",
+      "notUseful": "Marked not useful",
+      "transcript": "Transcribed",
+      "speakers": "Speakers: {{named}} named, {{unnamed}} unnamed",
+      "note": "Has a note",
+      "preparation": "Prepared beforehand",
+      "noPreparation": "No preparation",
+      "diagram": "Has a diagram",
+      "memory": "In memory: its summary",
+      "followUps": "Follow-ups: {{linked}} linked, {{actions}} suggested by the summary",
+      "state": {
+        "label": "Was this meeting worth it?",
+        "markLabel": "Your mark",
+        "useful": "Useful",
+        "notUseful": "Not useful",
+        "markFailed": "Could not save your mark.",
+        "generated": "It generated content: a summary, follow-ups, a diagram or a note.",
+        "notGenerated": "It generated no content yet.",
+        "memoryKept": "In memory: only its generated summary.",
+        "memoryOff": "Not in memory: summaries are off.",
+        "openSetting": "Open Settings › Integrations",
+        "memoryPending": "Not in memory yet: its summary is still to be written.",
+        "memoryNoTranscript": "Not in memory: there is no transcript to summarize."
+      }
     }
   }
 }

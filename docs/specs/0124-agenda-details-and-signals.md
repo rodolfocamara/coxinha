@@ -165,34 +165,43 @@ neither changes the opt-in nor calls the model.
 ## Acceptance
 
 - [x] New fields parsed; missing or unknown values stay empty; the old cache loads
-      (`calendar::details` tests `reads_the_details_outlook_has`,
+      (`calendar::details::tests` `reads_the_details_outlook_has`,
       `missing_or_unknown_details_stay_empty`,
       `a_cache_from_before_this_spec_still_loads`).
 - [x] Window and refresh interval; paging limits cover the wider window
-      (`calendar::graph_tests::the_window_reads_30_days_back_and_180_ahead`,
+      (`calendar::graph::tests` `the_window_reads_30_days_back_and_180_ahead`,
       `paging_limits_hold_for_the_wider_window`,
-      `calendar::background` test `refreshes_every_five_minutes`).
-- [x] Only Teams URLs over https are accepted, and the Outlook link is the current
-      format with an encoded id (`calendar::details` tests
-      `only_teams_urls_over_https_are_accepted`, `outlook_link_uses_the_current_format`).
+      `calendar::background::tests::refreshes_every_five_minutes`).
+- [x] Only Teams URLs over https are accepted, again when opening, and the Outlook
+      link is the current format with an encoded id (`calendar::details::tests`
+      `only_teams_urls_over_https_are_accepted`, `opening_checks_the_cached_url_again`,
+      `outlook_link_uses_the_current_format`).
 - [x] Peek and page show response, grouped invitees with counts, location, buttons
       that send only the event id, and the preview as text; an older cache claims
       no group (`eventDetails.test.ts`, `MeetingsHub.signals.test.tsx`).
-- [x] Who came lists confirmed speakers apart, and is absent without them
+- [x] Who came lists confirmed speakers apart, and is absent without a recording
       (`MeetingsHub.signals.test.tsx`).
 - [x] Block styles and accessible names; contrast holds
       (`MeetingsHub.signals.test.tsx`, `categories.palette.test.ts`).
 - [x] Each signal, preparation by timestamp, diagrams and the bounded reads
       (`signals::tests`), action items from the summary section
-      (`summaries::prompt_tests::counts_action_items_of_the_section`).
+      (`summaries::prompt::tests::counts_action_items_of_the_section`).
 - [x] Icons on tall blocks, none on short ones, rows and peek; the mark for a
       future meeting without preparation (`meetingSignals.test.ts`,
       `MeetingsHub.signals.test.tsx`).
 - [x] The mark is reversible, stored per session and follows a joined session
-      (`signals::marks` tests, `library::absorb` test
-      `a_joined_session_keeps_its_mark`, `MeetingsHub.signals.test.tsx`).
+      (`signals::marks::tests`,
+      `library::reconcile::tests::a_refresh_pass_joins_the_prepared_and_recorded_sessions_once`,
+      `MeetingsHub.signals.test.tsx`).
 - [x] Generated content never reads as useful, and the peek states memory honestly
-      with the settings link (`signals::tests`, `MeetingsHub.signals.test.tsx`).
+      with the settings link (`signals::tests::the_mark_is_only_what_the_owner_set`,
+      `MeetingsHub.signals.test.tsx`).
 - [ ] Owner: on real data the responses match Outlook, "Join in Teams" joins, "Open
       in Outlook" opens the event (not checked with `ImmutableId` values against a
       live mailbox), and the icons read well on a real week.
+
+## Evidence
+
+- Rendered with `tools/ui-preview` and `fixtures/signals.js` in both themes: tentative
+  hatched, free outlined, declined dimmed and struck through; an hour's block shows
+  its icons, a half-hour block none, and an icon past the width wraps out whole.

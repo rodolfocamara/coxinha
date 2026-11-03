@@ -16,6 +16,7 @@ import type {
   LibraryMeeting,
   MeetingSummary,
   ProcessingDetail,
+  SignalsReport,
 } from '../meetings/library';
 import { at, event, recording, session } from './meetingsHub.fixtures';
 
@@ -61,6 +62,8 @@ export type Db = {
   links: { session: string; note: string; createdAt: string }[];
   /** Spec 0108: summaries by meeting. */
   summaries: Record<string, MeetingSummary>;
+  /** Spec 0124: what the signals command answers. */
+  signals: SignalsReport;
 };
 
 export function freshDb(): Db {
@@ -84,6 +87,7 @@ export function freshDb(): Db {
     notes: [],
     links: [],
     summaries: {},
+    signals: { summariesOn: false, sessions: [] },
   };
 }
 
@@ -256,6 +260,15 @@ export function backend(db: Db) {
         return { folder: null, files: [], references: [] };
       case 'library_meeting_summary':
         return db.summaries[String(args.meetingId)] ?? null;
+      case 'library_meeting_signals':
+        return db.signals;
+      case 'library_set_meeting_mark': {
+        const signal = db.signals.sessions.find((s) => s.sessionId === args.sessionId);
+        if (signal) signal.mark = args.mark as SignalsReport['sessions'][number]['mark'];
+        return null;
+      }
+      case 'calendar_open_link':
+        return null;
       default:
         throw new Error(`Unexpected command ${command}`);
     }

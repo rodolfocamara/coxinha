@@ -9,10 +9,15 @@ import { useCaptureStore } from '../capture/captureStore';
 import { colourVar, useEventColour } from '../agenda/categories';
 import { dayKey, localDay, nextDay } from '../sessions/sessionDates';
 import { attendeesOf, type MeetingRow } from './meetingRows';
+import { EventDetails } from './EventDetails';
+import { attendeeGroups } from './eventDetails';
+import { PeekMeetingState } from './PeekMeetingState';
+import { sessionIdOf, signalItems, useSessionSignals } from './meetingSignals';
+import { SignalIcons } from './SignalIcons';
 import { durationLabel, whenLabel } from './format';
 import type { DetailPanel } from './meetingsSearch';
 import { useMeetingActions } from './useMeetingActions';
-import { PeekFilesAndLinks, PeekSummary, PeekTranscript } from './PeekSections';
+import { PeekFilesAndLinks, PeekSummary, PeekTranscript, WhoCame } from './PeekSections';
 import { PeekCalendarMatch } from './PeekCalendarMatch';
 import './calendarPeek.css';
 
@@ -57,6 +62,7 @@ export function MeetingPeek({
   const meetingId = session?.meeting_id ?? (row.kind === 'recording' ? row.recording.id : null);
   const colour = useEventColour(event);
   const capture = useCaptureStore((s) => s.status);
+  const signals = signalItems(row, useSessionSignals(sessionIdOf(row)), now);
   const detail = useQuery({
     queryKey: ['peek-detail', meetingId],
     queryFn: () => library.detail(meetingId!),
@@ -90,7 +96,8 @@ export function MeetingPeek({
   }, [onClose]);
 
   const title = row.title || t('meetingsHub.untitled');
-  const people = attendeesOf(row);
+  // Rooms are invitees to Outlook, not people, once responses say which they are.
+  const peopleCount = (event && attendeeGroups(event)?.total) ?? attendeesOf(row).length;
   const durationMs = detail.data?.storage?.durationMs ?? null;
   const ended = !!row.end && row.end <= now;
   const started = !!row.start && row.start <= now;
@@ -136,9 +143,9 @@ export function MeetingPeek({
             {colour.name}
           </span>
         )}
-        {people.length > 0 && (
+        {peopleCount > 0 && (
           <span className="ch-peek-chip" data-static="">
-            {t('meetingsHub.outlookPeople', { count: people.length })}
+            {t('meetingsHub.outlookPeople', { count: peopleCount })}
           </span>
         )}
         {durationMs ? (
@@ -152,18 +159,9 @@ export function MeetingPeek({
           </span>
         )}
       </div>
-      {!session && event && people.length > 0 && (
-        <section className="ch-peek-sec">
-          <h3 className="ch-peek-h">{k('invitees')}</h3>
-          <p className="ch-peek-line">
-            {people
-              .slice(0, 6)
-              .map((p) => p.name || p.email)
-              .join(', ')}
-            {people.length > 6 ? ` +${people.length - 6}` : ''}
-          </p>
-        </section>
-      )}
+      <SignalIcons items={signals} labelled />
+      {event && <EventDetails key={event.id} event={event} ended={ended} />}
+      <WhoCame meetingId={meetingId} />
       {session && meetingId && !event && row.start && past && (
         <PeekCalendarMatch
           key={session.id}
@@ -179,6 +177,7 @@ export function MeetingPeek({
       <PeekSummary meetingId={meetingId} session={session} />
       <PeekTranscript meetingId={meetingId} onFull={() => onOpen(row, 'transcript')} />
       {session && <PeekFilesAndLinks session={session} start={row.start} />}
+      {session && past && <PeekMeetingState sessionId={session.id} />}
       {actions.error && (
         <p className="ch-peek-error" role="alert">
           {actions.error}
