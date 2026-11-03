@@ -2,11 +2,6 @@
 
 /* Week view (spec 0104): seven day columns on a 48 px-per-hour axis. */
 @layer components {
-  .mh-week {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
   /* The grid scrolls as one so the sticky header keeps the columns aligned. */
   .mh-week-grid {
     --mh-week-gutter: 52px;
@@ -25,7 +20,7 @@
   .mh-week-allday,
   .mh-week-body {
     display: grid;
-    grid-template-columns: var(--mh-week-gutter) repeat(7, minmax(0, 1fr));
+    grid-template-columns: var(--mh-week-gutter) repeat(var(--mh-week-days, 7), minmax(0, 1fr));
   }
   .mh-week-head {
     border-bottom: 1px solid var(--color-border);

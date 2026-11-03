@@ -189,5 +189,5 @@ Pending decisions that block or shape the implementation.
 - [0101 — Offline speaker clustering and per-word attribution](0101-offline-speaker-clustering.md) — in-progress
 - [0102 — Name speakers from the meeting's invitees](0102-name-speakers-from-invitees.md) — in-progress
 - [0103 — Outlook categories and colours](0103-outlook-categories-and-colours.md) — in-progress
-- [0104 — Week view in Reuniões](0104-week-view.md) — in-progress
+- [0104 — Calendar views in Reuniões](0104-week-view.md) — in-progress
 - [0105 — Files and links for meetings and activities](0105-item-files-and-links.md) — in-progress

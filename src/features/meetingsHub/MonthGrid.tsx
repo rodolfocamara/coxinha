@@ -1,8 +1,5 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '../../components/ui';
-import { dayKey, monthStart, monthWeeks } from '../sessions/sessionDates';
+import { dayKey, monthWeeks } from '../sessions/sessionDates';
 import { rowsByDay, type MeetingRow } from './meetingRows';
 import { clockTime } from './format';
 import { OUTLOOK_PRESETS, colourStyle, colourVar, useEventColour } from '../agenda/categories';
@@ -10,63 +7,31 @@ import { CategoryLabel } from '../agenda/CategoryLabel';
 import './monthView.css';
 
 /**
- * "Mês" tab: a month grid of meetings and Outlook events. Every item is a
- * native button that opens the meeting in the list view.
+ * Month grid of the calendar page (spec 0104 P4): meetings and Outlook events
+ * by day. Every item is a native button that opens the meeting in the list
+ * view.
  */
-export function MonthView({
+export function MonthGrid({
+  month,
   rows,
   now,
   isLive,
   onSelect,
 }: {
+  month: Date;
   rows: MeetingRow[];
   now: Date;
   isLive: (row: MeetingRow) => boolean;
   onSelect: (row: MeetingRow) => void;
 }) {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const locale = i18n.resolvedLanguage ?? i18n.language;
-  const k = (key: string, options?: Record<string, unknown>) =>
-    t(`meetingsHub.month.${key}`, options);
-  const [month, setMonth] = useState(() => monthStart(now));
   const weeks = monthWeeks(month);
   const days = rowsByDay(rows);
   const today = dayKey(now);
-  const raw = month.toLocaleDateString(locale, { month: 'long', year: 'numeric' });
-  const label = raw.charAt(0).toLocaleUpperCase(locale) + raw.slice(1);
+  const label = month.toLocaleDateString(locale, { month: 'long', year: 'numeric' });
   return (
-    <section className="mh-month" id="meetings-list-panel-month-grid" aria-label={label}>
-      <div className="mh-month-head">
-        <Button
-          size="sm"
-          iconOnly
-          icon={<ChevronLeft size={15} aria-hidden="true" />}
-          aria-label={k('previous')}
-          onClick={() => setMonth(monthStart(month, -1))}
-        />
-        <Button size="sm" onClick={() => setMonth(monthStart(now))}>
-          {k('today')}
-        </Button>
-        <Button
-          size="sm"
-          iconOnly
-          icon={<ChevronRight size={15} aria-hidden="true" />}
-          aria-label={k('next')}
-          onClick={() => setMonth(monthStart(month, 1))}
-        />
-        <h2 className="mh-month-title" aria-live="polite">
-          {label}
-        </h2>
-        <span className="flex-1" />
-        <span className="mh-legend">
-          <span>
-            <i className="mh-dot" data-tone="info" aria-hidden="true" /> {k('outlook')}
-          </span>
-          <span>
-            <i className="mh-dot" aria-hidden="true" /> {k('meeting')}
-          </span>
-        </span>
-      </div>
+    <div className="mh-month-body">
       <table className="mh-month-grid cx-glass">
         <caption className="sr-only">{label}</caption>
         <thead>
@@ -107,7 +72,7 @@ export function MonthView({
           ))}
         </tbody>
       </table>
-    </section>
+    </div>
   );
 }
 

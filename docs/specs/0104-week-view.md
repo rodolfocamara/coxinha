@@ -1,4 +1,4 @@
-# 0104 — Week view in Reuniões
+# 0104 — Calendar views in Reuniões
 
 Status: in-progress
 Phase: F1
@@ -57,6 +57,29 @@ a day but not when, how long, or what overlaps. The owner asked for the week
   tall enough. Every block is a native button whose accessible name carries
   the time, the title and the category; buttons follow day and time order.
 
+### P4 One calendar page (2026-11-03)
+
+The owner asked for Outlook's switcher on one page instead of separate
+"Semana" and "Mês" tabs, and for the calendar to follow the search.
+
+- One "Calendário" tab replaces "Semana" and "Mês":
+  `?tab=calendar&view=day|workweek|week|month`, plus `&days=1..7` for the
+  day view. `?tab=week`, `?tab=month` and `/calendar` open the matching
+  view. The last view and day count are remembered (localStorage) and used
+  when the URL names no view.
+- The toolbar follows Outlook's order: a "Dia" split button (the menu picks
+  1–7 days), "Semana de trabalho", "Semana" and "Mês" as one toggle group,
+  then "Hoje", previous, next and the range title.
+- Day view shows N columns from the anchor date (today when opened); work
+  week is Monday–Friday; week is Monday–Sunday. Previous and next move by
+  the days shown: N for the day view, 7 for the weeks, a month for the
+  month.
+- The time grid takes any list of days (`calendarViews.ts` picks them); the
+  month grid is the same as before, under the shared toolbar.
+- The list's search box filters every view, by title, people, organizer and
+  category name. When it hides everything in range, the toolbar says so; the
+  grid stays.
+
 ## Acceptance
 
 - [ ] Week start, day columns, clipping at midnight, minimum height, default
@@ -67,3 +90,9 @@ a day but not when, how long, or what overlaps. The owner asked for the week
       blocks carry the category colour and name, navigation changes the range
       and a block opens the meeting (`MeetingsHub.week` tests).
 - [ ] Owner's Reuniões: the week reads like Outlook's week view.
+- [x] Day ranges for every view, navigation steps and remembered prefs
+      (`calendarViews` tests).
+- [x] One "Calendário" tab: the switcher, the 1–7 day menu, work week with
+      five columns, old URLs mapped, the remembered view used, search
+      filtering the grid including by category name
+      (`MeetingsHub.calendar` tests).

@@ -7,8 +7,7 @@
     "tabs": {
       "list": "Upcoming and recent",
       "review": "To review",
-      "week": "Week",
-      "month": "Month",
+      "calendar": "Calendar",
       "notes": "Notes",
       "transcript": "Transcript",
       "live": "Live",
@@ -144,16 +143,28 @@
       "transcribeAgain": "Transcribe again",
       "transcriptLiveNow": "live, provisional"
     },
-    "week": {
-      "previous": "Previous week",
-      "next": "Next week",
+    "calendar": {
+      "label": "Calendar views",
+      "day": "Day",
+      "dayCount": "Number of days",
+      "days_one": "{{count}} day",
+      "days_other": "{{count}} days",
+      "workweek": "Work week",
+      "week": "Week",
+      "month": "Month",
       "today": "Today",
-      "allDay": "All day"
+      "previousDay_one": "Previous day",
+      "previousDay_other": "Previous {{count}} days",
+      "nextDay_one": "Next day",
+      "nextDay_other": "Next {{count}} days",
+      "previousWeek": "Previous week",
+      "nextWeek": "Next week",
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month",
+      "allDay": "All day",
+      "noMatch": "No meeting matches the search in this period"
     },
     "month": {
-      "previous": "Previous month",
-      "next": "Next month",
-      "today": "Today",
       "outlook": "Outlook",
       "meeting": "meeting"
     },

@@ -17,7 +17,7 @@ import { localDay, nextDay } from '../sessions/sessionDates';
 import { markProps, useEventColour } from '../agenda/categories';
 import { CategoryLabel } from '../agenda/CategoryLabel';
 
-export type ListTab = 'list' | 'review' | 'week' | 'month';
+export type ListTab = 'list' | 'review' | 'calendar';
 
 type Props = {
   groups: { id: GroupId | 'review'; rows: MeetingRow[] }[];
@@ -95,8 +95,7 @@ export function MeetingList(p: Props) {
               </>
             ),
           },
-          { id: 'week', label: k('tabs.week') },
-          { id: 'month', label: k('tabs.month') },
+          { id: 'calendar', label: k('tabs.calendar') },
         ]}
       />
       <div className="mh-search">

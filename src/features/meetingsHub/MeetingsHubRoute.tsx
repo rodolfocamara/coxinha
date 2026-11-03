@@ -15,8 +15,8 @@ import {
 } from './meetingRows';
 import { MeetingList, type ListTab } from './MeetingList';
 import { MeetingDetail, type DetailTarget } from './MeetingDetail';
-import { MonthView } from './MonthView';
-import { WeekView } from './WeekView';
+import { CalendarPage } from './CalendarPage';
+import { readCalendarPrefs, writeCalendarPrefs, type CalendarView } from './calendarViews';
 import { NewMeetingSheet } from './NewMeetingSheet';
 import { ImportAudioSheet } from './ImportAudioSheet';
 import { ParticipantsSheet } from './ParticipantsSheet';
@@ -156,6 +156,24 @@ export function MeetingsHubRoute() {
   };
   const openSession = (id: string) =>
     void navigate({ to: '/meetings/$sessionId', params: { sessionId: id }, search: {} });
+  // The URL names the view; without one, the last view chosen (spec 0104 P4).
+  const remembered = readCalendarPrefs();
+  const calendar = {
+    view: search.view ?? remembered.view,
+    days: search.days ?? remembered.days,
+  };
+  const changeView = (view: CalendarView, days: number) => {
+    writeCalendarPrefs({ view, days });
+    const nextSearch = {
+      ...search,
+      tab: 'calendar' as const,
+      view,
+      days: view === 'day' ? days : undefined,
+    };
+    if (sessionId)
+      void navigate({ to: '/meetings/$sessionId', params: { sessionId }, search: nextSearch });
+    else void navigate({ to: '/meetings', search: nextSearch });
+  };
   const changeTab = (next: ListTab) => {
     const nextSearch = { ...search, tab: listTab(next) };
     if (sessionId)
@@ -181,7 +199,7 @@ export function MeetingsHubRoute() {
         onTab={changeTab}
         query={query}
         onQuery={setQuery}
-        selectedKey={tab === 'month' || tab === 'week' ? null : selectedKey}
+        selectedKey={tab === 'calendar' ? null : selectedKey}
         onSelect={select}
         onNew={() => setSheet({ kind: 'meeting' })}
         onImport={() => setSheet({ kind: 'import', title: '', forMeeting: false })}
@@ -208,10 +226,17 @@ export function MeetingsHubRoute() {
         <div className="mh-detail p-6">
           <Alert tone="info">{t('meetingsHub.desktopRequired')}</Alert>
         </div>
-      ) : tab === 'week' ? (
-        <WeekView rows={rows} now={now} isLive={isLive} onSelect={(row) => select(row, false)} />
-      ) : tab === 'month' ? (
-        <MonthView rows={rows} now={now} isLive={isLive} onSelect={(row) => select(row, false)} />
+      ) : tab === 'calendar' ? (
+        <CalendarPage
+          view={calendar.view}
+          days={calendar.days}
+          rows={searched}
+          searching={!!query.trim()}
+          now={now}
+          isLive={isLive}
+          onView={changeView}
+          onSelect={(row) => select(row, false)}
+        />
       ) : target ? (
         <MeetingDetail
           key={selectedKey}

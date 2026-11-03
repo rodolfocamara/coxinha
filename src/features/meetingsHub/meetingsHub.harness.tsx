@@ -23,6 +23,7 @@ import { sessionListCache } from '../sessions/sessions';
 import { initialCaptureState, useCaptureStore } from '../capture/captureStore';
 import { forgetProcessingConfig } from '../meetings/processingConfigMemory';
 import { takePendingSheet } from './meetingsSheets';
+import { CALENDAR_PREF_KEYS } from './calendarViews';
 
 export type Db = {
   sessions: Session[];
@@ -243,6 +244,7 @@ export function resetState() {
   forgetProcessingConfig();
   takePendingSheet();
   resetOutlookCategories();
+  for (const key of CALENDAR_PREF_KEYS) window.localStorage.removeItem(key);
 }
 
 export function renderAt(path: string) {

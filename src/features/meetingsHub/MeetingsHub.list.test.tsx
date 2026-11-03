@@ -160,11 +160,12 @@ it('searches by title and invitee', async () => {
   expect(rowTitles()).toEqual(['Product committee']);
 });
 
-it('opens the month tab from the old calendar path and opens a meeting from a day', async () => {
+it('opens the month view from the old calendar path and opens a meeting from a day', async () => {
   const router = renderAt('/calendar');
   await waitFor(() => expect(router.state.location.pathname).toBe('/meetings'));
-  expect(router.state.location.search).toMatchObject({ tab: 'month' });
-  expect(await screen.findByRole('tab', { name: 'Month', selected: true })).toBeInTheDocument();
+  expect(router.state.location.search).toMatchObject({ tab: 'calendar', view: 'month' });
+  expect(await screen.findByRole('tab', { name: 'Calendar', selected: true })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Month', pressed: true })).toBeInTheDocument();
   const grid = await screen.findByRole('table');
   const daily = await within(grid).findByRole('button', { name: /Squad daily/ });
   fireEvent.click(daily);

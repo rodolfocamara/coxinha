@@ -7,8 +7,7 @@
     "tabs": {
       "list": "Próximas e recentes",
       "review": "A revisar",
-      "week": "Semana",
-      "month": "Mês",
+      "calendar": "Calendário",
       "notes": "Notas",
       "transcript": "Transcrição",
       "live": "Ao vivo",
@@ -144,16 +143,28 @@
       "transcribeAgain": "Transcrever de novo",
       "transcriptLiveNow": "ao vivo, provisória"
     },
-    "week": {
-      "previous": "Semana anterior",
-      "next": "Próxima semana",
+    "calendar": {
+      "label": "Visões do calendário",
+      "day": "Dia",
+      "dayCount": "Quantidade de dias",
+      "days_one": "{{count}} dia",
+      "days_other": "{{count}} dias",
+      "workweek": "Semana de trabalho",
+      "week": "Semana",
+      "month": "Mês",
       "today": "Hoje",
-      "allDay": "Dia todo"
+      "previousDay_one": "Dia anterior",
+      "previousDay_other": "{{count}} dias anteriores",
+      "nextDay_one": "Próximo dia",
+      "nextDay_other": "Próximos {{count}} dias",
+      "previousWeek": "Semana anterior",
+      "nextWeek": "Próxima semana",
+      "previousMonth": "Mês anterior",
+      "nextMonth": "Próximo mês",
+      "allDay": "Dia todo",
+      "noMatch": "Nenhuma reunião corresponde à busca neste período"
     },
     "month": {
-      "previous": "Mês anterior",
-      "next": "Próximo mês",
-      "today": "Hoje",
       "outlook": "Outlook",
       "meeting": "reunião"
     },
