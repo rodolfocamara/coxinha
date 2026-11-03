@@ -62,7 +62,7 @@ pub async fn reconcile_agenda(app: &tauri::AppHandle, events: &[Event]) {
 mod tests {
     use super::*;
     use crate::db::Db;
-    use coxinha_core::store::session::{NewSession, SessionStatus};
+    use coxinha_core::store::session::{NewSession, PersonalNoteRef, SessionStatus};
 
     fn event() -> Event {
         serde_json::from_value(json!({
@@ -94,6 +94,22 @@ mod tests {
         let recorded = store.create_session(&input()).unwrap();
         let meeting = store
             .create_meeting_for_session(&recorded.id, "Meeting in Google Chrome")
+            .unwrap();
+        // A real session note cites its own session id in the frontmatter.
+        let intent = store.reserve_personal_note(&recorded.id).unwrap();
+        std::fs::write(
+            d.path().join(&intent.relative_path),
+            format!("---\ncoxinha-session: \"{}\"\n---\n", recorded.id),
+        )
+        .unwrap();
+        store
+            .complete_personal_note(
+                &recorded.id,
+                &PersonalNoteRef {
+                    id: intent.note_id,
+                    relative_path: intent.relative_path.clone(),
+                },
+            )
             .unwrap();
         drop(store);
         let library = Library::open(root, None).unwrap();

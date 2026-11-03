@@ -43,7 +43,9 @@ fn disposable(vault: &Path, session: &Value) -> bool {
     let Some(id) = session["id"].as_str() else {
         return false;
     };
-    let note = session["note_path"].as_str().map(|p| vault.join(p));
+    let note = session["personal_note"]["relative_path"]
+        .as_str()
+        .map(|p| vault.join(p));
     let blank = note
         .as_ref()
         .is_none_or(|path| std::fs::read_to_string(path).is_ok_and(|raw| blank_note(&raw)));
@@ -162,7 +164,7 @@ mod tests {
         let notes = vault.path().join("notes");
         std::fs::create_dir_all(&notes).unwrap();
         std::fs::write(notes.join("own.md"), "---\nid: x\n---\n").unwrap();
-        let session = json!({ "id": "s-1", "note_path": "notes/own.md" });
+        let session = json!({ "id": "s-1", "personal_note": { "relative_path": "notes/own.md" } });
         assert!(disposable(vault.path(), &session));
         std::fs::write(notes.join("own.md"), "---\nid: x\n---\nAgenda").unwrap();
         assert!(!disposable(vault.path(), &session));
