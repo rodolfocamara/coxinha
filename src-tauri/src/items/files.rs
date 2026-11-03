@@ -48,6 +48,9 @@ pub enum Resolved {
     Url(String),
 }
 
+/// Marker writes from the app and the CLI take this lock.
+const ITEMS_LOCK: &str = "items.lock";
+
 pub fn is_url(target: &str) -> bool {
     let lower = target.to_ascii_lowercase();
     (lower.starts_with("https://") || lower.starts_with("http://"))
@@ -56,7 +59,16 @@ pub fn is_url(target: &str) -> bool {
 }
 
 pub fn list(vault: &Path, item: &ItemRef) -> Result<ItemFiles, String> {
-    let Some(dir) = folder::find(vault, item)? else {
+    list_in(folder::find(vault, item)?)
+}
+
+/// Same listing for readers that must not touch the vault (the CLI).
+pub fn list_readonly(vault: &Path, item: &ItemRef) -> Result<ItemFiles, String> {
+    list_in(folder::locate(vault, item)?)
+}
+
+fn list_in(dir: Option<PathBuf>) -> Result<ItemFiles, String> {
+    let Some(dir) = dir else {
         return Ok(ItemFiles {
             folder: None,
             files: Vec::new(),
@@ -114,6 +126,7 @@ pub fn list(vault: &Path, item: &ItemRef) -> Result<ItemFiles, String> {
 
 /// Copies the files in, numbering names already taken.
 pub fn include(vault: &Path, item: &ItemRef, sources: &[String]) -> Result<ItemFiles, String> {
+    let _lock = super::lock::exclusive(vault, ITEMS_LOCK)?;
     for source in sources {
         let path = Path::new(source);
         if !path.is_absolute() || !path.is_file() {
@@ -149,6 +162,7 @@ pub fn reference(
     if !is_url(target) && !Path::new(target).is_absolute() {
         return Err("a reference is an absolute path or an http(s) URL".into());
     }
+    let _lock = super::lock::exclusive(vault, ITEMS_LOCK)?;
     let dir = folder::ensure(vault, item)?;
     let mut marker = folder::read_marker(&dir).ok_or("cannot read item marker")?;
     if !marker.references.iter().any(|r| r.target == target) {
@@ -163,6 +177,7 @@ pub fn reference(
 }
 
 pub fn remove_reference(vault: &Path, item: &ItemRef, target: &str) -> Result<ItemFiles, String> {
+    let _lock = super::lock::exclusive(vault, ITEMS_LOCK)?;
     if let Some(dir) = folder::find(vault, item)? {
         let mut marker = folder::read_marker(&dir).ok_or("cannot read item marker")?;
         marker.references.retain(|r| r.target != target);
@@ -173,6 +188,7 @@ pub fn remove_reference(vault: &Path, item: &ItemRef, target: &str) -> Result<It
 
 /// Moves an included file to `.coxinha/trash/<date>/`, never deletes it.
 pub fn remove_file(vault: &Path, item: &ItemRef, name: &str) -> Result<ItemFiles, String> {
+    let _lock = super::lock::exclusive(vault, ITEMS_LOCK)?;
     let dir = folder::find(vault, item)?.ok_or("item has no files")?;
     let source = inside(&dir, name)?;
     let day = chrono::Local::now().format("%Y-%m-%d").to_string();

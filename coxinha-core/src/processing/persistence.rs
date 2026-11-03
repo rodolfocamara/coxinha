@@ -21,6 +21,67 @@ pub struct ProcessingReport {
     pub assignments: Vec<AssignmentView>,
     pub corrections: BTreeMap<String, String>,
 }
+/// The latest successful report of a meeting; read-only callers (the CLI)
+/// pass their own connections because the app holds the library lock.
+pub fn latest_report(
+    db: &rusqlite::Connection,
+    profiles: &rusqlite::Connection,
+    meeting: &str,
+) -> Result<Option<ProcessingReport>> {
+    let job: Option<String> = db.query_row("SELECT j.id FROM job j JOIN processing_run r ON r.job_id=j.id WHERE j.meeting_id=?1 AND j.state='succeeded' ORDER BY j.rowid DESC LIMIT 1",[meeting],|r|r.get(0)).optional()?;
+    job.map(|job| report_for_job(db, profiles, &job))
+        .transpose()
+}
+pub fn report_for_job(
+    db: &rusqlite::Connection,
+    profiles: &rusqlite::Connection,
+    job: &str,
+) -> Result<ProcessingReport> {
+    let (meeting,json):(String,String)=db.query_row("SELECT j.meeting_id,r.result_json FROM job j JOIN processing_run r ON r.job_id=j.id WHERE j.id=?1 AND j.state='succeeded'",[job],|r|Ok((r.get(0)?,r.get(1)?)))?;
+    let job = job.to_owned();
+    let result: ProcessingResult = serde_json::from_str(&json)?;
+    let mut corrections = BTreeMap::new();
+    for segment in &result.segments {
+        if let Some(text) =
+            crate::store::latest_edit(db, &meeting, &format!("{job}:{}", segment.id))?
+        {
+            corrections.insert(segment.id.clone(), text);
+        }
+    }
+    let mut q=profiles.prepare("SELECT a.id,a.speaker,a.person_id,a.state,p.name FROM assignment a LEFT JOIN person p ON p.id=a.person_id WHERE a.meeting_id=?1 AND a.speaker LIKE ?2")?;
+    let prefix = format!("{job}:");
+    let assignments = q
+        .query_map(params![meeting, format!("{prefix}%")], |r| {
+            let speaker: String = r.get(1)?;
+            Ok(AssignmentView {
+                id: r.get(0)?,
+                track: speaker
+                    .strip_prefix(&prefix)
+                    .and_then(|s| s.split_once(':'))
+                    .map(|(t, _)| t.to_string()),
+                speaker: speaker
+                    .strip_prefix(&prefix)
+                    .unwrap_or(&speaker)
+                    .split_once(':')
+                    .map(|(_, s)| s)
+                    .unwrap_or(speaker.strip_prefix(&prefix).unwrap_or(&speaker))
+                    .into(),
+                person_id: r.get(2)?,
+                state: r.get(3)?,
+                name: r.get(4)?,
+            })
+        })?
+        .collect::<rusqlite::Result<Vec<_>>>()?;
+    Ok(ProcessingReport {
+        job,
+        segments: result.segments,
+        turns: result.turns,
+        warnings: result.warnings,
+        assignments,
+        corrections,
+    })
+}
+
 impl Store {
     pub fn list_people(&self) -> Result<Vec<serde_json::Value>> {
         let mut q = self
@@ -176,51 +237,11 @@ impl Store {
         Ok(())
     }
     pub fn processing_report(&self, meeting: &str) -> Result<ProcessingReport> {
-        let job:String=self.db.query_row("SELECT j.id FROM job j JOIN processing_run r ON r.job_id=j.id WHERE j.meeting_id=?1 AND j.state='succeeded' ORDER BY j.rowid DESC LIMIT 1",[meeting],|r|r.get(0))?;
-        self.processing_report_by_job(&job)
+        latest_report(&self.db, &self.profiles, meeting)?
+            .ok_or_else(|| rusqlite::Error::QueryReturnedNoRows.into())
     }
     pub fn processing_report_by_job(&self, job: &str) -> Result<ProcessingReport> {
-        let (meeting,json):(String,String)=self.db.query_row("SELECT j.meeting_id,r.result_json FROM job j JOIN processing_run r ON r.job_id=j.id WHERE j.id=?1 AND j.state='succeeded'",[job],|r|Ok((r.get(0)?,r.get(1)?)))?;
-        let job = job.to_owned();
-        let result: ProcessingResult = serde_json::from_str(&json)?;
-        let mut corrections = BTreeMap::new();
-        for segment in &result.segments {
-            if let Some(text) = self.latest_edit(&meeting, &format!("{job}:{}", segment.id))? {
-                corrections.insert(segment.id.clone(), text);
-            }
-        }
-        let mut q=self.profiles.prepare("SELECT a.id,a.speaker,a.person_id,a.state,p.name FROM assignment a LEFT JOIN person p ON p.id=a.person_id WHERE a.meeting_id=?1 AND a.speaker LIKE ?2")?;
-        let prefix = format!("{job}:");
-        let assignments = q
-            .query_map(params![meeting, format!("{prefix}%")], |r| {
-                let speaker: String = r.get(1)?;
-                Ok(AssignmentView {
-                    id: r.get(0)?,
-                    track: speaker
-                        .strip_prefix(&prefix)
-                        .and_then(|s| s.split_once(':'))
-                        .map(|(t, _)| t.to_string()),
-                    speaker: speaker
-                        .strip_prefix(&prefix)
-                        .unwrap_or(&speaker)
-                        .split_once(':')
-                        .map(|(_, s)| s)
-                        .unwrap_or(speaker.strip_prefix(&prefix).unwrap_or(&speaker))
-                        .into(),
-                    person_id: r.get(2)?,
-                    state: r.get(3)?,
-                    name: r.get(4)?,
-                })
-            })?
-            .collect::<rusqlite::Result<Vec<_>>>()?;
-        Ok(ProcessingReport {
-            job,
-            segments: result.segments,
-            turns: result.turns,
-            warnings: result.warnings,
-            assignments,
-            corrections,
-        })
+        report_for_job(&self.db, &self.profiles, job)
     }
     pub fn confirm_processed_speaker(
         &mut self,

@@ -141,7 +141,7 @@ impl AppState {
 
 /// Resolves the vault root. `COXINHA_VAULT` wins when set — used by
 /// the boot smoke test to keep runs off the user's real home folder.
-fn default_vault_root() -> Result<PathBuf> {
+pub(crate) fn default_vault_root() -> Result<PathBuf> {
     if let Some(profile) = crate::app_paths::TestProfile::from_env()? {
         return Ok(profile.vault());
     }

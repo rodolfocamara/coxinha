@@ -53,6 +53,11 @@ fn folders_are_found_by_id_and_follow_the_title_when_free() {
     assert!(first.ends_with("meetings/2026-11-03 Pulso"));
     assert_eq!(read_marker(&first).unwrap().id, "s-1");
 
+    // Readers locate without renaming.
+    let located = locate(vault.path(), &meeting("Pulso MX")).unwrap().unwrap();
+    assert_eq!(located, first);
+    assert!(first.exists());
+
     let renamed = find(vault.path(), &meeting("Pulso MX")).unwrap().unwrap();
     assert!(renamed.ends_with("meetings/2026-11-03 Pulso MX"));
     assert!(!first.exists());
