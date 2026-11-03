@@ -1,10 +1,14 @@
 @layer theme, base, components, utilities;
 
 @layer components {
-  /* Outlook category presets 0–24 (spec 0103), as the new Outlook draws them:
-     each preset is a Fluent colour family. `-bg` is the event fill (dark values
-     taken from Outlook's dark theme); the plain value marks the bar and dots,
-     lifted to tint30 on the dark canvas so dark families stay visible. */
+  /* Outlook category presets 0–24 (spec 0103, recalibrated by spec 0119 P3).
+     Names per preset: Microsoft Graph `categoryColor`
+     (learn.microsoft.com/graph/api/resources/outlookcategory). Hex values are
+     the Fluent 2 shared colours the new Outlook draws for each name; Microsoft
+     publishes no table, so DarkSteel (preset11) and the dark fills were measured
+     on the owner's Outlook (dark theme, 2026-11-03): the bar is the colour
+     itself and the fill is 55% of it over #141414 (Outlook blue #0772c9 fills
+     #104776), darkened where light text would fall under 4.5:1. */
   :root {
     --outlook-cat-0: #c50f1f;
     --outlook-cat-0-bg: #f6d1d5;
@@ -28,8 +32,8 @@
     --outlook-cat-9-bg: #fbddf0;
     --outlook-cat-10: #005b70;
     --outlook-cat-10-bg: #c3e1e8;
-    --outlook-cat-11: #859599;
-    --outlook-cat-11-bg: #eaeeef;
+    --outlook-cat-11: #063842;
+    --outlook-cat-11-bg: #cdd7d9;
     --outlook-cat-12: #7a7574;
     --outlook-cat-12-bg: #eae8e8;
     --outlook-cat-13: #5d5a58;
@@ -59,56 +63,56 @@
   }
   .dark,
   [data-theme='dark'] {
-    --outlook-cat-0: #dc626d;
-    --outlook-cat-0-bg: #6e0811;
-    --outlook-cat-1: #e9835e;
-    --outlook-cat-1-bg: #7a2101;
-    --outlook-cat-2: #ffba66;
-    --outlook-cat-2-bg: #4d2a00;
-    --outlook-cat-3: #f2c661;
-    --outlook-cat-3-bg: #463100;
-    --outlook-cat-4: #5ec75a;
-    --outlook-cat-4-bg: #063004;
-    --outlook-cat-5: #58d3db;
-    --outlook-cat-5-bg: #00373a;
-    --outlook-cat-6: #a4cc6c;
-    --outlook-cat-6-bg: #22330b;
-    --outlook-cat-7: #56bfd7;
-    --outlook-cat-7-bg: #004659;
-    --outlook-cat-8: #a79cf1;
-    --outlook-cat-8-bg: #3f3682;
-    --outlook-cat-9: #ef85c8;
-    --outlook-cat-9-bg: #80215d;
-    --outlook-cat-10: #4496a9;
-    --outlook-cat-10-bg: #00333f;
-    --outlook-cat-11: #b3bfc2;
-    --outlook-cat-11-bg: #282d2e;
-    --outlook-cat-12: #afabaa;
-    --outlook-cat-12-bg: #444241;
-    --outlook-cat-13: #9e9b99;
-    --outlook-cat-13-bg: #343231;
-    --outlook-cat-14: #808a90;
-    --outlook-cat-14-bg: #202427;
-    --outlook-cat-15: #ac4f5e;
-    --outlook-cat-15-bg: #420610;
-    --outlook-cat-16: #ca8057;
-    --outlook-cat-16-bg: #5e2405;
-    --outlook-cat-17: #946b5c;
-    --outlook-cat-17-bg: #2b1710;
-    --outlook-cat-18: #dac157;
-    --outlook-cat-18-bg: #3a2f00;
-    --outlook-cat-19: #4da64d;
-    --outlook-cat-19-bg: #032003;
-    --outlook-cat-20: #41a3a3;
-    --outlook-cat-20-bg: #003939;
-    --outlook-cat-21: #85b44c;
-    --outlook-cat-21-bg: #162702;
-    --outlook-cat-22: #4178a3;
-    --outlook-cat-22-bg: #002039;
-    --outlook-cat-23: #7e5ca7;
-    --outlook-cat-23-bg: #240f3c;
-    --outlook-cat-24: #ad4589;
-    --outlook-cat-24-bg: #43002b;
+    --outlook-cat-0: #c50f1f;
+    --outlook-cat-0-bg: #75111a;
+    --outlook-cat-1: #da3b01;
+    --outlook-cat-1-bg: #81290a;
+    --outlook-cat-2: #ff8c00;
+    --outlook-cat-2-bg: #955609;
+    --outlook-cat-3: #eaa300;
+    --outlook-cat-3-bg: #8a6309;
+    --outlook-cat-4: #13a10e;
+    --outlook-cat-4-bg: #136211;
+    --outlook-cat-5: #00b7c3;
+    --outlook-cat-5-bg: #096e74;
+    --outlook-cat-6: #73aa24;
+    --outlook-cat-6-bg: #48671d;
+    --outlook-cat-7: #0099bc;
+    --outlook-cat-7-bg: #095d70;
+    --outlook-cat-8: #7160e8;
+    --outlook-cat-8-bg: #473e89;
+    --outlook-cat-9: #e43ba6;
+    --outlook-cat-9-bg: #862964;
+    --outlook-cat-10: #005b70;
+    --outlook-cat-10-bg: #093b47;
+    --outlook-cat-11: #063842;
+    --outlook-cat-11-bg: #0c282d;
+    --outlook-cat-12: #7a7574;
+    --outlook-cat-12-bg: #4c4949;
+    --outlook-cat-13: #5d5a58;
+    --outlook-cat-13-bg: #3c3b39;
+    --outlook-cat-14: #394146;
+    --outlook-cat-14-bg: #282d30;
+    --outlook-cat-15: #750b1c;
+    --outlook-cat-15-bg: #490f18;
+    --outlook-cat-16: #a74109;
+    --outlook-cat-16-bg: #652d0e;
+    --outlook-cat-17: #4d291c;
+    --outlook-cat-17-bg: #332018;
+    --outlook-cat-18: #c19c00;
+    --outlook-cat-18-bg: #735f09;
+    --outlook-cat-19: #0b6a0b;
+    --outlook-cat-19-bg: #0f430f;
+    --outlook-cat-20: #006666;
+    --outlook-cat-20-bg: #094141;
+    --outlook-cat-21: #498205;
+    --outlook-cat-21-bg: #31500c;
+    --outlook-cat-22: #003966;
+    --outlook-cat-22-bg: #092841;
+    --outlook-cat-23: #401b6c;
+    --outlook-cat-23-bg: #2c1844;
+    --outlook-cat-24: #77004d;
+    --outlook-cat-24-bg: #4a0933;
   }
 
   /* A categorized meeting is a filled block with a bar, as Outlook draws it. */

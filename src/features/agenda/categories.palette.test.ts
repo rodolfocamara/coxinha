@@ -27,12 +27,33 @@ it('defines a mark and a fill for every preset in both themes', () => {
   }
 });
 
-it('uses the new Outlook values measured on the owner calendar', () => {
+const luminance = (hex: string) => {
+  const [r, g, b] = [1, 3, 5].map((i) => {
+    const v = parseInt(hex.slice(i, i + 2), 16) / 255;
+    return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+const contrast = (a: string, b: string) => {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+};
+
+it('paints each preset with the colour Outlook shows, in both themes', () => {
   const light = values(block(':root {'));
   const dark = values(block("[data-theme='dark'] {"));
-  // Steel (preset10): Outlook's bar is Fluent steel and its dark fill steel shade30.
+  for (const [index] of OUTLOOK_PRESETS.entries())
+    expect(dark[String(index)]).toBe(light[String(index)]);
+  // Measured on the owner's Outlook in the dark theme (spec 0119 P3).
   expect(light['10']).toBe('#005b70');
-  expect(dark['10-bg']).toBe('#00333f');
-  // Brown (preset2) is Fluent peach in the new Outlook.
+  expect(light['11']).toBe('#063842');
   expect(light['2']).toBe('#ff8c00');
+  expect(dark['4-bg']).toBe('#136211');
+  expect(dark['11-bg']).toBe('#0c282d');
+});
+
+it('keeps light text readable on every dark fill', () => {
+  const dark = values(block("[data-theme='dark'] {"));
+  for (const [index] of OUTLOOK_PRESETS.entries())
+    expect(contrast('#efeeea', dark[`${index}-bg`]), String(index)).toBeGreaterThanOrEqual(4.5);
 });
