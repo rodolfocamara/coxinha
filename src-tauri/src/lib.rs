@@ -22,6 +22,7 @@ mod db;
 mod desktop;
 mod diarizer;
 mod events;
+mod items;
 mod library;
 #[cfg(target_os = "linux")]
 mod native_audio;
@@ -85,6 +86,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_opener::init())
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
                 .with_handler(shortcuts::handle_shortcut)
@@ -225,6 +227,16 @@ pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
             board::board_load,
             board::board_save,
             board::board_export_recovery,
+            items::items_list,
+            items::items_include,
+            items::items_reference,
+            items::items_remove_reference,
+            items::items_remove_file,
+            items::items_open,
+            items::items_reveal,
+            items::links_list,
+            items::links_add,
+            items::links_remove,
             desktop::desktop_diagnostic,
             desktop::desktop_diagnostic_info,
             desktop::desktop_flush_result,

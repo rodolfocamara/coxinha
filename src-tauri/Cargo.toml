@@ -26,6 +26,7 @@ tauri-plugin-notification = "2"
 tauri-plugin-shell = "2"
 tauri-plugin-dialog = "2"
 tauri-plugin-fs = "2"
+tauri-plugin-opener = "2"
 
 # Typed IPC (generates TS from Rust)
 specta = { version = "2.0.0-rc", features = ["derive", "chrono", "uuid", "serde_json"] }
