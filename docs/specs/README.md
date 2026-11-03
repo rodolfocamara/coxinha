@@ -209,3 +209,4 @@ Pending decisions that block or shape the implementation.
 - [0121 — Record while the previous meeting is processing](0121-record-while-processing.md) — in-progress
 - [0122 — Universal search](0122-universal-search.md) — in-progress
 - [0123 — Settled interruptions, and time zones by country](0123-settled-interruptions-and-zone-picker.md) — in-progress
+- [0124 — Agenda details and meeting signals](0124-agenda-details-and-signals.md) — in-progress
