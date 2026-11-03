@@ -202,3 +202,4 @@ Pending decisions that block or shape the implementation.
 - [0114 — Notice when a detected call ends](0114-notice-when-a-call-ends.md) — in-progress
 - [0115 — One agenda: each meeting once, recordings at their real time](0115-one-agenda.md) — in-progress
 - [0116 — Multilingual live transcript](0116-multilingual-live-transcript.md) — in-progress
+- [0117 — Faces for people](0117-faces-for-people.md) — draft
