@@ -105,7 +105,11 @@ treatment on their own. The decisions taken:
       `usr/lib/Coxinha/libtranscribe.so.0.2` and the three ggml libraries,
       and `ldd` resolves all four from the package with no
       `LD_LIBRARY_PATH`.
-- [ ] Windows installer built by the release workflow (`full-release`, which
-      now includes `local-processing`) and checked on a Windows machine.
+- [ ] Windows installer built by the release workflow and checked on a
+      Windows machine. `full-release` now includes `local-processing` and is
+      CPU only: a CUDA build needs NVIDIA's DLLs at start and would not open
+      on machines without them, and the CPU pipeline is what the owner runs.
+      Parakeet is left out (stale against transcribe-rs; Tagarela transcribes
+      everything since 0098 P4). GPU stays an opt-in feature (`cuda`).
 - [x] Owner's library: every meeting transcribed with word timings and
       separated by speaker without a click (8 automatic runs, spec 0101).

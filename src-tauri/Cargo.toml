@@ -167,12 +167,12 @@ local-processing = ["stt-whisper", "coxinha-core/local-processing"]
 diarize-pyannote = ["dep:pyannote-rs"]
 # diarize-speakrs = ["dep:speakrs"]
 
-# Full release bundle (used by GitHub Actions)
+# Full release bundle (used by GitHub Actions). CPU only: a CUDA build needs
+# NVIDIA's DLLs at start and would not open on machines without them.
+# Parakeet is left out since Tagarela transcribes everything (spec 0098 P4).
 full-release = [
     "local-processing",
     "stt-whisper",
-    "stt-parakeet",
     "stt-tagarela-shared",
-    "cuda",
     "diarize-pyannote",
 ]
