@@ -17,6 +17,7 @@ mod auto_record;
 mod board;
 mod calendar;
 mod call_detector;
+mod cli;
 mod config;
 mod db;
 mod desktop;
@@ -54,6 +55,9 @@ rust_i18n::i18n!("locales", fallback = "en");
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    if cli::requested() {
+        std::process::exit(cli::main());
+    }
     tracing_subscriber::fmt()
         .with_env_filter(
             tracing_subscriber::EnvFilter::try_from_default_env()
