@@ -1,6 +1,6 @@
 @layer theme, base, components, utilities;
 
-/* Spec 0126: the meeting detail panel. Sizes follow the px of the CSS around it. */
+/* Spec 0126: the meeting detail panel. Type and spacing scale with the root font (spec 0125). */
 @layer components {
   .ch-peek {
     display: flex;
@@ -15,21 +15,21 @@
     display: grid;
     flex: none;
     grid-template-columns: minmax(0, 1fr);
-    gap: 8px;
-    padding: 12px 16px;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
     border-bottom: 1px solid var(--color-border);
   }
   .ch-peek-titlerow {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: start;
-    gap: 8px;
+    gap: 0.5rem;
   }
   .ch-peek-title {
     display: -webkit-box;
     margin: 0;
     overflow: hidden;
-    font-size: 17px;
+    font-size: 1.0625rem;
     font-weight: 650;
     line-height: 1.3;
     overflow-wrap: anywhere;
@@ -48,9 +48,9 @@
   .ch-peek-when {
     display: flex;
     flex-wrap: wrap;
-    gap: 0 8px;
+    gap: 0 0.5rem;
     margin: 0;
-    font-size: 13px;
+    font-size: 0.8125rem;
     line-height: 1.4;
     font-variant-numeric: tabular-nums;
   }
@@ -70,16 +70,16 @@
   .ch-peek-meta {
     display: flex;
     flex-wrap: wrap;
-    gap: 2px 12px;
+    gap: 2px 0.75rem;
     margin: 0;
-    font-size: 12px;
+    font-size: 0.75rem;
     line-height: 1.4;
     color: var(--color-muted-foreground);
   }
   .ch-peek-meta > span {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 0.375rem;
     min-width: 0;
     overflow-wrap: anywhere;
   }
@@ -90,7 +90,7 @@
   .ch-peek-primary {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 0.375rem;
     margin-top: 2px;
   }
   .ch-peek-primary > .cx-btn:not([data-icon-only]):not([data-variant='ghost']) {
@@ -101,18 +101,18 @@
   .ch-peek .cx-btn:not([data-icon-only]),
   .mh-insp .cx-btn:not([data-icon-only]) {
     height: auto;
-    min-height: 32px;
+    min-height: 2rem;
     max-width: 100%;
-    padding-block: 6px;
+    padding-block: 0.375rem;
     line-height: 1.25;
     white-space: normal;
   }
   .ch-peek .cx-btn[data-size='md']:not([data-icon-only]),
   .mh-insp .cx-btn[data-size='md']:not([data-icon-only]) {
-    min-height: 36px;
+    min-height: 2.25rem;
   }
   .mh-insp .cx-btn[data-size='xs']:not([data-icon-only]) {
-    min-height: 26px;
+    min-height: 1.625rem;
     padding-block: 3px;
   }
   .ch-peek .cx-btn svg,
@@ -125,9 +125,9 @@
     display: flex;
     flex: 1;
     flex-direction: column;
-    gap: 18px;
+    gap: 1.125rem;
     min-height: 0;
-    padding: 14px 16px 20px;
+    padding: 0.875rem 1rem 1.25rem;
     overflow-y: auto;
   }
   .ch-peek-body > * {
@@ -147,12 +147,12 @@
   .ch-peek-sec {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: 6px;
+    gap: 0.375rem;
     min-width: 0;
   }
   .ch-peek .ch-peek-h {
     margin: 0;
-    font-size: 12.5px;
+    font-size: 0.78125rem;
     font-weight: 600;
     letter-spacing: 0;
     line-height: 1.35;
@@ -161,7 +161,7 @@
   }
   .ch-peek-line {
     margin: 0;
-    font-size: 13px;
+    font-size: 0.8125rem;
     line-height: 1.45;
     overflow-wrap: anywhere;
   }
@@ -171,21 +171,21 @@
   }
   .ch-peek-note {
     margin: 0;
-    font-size: 12px;
+    font-size: 0.75rem;
     line-height: 1.4;
     color: var(--color-muted-foreground);
     overflow-wrap: anywhere;
   }
   .ch-peek-error {
     margin: 0;
-    font-size: 12px;
+    font-size: 0.75rem;
     color: var(--color-destructive);
     overflow-wrap: anywhere;
   }
   .ch-peek-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 0.5rem;
     padding-top: 2px;
   }
   .ch-peek-link {
@@ -194,7 +194,7 @@
     border: 0;
     background: none;
     color: var(--color-foreground);
-    font-size: 12px;
+    font-size: 0.75rem;
     text-align: left;
     text-decoration: underline;
     text-decoration-color: color-mix(in oklab, currentColor 40%, transparent);
@@ -212,19 +212,19 @@
   .ch-outcome {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 0.875rem;
   }
   .ch-peek-card {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: 5px;
-    padding: 12px;
+    gap: 0.3125rem;
+    padding: 0.75rem;
     border-radius: var(--radius-md);
     background: var(--color-secondary);
   }
   .ch-peek-quote {
     margin: 0;
-    font-size: 12.5px;
+    font-size: 0.78125rem;
     line-height: 1.45;
     overflow-wrap: anywhere;
   }
@@ -233,28 +233,28 @@
   }
   .ch-peek-quote time {
     color: var(--color-muted-foreground);
-    font-size: 11.5px;
+    font-size: 0.71875rem;
     font-variant-numeric: tabular-nums;
   }
   .ch-files {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 1px;
-    margin: 0 -6px;
+    margin: 0 -0.375rem;
     padding: 0;
     list-style: none;
   }
   .ch-files button {
     display: flex;
     align-items: flex-start;
-    gap: 8px;
+    gap: 0.5rem;
     width: 100%;
-    padding: 4px 6px;
+    padding: 0.25rem 0.375rem;
     border: 0;
     border-radius: var(--radius-sm);
     background: none;
     color: inherit;
-    font-size: 12.5px;
+    font-size: 0.78125rem;
     line-height: 1.35;
     text-align: left;
     overflow-wrap: anywhere;
@@ -284,17 +284,17 @@
   .ch-facts {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: 6px;
+    gap: 0.375rem;
     margin: 0;
     padding: 0;
     list-style: none;
-    font-size: 13px;
+    font-size: 0.8125rem;
     line-height: 1.35;
   }
   .ch-facts li {
     display: flex;
     align-items: flex-start;
-    gap: 8px;
+    gap: 0.5rem;
   }
   .ch-facts svg {
     flex: none;
@@ -317,9 +317,9 @@
   .ch-peek-memory {
     display: flex;
     align-items: flex-start;
-    gap: 8px;
+    gap: 0.5rem;
     margin: 0;
-    font-size: 13px;
+    font-size: 0.8125rem;
     line-height: 1.35;
   }
   .ch-peek-memory svg {
