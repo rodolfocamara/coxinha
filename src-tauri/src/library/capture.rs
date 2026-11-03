@@ -1,6 +1,7 @@
 use super::*;
 
 /// Spec 0118: a 1 s microphone peak above this is the owner speaking.
+#[cfg_attr(not(target_os = "linux"), allow(dead_code))]
 const SPEECH_PEAK: f32 = 0.08;
 
 #[cfg(target_os = "linux")]
@@ -23,11 +24,13 @@ impl Active {
 
 /// Latest block peak per track (mic, output) and the last microphone speech.
 #[derive(Default)]
+#[cfg_attr(not(target_os = "linux"), allow(dead_code))]
 struct Meters {
     peaks: [f32; 2],
     last: [Option<Instant>; 2],
     speech: Option<Instant>,
 }
+#[cfg_attr(not(target_os = "linux"), allow(dead_code))]
 impl Meters {
     fn record(&mut self, track: usize, peak: f32, now: Instant) {
         self.peaks[track] = peak;
@@ -42,6 +45,7 @@ impl Meters {
             "lastBlockMs": self.last[track].map(|t| millis(now, t)), "error": null})
     }
 }
+#[cfg_attr(not(target_os = "linux"), allow(dead_code))]
 fn millis(now: Instant, then: Instant) -> u64 {
     now.saturating_duration_since(then).as_millis() as u64
 }
