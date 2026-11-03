@@ -117,6 +117,9 @@
     session({ id: 'd-prep', title: 'Prepared one', starts_at: at(2, 14), ends_at: at(2, 15), status: 'planned', personal_note: { id: 'n-prep', relative_path: 'p.md' } }),
   ];
   events.push(event({ id: 'd-prep-e', title: 'Prepared one', startsAt: at(2, 14), endsAt: at(2, 15), response: 'accepted', joinUrl: 'https://teams.microsoft.com/l/meetup-join/u', attendeeResponses: small }));
+  const candidate = event({ id: 'd-candidate', title: 'Vendor call about the rollout, with a title long enough to wrap', startsAt: at(-1, 11, 45), endsAt: at(-1, 12, 45), attendeeResponses: small });
+  events.push(candidate);
+  f.library_calendar_matches = () => [{ sessionId: 'd-match', meetingId: 'm-d-match', title: 'Meeting in Google Chrome', startsAt: at(-1, 12), endsAt: at(-1, 12, 40), event: candidate }];
   f.library_sessions = () => sessions;
   f.library_session = ({ sessionId }) => sessions.find((s) => s.id === sessionId) ?? null;
   f.library_list = () => sessions.flatMap((s) => (s.recording ? [s.recording] : []));
@@ -163,7 +166,7 @@
   f.library_processing = ({ meetingId }) => {
     if (meetingId === 'm-d-past')
       return report([
-        { speaker: 'S0', state: 'confirmed', name: 'Ana Barros' },
+        { speaker: 'S0', state: 'confirmed', name: 'Ana Almeida' },
         { speaker: 'S1', state: 'confirmed', name: 'Bruno Barros' },
         { speaker: 'S2', state: 'confirmed', name: 'Outside Guest' },
       ]);
@@ -185,12 +188,7 @@
   f.links_list = ({ session: id }) => (id === 'd-past' ? [{ session: id, note: 'n-follow', createdAt: at(-1, 16) }] : []);
   f.list_notes = () => [{ id: 'n-follow', title: 'Define GPU capacity with the vendor', path: 'n.md', tags: [], created_at: at(-1, 16), updated_at: at(-1, 16) }];
   f.get_note = ({ id }) => ({
-    id,
-    title: 'Note',
-    path: 'n.md',
-    tags: [],
-    created_at: at(-2, 9),
-    updated_at: at(-2, 9),
+    note: { id, title: 'Note', path: 'n.md', tags: [], created_at: at(-2, 9), updated_at: at(-2, 9) },
     markdown: '## Prep\n- Read the rollout plan\n- Ask about GPU capacity',
   });
   const marks = {};
