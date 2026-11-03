@@ -123,6 +123,45 @@ fn open_accepts_only_folder_files_and_recorded_references() {
     }
 }
 
+#[test]
+fn programs_are_never_opened() {
+    let vault = tempfile::tempdir().unwrap();
+    let outside = tempfile::tempdir().unwrap();
+    let setup = source(outside.path(), "Setup.EXE", "x");
+    let script = source(outside.path(), "run.sh", "x");
+    include(vault.path(), &activity(), &[setup, script.clone()]).unwrap();
+    reference(vault.path(), &activity(), &script, None).unwrap();
+    for target in [
+        OpenTarget::File {
+            name: "Setup.EXE".into(),
+        },
+        OpenTarget::File {
+            name: "run.sh".into(),
+        },
+        OpenTarget::Reference { target: script },
+    ] {
+        assert!(
+            resolve(vault.path(), &activity(), &target).is_err(),
+            "{target:?}"
+        );
+    }
+}
+
+#[cfg(unix)]
+#[test]
+fn executable_files_are_never_opened() {
+    use std::os::unix::fs::PermissionsExt;
+    let vault = tempfile::tempdir().unwrap();
+    let outside = tempfile::tempdir().unwrap();
+    let tool = source(outside.path(), "tool", "x");
+    fs::set_permissions(&tool, fs::Permissions::from_mode(0o755)).unwrap();
+    include(vault.path(), &activity(), &[tool]).unwrap();
+    let target = OpenTarget::File {
+        name: "tool".into(),
+    };
+    assert!(resolve(vault.path(), &activity(), &target).is_err());
+}
+
 #[cfg(unix)]
 #[test]
 fn symlinks_cannot_escape_the_item_folder() {

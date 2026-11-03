@@ -200,6 +200,36 @@ pub fn resolve(vault: &Path, item: &ItemRef, target: &OpenTarget) -> Result<Reso
             })
         }
     }
+    .and_then(|resolved| match &resolved {
+        Resolved::Path(path) if runs_code(path) => {
+            Err("programs are not opened from Coxinha; use Show in folder".into())
+        }
+        _ => Ok(resolved),
+    })
+}
+
+/// Opening these with the default app would run them, and anything (an AI
+/// included) may write into an item folder.
+fn runs_code(path: &Path) -> bool {
+    const PROGRAMS: [&str; 16] = [
+        "exe", "com", "bat", "cmd", "msi", "msix", "ps1", "vbs", "vbe", "wsf", "scr", "lnk", "sh",
+        "desktop", "appimage", "app",
+    ];
+    let extension = path
+        .extension()
+        .map(|e| e.to_string_lossy().to_ascii_lowercase())
+        .unwrap_or_default();
+    if PROGRAMS.contains(&extension.as_str()) {
+        return true;
+    }
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        if let Ok(meta) = fs::metadata(path) {
+            return meta.is_file() && meta.permissions().mode() & 0o111 != 0;
+        }
+    }
+    false
 }
 
 /// A single plain file name inside `dir`, also after resolving symlinks.
