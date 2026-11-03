@@ -132,6 +132,26 @@ export function excerpt(markdown: string, max = 120): string {
   return '';
 }
 
+const inline = (text: string) =>
+  text
+    .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/<[^>]+>/g, '')
+    .replace(/[*_`~]/g, '')
+    .trim();
+
+/** Every checklist line of a note, nested ones included, in order (spec 0112 P4). */
+export function checklist(markdown: string): { text: string; done: boolean }[] {
+  const items: { text: string; done: boolean }[] = [];
+  let fenced = false;
+  for (const line of markdown.split('\n')) {
+    if (/^\s*```/.test(line)) fenced = !fenced;
+    const match = !fenced && /^\s*[-*+]\s+\[([ xX])\]\s+(.*)$/.exec(line);
+    const text = match ? inline(match[2]) : '';
+    if (match && text) items.push({ text, done: match[1] !== ' ' });
+  }
+  return items;
+}
+
 export function centerOf(rect: { x: number; y: number }, size = CARD_SIZE) {
   return { x: rect.x - size.width / 2, y: rect.y - size.height / 2 };
 }

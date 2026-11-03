@@ -312,7 +312,7 @@ it('removes the cards of a deleted note and closes the editor', async () => {
   expect(screen.queryByTestId('note-editor')).toBeNull();
 });
 
-it('Delete removes only the selected dependency, never an item', async () => {
+it("React Flow's Delete removes only dependencies; items use the Workspace shortcut", async () => {
   mount();
   await screen.findByTestId('node-c-api');
   const edge = { id: 'e-1', source: 'c-integ', target: 'c-api' };
@@ -377,4 +377,81 @@ it('searches note content from the drawer and drops a found note onto the canvas
   const dropped = board().items.find((i) => i.noteId === 'n-quick')!;
   expect(dropped).toMatchObject({ kind: 'text', notePath: 'notes/n-quick.md' });
   expect(Number.isFinite(dropped.x) && Number.isFinite(dropped.y)).toBe(true);
+});
+
+it('Delete takes the selected activity off the board and Undo brings it back with its links', async () => {
+  mount();
+  fireEvent.click(await screen.findByTestId('node-c-api'));
+  await screen.findByTestId('note-editor');
+  fireEvent.keyDown(screen.getByTestId('node-c-api'), { key: 'Delete' });
+  expect(board().items.some((i) => i.id === 'c-api')).toBe(false);
+  expect(board().edges).toEqual([]);
+  expect(screen.queryByTestId('note-editor')).toBeNull();
+  const notice = (
+    await screen.findByText(i18n.t('workspace.removed', { title: 'Contrato de API v2' }))
+  ).closest('.ws-undo') as HTMLElement;
+  fireEvent.click(within(notice).getByRole('button', { name: i18n.t('workspace.undo') }));
+  expect(itemOf('c-api')).toMatchObject({ parentId: 'a-crm', noteId: 'n-api' });
+  expect(
+    board()
+      .edges.map((e) => e.id)
+      .sort()
+  ).toEqual(['e-1', 'e-2']);
+});
+
+it('removes an area with Backspace, frees its children, and Ctrl+Z puts them back inside', async () => {
+  mount();
+  fireEvent.click(await screen.findByTestId('node-a-crm'));
+  fireEvent.keyDown(document.body, { key: 'Backspace' });
+  expect(board().items.some((i) => i.id === 'a-crm')).toBe(false);
+  expect(itemOf('c-integ').parentId).toBeNull();
+  fireEvent.keyDown(document.body, { key: 'z', ctrlKey: true });
+  expect(itemOf('a-crm').label).toBe('Migração do CRM');
+  expect(itemOf('c-integ').parentId).toBe('a-crm');
+  expect(itemOf('c-api').parentId).toBe('a-crm');
+});
+
+it('keeps Delete for text while a field has focus', async () => {
+  mount();
+  fireEvent.click(await screen.findByTestId('node-c-api'));
+  const field = document.createElement('input');
+  document.body.append(field);
+  fireEvent.keyDown(field, { key: 'Delete' });
+  expect(itemOf('c-api')).toBeDefined();
+  field.remove();
+});
+
+it('renames an area in place with a double click', async () => {
+  mount();
+  const area = (await screen.findByTestId('node-a-crm')).querySelector('.ws-area')!;
+  fireEvent.doubleClick(area);
+  const name = screen.getByRole('textbox', { name: i18n.t('workspace.area.rename') });
+  expect(name).toHaveValue('Migração do CRM');
+  fireEvent.change(name, { target: { value: '  CRM 2027 ' } });
+  fireEvent.keyDown(name, { key: 'Enter' });
+  expect(itemOf('a-crm').label).toBe('CRM 2027');
+  expect(screen.queryByRole('textbox', { name: i18n.t('workspace.area.rename') })).toBeNull();
+  fireEvent.doubleClick(area);
+  fireEvent.change(screen.getByRole('textbox', { name: i18n.t('workspace.area.rename') }), {
+    target: { value: 'Discarded' },
+  });
+  fireEvent.keyDown(screen.getByRole('textbox', { name: i18n.t('workspace.area.rename') }), {
+    key: 'Escape',
+  });
+  expect(itemOf('a-crm').label).toBe('CRM 2027');
+});
+
+it('shows every checklist line on an activity card', async () => {
+  mount();
+  const card = await screen.findByTestId('node-c-api');
+  const list = await within(card).findByRole('list', { name: i18n.t('workspace.card.checklist') });
+  expect(
+    within(list)
+      .getAllByRole('listitem')
+      .map((li) => li.textContent)
+  ).toEqual([
+    `Validar escopo (${i18n.t('workspace.card.done')})`,
+    'Revisão de segurança na quinta',
+    'Publicar contrato no portal',
+  ]);
 });

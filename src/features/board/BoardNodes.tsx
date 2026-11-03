@@ -1,4 +1,4 @@
-import { useRef, type CSSProperties } from 'react';
+import { useRef, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -13,10 +13,10 @@ import {
   type Node,
   type NodeProps,
 } from '@xyflow/react';
-import { Check, FileText } from 'lucide-react';
+import { Check, FileText, Square, SquareCheck } from 'lucide-react';
 import { Button } from '../../components/ui';
 import { noteContentQueryOptions } from '../notes/noteQuery';
-import { excerpt } from '../workspace/workspaceModel';
+import { checklist, excerpt } from '../workspace/workspaceModel';
 import { BoardCardResizer } from './BoardCardResizer';
 import { containsChildren, type ChildBounds } from './resizeBounds';
 import type { BoardItem, Color } from './model';
@@ -51,7 +51,9 @@ export function CardNode({ data, selected }: NodeProps<Node<CardData>>) {
     retry: false,
     refetchOnWindowFocus: false,
   });
-  const preview = query.data ? excerpt(query.data.markdown) : '';
+  const markdown = query.data?.markdown ?? '';
+  const tasks = activity && markdown ? checklist(markdown) : [];
+  const preview = markdown && !tasks.length ? excerpt(markdown) : '';
   return (
     <div
       ref={body}
@@ -74,6 +76,23 @@ export function CardNode({ data, selected }: NodeProps<Node<CardData>>) {
         {data.missing ? t('workspace.card.missing') : data.title || t('workspace.untitled')}
       </h3>
       {preview && <p className="ws-card-excerpt">{preview}</p>}
+      {tasks.length > 0 && (
+        <ul className="ws-card-tasks" aria-label={t('workspace.card.checklist')}>
+          {tasks.map((task, index) => (
+            <li key={index} data-done={task.done || undefined}>
+              {task.done ? (
+                <SquareCheck size={12} aria-hidden="true" />
+              ) : (
+                <Square size={12} aria-hidden="true" />
+              )}
+              <span>
+                {task.text}
+                {task.done && <span className="sr-only"> ({t('workspace.card.done')})</span>}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
       {activity && (
         <div
           className="ws-card-bar"
@@ -110,7 +129,10 @@ export function CardNode({ data, selected }: NodeProps<Node<CardData>>) {
 }
 
 export type AreaData = {
+  id: string;
   label: string;
+  /** Double click edits the name in place, as in Excalidraw (spec 0112 P1). */
+  rename: (id: string, label: string) => void;
   color: Color;
   count: number;
   progress: number | null;
@@ -121,8 +143,16 @@ export type AreaData = {
 export function AreaNode({ data, selected }: NodeProps<Node<AreaData>>) {
   const { t } = useTranslation();
   const p = data.progress;
+  const [editing, setEditing] = useState(false);
   return (
-    <div className="ws-area" data-color={data.color}>
+    <div
+      className="ws-area"
+      data-color={data.color}
+      onDoubleClick={(event) => {
+        event.stopPropagation();
+        setEditing(true);
+      }}
+    >
       <NodeResizer
         isVisible={selected}
         minWidth={240}
@@ -132,7 +162,17 @@ export function AreaNode({ data, selected }: NodeProps<Node<AreaData>>) {
         shouldResize={(_, rect) => containsChildren(rect, data.childBounds)}
       />
       <h3 className="ws-area-heading">
-        {data.label || t('workspace.area.untitled')}
+        {editing ? (
+          <AreaName
+            label={data.label}
+            onDone={(label) => {
+              setEditing(false);
+              if (label !== null && label !== data.label) data.rename(data.id, label);
+            }}
+          />
+        ) : (
+          data.label || t('workspace.area.untitled')
+        )}
         <span>
           {p === null
             ? t('workspace.area.empty')
@@ -164,6 +204,34 @@ export function AreaNode({ data, selected }: NodeProps<Node<AreaData>>) {
         </div>
       )}
     </div>
+  );
+}
+
+/** The area's name as a field: Enter or leaving saves, Escape cancels. */
+function AreaName({ label, onDone }: { label: string; onDone: (label: string | null) => void }) {
+  const { t } = useTranslation();
+  const done = useRef(false);
+  const finish = (value: string | null) => {
+    if (done.current) return;
+    done.current = true;
+    onDone(value === null ? null : value.trim());
+  };
+  return (
+    <input
+      className="ws-area-name nodrag nopan"
+      aria-label={t('workspace.area.rename')}
+      defaultValue={label}
+      maxLength={200}
+      autoFocus
+      onFocus={(e) => e.currentTarget.select()}
+      onKeyDown={(e) => {
+        e.stopPropagation();
+        if (e.key === 'Enter') finish(e.currentTarget.value);
+        if (e.key === 'Escape') finish(null);
+      }}
+      onBlur={(e) => finish(e.currentTarget.value)}
+      onDoubleClick={(e) => e.stopPropagation()}
+    />
   );
 }
 

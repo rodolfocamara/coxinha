@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from 'react';
+import { useCallback, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Background,
@@ -6,6 +6,7 @@ import {
   MiniMap,
   ReactFlow,
   type EdgeChange,
+  type Node,
   type NodeChange,
   type Viewport,
 } from '@xyflow/react';
@@ -19,6 +20,7 @@ import { edgeTypes, nodeTypes } from './BoardNodes';
 import { boardEdges, boardNodes } from './boardNodes';
 import { boardDrag } from './boardDrag';
 import { boardGeometryChanges } from './boardGeometryChanges';
+import { patchItem } from './hierarchy';
 import type { useBoardViewport } from './useBoardViewport';
 
 /** Drag payload for a note row dragged from the Workspace drawer. */
@@ -62,6 +64,14 @@ export function BoardCanvas({
   const [dropTarget, setDropTarget] = useState<string | null>(null);
   const [selectedEdge, setSelectedEdge] = useState<string | null>(null);
   const drag = boardDrag(measured, setDropTarget);
+  const nodeCache = useRef(new Map<string, { deps: unknown[]; node: Node }>());
+  const promoteRef = useRef(onPromote);
+  promoteRef.current = onPromote;
+  const promote = useCallback((id: string) => promoteRef.current(id), []);
+  const rename = useCallback((id: string, label: string) => {
+    const current = boardSession.get();
+    if (current) boardSession.update(patchItem(current, id, { label }, false));
+  }, []);
   const byId = (id: string) => board.items.find((i) => i.id === id);
   const label = (item: BoardItem) =>
     item.kind === 'area'
@@ -136,8 +146,10 @@ export function BoardCanvas({
           selected,
           dropTarget,
           pop: fx.pop,
-          promote: onPromote,
+          promote,
+          rename,
           label,
+          cache: nodeCache.current,
         })}
         edges={boardEdges(board, selectedEdge, fx.edge, (e) =>
           t('workspace.a11y.edge', {
@@ -172,8 +184,9 @@ export function BoardCanvas({
         onConnect={(c) => {
           if (c.source && c.target) boardSession.update(connect(board, c.source, c.target));
         }}
-        // Delete removes only the selected dependency; items leave the board from the editor.
-        deleteKeyCode="Delete"
+        // React Flow deletes only the selected dependency; items leave through
+        // the Workspace's own shortcut, which keeps an undo.
+        deleteKeyCode={['Delete', 'Backspace']}
         onBeforeDelete={async ({ edges }) => ({ nodes: [], edges })}
         onEdgesDelete={(edges) => {
           const current = boardSession.get();

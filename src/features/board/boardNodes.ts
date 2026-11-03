@@ -14,8 +14,17 @@ type Args = {
   dropTarget: string | null;
   pop: string | null;
   promote: (id: string) => void;
+  rename: (id: string, label: string) => void;
   label: (item: BoardItem, note: Note | undefined) => string;
+  /**
+   * Nodes from the previous call, by item id. A card whose inputs did not
+   * change keeps its node object, so React Flow skips it while another
+   * item is dragged or resized.
+   */
+  cache?: Map<string, { deps: unknown[]; node: Node }>;
 };
+
+const same = (a: unknown[], b: unknown[]) => a.length === b.length && a.every((v, i) => v === b[i]);
 
 /**
  * Board items as React Flow nodes. The node wrapper is the element React Flow
@@ -30,18 +39,36 @@ export function boardNodes({
   dropTarget,
   pop,
   promote,
+  rename,
   label,
+  cache,
 }: Args): Node[] {
-  return board.items.map((i, index) => {
+  const nodes = board.items.map((i, index) => {
     const note = resolveNote(notes, i);
     const card = i.kind !== 'area';
+    const size = measured.get(i.id);
+    const ariaLabel = label(i, note);
+    const deps = [
+      i,
+      index,
+      note?.title,
+      note?.id,
+      pop === i.id,
+      selected === i.id,
+      dropTarget === i.id,
+      size?.width,
+      size?.height,
+      ariaLabel,
+    ];
+    const hit = card ? cache?.get(i.id) : undefined;
+    if (hit && same(hit.deps, deps)) return hit.node;
     const style = {
       width: i.width,
       ...(card
         ? { viewTransitionName: `card-${i.id}`, viewTransitionClass: 'card' }
         : { height: i.height, viewTransitionName: `area-${i.id}` }),
     } as CSSProperties;
-    return {
+    const node = {
       id: i.id,
       type: i.kind,
       position: { x: i.x, y: i.y },
@@ -55,23 +82,30 @@ export function boardNodes({
             promote: () => promote(i.id),
           }
         : {
+            id: i.id,
             label: i.label,
+            rename,
             color: i.color,
             ...areaProgress(board, i.id),
             dropTarget: dropTarget === i.id,
             childBounds: childBounds(board, i.id, measured),
           },
-      measured: measured.get(i.id) ?? { width: i.width, height: i.height },
+      measured: size ?? { width: i.width, height: i.height },
       width: i.width,
       height: card ? undefined : i.height,
       style,
       className: `ws-node ws-node-${i.kind}${dropTarget === i.id ? ' ws-drop-target' : ''}`,
       selected: i.id === selected,
       zIndex: itemLayer(i, index),
-      ariaLabel: label(i, note),
+      ariaLabel,
       ariaRole: 'button',
     } as Node;
+    if (card) cache?.set(i.id, { deps, node });
+    return node;
   });
+  if (cache)
+    for (const id of cache.keys()) if (!board.items.some((i) => i.id === id)) cache.delete(id);
+  return nodes;
 }
 
 export function boardEdges(

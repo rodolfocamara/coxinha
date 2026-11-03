@@ -25,7 +25,9 @@
     },
     "card": {
       "note": "nota",
-      "missing": "Nota indisponível"
+      "missing": "Nota indisponível",
+      "checklist": "Checklist",
+      "done": "feito"
     },
     "area": {
       "untitled": "Área sem nome",
@@ -34,7 +36,8 @@
       "summary": "{{progress}}% · {{count}} atividades",
       "done": "100% · concluída",
       "progress": "Progresso da área",
-      "dropInto": "Solte para colocar em {{area}}"
+      "dropInto": "Solte para colocar em {{area}}",
+      "rename": "Nome da área"
     },
     "drawer": {
       "label": "Notas",
@@ -147,6 +150,8 @@
       "note": "{{title}}, nota",
       "area": "{{title}}, área",
       "edge": "{{source}} → {{target}}"
-    }
+    },
+    "removed": "“{{title}}” saiu do quadro.",
+    "undo": "Desfazer"
   }
 }

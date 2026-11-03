@@ -49,19 +49,13 @@
     border-radius: 12px;
     background: var(--ws-card-bg);
     border: 1px solid var(--color-border);
-    box-shadow:
-      0 1px 2px oklch(0 0 0 / 0.06),
-      0 6px 18px oklch(0 0 0 / 0.08);
+    box-shadow: 0 1px 2px oklch(0 0 0 / 0.06);
     cursor: pointer;
-    transition:
-      transform var(--m-instant) var(--e-out),
-      box-shadow var(--m-fast);
+    transition: border-color var(--m-fast);
   }
+  /* No lift or press scale: the resize handles live inside the card and must not move. */
   .ws-card:hover {
-    transform: translateY(-1px);
-  }
-  .ws-card:active {
-    transform: scale(0.98);
+    border-color: oklch(var(--fg-primary) / 0.22);
   }
   .react-flow__node.selected .ws-card {
     outline: 2px solid oklch(var(--accent));
@@ -152,7 +146,7 @@
     padding: 10px 12px;
     border-radius: 16px;
     border: 1px solid oklch(var(--area) / 0.3);
-    background: linear-gradient(160deg, oklch(var(--area) / 0.07), transparent 70%);
+    background: oklch(var(--area) / 0.05);
   }
   .ws-area[data-color='blue'] {
     --area: var(--info);
@@ -205,14 +199,34 @@
   }
 
   .board-resize-handle {
-    width: 8px !important;
-    height: 8px !important;
-    border-radius: 2px;
+    width: 10px !important;
+    height: 10px !important;
+    border-radius: 3px;
     background: oklch(var(--accent)) !important;
-    border: 1px solid var(--ws-card-bg) !important;
+    border: 1.5px solid var(--ws-card-bg) !important;
+    z-index: 2;
   }
-  .board-resize-line {
-    border-color: oklch(var(--accent) / 0.5) !important;
+  /* A 4px visual handle inside a 16px grip, so a corner is easy to catch. */
+  .board-resize-handle::before {
+    content: '';
+    position: absolute;
+    inset: -5px;
+  }
+  /* The sides grab 10px wide; the selection outline already draws the edge. */
+  .react-flow__resize-control.line.board-resize-line {
+    border-color: transparent !important;
+  }
+  .react-flow__resize-control.line.board-resize-line.left,
+  .react-flow__resize-control.line.board-resize-line.right {
+    width: 10px;
+    border-left-width: 0;
+    border-right-width: 0;
+  }
+  .react-flow__resize-control.line.board-resize-line.top,
+  .react-flow__resize-control.line.board-resize-line.bottom {
+    height: 10px;
+    border-top-width: 0;
+    border-bottom-width: 0;
   }
 
   .ws-canvas .react-flow__controls {
@@ -244,5 +258,67 @@
     .ws-canvas .react-flow__minimap {
       display: none;
     }
+  }
+
+  /* Every checklist line of an activity (spec 0112 P4). */
+  .ws-card-tasks {
+    display: grid;
+    gap: 3px;
+    margin: 4px 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 12px;
+    line-height: 1.35;
+  }
+  .ws-card-tasks li {
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+  }
+  .ws-card-tasks svg {
+    flex: none;
+    margin-top: 2px;
+    color: var(--color-muted-foreground);
+  }
+  .ws-card-tasks li[data-done] {
+    color: var(--color-muted-foreground);
+  }
+  .ws-card-tasks li[data-done] > span {
+    text-decoration: line-through;
+  }
+  .ws-card-tasks li[data-done] svg {
+    color: oklch(var(--success));
+  }
+
+  /* The area's name being edited in place. */
+  .ws-area-name {
+    min-width: 0;
+    width: 220px;
+    margin: -3px 0 -3px -5px;
+    padding: 2px 5px;
+    border: 1px solid oklch(var(--accent) / 0.6);
+    border-radius: 5px;
+    background: var(--ws-card-bg);
+    color: inherit;
+    font: inherit;
+    outline: none;
+  }
+
+  /* "Saiu do quadro · Desfazer". */
+  .ws-undo {
+    position: absolute;
+    left: 50%;
+    bottom: 18px;
+    z-index: 5;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 6px 6px 6px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    background: var(--ws-card-bg);
+    box-shadow: 0 6px 20px oklch(0 0 0 / 0.18);
+    font-size: 13px;
+    transform: translateX(-50%);
   }
 }

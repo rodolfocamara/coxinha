@@ -6,6 +6,7 @@ import {
   CARD_SIZE,
   addItem,
   cardForTask,
+  checklist,
   demote,
   excerpt,
   itemForNote,
@@ -170,5 +171,19 @@ describe('freeSpot', () => {
     const inside =
       spot.x < 600 && spot.x + CARD_SIZE.width > 0 && spot.y < 400 && spot.y + CARD_SIZE.height > 0;
     expect(inside).toBe(false);
+  });
+});
+
+describe('checklist', () => {
+  it('reads every task line, nested and checked ones included, outside code fences', () => {
+    expect(
+      checklist(
+        '# T\n\n- [x] Done **one**\n  - [ ] Nested [link](https://x)\n* [X] Upper\n- not a task\n```\n- [ ] in code\n```\n- [ ]   \n'
+      )
+    ).toEqual([
+      { text: 'Done one', done: true },
+      { text: 'Nested link', done: false },
+      { text: 'Upper', done: true },
+    ]);
   });
 });

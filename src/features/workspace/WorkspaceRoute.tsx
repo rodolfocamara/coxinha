@@ -6,6 +6,7 @@ import { NotesDrawer } from './NotesDrawer';
 import { SideEditor } from './SideEditor';
 import { WorkspaceToolbar } from './WorkspaceToolbar';
 import { useWorkspace } from './useWorkspace';
+import { useRemoveShortcut } from './useRemoveShortcut';
 import './workspace.css';
 
 /**
@@ -16,6 +17,14 @@ import './workspace.css';
 export function WorkspaceRoute() {
   const { t } = useTranslation();
   const ws = useWorkspace();
+  const removal = useRemoveShortcut({
+    selected: ws.item ?? null,
+    remove: (id) => {
+      ws.removeFromBoard(id);
+      ws.close();
+    },
+    title: ws.title,
+  });
   if (ws.session.loadError)
     return (
       <div className="p-8">
@@ -58,6 +67,14 @@ export function WorkspaceRoute() {
             onCreateAt={(point) => ws.createNote(point)}
             onDropNote={(noteId, point) => ws.place(noteId, null, point)}
           >
+            {removal.removed && (
+              <div className="ws-undo" role="status">
+                <span>{t('workspace.removed', { title: removal.removed })}</span>
+                <Button size="sm" variant="ghost" onClick={removal.undo}>
+                  {t('workspace.undo')}
+                </Button>
+              </div>
+            )}
             {board.items.length === 0 && (
               <div className="ws-empty">
                 <EmptyState
