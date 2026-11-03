@@ -68,6 +68,7 @@ fn playback_rejects_symlink_to_private_file_even_with_valid_checksum() {
         finalization_failed: None,
         live: Default::default(),
         root: Default::default(),
+        voices: Default::default(),
     };
     let error = worker.detail(&id).unwrap_err().to_string();
     assert!(error.contains("symlink"), "{error}");
@@ -230,6 +231,7 @@ fn failed_finalization_blocks_exit_until_matching_recovery() {
         finalization_failed: Some("unrecovered-recording".into()),
         live: Default::default(),
         root: Default::default(),
+        voices: Default::default(),
     };
     assert!(worker
         .execute(Action::Shutdown {
@@ -266,6 +268,7 @@ fn explicit_exit_after_failed_finalization_preserves_raw_and_next_start_recovery
         finalization_failed: Some(id.clone()),
         live: Default::default(),
         root: Default::default(),
+        voices: Default::default(),
     };
     assert!(worker
         .execute(Action::Shutdown {

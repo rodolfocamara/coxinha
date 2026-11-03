@@ -9,6 +9,7 @@ pub(super) struct CaptureSignature {
     error: Option<String>,
     finalization_failed: Option<String>,
     processing: Option<(String, &'static str)>,
+    voices: u64,
 }
 pub(super) struct CaptureWatch {
     last: CaptureSignature,
@@ -28,6 +29,7 @@ impl Worker {
                 .processing
                 .as_ref()
                 .map(|p| (p.meeting.clone(), p.phase())),
+            voices: self.voices.generation,
         }
     }
     /// `{"paused": bool}` while this meeting is the live capture, otherwise `null`.
