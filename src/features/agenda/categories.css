@@ -1,0 +1,132 @@
+@layer theme, base, components, utilities;
+
+@layer components {
+  /* Outlook category presets 0–24 (spec 0103). Light values are deep enough to
+     read on white; dark values are lifted so the dark presets stay visible. */
+  :root {
+    --outlook-cat-0: #d13438;
+    --outlook-cat-1: #e8590c;
+    --outlook-cat-2: #a0612b;
+    --outlook-cat-3: #c49a00;
+    --outlook-cat-4: #3f9c35;
+    --outlook-cat-5: #0e9f8f;
+    --outlook-cat-6: #7f8c3a;
+    --outlook-cat-7: #2f6fd6;
+    --outlook-cat-8: #7a4cc2;
+    --outlook-cat-9: #c2386b;
+    --outlook-cat-10: #7d8a9a;
+    --outlook-cat-11: #4f5d75;
+    --outlook-cat-12: #8a8a8a;
+    --outlook-cat-13: #5c5c5c;
+    --outlook-cat-14: #262626;
+    --outlook-cat-15: #a4262c;
+    --outlook-cat-16: #b6470d;
+    --outlook-cat-17: #7a4a1f;
+    --outlook-cat-18: #9c8500;
+    --outlook-cat-19: #2a6e24;
+    --outlook-cat-20: #0b6e63;
+    --outlook-cat-21: #5b6630;
+    --outlook-cat-22: #1f4e99;
+    --outlook-cat-23: #523a8c;
+    --outlook-cat-24: #8a2550;
+  }
+  .dark,
+  [data-theme='dark'] {
+    --outlook-cat-0: #f87171;
+    --outlook-cat-1: #fb923c;
+    --outlook-cat-2: #d6a16a;
+    --outlook-cat-3: #facc15;
+    --outlook-cat-4: #6ee07a;
+    --outlook-cat-5: #4fd1c5;
+    --outlook-cat-6: #b8c77a;
+    --outlook-cat-7: #7aa7f5;
+    --outlook-cat-8: #b39df0;
+    --outlook-cat-9: #f07aa6;
+    --outlook-cat-10: #b4bfcc;
+    --outlook-cat-11: #8c9ab3;
+    --outlook-cat-12: #bdbdbd;
+    --outlook-cat-13: #9a9a9a;
+    --outlook-cat-14: #d4d4d4;
+    --outlook-cat-15: #e5676d;
+    --outlook-cat-16: #f0884a;
+    --outlook-cat-17: #c28a55;
+    --outlook-cat-18: #dcc23a;
+    --outlook-cat-19: #5dbf55;
+    --outlook-cat-20: #3db3a5;
+    --outlook-cat-21: #9daa63;
+    --outlook-cat-22: #6390e0;
+    --outlook-cat-23: #9c82db;
+    --outlook-cat-24: #d0668f;
+  }
+
+  .cx-cat-mark {
+    position: relative;
+  }
+  .cx-cat-mark[data-category]::before {
+    content: '';
+    position: absolute;
+    top: 9px;
+    bottom: 9px;
+    left: var(--cx-cat-inset, 4px);
+    width: 3px;
+    border-radius: 999px;
+    background: var(--cx-cat);
+  }
+  .cx-cat-dot {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--cx-cat, var(--color-muted-foreground));
+  }
+  .cx-cat-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .cx-cat-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 22px;
+    padding: 0 8px;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .cx-cat-options {
+    display: grid;
+    gap: 1px;
+    margin-top: 6px;
+  }
+  .cx-cat-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 5px 8px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: inherit;
+    font-size: 12.5px;
+    text-align: left;
+    cursor: pointer;
+  }
+  .cx-cat-option:hover {
+    background: var(--color-secondary);
+  }
+  .cx-cat-option:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: -2px;
+  }
+  .cx-cat-option[aria-pressed='true'] {
+    font-weight: 550;
+  }
+  .cx-cat-option svg {
+    margin-left: auto;
+    color: var(--color-muted-foreground);
+  }
+}

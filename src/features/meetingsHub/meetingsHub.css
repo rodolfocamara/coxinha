@@ -509,4 +509,9 @@
     outline: 2px solid var(--color-ring);
     outline-offset: -1px;
   }
+  /* A filled blue dot would read as Outlook's blue category (spec 0103). */
+  .mh-month .mh-dot[data-tone='info'] {
+    background: transparent;
+    box-shadow: inset 0 0 0 1.5px var(--color-info);
+  }
 }

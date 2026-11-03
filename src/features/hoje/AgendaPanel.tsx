@@ -10,6 +10,8 @@ import { formatTime } from './format';
 import { hasEnded, rowAction, type AgendaRow } from './hojeData';
 import { useGo, useOpenMeeting } from './hojeNavigation';
 import { Panel, PanelEmpty, PanelError, PanelLoading } from './Panel';
+import { markProps, useEventColour } from '../agenda/categories';
+import { CategoryLabel } from '../agenda/CategoryLabel';
 
 type Props = {
   rows: AgendaRow[];
@@ -79,14 +81,16 @@ function AgendaItem({ row, now }: { row: AgendaRow; now: Date }) {
   const action = rowAction(row, now);
   // The LiveBadge already says recording or paused; the meta keeps the event facts.
   const meta = metaParts(row, now, t, live);
+  const colour = useEventColour(row.event);
   return (
     <li>
       <button
         type="button"
-        className="cx-hoje-row cx-hoje-agenda-row"
+        className="cx-hoje-row cx-hoje-agenda-row cx-cat-mark"
         data-live={live || undefined}
         data-row={row.key}
         onClick={() => open(row.session?.id ?? null, title.current)}
+        {...markProps(colour)}
       >
         <span className="cx-hoje-time">
           {row.allDay || !row.start ? t('hoje.agenda.allDay') : formatTime(row.start, locale)}
@@ -96,6 +100,7 @@ function AgendaItem({ row, now }: { row: AgendaRow; now: Date }) {
             {row.title}
           </b>
           {meta.length > 0 && <span className="cx-hoje-meta">{meta.join(' · ')}</span>}
+          <CategoryLabel colour={colour} />
         </span>
         <span className="cx-hoje-row-end">
           {live ? (

@@ -60,6 +60,23 @@ export function OutlookConnectionCard({ connection, onOpenAgenda, titleId }: Pro
             {t('outlook.account', { account: snapshot.account })}
           </p>
         )}
+        {c.connected && !snapshot.categoryAccess?.write && (
+          <Alert
+            tone="info"
+            action={
+              <Button
+                size="sm"
+                disabled={busy || !c.clientId.trim()}
+                onClick={c.connect}
+                icon={<Plug size={14} aria-hidden="true" />}
+              >
+                {t('outlookCategories.reconnect')}
+              </Button>
+            }
+          >
+            {t('outlookCategories.cardNotice')}
+          </Alert>
+        )}
         {snapshot.syncedAt && (
           <p className="text-xs text-muted-foreground">
             {t('outlook.freshness', { date: new Date(snapshot.syncedAt).toLocaleString() })}

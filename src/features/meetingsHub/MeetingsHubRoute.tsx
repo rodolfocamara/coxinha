@@ -24,6 +24,7 @@ import { useMeetingsData, useRowLiveness } from './useMeetingsData';
 import {
   IMPORT_AUDIO_EVENT,
   NEW_MEETING_EVENT,
+  OUTLOOK_SHEET_EVENT,
   takePendingSheet,
   type MeetingsSheet,
 } from './meetingsSheets';
@@ -39,7 +40,7 @@ type SheetState =
   | null;
 
 const sheetFor = (sheet: MeetingsSheet): SheetState =>
-  sheet === 'meeting' ? { kind: 'meeting' } : { kind: 'import', title: '', forMeeting: false };
+  sheet === 'import' ? { kind: 'import', title: '', forMeeting: false } : { kind: sheet };
 
 /**
  * Reuniões (spec 0096 P4): one list merging meeting sessions, Outlook events
@@ -77,11 +78,17 @@ export function MeetingsHubRoute() {
       takePendingSheet();
       setSheet(sheetFor('import'));
     };
+    const onOutlook = () => {
+      takePendingSheet();
+      setSheet(sheetFor('outlook'));
+    };
     window.addEventListener(NEW_MEETING_EVENT, onNew);
     window.addEventListener(IMPORT_AUDIO_EVENT, onImport);
+    window.addEventListener(OUTLOOK_SHEET_EVENT, onOutlook);
     return () => {
       window.removeEventListener(NEW_MEETING_EVENT, onNew);
       window.removeEventListener(IMPORT_AUDIO_EVENT, onImport);
+      window.removeEventListener(OUTLOOK_SHEET_EVENT, onOutlook);
     };
   }, []);
 

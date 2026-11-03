@@ -1,0 +1,15 @@
+{
+  "outlookCategories": {
+    "title": "Categories",
+    "change": "Change",
+    "done": "Done",
+    "pick": "Outlook categories",
+    "current": "Event categories",
+    "none": "No category.",
+    "mark": "Category {{name}}",
+    "needsReconnect": "Reconnect Outlook to use categories and their colours.",
+    "needsWrite": "Reconnect Outlook to change categories here.",
+    "reconnect": "Reconnect Outlook",
+    "cardNotice": "Categories need a new permission. Reconnect Outlook to show their colours and change them from a meeting."
+  }
+}
