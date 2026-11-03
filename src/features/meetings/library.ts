@@ -1,10 +1,20 @@
 import { convertFileSrc, invoke, isTauri } from '@tauri-apps/api/core';
+import type { CalendarEvent } from '../agenda/calendar';
 
 export type LibraryMeeting = {
   id: string;
   title: string;
   createdAt: string;
   captureState: 'new' | 'recording' | 'finished' | 'interrupted';
+};
+/** Spec 0100: an earlier recording and the calendar event it overlaps. */
+export type CalendarMatch = {
+  sessionId: string;
+  meetingId: string;
+  title: string;
+  startsAt: string;
+  endsAt: string;
+  event: CalendarEvent;
 };
 export type Source = { name: string; description: string; monitor: boolean; is_default?: boolean };
 export type Meter = { peak: number; lastBlockMs: number | null; error: string | null };
@@ -146,6 +156,11 @@ export const library = {
     invoke<LibraryDetail>('library_recover', { meetingId }).then(acceptAudio),
   processing: (meetingId: string, jobId?: string) =>
     invoke<ProcessingDetail>('library_processing', { meetingId, jobId }),
+  /** Spec 0099: bundled speaker models over the live transcript. */
+  defaultProcessingConfig: () => invoke<ProcessingConfig>('speech_default_processing_config'),
+  calendarMatches: () => invoke<CalendarMatch[]>('library_calendar_matches'),
+  resolveCalendarMatch: (sessionId: string, eventId: string, accept: boolean) =>
+    invoke<unknown>('library_resolve_calendar_match', { sessionId, eventId, accept }),
   process: (meetingId: string, config: ProcessingConfig) =>
     invoke<CaptureStatus>('library_process', { meetingId, config }),
   createPerson: (name: string, consentOrigin: string) =>

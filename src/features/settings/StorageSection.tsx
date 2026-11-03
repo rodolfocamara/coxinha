@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { FolderOpen, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
   commands,
@@ -175,6 +176,7 @@ export function StorageSection({
       <SettingsCard>
         <SettingsRow
           name="vault"
+          icon={FolderOpen}
           title={t('people.settings.storage.folder')}
           description={<code className="font-mono">{config.vault_path}</code>}
           below={
@@ -186,6 +188,7 @@ export function StorageSection({
         />
         <SettingsRow
           name="rebuild"
+          icon={RefreshCw}
           titleId="rebuild-heading"
           heading
           title={t('settings.vault.rebuildHeading')}

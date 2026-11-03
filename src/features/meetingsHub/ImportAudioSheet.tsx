@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { open as openDialog } from '@tauri-apps/plugin-dialog';
-import { FolderOpen } from 'lucide-react';
+import { FolderOpen, Upload, X } from 'lucide-react';
 import { Alert, Button, Field, Input, Sheet } from '../../components/ui';
 import { library } from '../meetings/library';
 import { useCaptureStore } from '../capture/captureStore';
@@ -71,13 +71,18 @@ export function ImportAudioSheet({
       closeLabel={t('meetingsHub.close')}
       footer={
         <>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+          <Button
+            variant="ghost"
+            onClick={() => onOpenChange(false)}
+            icon={<X size={14} aria-hidden="true" />}
+          >
             {t('meetingsHub.cancel')}
           </Button>
           <Button
             variant="primary"
             disabled={busy || blocked || !path || !title.trim()}
             onClick={() => void submit()}
+            icon={<Upload size={14} aria-hidden="true" />}
           >
             {k('import')}
           </Button>

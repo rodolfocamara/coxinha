@@ -1,6 +1,6 @@
 # 0094 — Meeting end/boundary prompt, focus bring-up and UI simplification
 
-Status: in-progress
+Status: superseded by 0096 (behaviour lives in RecorderStrip; requestUserAttention not implemented)
 Phase: Desktop usability
 Date: 2026-10-29
 

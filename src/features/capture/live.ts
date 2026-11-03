@@ -2,7 +2,13 @@ import { create } from 'zustand';
 import { invoke, isTauri } from '@tauri-apps/api/core';
 
 /** Spec 0097 P3: live transcript with the Tagarela model, off by default. */
-export type LiveSettings = { enabled: boolean; modelPath: string; nThreads: number };
+export type LiveSettings = {
+  enabled: boolean;
+  modelPath: string;
+  nThreads: number;
+  /** Spec 0098: transcribe earlier recordings while idle. */
+  backlog: boolean;
+};
 export type LiveSegment = {
   track: 'Mic' | 'Output';
   startFrame: number;
@@ -48,6 +54,9 @@ export type TitleSuggestion = {
   dismissed: boolean;
 };
 
+/** Download progress in percent, emitted by `speech_model_download`. */
+export const MODEL_PROGRESS_EVENT = 'speech-model-progress';
+
 /** Handy keeps its models here on Linux; suggested, opened read-only. */
 export const HANDY_TAGARELA =
   '.local/share/com.pais.handy/models/parakeet-v3-ptbr-tagarela-matched-q8.gguf';
@@ -55,6 +64,8 @@ export const HANDY_TAGARELA =
 export const live = {
   settings: () => invoke<LiveSettings>('live_settings'),
   saveSettings: (settings: LiveSettings) => invoke<LiveSettings>('set_live_settings', { settings }),
+  /** Spec 0099: explicit first-use download of the fallback model. */
+  downloadModel: () => invoke<LiveSettings>('speech_model_download'),
   transcript: (meetingId: string) =>
     invoke<LiveTranscript>('library_live_transcript', { meetingId }),
   status: () => invoke<LiveSnapshot>('library_live_status'),

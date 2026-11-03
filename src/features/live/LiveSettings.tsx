@@ -1,8 +1,15 @@
 import { useEffect, useState } from 'react';
+import { Cpu, Download, FileAudio, History, Radio } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { homeDir, join } from '@tauri-apps/api/path';
+import { listen } from '@tauri-apps/api/event';
 import { Alert, Button, Input, Select } from '../../components/ui';
-import { live, HANDY_TAGARELA, type LiveSettings as Settings } from '../capture/live';
+import {
+  live,
+  HANDY_TAGARELA,
+  MODEL_PROGRESS_EVENT,
+  type LiveSettings as Settings,
+} from '../capture/live';
 import { SettingsCard, SettingsRow, Switch } from '../settings/controls';
 
 const THREADS = [2, 4, 6, 8];
@@ -14,6 +21,7 @@ export function LiveSettings() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [path, setPath] = useState('');
   const [error, setError] = useState('');
+  const [percent, setPercent] = useState<number | null>(null);
   useEffect(() => {
     let alive = true;
     live
@@ -40,10 +48,26 @@ export function LiveSettings() {
     setPath(value);
     save({ modelPath: value });
   };
+  const download = async () => {
+    setError('');
+    setPercent(0);
+    const stop = await listen<number>(MODEL_PROGRESS_EVENT, (e) => setPercent(e.payload));
+    try {
+      const next = await live.downloadModel();
+      setSettings(next);
+      setPath(next.modelPath);
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      stop();
+      setPercent(null);
+    }
+  };
   return (
     <SettingsCard>
       <SettingsRow
         name="live"
+        icon={Radio}
         title={k('title')}
         description={k('hint')}
         control={
@@ -54,10 +78,42 @@ export function LiveSettings() {
             onChange={(enabled) => save({ enabled })}
           />
         }
-        below={!settings.modelPath.trim() && <Alert tone="info">{k('needsModel')}</Alert>}
+        below={
+          !settings.modelPath.trim() && (
+            <Alert tone="info">
+              {k('needsModel')}{' '}
+              <Button
+                size="sm"
+                variant="secondary"
+                icon={<Download size={14} aria-hidden="true" />}
+                disabled={percent !== null}
+                onClick={() => void download()}
+              >
+                {percent === null
+                  ? k('download')
+                  : t('people.settings.live.downloading', { percent })}
+              </Button>
+            </Alert>
+          )
+        }
+      />
+      <SettingsRow
+        name="live-backlog"
+        icon={History}
+        title={k('backlog')}
+        description={k('backlogHint')}
+        control={
+          <Switch
+            name="live-backlog"
+            checked={settings.backlog}
+            disabled={!settings.enabled}
+            onChange={(backlog) => save({ backlog })}
+          />
+        }
       />
       <SettingsRow
         name="live-model"
+        icon={FileAudio}
         title={k('model')}
         description={k('modelHint')}
         control={
@@ -82,6 +138,7 @@ export function LiveSettings() {
       />
       <SettingsRow
         name="live-threads"
+        icon={Cpu}
         title={k('threads')}
         description={k('threadsHint')}
         control={

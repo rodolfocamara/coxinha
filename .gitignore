@@ -81,3 +81,8 @@ docs/ui/
 
 # Python bytecode from tools/ scripts.
 __pycache__/
+
+# Speaker models fetched for the installer (scripts/fetch_speech_models.py)
+src-tauri/resources/speech/
+# transcribe.cpp libraries copied for the installer (scripts/build_release.py)
+src-tauri/resources/native/

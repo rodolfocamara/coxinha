@@ -13,7 +13,7 @@ use std::time::Instant;
 use tauri::{AppHandle, Manager, State};
 use tauri_plugin_notification::NotificationExt;
 
-mod plan;
+pub(crate) mod plan;
 mod policy;
 pub use policy::Settings;
 use policy::{Binding, Capture, Command, Policy};
@@ -274,7 +274,7 @@ async fn begin(app: &AppHandle, call: &ActiveCall) -> Result<(Binding, String, b
         .ok_or("no microphone")?;
     let output = plan::pick_source(&devices, true, settings.output_source.as_deref())
         .ok_or("no computer audio")?;
-    let snapshot = crate::calendar::calendar_status(app.clone()).unwrap_or_default();
+    let snapshot = crate::calendar::fresh(app).await;
     let event = plan::current_event(&snapshot.events, chrono::Utc::now()).cloned();
     let library = app.state::<Library>();
     let storage = app.state::<Arc<Storage>>().inner().clone();

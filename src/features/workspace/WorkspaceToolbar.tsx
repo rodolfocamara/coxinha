@@ -1,6 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AlertTriangle, Check, CircleCheck, LoaderCircle, Plus, SquareDashed } from 'lucide-react';
+import {
+  AlertTriangle,
+  Check,
+  CircleCheck,
+  LoaderCircle,
+  Plus,
+  RotateCw,
+  SquareDashed,
+  X,
+} from 'lucide-react';
 import { Alert, Button } from '../../components/ui';
 import { boardSession, errorCategory } from '../board/persistence';
 import type { Workspace } from './useWorkspace';
@@ -71,7 +80,7 @@ export function WorkspaceToolbar({ ws }: { ws: Workspace }) {
           {t(`workspace.toolbar.${state}`)}
         </span>
         {error && (
-          <Button size="xs" onClick={flush}>
+          <Button size="xs" onClick={flush} icon={<RotateCw size={14} aria-hidden="true" />}>
             {t('workspace.retry')}
           </Button>
         )}
@@ -82,10 +91,19 @@ export function WorkspaceToolbar({ ws }: { ws: Workspace }) {
           className="ws-banner"
           action={
             <span className="flex gap-1.5">
-              <Button size="xs" onClick={ws.retryCreate}>
+              <Button
+                size="xs"
+                onClick={ws.retryCreate}
+                icon={<RotateCw size={14} aria-hidden="true" />}
+              >
                 {t('workspace.retry')}
               </Button>
-              <Button size="xs" variant="ghost" onClick={ws.dismissCreate}>
+              <Button
+                size="xs"
+                variant="ghost"
+                onClick={ws.dismissCreate}
+                icon={<X size={14} aria-hidden="true" />}
+              >
                 {t('workspace.cancel')}
               </Button>
             </span>
@@ -153,7 +171,12 @@ export function WorkspaceToolbar({ ws }: { ws: Workspace }) {
           >
             {t('workspace.errors.discard')}
           </Button>
-          <Button size="xs" variant="ghost" onClick={() => setConfirmReload(false)}>
+          <Button
+            size="xs"
+            variant="ghost"
+            onClick={() => setConfirmReload(false)}
+            icon={<X size={14} aria-hidden="true" />}
+          >
             {t('workspace.cancel')}
           </Button>
         </div>

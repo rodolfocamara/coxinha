@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, RotateCw } from 'lucide-react';
 import { Alert, Button } from '../../components/ui';
 import type { Session } from '../sessions/sessions';
 import { voiceCurationErrorText } from '../meetings/voiceCurationError';
@@ -149,7 +149,11 @@ export function PersonDetail({
               tone="error"
               action={
                 !query.stale && (
-                  <Button size="sm" onClick={samples.restart}>
+                  <Button
+                    size="sm"
+                    onClick={samples.restart}
+                    icon={<RotateCw size={14} aria-hidden="true" />}
+                  >
                     {t('people.retry')}
                   </Button>
                 )

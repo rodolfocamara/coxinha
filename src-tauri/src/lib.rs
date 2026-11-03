@@ -33,6 +33,8 @@ mod storage;
 mod summarizer;
 // Spec 0097 P4: the meeting actor wires this in; nothing calls it yet.
 mod settings_file;
+mod speech_download;
+mod speech_models;
 mod titles;
 mod transcriber;
 mod tray;
@@ -166,6 +168,7 @@ pub fn run() {
                 }
             });
 
+            calendar::spawn_refresh(app.handle().clone());
             info!("Coxinha ready");
             Ok(())
         })
@@ -218,6 +221,7 @@ pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
             calendar::calendar_cancel,
             calendar::calendar_sync,
             calendar::calendar_disconnect,
+            calendar::categories::calendar_set_categories,
             board::board_load,
             board::board_save,
             board::board_export_recovery,
@@ -278,6 +282,10 @@ pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
             auto_record::auto_record_keep,
             library::live_settings,
             library::set_live_settings,
+            library::library_calendar_matches,
+            library::library_resolve_calendar_match,
+            speech_download::speech_model_download,
+            speech_download::speech_default_processing_config,
             library::library_live_transcript,
             library::library_live_status,
             library::library_live_pause,

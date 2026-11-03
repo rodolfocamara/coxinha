@@ -58,6 +58,14 @@ fn a_live_meeting_waits_for_checkpoints_and_closes_on_end() -> Result<()> {
     let segments = read_transcript(&store.root, &meeting)?;
     assert_eq!(texts(&segments, Track::Mic), ["w1", "w2"]);
     assert_eq!(texts(&segments, Track::Output), ["w1", "w2"]);
+    // Spec 0099: each committed word keeps its own time (bursts at 2 s and 13 s).
+    let words: Vec<_> = segments
+        .iter()
+        .filter(|s| s.track == Track::Mic)
+        .flat_map(|s| s.words.iter())
+        .map(|w| (w.text.as_str(), w.start_ms / 1000))
+        .collect();
+    assert_eq!(words, [("w1", 2), ("w2", 13)]);
     assert_eq!(live.snapshot().state, "idle");
     assert_eq!(probe.loads.load(Ordering::SeqCst), 1);
     Ok(())

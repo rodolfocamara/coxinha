@@ -32,6 +32,19 @@ impl Library {
     ) -> Result<Value, String> {
         mutate(self, storage, Action::Session(SessionAction::Create(input))).await
     }
+    pub(crate) async fn update_session(
+        &self,
+        storage: &Arc<Storage>,
+        session: &str,
+        input: NewSession,
+    ) -> Result<Value, String> {
+        mutate(
+            self,
+            storage,
+            Action::Session(SessionAction::Update(session.to_owned(), input)),
+        )
+        .await
+    }
     /// Same as `library_start_session`: the title comes from the session.
     pub(crate) async fn start_session(
         &self,

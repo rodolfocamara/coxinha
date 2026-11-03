@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { RotateCw, Stethoscope } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { commands, type AppConfig, type ObsidianVault } from '../../lib/bindings';
 import { Alert, Button } from '../../components/ui';
@@ -72,10 +73,16 @@ export function SettingsView({ onOpenAgenda, initialSection }: Props = {}) {
       <div className="space-y-3">
         <Alert tone="error">{t('settings.vault.loadError', { error: state.message })}</Alert>
         <div className="flex flex-wrap gap-2">
-          <Button variant="primary" onClick={() => setRetry((v) => v + 1)}>
+          <Button
+            variant="primary"
+            onClick={() => setRetry((v) => v + 1)}
+            icon={<RotateCw size={14} aria-hidden="true" />}
+          >
             {t('settings.recovery.retry')}
           </Button>
-          <Button onClick={diagnostics.show}>{t('settings.recovery.showDiagnostics')}</Button>
+          <Button onClick={diagnostics.show} icon={<Stethoscope size={14} aria-hidden="true" />}>
+            {t('settings.recovery.showDiagnostics')}
+          </Button>
         </div>
         <DiagnosticsText text={diagnostics.text} />
       </div>

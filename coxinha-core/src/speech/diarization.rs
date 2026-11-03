@@ -10,9 +10,9 @@ pub(super) struct Diarizer {
     session: Session,
     extractor: EmbeddingExtractor,
     space: EmbeddingSpace,
-    clusters: Vec<Vec<f32>>,
-    threshold: f32,
-    margin: f32,
+    clustering: super::clustering::Params,
+    /// Labels already used by earlier tracks, so labels stay unique.
+    labels: usize,
     min_samples: usize,
 }
 impl Diarizer {
@@ -28,26 +28,25 @@ impl Diarizer {
                 .with_context(|| format!("Required embedding metadata: {key}"))?
                 .into())
         };
-        let threshold = config
-            .parameters
-            .get("cluster_cosine_threshold")
-            .and_then(|v| v.as_f64())
-            .unwrap_or(0.75) as f32;
-        let margin = config
-            .parameters
-            .get("cluster_margin")
-            .and_then(|v| v.as_f64())
-            .unwrap_or(0.08) as f32;
+        let number = |key: &str, default: f64| {
+            config
+                .parameters
+                .get(key)
+                .and_then(|v| v.as_f64())
+                .unwrap_or(default)
+        };
+        let distance = number("cluster_distance_threshold", 0.7);
+        let reassign = number("cluster_reassign_distance", 0.5);
+        let min_cluster = number("minimum_cluster_seconds", 10.0);
         let minimum = config
             .parameters
             .get("minimum_embedding_seconds")
             .and_then(|v| v.as_f64())
             .unwrap_or(1.0);
         ensure!(
-            threshold.is_finite()
-                && (0.0..=1.0).contains(&threshold)
-                && margin.is_finite()
-                && (0.0..=1.0).contains(&margin)
+            (0.0..=2.0).contains(&distance)
+                && (0.0..=2.0).contains(&reassign)
+                && (0.0..=600.0).contains(&min_cluster)
                 && minimum.is_finite()
                 && (0.5..=10.0).contains(&minimum),
             "Invalid experimental clustering parameters"
@@ -70,9 +69,12 @@ impl Diarizer {
                 preprocessing: "pcm16-48k-fir97-7khz-decimate3-knf-fbank80-v1".into(),
                 dimension: 0,
             },
-            clusters: vec![],
-            threshold,
-            margin,
+            clustering: super::clustering::Params {
+                distance: distance as f32,
+                min_cluster_ms: (min_cluster * 1000.0) as u64,
+                reassign_distance: reassign as f32,
+            },
+            labels: 0,
             min_samples: (minimum * 16000.0) as usize,
         })
     }
@@ -83,6 +85,8 @@ impl Diarizer {
         result: &mut ProcessingResult,
         control: &ProcessingControl,
     ) -> Result<()> {
+        // Turns of the whole track first: clustering needs every embedding.
+        let mut pending: Vec<(u64, u64, usize, Option<Vec<f32>>)> = Vec::new();
         for (window_index, window) in samples.chunks(160000).enumerate() {
             control.check()?;
             let offset = window_index * 160000;
@@ -138,8 +142,6 @@ impl Diarizer {
                 // Local speaker slots reset each window; only clean embeddings can link them.
                 let overlap = class >= 4;
                 let mut embedding = None;
-                let mut space = None;
-                let mut speaker = "unknown".to_string();
                 if !overlap && end - start >= self.min_samples {
                     let pcm: Vec<i16> = window[start..end]
                         .iter()
@@ -159,24 +161,54 @@ impl Diarizer {
                         self.space.dimension == vector.len(),
                         "Embedding dimension changed"
                     );
-                    speaker = assign(&mut self.clusters, &vector, self.threshold, self.margin);
                     embedding = Some(vector);
-                    space = Some(self.space.clone());
                 }
-                let count = powerset_multiplicity(class);
-                for _ in 0..count {
-                    result.turns.push(SpeakerTurn {
-                        id: uuid::Uuid::new_v4().to_string(),
-                        track: track.into(),
-                        start_ms: ((offset + start) as u64 * 1000 / 16000),
-                        end_ms: ((offset + end) as u64 * 1000 / 16000),
-                        speaker: speaker.clone(),
-                        embedding: embedding.clone(),
-                        space: space.clone(),
-                    });
-                }
+                pending.push((
+                    (offset + start) as u64 * 1000 / 16000,
+                    (offset + end) as u64 * 1000 / 16000,
+                    powerset_multiplicity(class),
+                    embedding,
+                ));
             }
         }
+        let embedded: Vec<usize> = (0..pending.len())
+            .filter(|i| pending[*i].3.is_some())
+            .collect();
+        let vectors: Vec<Vec<f32>> = embedded
+            .iter()
+            .filter_map(|i| pending[*i].3.clone())
+            .collect();
+        let durations: Vec<u64> = embedded
+            .iter()
+            .map(|i| pending[*i].1 - pending[*i].0)
+            .collect();
+        let mut labels = vec![None; pending.len()];
+        for (i, label) in embedded.iter().zip(super::clustering::cluster(
+            &vectors,
+            &durations,
+            &self.clustering,
+        )) {
+            labels[*i] = label;
+        }
+        let used = labels.iter().flatten().max().map_or(0, |m| m + 1);
+        for ((start_ms, end_ms, count, embedding), label) in pending.into_iter().zip(labels) {
+            let speaker = label.map_or("unknown".into(), |l| {
+                format!("speaker-{}", self.labels + l + 1)
+            });
+            let space = embedding.as_ref().map(|_| self.space.clone());
+            for _ in 0..count {
+                result.turns.push(SpeakerTurn {
+                    id: uuid::Uuid::new_v4().to_string(),
+                    track: track.into(),
+                    start_ms,
+                    end_ms,
+                    speaker: speaker.clone(),
+                    embedding: embedding.clone(),
+                    space: space.clone(),
+                });
+            }
+        }
+        self.labels += used;
         Ok(())
     }
 }
@@ -234,31 +266,6 @@ fn normalize_embedding(mut vector: Vec<f32>) -> Result<Vec<f32>> {
     }
     Ok(vector)
 }
-fn assign(clusters: &mut Vec<Vec<f32>>, vector: &[f32], threshold: f32, margin: f32) -> String {
-    let mut scores: Vec<_> = clusters
-        .iter()
-        .enumerate()
-        .map(|(i, c)| (i, c.iter().zip(vector).map(|(a, b)| a * b).sum::<f32>()))
-        .collect();
-    scores.sort_by(|a, b| b.1.total_cmp(&a.1));
-    if let Some(&(best, score)) = scores.first() {
-        if score >= threshold {
-            if scores
-                .get(1)
-                .is_some_and(|(_, second)| score - second < margin)
-            {
-                return "unknown".into();
-            }
-            return format!("speaker-{}", best + 1);
-        }
-        // Borderline observations are not allowed to create a second identity.
-        if score >= threshold - margin {
-            return "unknown".into();
-        }
-    }
-    clusters.push(vector.to_vec());
-    format!("speaker-{}", clusters.len())
-}
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -275,31 +282,9 @@ mod tests {
     }
 
     #[test]
-    fn embeddings_and_unbounded_anonymous_clusters() {
-        let mut clusters = vec![];
-        for i in 0..7 {
-            let mut v = vec![0.0; 7];
-            v[i] = 1.0;
-            assert_eq!(
-                assign(&mut clusters, &v, 0.75, 0.08),
-                format!("speaker-{}", i + 1)
-            );
-        }
-        assert_eq!(
-            assign(
-                &mut clusters,
-                &[1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-                0.75,
-                0.08
-            ),
-            "speaker-1"
-        );
+    fn embeddings_must_be_finite_and_non_zero() {
         assert!(normalize_embedding(vec![0.0]).is_err());
         assert!(normalize_embedding(vec![f32::NAN]).is_err());
-    }
-    #[test]
-    fn ambiguous_embedding_abstains() {
-        let mut clusters = vec![vec![1.0, 0.0], vec![0.99, 0.1]];
-        assert_eq!(assign(&mut clusters, &[1.0, 0.0], 0.75, 0.08), "unknown");
+        assert!(normalize_embedding(vec![3.0, 4.0]).is_ok());
     }
 }

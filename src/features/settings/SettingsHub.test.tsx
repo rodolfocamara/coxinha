@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { invoke } from '@tauri-apps/api/core';
 import i18n from '../../lib/i18n';
@@ -8,6 +8,7 @@ import { initialCaptureState, useCaptureStore } from '../capture/captureStore';
 import { useMeetingDetection } from '../detection/meetingDetection';
 import { GeneralSection } from './GeneralSection';
 import { RecordingSection } from './RecordingSection';
+import { SETTINGS_SECTIONS, SettingsLayout } from './SettingsLayout';
 
 vi.mock('@tauri-apps/api/core', () => ({
   invoke: vi.fn(),
@@ -145,4 +146,21 @@ it('call detection is a switch row in Gravação that persists the preference', 
   await user.click(detection);
   expect(localStorage.getItem('coxinha:meeting-detection')).toBe('false');
   expect(useMeetingDetection.getState().enabled).toBe(false);
+});
+
+it('gives every settings section a nav icon and the same icon on its heading', () => {
+  render(
+    <SettingsLayout ready>
+      <GeneralSection />
+    </SettingsLayout>
+  );
+  const nav = screen.getByRole('navigation', { name: i18n.t('people.settings.sectionsLabel') });
+  const items = within(nav).getAllByRole('button');
+  expect(items).toHaveLength(SETTINGS_SECTIONS.length);
+  for (const item of items) expect(item.querySelector('svg[aria-hidden="true"]')).not.toBeNull();
+  const heading = screen.getByRole('heading', {
+    level: 2,
+    name: i18n.t('people.settings.sections.general'),
+  });
+  expect(heading.querySelector('svg[aria-hidden="true"]')).not.toBeNull();
 });

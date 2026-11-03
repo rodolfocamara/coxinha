@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
-import { calendar, type CalendarSnapshot } from '../agenda/calendar';
+import { calendar, onCalendarChanged, type CalendarSnapshot } from '../agenda/calendar';
 import { boardSession } from '../board/persistence';
 import { useAppStore } from '../../lib/store';
 
@@ -24,12 +24,16 @@ function useLoad<T>(load: () => Promise<T>) {
     setState({ kind: 'loading' });
     setAttempt((n) => n + 1);
   }, []);
-  return [state, retry] as const;
+  /** Re-reads without the loading state, for a source that changed underneath. */
+  const refresh = useCallback(() => setAttempt((n) => n + 1), []);
+  return [state, retry, refresh] as const;
 }
 
 /** Cached Outlook snapshot only; opening Hoje never starts a sync or sign-in. */
 export function useCalendarSnapshot() {
-  return useLoad<CalendarSnapshot>(calendar.status);
+  const [state, retry, refresh] = useLoad<CalendarSnapshot>(calendar.status);
+  useEffect(() => onCalendarChanged(refresh), [refresh]);
+  return [state, retry] as const;
 }
 
 /** The shared board session, so unsaved Workspace edits show here too. */

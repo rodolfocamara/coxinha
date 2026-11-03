@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../components/ui';
 import type { Board } from '../board/model';
@@ -50,7 +50,7 @@ export function WorkspacePreview({ state, onRetry }: PreviewProps) {
       ) : cards.length === 0 ? (
         <PanelEmpty
           action={
-            <Button size="sm" onClick={go.workspace}>
+            <Button size="sm" onClick={go.workspace} icon={<Plus size={14} aria-hidden="true" />}>
               {t('hoje.workspace.create')}
             </Button>
           }

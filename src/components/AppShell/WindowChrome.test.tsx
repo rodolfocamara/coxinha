@@ -61,6 +61,12 @@ describe('integrated window chrome', () => {
     await screen.findByRole('button', { name: 'Maximize window' });
   });
 
+  it('keeps the window buttons inside the strip (no negative margin past the corner)', () => {
+    render(<WindowChrome />);
+    const group = screen.getByRole('button', { name: 'Close window' }).parentElement!;
+    expect(group.className).not.toMatch(/(^|\s)-m[rx]-/);
+  });
+
   it('drags only blank primary presses and maximizes on double-click', async () => {
     render(
       <WindowChrome>

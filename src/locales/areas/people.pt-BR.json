@@ -141,12 +141,16 @@
       "live": {
         "title": "Transcrever durante a chamada",
         "hint": "Usa o Tagarela neste computador enquanto grava. O texto é provisório e nada sai da máquina.",
-        "needsModel": "Escolha o arquivo do modelo para ligar.",
+        "needsModel": "Nenhum modelo encontrado neste computador. Baixe o Parakeet v3 público (740 MB, CC-BY-4.0) ou escolha um arquivo abaixo.",
         "model": "Modelo Tagarela",
         "modelHint": "Arquivo .gguf do Parakeet pt-BR. Só leitura: o Coxinha nunca altera o arquivo do Handy.",
         "useHandy": "Usar o do Handy",
         "threads": "Threads da transcrição",
-        "threadsHint": "Menos threads deixam mais CPU para a chamada e para o Handy."
+        "threadsHint": "Menos threads deixam mais CPU para a chamada e para o Handy.",
+        "backlog": "Transcrever gravações anteriores",
+        "backlogHint": "Quando nada estiver gravando, transcreve sozinho as reuniões que ainda não têm transcrição completa, da mais nova para a mais antiga, e depois separa quem falou. Uma chamada ou um processamento passam na frente.",
+        "download": "Baixar modelo",
+        "downloading": "Baixando… {{percent}}%"
       },
       "titles": {
         "title": "Título sugerido",

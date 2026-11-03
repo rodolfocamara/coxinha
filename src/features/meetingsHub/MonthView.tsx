@@ -5,6 +5,8 @@ import { Button } from '../../components/ui';
 import { dayKey, monthStart, monthWeeks } from '../sessions/sessionDates';
 import { rowsByDay, type MeetingRow } from './meetingRows';
 import { clockTime } from './format';
+import { OUTLOOK_PRESETS, colourStyle, colourVar, useEventColour } from '../agenda/categories';
+import { CategoryLabel } from '../agenda/CategoryLabel';
 
 /**
  * "Mês" tab: a month grid of meetings and Outlook events. Every item is a
@@ -95,23 +97,7 @@ export function MonthView({
                   >
                     <span className="mh-day-n">{date.getDate()}</span>
                     {items.map((row) => (
-                      <button
-                        key={row.key}
-                        type="button"
-                        className="mh-month-ev"
-                        onClick={() => onSelect(row)}
-                        title={`${clockTime(row.start!, locale)} ${row.title}`}
-                      >
-                        <i
-                          className="mh-dot"
-                          aria-hidden="true"
-                          data-tone={
-                            isLive(row) ? 'live' : row.kind === 'event' ? 'info' : undefined
-                          }
-                        />
-                        <span className="sr-only">{clockTime(row.start!, locale)} </span>
-                        <span className="truncate">{row.title || t('meetingsHub.untitled')}</span>
-                      </button>
+                      <MonthItem key={row.key} row={row} live={isLive(row)} onSelect={onSelect} />
                     ))}
                   </td>
                 );
@@ -121,5 +107,41 @@ export function MonthView({
         </tbody>
       </table>
     </section>
+  );
+}
+
+function MonthItem({
+  row,
+  live,
+  onSelect,
+}: {
+  row: MeetingRow;
+  live: boolean;
+  onSelect: (row: MeetingRow) => void;
+}) {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.resolvedLanguage ?? i18n.language;
+  const colour = useEventColour(row.kind === 'recording' ? null : row.event);
+  const tinted = colour && !live;
+  return (
+    <button
+      type="button"
+      className="mh-month-ev"
+      data-category={tinted ? OUTLOOK_PRESETS[colour.preset] : undefined}
+      style={tinted ? colourStyle(colour.preset) : undefined}
+      onClick={() => onSelect(row)}
+      title={`${clockTime(row.start!, locale)} ${row.title}`}
+    >
+      <i
+        className="mh-dot"
+        aria-hidden="true"
+        data-tone={live ? 'live' : row.kind === 'event' && !colour ? 'info' : undefined}
+        data-category={tinted ? '' : undefined}
+        style={tinted ? { background: colourVar(colour.preset), opacity: 1 } : undefined}
+      />
+      <span className="sr-only">{clockTime(row.start!, locale)} </span>
+      <span className="truncate">{row.title || t('meetingsHub.untitled')}</span>
+      <CategoryLabel colour={colour} />
+    </button>
   );
 }

@@ -1,6 +1,6 @@
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Headphones, Square } from 'lucide-react';
+import { Headphones, Square, X } from 'lucide-react';
 import { Badge, Button, Field, Input } from '../../components/ui';
 import { validVoiceOrigin } from '../meetings/voiceCuration';
 import { voiceTime } from '../meetings/voiceControls';
@@ -130,7 +130,7 @@ export function SampleRow({
             />
           </Field>
           <div className="flex justify-end gap-2">
-            <Button size="sm" onClick={onCancel}>
+            <Button size="sm" onClick={onCancel} icon={<X size={14} aria-hidden="true" />}>
               {t('people.revoke.cancel')}
             </Button>
             <Button

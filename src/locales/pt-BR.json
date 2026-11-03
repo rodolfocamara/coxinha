@@ -192,7 +192,7 @@
     "setup": "Configure o aplicativo público da sua instalação. Consulte docs/outlook-setup.md. Nenhuma conexão acontece antes de Conectar.",
     "clientId": "Application (client) ID",
     "tenant": "Tenant ID ou organizations, common, consumers",
-    "permissions": "Somente leitura: Calendars.ReadBasic, openid e offline_access. Tokens protegidos pelo cofre do sistema.",
+    "permissions": "Calendars.ReadBasic, Calendars.ReadWrite (só para mudar as categorias de um evento), MailboxSettings.Read (cores das categorias), openid e offline_access. Tokens protegidos pelo cofre do sistema.",
     "connect": "Conectar Outlook",
     "sync": "Sincronizar agora",
     "disconnect": "Desconectar e remover cache",
@@ -213,7 +213,7 @@
     "cancelError": "Não foi possível cancelar a conexão.",
     "noAutoRecord": "A agenda não inicia gravações. Gravação automática exige uma opção explícita em uma etapa futura.",
     "title": "Agenda do Outlook",
-    "description": "Sincronização somente leitura dos próximos 30 dias. Convidados viram candidatos para a revisão de voz.",
+    "description": "Sincroniza 30 dias para trás e para a frente, com as cores das categorias do Outlook. Convidados viram candidatos para a revisão de voz.",
     "statusConnected": "Conectado",
     "statusDisconnected": "Não conectado",
     "statusReconnect": "Reconexão necessária",
@@ -306,7 +306,10 @@
     "tenantInvalid": "Tenant inválido.",
     "secretTooLong": "A credencial excede o limite seguro do cofre do Windows (2.560 bytes incluindo configuração). A conexão não foi salva. Não há alternativa em texto simples.",
     "authorizationDenied": "O provedor recusou a autorização. Verifique a configuração e as permissões do aplicativo.",
-    "candidateLimit": "A reunião aceita até 100 candidatos. Revise os candidatos existentes e escolha uma lista menor antes de adicionar convidados."
+    "candidateLimit": "A reunião aceita até 100 candidatos. Revise os candidatos existentes e escolha uma lista menor antes de adicionar convidados.",
+    "categoriesReconnect": "O Outlook não permitiu mudar as categorias. Reconecte o Outlook para autorizar.",
+    "categoriesInvalid": "Escolha no máximo 25 categorias.",
+    "eventMissing": "Este evento não está mais na agenda do Outlook. Sincronize e tente de novo."
   },
   "sidebar": {
     "untitled": "Sem título"
@@ -518,6 +521,9 @@
     "listen": "Ouvir trecho / repetir",
     "pause": "Pausar trecho",
     "noCleanExcerpt": "Não há trecho isolado disponível para este falante.",
+    "defaultOrigin": "Ouvi o trecho e reconheci a voz",
+    "invitee": "convidado(a)",
+    "inviteeConsent": "Convidado(a) desta reunião na agenda",
     "decisionOrigin": "Como você verificou esta identidade?",
     "decisionHelp": "Obrigatório para salvar ou revogar. Descreva a evidência humana, por exemplo: conheço esta pessoa e revisei esta gravação.",
     "remember": "Lembrar esta voz em reuniões futuras",

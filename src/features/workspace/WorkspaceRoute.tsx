@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { LayoutGrid, Plus } from 'lucide-react';
+import { LayoutGrid, Plus, RotateCw } from 'lucide-react';
 import { Alert, Button, EmptyState } from '../../components/ui';
 import { BoardCanvas } from '../board/BoardCanvas';
 import { NotesDrawer } from './NotesDrawer';
@@ -22,7 +22,11 @@ export function WorkspaceRoute() {
         <Alert
           tone="error"
           action={
-            <Button size="xs" onClick={ws.session.load}>
+            <Button
+              size="xs"
+              onClick={ws.session.load}
+              icon={<RotateCw size={14} aria-hidden="true" />}
+            >
               {t('workspace.retry')}
             </Button>
           }

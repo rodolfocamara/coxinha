@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SECTION_ICONS } from './icons';
 import './settings.css';
 
 export const SETTINGS_SECTIONS = [
@@ -119,18 +120,22 @@ export function SettingsLayout({
           className="min-h-0 flex-1 overflow-auto"
         >
           <ul>
-            {SETTINGS_SECTIONS.map((id) => (
-              <li key={id}>
-                <button
-                  type="button"
-                  className="cx-settings-nav-item"
-                  aria-current={active === id ? 'true' : undefined}
-                  onClick={() => go(id)}
-                >
-                  {t(`people.settings.sections.${id}`)}
-                </button>
-              </li>
-            ))}
+            {SETTINGS_SECTIONS.map((id) => {
+              const Icon = SECTION_ICONS[id];
+              return (
+                <li key={id}>
+                  <button
+                    type="button"
+                    className="cx-settings-nav-item"
+                    aria-current={active === id ? 'true' : undefined}
+                    onClick={() => go(id)}
+                  >
+                    <Icon size={15} aria-hidden="true" className="cx-settings-nav-icon" />
+                    {t(`people.settings.sections.${id}`)}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </nav>
       </div>

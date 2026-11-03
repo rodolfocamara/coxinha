@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { PenLine } from 'lucide-react';
+import { PenLine, X } from 'lucide-react';
 import { Alert, Button, Field, Input } from '../../components/ui';
 import { sessions, type Session } from '../sessions/sessions';
 import { claimTitleMorph } from './meetingsSheets';
@@ -110,7 +110,12 @@ export function MeetingHeading({
           <Button type="submit" variant="primary" disabled={saving || !draft.trim()}>
             {k('save')}
           </Button>
-          <Button variant="ghost" disabled={saving} onClick={close}>
+          <Button
+            variant="ghost"
+            disabled={saving}
+            onClick={close}
+            icon={<X size={14} aria-hidden="true" />}
+          >
             {k('cancel')}
           </Button>
           {failed && (

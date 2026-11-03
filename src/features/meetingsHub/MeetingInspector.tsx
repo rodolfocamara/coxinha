@@ -8,6 +8,8 @@ import type { CalendarEvent } from '../agenda/calendar';
 import type { Lane } from './lanes';
 import { durationLabel, hueFor, initials, mediaClock, whenLabel } from './format';
 import { normalize } from './meetingRows';
+import { EventCategories } from '../agenda/EventCategories';
+import { requestMeetingsSheet } from './meetingsSheets';
 
 type Props = {
   start: Date | null;
@@ -78,6 +80,13 @@ export function MeetingInspector(p: Props) {
           )}
         </dl>
       </div>
+      {p.event && (
+        <EventCategories
+          event={p.event}
+          headingClassName="mh-insp-h"
+          onReconnect={() => requestMeetingsSheet('outlook')}
+        />
+      )}
       <div>
         <h3 className="mh-insp-h">
           {k('participants')}

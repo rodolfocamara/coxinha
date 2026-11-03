@@ -32,8 +32,16 @@ pub(super) fn save(app: &tauri::AppHandle, snapshot: &Snapshot) -> Result<(), St
         .map_err(|_| SAFE_ERROR)?;
     file.as_file().sync_all().map_err(|_| SAFE_ERROR)?;
     file.persist(path).map_err(|_| SAFE_ERROR)?;
+    changed(app);
     Ok(())
 }
+/// Open views re-read the cache: a connection made in Settings or the
+/// background refresh must reach Hoje and Reuniões without a remount.
+pub(super) fn changed(app: &tauri::AppHandle) {
+    use tauri::Emitter;
+    let _ = app.emit(CHANGED_EVENT, ());
+}
+pub const CHANGED_EVENT: &str = "calendar-changed";
 pub(super) fn installation_key(path: &std::path::Path) -> String {
     URL_SAFE_NO_PAD.encode(Sha256::digest(path.to_string_lossy().as_bytes()))
 }

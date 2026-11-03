@@ -1,9 +1,15 @@
 import { nameForTransition, prepareRouteTransition } from '../../lib/motion';
 
-export type MeetingsSheet = 'meeting' | 'import';
+export type MeetingsSheet = 'meeting' | 'import' | 'outlook';
 
 export const NEW_MEETING_EVENT = 'coxinha:new-meeting';
 export const IMPORT_AUDIO_EVENT = 'coxinha:import-audio';
+export const OUTLOOK_SHEET_EVENT = 'coxinha:outlook-sheet';
+const sheetEvents: Record<MeetingsSheet, string> = {
+  meeting: NEW_MEETING_EVENT,
+  import: IMPORT_AUDIO_EVENT,
+  outlook: OUTLOOK_SHEET_EVENT,
+};
 
 let pendingSheet: MeetingsSheet | null = null;
 
@@ -13,7 +19,7 @@ let pendingSheet: MeetingsSheet | null = null;
  */
 export function requestMeetingsSheet(sheet: MeetingsSheet) {
   pendingSheet = sheet;
-  window.dispatchEvent(new Event(sheet === 'meeting' ? NEW_MEETING_EVENT : IMPORT_AUDIO_EVENT));
+  window.dispatchEvent(new Event(sheetEvents[sheet]));
 }
 
 /** Reads and clears a request made before the screen mounted. */

@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { FileAudio, Users, type LucideIcon } from 'lucide-react';
 import { Badge } from '../../components/ui';
 import type { AppConfig } from '../../lib/bindings';
 import { SettingsCard, SettingsRow, SettingsSection } from './controls';
@@ -29,12 +30,14 @@ export function TranscriptionSection({ config }: { config: AppConfig }) {
   const row = (
     name: string,
     title: string,
-    engine: AppConfig['transcriber'] | AppConfig['diarizer']
+    engine: AppConfig['transcriber'] | AppConfig['diarizer'],
+    icon: LucideIcon
   ) => {
     const detail = describe(engine);
     return (
       <SettingsRow
         name={name}
+        icon={icon}
         title={title}
         description={detail ?? s('transcription.noDefault')}
         control={
@@ -53,8 +56,8 @@ export function TranscriptionSection({ config }: { config: AppConfig }) {
       description={s('descriptions.transcription')}
     >
       <SettingsCard>
-        {row('transcriber', s('transcription.engine'), config.transcriber ?? NONE)}
-        {row('diarizer', s('transcription.diarizer'), config.diarizer ?? NONE)}
+        {row('transcriber', s('transcription.engine'), config.transcriber ?? NONE, FileAudio)}
+        {row('diarizer', s('transcription.diarizer'), config.diarizer ?? NONE, Users)}
       </SettingsCard>
       <p className="mt-2 text-xs text-muted-foreground">{s('transcription.perMeeting')}</p>
       <div className="mt-4">

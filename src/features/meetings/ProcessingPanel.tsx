@@ -2,6 +2,7 @@ import { Alert, Button, Field, Select, Textarea } from '../../components/ui';
 import { voiceCurationErrorText } from './voiceCurationError';
 import { SpeakerReview } from './SpeakerReview';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { FileText, RotateCw } from 'lucide-react';
 import { useProcessing } from './useProcessing';
 import type { ExcerptPlayback } from './useBoundedPlayback';
 import { useTranslation } from 'react-i18next';
@@ -116,7 +117,9 @@ function ProcessingPanelForMeeting({
       {peopleView && !report && (
         <>
           <p className="text-sm text-muted-foreground">{t('speakers.intro')}</p>
-          <Button onClick={onTranscript}>{t('speakers.openTranscript')}</Button>
+          <Button onClick={onTranscript} icon={<FileText size={14} aria-hidden="true" />}>
+            {t('speakers.openTranscript')}
+          </Button>
         </>
       )}
       {!peopleView && (
@@ -190,7 +193,7 @@ function ProcessingPanelForMeeting({
         <Alert
           tone="error"
           action={
-            <Button size="sm" onClick={retry}>
+            <Button size="sm" onClick={retry} icon={<RotateCw size={14} aria-hidden="true" />}>
               {t('session.retry')}
             </Button>
           }
@@ -249,7 +252,9 @@ function ProcessingPanelForMeeting({
               <p>{k('unknown')}</p>
               <p>{t('speakers.noCalibrationDetails')}</p>
               {versionSelector}
-              <Button onClick={onTranscript}>{t('speakers.openTranscript')}</Button>
+              <Button onClick={onTranscript} icon={<FileText size={14} aria-hidden="true" />}>
+                {t('speakers.openTranscript')}
+              </Button>
             </details>
           )}
           {!peopleView && (

@@ -1,7 +1,7 @@
 import { useRef, useState, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { Mic } from 'lucide-react';
+import { Mic, RotateCw } from 'lucide-react';
 import { Alert, Button } from '../../components/ui';
 import { library, type CaptureStatus } from '../meetings/library';
 import { RecordingDetail } from '../meetings/RecordingDetail';
@@ -61,7 +61,11 @@ export function MeetingDetail(props: Props) {
           <Alert
             tone="error"
             action={
-              <Button size="sm" onClick={() => void query.refetch()}>
+              <Button
+                size="sm"
+                onClick={() => void query.refetch()}
+                icon={<RotateCw size={14} aria-hidden="true" />}
+              >
                 {t('meetingsHub.retry')}
               </Button>
             }

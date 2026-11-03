@@ -19,10 +19,12 @@ import { MonthView } from './MonthView';
 import { NewMeetingSheet } from './NewMeetingSheet';
 import { ImportAudioSheet } from './ImportAudioSheet';
 import { ParticipantsSheet } from './ParticipantsSheet';
+import { CalendarMatchBanner, CalendarMatchSheet, useCalendarMatches } from './CalendarMatches';
 import { useMeetingsData, useRowLiveness } from './useMeetingsData';
 import {
   IMPORT_AUDIO_EVENT,
   NEW_MEETING_EVENT,
+  OUTLOOK_SHEET_EVENT,
   takePendingSheet,
   type MeetingsSheet,
 } from './meetingsSheets';
@@ -33,11 +35,12 @@ type SheetState =
   | { kind: 'meeting' }
   | { kind: 'import'; title: string; forMeeting: boolean }
   | { kind: 'outlook' }
+  | { kind: 'calendar' }
   | { kind: 'participants'; meetingId: string; event: CalendarEvent | null }
   | null;
 
 const sheetFor = (sheet: MeetingsSheet): SheetState =>
-  sheet === 'meeting' ? { kind: 'meeting' } : { kind: 'import', title: '', forMeeting: false };
+  sheet === 'import' ? { kind: 'import', title: '', forMeeting: false } : { kind: sheet };
 
 /**
  * Reuniões (spec 0096 P4): one list merging meeting sessions, Outlook events
@@ -58,6 +61,7 @@ export function MeetingsHubRoute() {
   const [sheet, setSheet] = useState<SheetState>(null);
   const [participantsRevision, setParticipantsRevision] = useState(0);
   const desktop = library.available();
+  const calendarMatches = useCalendarMatches(desktop);
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 60_000);
@@ -74,11 +78,17 @@ export function MeetingsHubRoute() {
       takePendingSheet();
       setSheet(sheetFor('import'));
     };
+    const onOutlook = () => {
+      takePendingSheet();
+      setSheet(sheetFor('outlook'));
+    };
     window.addEventListener(NEW_MEETING_EVENT, onNew);
     window.addEventListener(IMPORT_AUDIO_EVENT, onImport);
+    window.addEventListener(OUTLOOK_SHEET_EVENT, onOutlook);
     return () => {
       window.removeEventListener(NEW_MEETING_EVENT, onNew);
       window.removeEventListener(IMPORT_AUDIO_EVENT, onImport);
+      window.removeEventListener(OUTLOOK_SHEET_EVENT, onOutlook);
     };
   }, []);
 
@@ -186,6 +196,12 @@ export function MeetingsHubRoute() {
           void recordings.refetch();
         }}
         desktop={desktop}
+        banner={
+          <CalendarMatchBanner
+            count={calendarMatches.matches.length}
+            onReview={() => setSheet({ kind: 'calendar' })}
+          />
+        }
       />
       {!desktop ? (
         <div className="mh-detail p-6">
@@ -245,6 +261,14 @@ export function MeetingsHubRoute() {
           onOpenChange={closeSheet}
           meetingId={sheet.meetingId}
           event={sheet.event}
+        />
+      )}
+      {sheet?.kind === 'calendar' && (
+        <CalendarMatchSheet
+          open
+          onOpenChange={closeSheet}
+          matches={calendarMatches.matches}
+          onResolved={calendarMatches.reload}
         />
       )}
       {sheet?.kind === 'outlook' && (

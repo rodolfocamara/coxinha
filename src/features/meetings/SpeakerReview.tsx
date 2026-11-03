@@ -2,7 +2,13 @@ import { useEffect, useMemo, useState } from 'react';
 import { UserPlus } from 'lucide-react';
 import { Button } from '../../components/ui';
 import { useTranslation } from 'react-i18next';
-import { library, type ProcessingDetail, type ProcessingReport, type Recognition } from './library';
+import {
+  library,
+  type ParticipantCandidate,
+  type ProcessingDetail,
+  type ProcessingReport,
+  type Recognition,
+} from './library';
 import { VoiceProfilesPanel } from './VoiceProfilesPanel';
 import { VoiceComparisonPanel } from './VoiceComparisonPanel';
 import { ParticipantContext } from './ParticipantContext';
@@ -44,6 +50,17 @@ function SpeakerReviewForRun({
   const [recognition, setRecognition] = useState<Recognition | null>(null);
   const [error, setError] = useState('');
   const [attempt, setAttempt] = useState(0);
+  const [invitees, setInvitees] = useState<ParticipantCandidate[]>([]);
+  useEffect(() => {
+    let live = true;
+    library.participantContext(meetingId).then(
+      (rows) => live && setInvitees(rows),
+      () => live && setInvitees([])
+    );
+    return () => {
+      live = false;
+    };
+  }, [meetingId, curationRevision]);
   useEffect(() => {
     let live = true;
     setRecognition(null);
@@ -111,6 +128,7 @@ function SpeakerReviewForRun({
               track,
               report,
               people,
+              invitees,
               recognition,
               disabled,
               playback,

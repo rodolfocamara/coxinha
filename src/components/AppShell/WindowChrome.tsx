@@ -53,7 +53,7 @@ export function WindowChrome({ children }: { children?: ReactNode }) {
       />
       {children}
       {native && (
-        <div className="flex items-center self-stretch shrink-0 -mr-3 ml-1">
+        <div className="flex items-center self-stretch shrink-0 ml-1">
           {failed && (
             <span role="alert" className="text-xs text-destructive px-2 max-w-48">
               {t('windowChrome.failed')}

@@ -167,9 +167,9 @@ Pending decisions that block or shape the implementation.
 
 - [0087 — Meeting boundaries and reversible sessions](0087-meeting-boundaries-and-reversible-sessions.md) — in-progress
 
-- [0088 — Visible local processing lifecycle](0088-visible-local-processing.md) — in-progress
+- [0088 — Visible local processing lifecycle](0088-visible-local-processing.md) — in-progress (partial)
 
-- [0089 — Local incremental transcription](0089-local-incremental-transcription.md) — in-progress
+- [0089 — Local incremental transcription](0089-local-incremental-transcription.md) — in-progress (partial)
 
 - [0090 — Recoverable processing publication](0090-recoverable-processing-publication.md) — in-progress
 
@@ -177,9 +177,15 @@ Pending decisions that block or shape the implementation.
 
 - [0092 — Global people and visible recording controls](0092-global-people-and-recording-controls.md) — in-progress
 
-- [0093 — Sidebar live recording pill and unified status](0093-sidebar-recording-status.md) — in-progress
+- [0093 — Sidebar live recording pill and unified status](0093-sidebar-recording-status.md) — superseded by 0096
 
-- [0094 — Meeting end/boundary prompt, focus bring-up and UI simplification](0094-meeting-end-prompt-and-simplification.md) — in-progress
+- [0094 — Meeting end/boundary prompt, focus bring-up and UI simplification](0094-meeting-end-prompt-and-simplification.md) — superseded by 0096
 
 - [0096 — Frontend redesign (Hoje, Reuniões, Workspace, one recorder)](0096-frontend-redesign.md) — in-progress
 - [0097 — Automatic call recording, live transcript and meeting titles](0097-automatic-call-recording.md) — in-progress
+- [0098 — Automatic transcription of recordings, calendar refresh and icon pass](0098-automatic-transcription-and-calendar-refresh.md) — in-progress
+- [0099 — Speech models without setup and automatic speaker separation](0099-bundled-speech-models-and-automatic-speaker-separation.md) — in-progress
+- [0100 — Match past recordings to calendar events](0100-match-recordings-to-calendar-events.md) — in-progress
+- [0101 — Offline speaker clustering and per-word attribution](0101-offline-speaker-clustering.md) — in-progress
+- [0102 — Name speakers from the meeting's invitees](0102-name-speakers-from-invitees.md) — in-progress
+- [0103 — Outlook categories and colours](0103-outlook-categories-and-colours.md) — in-progress

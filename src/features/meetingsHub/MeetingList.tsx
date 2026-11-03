@@ -1,5 +1,6 @@
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CalendarDays, Plus, RefreshCw, Search, Settings2, Upload } from 'lucide-react';
+import { CalendarDays, Plus, RefreshCw, RotateCw, Search, Settings2, Upload } from 'lucide-react';
 import { Alert, Button, EmptyState, Input } from '../../components/ui';
 import { LiveBadge } from '../capture/LiveBadge';
 import type { OutlookConnection } from '../agenda/useOutlookConnection';
@@ -13,6 +14,8 @@ import {
 import { clockTime, durationLabel, rowTime } from './format';
 import { TabBar } from './TabBar';
 import { localDay, nextDay } from '../sessions/sessionDates';
+import { markProps, useEventColour } from '../agenda/categories';
+import { CategoryLabel } from '../agenda/CategoryLabel';
 
 export type ListTab = 'list' | 'review' | 'month';
 
@@ -36,6 +39,8 @@ type Props = {
   loading: boolean;
   onRetry: () => void;
   desktop: boolean;
+  /** Shown above the list, e.g. calendar matches to review (spec 0100). */
+  banner?: ReactNode;
 };
 
 export function MeetingList(p: Props) {
@@ -110,12 +115,17 @@ export function MeetingList(p: Props) {
         role="tabpanel"
         aria-labelledby={`meetings-list-tab-${p.tab}`}
       >
+        {p.banner}
         {p.loadFailed && (
           <div className="p-3">
             <Alert
               tone="error"
               action={
-                <Button size="sm" onClick={p.onRetry}>
+                <Button
+                  size="sm"
+                  onClick={p.onRetry}
+                  icon={<RotateCw size={14} aria-hidden="true" />}
+                >
                   {k('retry')}
                 </Button>
               }
@@ -168,17 +178,20 @@ function RowButton({ row, ...p }: Props & { row: MeetingRow }) {
   const { t, i18n } = useTranslation();
   const locale = i18n.resolvedLanguage ?? i18n.language;
   const selected = p.selectedKey === row.key;
+  const colour = useEventColour(row.kind === 'recording' ? null : row.event);
   return (
     <button
       type="button"
-      className="mh-row"
+      className="mh-row cx-cat-mark"
       data-key={row.key}
       aria-current={selected ? 'true' : undefined}
       onClick={() => p.onSelect(row)}
+      {...markProps(colour)}
     >
       <b className="mh-row-title" data-row-title>
         {row.title || t('meetingsHub.untitled')}
       </b>
+      <CategoryLabel colour={colour} />
       <span className="mh-row-time">{rowTime(row.start, p.now, locale)}</span>
       <span className="mh-row-meta">
         <RowMeta row={row} live={p.isLive(row)} attention={p.attention(row)} now={p.now} />
@@ -265,7 +278,12 @@ function OutlookFooter({
         <span className="min-w-0 flex-1 truncate text-warning" title={connection.error}>
           {connection.error}
         </span>
-        <Button variant="ghost" size="xs" onClick={connection.retry}>
+        <Button
+          variant="ghost"
+          size="xs"
+          onClick={connection.retry}
+          icon={<RotateCw size={14} aria-hidden="true" />}
+        >
           {k('retry')}
         </Button>
         <Button

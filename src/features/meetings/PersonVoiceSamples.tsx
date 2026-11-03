@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { validVoiceOrigin, type ProfilesPage } from './voiceCuration';
 import { voiceCurationErrorText } from './voiceCurationError';
-import { ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import { Alert, Button, Field, Input } from '../../components/ui';
 import { voiceTime } from './voiceControls';
 import { VoiceSpaceInfo } from './VoiceSpaceInfo';
@@ -168,6 +168,7 @@ export function PersonVoiceSamples({
               size="sm"
               disabled={disabled || busy || query.loading || query.stale}
               onClick={query.loadMore}
+              icon={<ChevronDown size={14} aria-hidden="true" />}
             >
               {k('loadMoreSamples')}
             </Button>

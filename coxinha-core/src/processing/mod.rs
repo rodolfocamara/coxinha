@@ -111,7 +111,7 @@ pub(crate) fn hash_json(value: &impl Serialize) -> Result<String> {
 mod prepare;
 pub use prepare::{preflight_processing, validate_processing_source};
 pub const IMPLEMENTATION_VERSION: &str =
-    "local-processing-v2-overlap70-whisper016-pyannote034-dsp1";
+    "local-processing-v3-overlap70-whisper016-pyannote034-dsp1-ahc";
 
 #[cfg(test)]
 mod tests;

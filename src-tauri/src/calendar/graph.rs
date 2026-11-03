@@ -35,12 +35,13 @@ pub(super) async fn fetch(access: &str, attempt: Option<&str>) -> Result<Snapsho
     let now = Utc::now();
     let mut url = graph_url("https://graph.microsoft.com/v1.0/me/calendarView")?;
     url.query_pairs_mut().extend_pairs([
-        ("startDateTime", (now - Duration::days(1)).to_rfc3339()),
+        // Spec 0100: a month back, so earlier recordings can be matched.
+        ("startDateTime", (now - Duration::days(30)).to_rfc3339()),
         ("endDateTime", (now + Duration::days(30)).to_rfc3339()),
         ("$top", "100".into()),
         (
             "$select",
-            "id,subject,start,end,isCancelled,isAllDay,attendees,organizer,seriesMasterId,type,originalStart".into(),
+            "id,subject,start,end,isCancelled,isAllDay,attendees,organizer,seriesMasterId,type,originalStart,categories".into(),
         ),
     ]);
     let mut events = Vec::new();
@@ -77,6 +78,7 @@ pub(super) async fn fetch(access: &str, attempt: Option<&str>) -> Result<Snapsho
                     account: Some(account),
                     synced_at: Some(Utc::now().to_rfc3339()),
                     events,
+                    ..Snapshot::default()
                 });
             }
             Some(next) => url = graph_url(next.as_str().ok_or(SAFE_ERROR)?)?,
@@ -140,5 +142,6 @@ pub(super) fn parse_event(item: &serde_json::Value) -> Result<Event, String> {
         series_master_id: item["seriesMasterId"].as_str().map(str::to_string),
         event_type: item["type"].as_str().map(str::to_string),
         original_start: item["originalStart"].as_str().map(str::to_string),
+        categories: event_categories(item),
     })
 }

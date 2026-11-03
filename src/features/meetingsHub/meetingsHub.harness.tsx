@@ -8,8 +8,14 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider } from '@tanstack/react-router';
 import { createAppRouter } from '../../router';
 import type { Session } from '../sessions/sessions';
-import type { CalendarEvent } from '../agenda/calendar';
-import type { LibraryDetail, LibraryMeeting, ProcessingDetail } from '../meetings/library';
+import type { CalendarEvent, CategoryAccess, OutlookCategory } from '../agenda/calendar';
+import { resetOutlookCategories } from '../agenda/categories';
+import type {
+  CalendarMatch,
+  LibraryDetail,
+  LibraryMeeting,
+  ProcessingDetail,
+} from '../meetings/library';
 import { at, recording, session } from './meetingsHub.fixtures';
 
 export * from './meetingsHub.fixtures';
@@ -27,7 +33,15 @@ export type Db = {
   contexts: Record<string, { name: string; email: string | null }[]>;
   failSessions: number;
   failImport: boolean;
+  /** Spec 0099: config the backend builds from bundled speaker models. */
+  defaultConfig: unknown;
+  /** Spec 0100: recordings the backend matched to calendar events. */
+  calendarMatches: CalendarMatch[];
   failUpdate: boolean;
+  /** Spec 0103: master list, granted access and the category PATCH outcome. */
+  categories: OutlookCategory[];
+  categoryAccess: CategoryAccess;
+  setCategories: { gate: Promise<void> | null; error: string | null };
   calls: { command: string; args: Record<string, unknown> }[];
 };
 
@@ -41,7 +55,12 @@ export function freshDb(): Db {
     contexts: {},
     failSessions: 0,
     failImport: false,
+    defaultConfig: null,
+    calendarMatches: [],
     failUpdate: false,
+    categories: [],
+    categoryAccess: { read: true, write: true },
+    setCategories: { gate: null, error: null },
     calls: [],
   };
 }
@@ -78,6 +97,14 @@ const status = (meetingId: string | null) => ({
   error: null,
 });
 
+const calendarSnapshot = (db: Db) => ({
+  account: db.account,
+  syncedAt: db.account ? at(0, 8) : null,
+  events: db.events,
+  categories: db.categories,
+  categoryAccess: db.categoryAccess,
+});
+
 export function backend(db: Db) {
   return async (command: string, raw?: unknown) => {
     const args = (raw ?? {}) as Record<string, unknown>;
@@ -97,7 +124,14 @@ export function backend(db: Db) {
       case 'library_list':
         return db.recordings;
       case 'calendar_status':
-        return { account: db.account, syncedAt: db.account ? at(0, 8) : null, events: db.events };
+        return calendarSnapshot(db);
+      case 'calendar_set_categories': {
+        await db.setCategories.gate;
+        if (db.setCategories.error) throw new Error(db.setCategories.error);
+        const names = args.categories as string[];
+        db.events = db.events.map((e) => (e.id === args.eventId ? { ...e, categories: names } : e));
+        return calendarSnapshot(db);
+      }
       case 'library_detail':
         return detailOf(db, String(args.meetingId));
       case 'library_recover': {
@@ -114,6 +148,14 @@ export function backend(db: Db) {
       }
       case 'library_processing':
         return db.processing[String(args.meetingId)] ?? { jobs: [], report: null, people: [] };
+      case 'library_calendar_matches':
+        return db.calendarMatches;
+      case 'library_resolve_calendar_match':
+        db.calendarMatches = db.calendarMatches.filter((m) => m.sessionId !== args.sessionId);
+        return null;
+      case 'speech_default_processing_config':
+        if (!db.defaultConfig) throw new Error('Speaker models are not bundled with this build');
+        return db.defaultConfig;
       case 'library_process':
         return {
           active: null,
@@ -176,6 +218,7 @@ export function resetState() {
   useCaptureStore.setState({ ...initialCaptureState });
   forgetProcessingConfig();
   takePendingSheet();
+  resetOutlookCategories();
 }
 
 export function renderAt(path: string) {

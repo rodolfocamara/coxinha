@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { ClipboardList, RotateCw } from 'lucide-react';
 import { Alert, Button, EmptyState } from '../../components/ui';
 
 /** Notes tab of a meeting that has no session: an Outlook event or a loose recording. */
@@ -18,7 +19,13 @@ export function NotesPlaceholder({
       title={k('eventTitle')}
       description={k('eventHint')}
       action={
-        <Button variant="primary" size="sm" disabled={busy} onClick={onPrepare}>
+        <Button
+          variant="primary"
+          size="sm"
+          disabled={busy}
+          onClick={onPrepare}
+          icon={<ClipboardList size={14} aria-hidden="true" />}
+        >
           {k('prepare')}
         </Button>
       }
@@ -54,7 +61,7 @@ export function MediaPlaceholder({
       <Alert
         tone="error"
         action={
-          <Button size="sm" onClick={onRetry}>
+          <Button size="sm" onClick={onRetry} icon={<RotateCw size={14} aria-hidden="true" />}>
             {k('retry')}
           </Button>
         }

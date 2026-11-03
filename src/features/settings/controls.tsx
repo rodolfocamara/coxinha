@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react';
+import type { LucideIcon } from 'lucide-react';
+import { SECTION_ICONS } from './icons';
 import './settings.css';
 
 /** A titled group of setting cards; `id` is the deep-link target (`/settings#<id>`). */
@@ -16,9 +18,11 @@ export function SettingsSection({
   description?: ReactNode;
   children: ReactNode;
 }) {
+  const Icon = SECTION_ICONS[id];
   return (
     <section id={id} data-settings-section aria-labelledby={headingId} className="mb-[22px]">
-      <h2 id={headingId} className="text-[15px] font-semibold outline-none">
+      <h2 id={headingId} className="flex items-center gap-2 text-[15px] font-semibold outline-none">
+        {Icon && <Icon size={16} aria-hidden="true" className="text-primary" />}
         {title}
       </h2>
       {description && <p className="mt-0.5 mb-2.5 text-muted-foreground">{description}</p>}
@@ -44,6 +48,7 @@ export function SettingsRow({
   below,
   titleId,
   heading = false,
+  icon: Icon,
 }: {
   name: string;
   title: ReactNode;
@@ -54,20 +59,29 @@ export function SettingsRow({
   titleId?: string;
   /** Render the title as a heading (deep-link targets inside a section). */
   heading?: boolean;
+  /** Leading glyph that names the setting at a glance. */
+  icon?: LucideIcon;
 }) {
   const Title = heading ? 'h3' : 'p';
   return (
     <div className="cx-settings-row">
       <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,270px)] items-center gap-4 px-4 py-[13px]">
-        <div className="min-w-0">
-          <Title id={titleId ?? `${name}-title`} className="font-medium outline-none">
-            {title}
-          </Title>
-          {description && (
-            <p id={`${name}-desc`} className="text-xs break-words text-muted-foreground">
-              {description}
-            </p>
+        <div className="flex min-w-0 items-start gap-3">
+          {Icon && (
+            <span className="cx-settings-row-icon" aria-hidden="true">
+              <Icon size={15} />
+            </span>
           )}
+          <div className="min-w-0">
+            <Title id={titleId ?? `${name}-title`} className="font-medium outline-none">
+              {title}
+            </Title>
+            {description && (
+              <p id={`${name}-desc`} className="text-xs break-words text-muted-foreground">
+                {description}
+              </p>
+            )}
+          </div>
         </div>
         <div className="flex min-w-0 items-center justify-end gap-2">{control}</div>
       </div>

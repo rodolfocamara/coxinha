@@ -42,7 +42,7 @@ impl Worker {
                         }
                     };
                     self.error = None;
-                    self.live.started(&self.root, &id);
+                    self.live.capture_started(&self.root, &id);
                     self.active = Some(Active {
                         capture,
                         id,

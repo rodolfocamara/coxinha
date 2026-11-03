@@ -15,8 +15,9 @@ pub fn preflight_processing(
         .ok_or_else(|| anyhow::anyhow!("parameters must be an object"))?;
     for (key, value) in [
         ("maximum_duration_seconds", serde_json::json!(1800)),
-        ("cluster_cosine_threshold", serde_json::json!(0.75)),
-        ("cluster_margin", serde_json::json!(0.08)),
+        ("cluster_distance_threshold", serde_json::json!(0.7)),
+        ("cluster_reassign_distance", serde_json::json!(0.5)),
+        ("minimum_cluster_seconds", serde_json::json!(10.0)),
         ("minimum_embedding_seconds", serde_json::json!(1.0)),
     ] {
         parameters.entry(key).or_insert(value);

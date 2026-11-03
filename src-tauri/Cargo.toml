@@ -169,6 +169,7 @@ diarize-pyannote = ["dep:pyannote-rs"]
 
 # Full release bundle (used by GitHub Actions)
 full-release = [
+    "local-processing",
     "stt-whisper",
     "stt-parakeet",
     "stt-tagarela-shared",

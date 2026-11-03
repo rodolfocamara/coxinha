@@ -14,6 +14,7 @@ fn segment(track: Track, start_frame: u64, start_ms: u64, text: &str) -> LiveSeg
         start_ms,
         end_ms: start_ms + 300,
         text: text.into(),
+        words: Vec::new(),
     }
 }
 

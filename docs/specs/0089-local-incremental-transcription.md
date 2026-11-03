@@ -1,6 +1,6 @@
 # 0089 — Local incremental transcription
 
-Status: in-progress
+Status: in-progress (reader, cancellation and lifecycle done; live windows shipped via 0097; language profiles replaced by 0098 P4; benchmark gate, model provenance, engine CancelToken and native acceptance pending)
 Phase: F1
 Date: 2026-10-26
 

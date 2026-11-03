@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { CircleDot, PhoneOff } from 'lucide-react';
 import { Alert } from '../../components/ui';
 import { updateAutoRecord, useAutoRecord } from '../capture/autoRecord';
 import { SettingsRow, Switch } from '../settings/controls';
@@ -21,6 +22,7 @@ export function AutoRecordSettings() {
     <>
       <SettingsRow
         name="auto-record"
+        icon={CircleDot}
         title={k('title')}
         description={k('hint')}
         control={
@@ -31,13 +33,12 @@ export function AutoRecordSettings() {
             onChange={toggle}
           />
         }
-        below={
-          !detecting && !settings.enabled && <Alert tone="info">{k('needsDetection')}</Alert>
-        }
+        below={!detecting && !settings.enabled && <Alert tone="info">{k('needsDetection')}</Alert>}
       />
       {settings.enabled && (
         <SettingsRow
           name="auto-stop"
+          icon={PhoneOff}
           title={k('stopTitle')}
           description={k('stopHint')}
           control={
