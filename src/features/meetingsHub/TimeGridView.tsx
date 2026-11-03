@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
+import { rem } from '../../lib/appearance/units';
 import { dayKey } from '../sessions/sessionDates';
 import type { MeetingRow } from './meetingRows';
 import { clockTime } from './format';
@@ -83,7 +84,7 @@ export function TimeGridView({
           })}
         </div>
       </div>
-      <div className="mh-week-body" style={{ height: 24 * HOUR_PX }}>
+      <div className="mh-week-body" style={{ height: rem(24 * HOUR_PX) }}>
         <TimeGutter zones={zones} day={days[0]} locale={locale} />
         {days.map((day) => (
           <section
@@ -114,7 +115,7 @@ export function TimeGridView({
               <i
                 className="mh-week-now"
                 aria-hidden="true"
-                style={{ top: px((now.getTime() - day.getTime()) / 60_000) }}
+                style={{ top: rem(px((now.getTime() - day.getTime()) / 60_000)) }}
               />
             )}
           </section>
@@ -132,7 +133,7 @@ function Draft({ range, day, locale }: { range: Range | null; day: Date; locale:
     <div
       className="mh-week-draft"
       aria-hidden="true"
-      style={{ top: px(range.from), height: px(range.to - range.from) }}
+      style={{ top: rem(px(range.from)), height: rem(px(range.to - range.from)) }}
     >
       {at(range.from)}–{at(range.to)}
     </div>

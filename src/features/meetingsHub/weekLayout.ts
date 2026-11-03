@@ -1,6 +1,8 @@
+import { remScale } from '../../lib/appearance/units';
 import { dayKey, localDay, nextDay, parseCivilDate } from '../sessions/sessionDates';
 import type { MeetingRow } from './meetingRows';
 
+/** Design pixels per hour; real pixels follow the font size (spec 0125). */
 export const HOUR_PX = 48;
 const DAY_MIN = 24 * 60;
 const MIN_MINUTES = 15;
@@ -105,5 +107,5 @@ export function layoutDay(
 export function initialScroll(days: Date[], now: Date): number {
   const thisWeek = days.some((day) => dayKey(day) === dayKey(now));
   const hour = thisWeek ? Math.max(0, now.getHours() - 1) : 7;
-  return Math.max(0, hour * HOUR_PX - 10);
+  return Math.max(0, (hour * HOUR_PX - 10) * remScale());
 }

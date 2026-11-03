@@ -96,11 +96,14 @@ export function PersonDetail({
         });
 
   return (
-    <div className="flex min-w-0 flex-1 flex-col">
-      <header className="flex items-center gap-2.5 px-6 pt-[18px]">
+    <div className="@container flex min-w-0 flex-1 flex-col">
+      <header className="flex items-center gap-2.5 px-6 pt-[1.125rem]">
         <PersonAvatar personId={person.personId} name={person.name} size={40} />
         <div className="min-w-0">
-          <h2 id="person-heading" className="truncate text-[21px] font-semibold tracking-tight">
+          <h2
+            id="person-heading"
+            className="truncate text-[1.3125rem] font-semibold tracking-tight"
+          >
             {person.name}
           </h2>
           {query.loaded && (
@@ -114,13 +117,16 @@ export function PersonDetail({
           )}
         </div>
       </header>
-      <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_268px]">
+      <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_16.75rem] overflow-auto @max-[46rem]:grid-cols-1">
         <section
           className="min-h-0 space-y-3 overflow-auto px-6 py-4 text-ui"
           aria-labelledby="samples-heading"
         >
           <div className="flex items-center gap-2">
-            <h3 id="samples-heading" className="text-[11px] font-semibold text-muted-foreground">
+            <h3
+              id="samples-heading"
+              className="text-[0.6875rem] font-semibold text-muted-foreground"
+            >
               {t('people.detail.samplesTitle')}{' '}
               <span className="font-normal">· {t('people.detail.samplesHint')}</span>
             </h3>
@@ -244,11 +250,11 @@ export function PersonDetail({
           )}
         </section>
         <aside
-          className="flex min-h-0 flex-col gap-[18px] overflow-auto border-l border-border p-4 text-xs"
+          className="flex min-h-0 flex-col gap-[1.125rem] overflow-auto border-l border-border p-4 text-xs"
           aria-label={t('people.inspector.recent')}
         >
           <div>
-            <h3 className="mb-2 text-[11px] font-semibold text-muted-foreground">
+            <h3 className="mb-2 text-[0.6875rem] font-semibold text-muted-foreground">
               {t('people.inspector.recent')}
             </h3>
             {recent.length === 0 ? (
@@ -288,7 +294,7 @@ export function PersonDetail({
             )}
           </div>
           <div>
-            <h3 className="mb-2 text-[11px] font-semibold text-muted-foreground">
+            <h3 className="mb-2 text-[0.6875rem] font-semibold text-muted-foreground">
               {t('people.voiceMemory.title')}
             </h3>
             <VoiceMemory
@@ -300,13 +306,13 @@ export function PersonDetail({
             />
           </div>
           <div>
-            <h3 className="mb-2 text-[11px] font-semibold text-muted-foreground">
+            <h3 className="mb-2 text-[0.6875rem] font-semibold text-muted-foreground">
               {t('people.inspector.privacyTitle')}
             </h3>
             <p className="text-muted-foreground">{t('people.inspector.privacy')}</p>
           </div>
           <div>
-            <h3 className="mb-2 text-[11px] font-semibold text-muted-foreground">
+            <h3 className="mb-2 text-[0.6875rem] font-semibold text-muted-foreground">
               {t('people.inspector.teachTitle')}
             </h3>
             <p className="text-muted-foreground">{t('peopleDirectory.training')}</p>

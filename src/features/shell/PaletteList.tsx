@@ -52,7 +52,7 @@ export function PaletteList({
         <div key={group.id} role="group" aria-labelledby={`palette-group-${group.id}`}>
           <h6
             id={`palette-group-${group.id}`}
-            className="mx-2 mt-1 mb-1 text-[11px] font-semibold text-muted-foreground"
+            className="mx-2 mt-1 mb-1 text-[0.6875rem] font-semibold text-muted-foreground"
           >
             {group.label}
           </h6>

@@ -146,7 +146,7 @@ export function PeopleList({
                     aria-current={on ? 'true' : undefined}
                     tabIndex={on || (!selected && index === 0) ? 0 : -1}
                     className={
-                      'grid w-full grid-cols-[1fr_auto] gap-x-2 gap-y-0.5 border-l-2 px-3.5 py-[9px] text-left text-ui transition-colors duration-(--m-instant) active:scale-[.992] ' +
+                      'grid w-full grid-cols-[1fr_auto] gap-x-2 gap-y-0.5 border-l-2 px-3.5 py-[0.5625rem] text-left text-ui transition-colors duration-(--m-instant) active:scale-[.992] ' +
                       (on ? 'border-primary bg-secondary' : 'border-transparent hover:bg-card')
                     }
                     onClick={() => onSelect(person.personId)}
@@ -157,7 +157,7 @@ export function PeopleList({
                       <span className="truncate">{person.name}</span>
                     </span>
                     <span
-                      className="text-right text-[11px] text-muted-foreground"
+                      className="text-right text-[0.6875rem] text-muted-foreground"
                       title={summary?.meetings ? t('people.row.meetingsLabel') : undefined}
                     >
                       {summary && summary.meetings > 0 && !summary.more

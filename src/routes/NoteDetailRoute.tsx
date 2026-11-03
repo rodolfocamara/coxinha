@@ -17,7 +17,7 @@ export function NoteDetailError({ error, reset }: ErrorComponentProps) {
   const navigate = useNavigate();
   const guidance = noteFileRecoveryKey(error);
   return (
-    <section className="p-8 space-y-4 max-w-[640px]">
+    <section className="p-8 space-y-4 max-w-[40rem]">
       <h1 className="text-lg font-semibold">{t('noteError.title')}</h1>
       <p role="alert">{t(guidance ?? 'noteError.description')}</p>
       {guidance ? (

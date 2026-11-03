@@ -50,7 +50,7 @@ export function LiveTranscriptPanel({
   return (
     <section className="mh-live cx-rise" aria-labelledby="live-transcript-heading">
       <header className="mb-2 flex items-center gap-2">
-        <h3 id="live-transcript-heading" className="text-[13px] font-semibold">
+        <h3 id="live-transcript-heading" className="text-[0.8125rem] font-semibold">
           {k('title')}
         </h3>
         <span role="status" className="text-xs text-muted-foreground">
@@ -84,7 +84,7 @@ export function LiveTranscriptPanel({
         {data.segments.map((s) => (
           <li
             key={`${s.track}:${s.startFrame}`}
-            className="grid grid-cols-[52px_60px_1fr] gap-2 text-[13px]"
+            className="grid grid-cols-[3.25rem_3.75rem_1fr] gap-2 text-[0.8125rem]"
           >
             <span className="tabular-nums text-muted-foreground">{formatElapsed(s.startMs)}</span>
             <span className="text-muted-foreground">{k(s.track === 'Mic' ? 'me' : 'others')}</span>

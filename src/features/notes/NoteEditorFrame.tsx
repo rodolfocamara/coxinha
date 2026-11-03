@@ -85,7 +85,7 @@ export function NoteEditorFrame({
             )}
           >
             <MoreHorizontal size={16} aria-hidden="true" />
-            <kbd className="hidden sm:inline-block font-mono text-[10px] text-muted-foreground">
+            <kbd className="hidden sm:inline-block font-mono text-[0.625rem] text-muted-foreground">
               {/Mac|iPhone|iPad/.test(navigator.platform) ? '⌘.' : 'Ctrl+.'}
             </kbd>
           </button>
@@ -93,7 +93,7 @@ export function NoteEditorFrame({
         <div
           className={clsx(
             embedded ? 'min-w-0 mx-auto pb-8' : 'mx-auto px-6 sm:px-12 lg:px-20 pt-12 pb-10',
-            fullWidth ? 'max-w-none' : 'max-w-[960px]'
+            fullWidth ? 'max-w-none' : 'max-w-[60rem]'
           )}
         >
           {deleteFailure && (

@@ -4,7 +4,7 @@ import { SECTION_ICONS } from './icons';
 import './settings.css';
 
 export const SETTINGS_SECTIONS = [
-  'general',
+  'appearance',
   'calendar',
   'recording',
   'transcription',
@@ -54,7 +54,7 @@ export function SettingsLayout({
   const { t } = useTranslation();
   const root = useRef<HTMLDivElement>(null);
   const content = useRef<HTMLDivElement>(null);
-  const [active, setActive] = useState<SettingsSectionId>('general');
+  const [active, setActive] = useState<SettingsSectionId>('appearance');
   // Programmatic jumps scroll too; the chosen section wins until the scroll settles.
   const jumpedAt = useRef(0);
 
@@ -143,10 +143,10 @@ export function SettingsLayout({
       <div
         ref={content}
         data-testid="settings-scroll"
-        className="h-full min-w-0 flex-1 overflow-auto"
+        className="@container h-full min-w-0 flex-1 overflow-auto"
         onScroll={onScroll}
       >
-        <div className="max-w-[820px] px-6 py-4">{children}</div>
+        <div className="max-w-[51.25rem] px-6 py-4">{children}</div>
       </div>
     </div>
   );

@@ -139,7 +139,7 @@ export function ImportPeopleSheet({
             <div className="flex gap-2 text-xs">
               <button
                 type="button"
-                className="text-primary hover:underline"
+                className="text-primary-ink hover:underline"
                 onClick={() =>
                   toggle(
                     visible.map((p) => p.key),
@@ -151,7 +151,7 @@ export function ImportPeopleSheet({
               </button>
               <button
                 type="button"
-                className="text-primary hover:underline"
+                className="text-primary-ink hover:underline"
                 onClick={() =>
                   toggle(
                     visible.map((p) => p.key),

@@ -51,10 +51,10 @@ function MeetingCardInner({ meeting }: { meeting: MeetingRow }) {
           <Calendar size={16} aria-hidden="true" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground/70">
+          <p className="text-[0.625rem] uppercase tracking-wider text-muted-foreground/70">
             {t('meeting.label')}
           </p>
-          <h3 className="text-[15px] font-semibold truncate">{meeting.title}</h3>
+          <h3 className="text-[0.9375rem] font-semibold truncate">{meeting.title}</h3>
         </div>
         <div className="text-xs text-muted-foreground text-right shrink-0">
           <div className="flex items-center gap-1 justify-end">
@@ -84,7 +84,7 @@ function MeetingCardInner({ meeting }: { meeting: MeetingRow }) {
           onClick={() => setTab('actionItems')}
         />
       </div>
-      <div className="px-4 py-3 text-[14px] leading-6 text-foreground">
+      <div className="px-4 py-3 text-[0.875rem] leading-6 text-foreground">
         <TabPanel tab={tab} meeting={meeting} />
       </div>
     </article>

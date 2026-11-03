@@ -75,9 +75,10 @@ export function CalendarToolbar(p: Props) {
         variant="ghost"
         icon={<Search size={14} aria-hidden="true" />}
         aria-haspopup="dialog"
+        title={t('search.bar')}
         onClick={openSearch}
       >
-        {t('search.bar')}
+        <span className="ch-bar-label">{t('search.bar')}</span>
       </Button>
       <Button
         size="sm"

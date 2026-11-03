@@ -1,3 +1,4 @@
+import { rem } from '../../lib/appearance/units';
 import { cleanup, screen, waitFor, within } from '@testing-library/react';
 import { Outlet } from '@tanstack/react-router';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
@@ -90,8 +91,8 @@ it('shows every recording at its real span beside Outlook events, each meeting o
   const numbers = await within(thursday).findByRole('button', { name: /Quarterly numbers/ });
   expect(numbers).toHaveAccessibleName('09:10 AM–09:52 AM, Quarterly numbers');
   expect(numbers).toHaveAttribute('data-tone', 'recorded');
-  expect(numbers.style.top).toBe(`${(9 + 10 / 60) * 48}px`);
-  expect(numbers.style.height).toBe(`${(42 / 60) * 48 - 2}px`);
+  expect(numbers.style.top).toBe(rem((9 + 10 / 60) * 48));
+  expect(numbers.style.height).toBe(rem((42 / 60) * 48 - 2));
 
   const sync = within(thursday).getAllByRole('button', { name: /Team sync/ });
   expect(sync).toHaveLength(1);
@@ -140,7 +141,7 @@ it('puts each hour label under its line, with the extra zones from Settings besi
   expect(column('Etc/GMT+6')[9]).toBe(two((utc(9) + 18) % 24));
   expect(column('local')[9]).toBe('09');
   const grid = document.querySelector<HTMLElement>('.mh-week-grid')!;
-  expect(grid.style.getPropertyValue('--mh-week-gutter')).toBe('102px');
+  expect(grid.style.getPropertyValue('--mh-week-gutter')).toBe(rem(102));
 });
 
 it('leads from the agenda to the time zone setting (spec 0123)', async () => {

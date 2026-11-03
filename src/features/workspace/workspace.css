@@ -6,7 +6,7 @@
     height: 100%;
     min-width: 0;
     min-height: 0;
-    font-size: 13px;
+    font-size: 0.8125rem;
   }
   .ws-main {
     flex: 1;
@@ -23,20 +23,20 @@
   .ws-toolbar {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
     border-bottom: 1px solid var(--color-border);
   }
   .ws-toolbar-title {
-    margin: 0 6px 0 0;
-    font-size: 15px;
+    margin: 0 0.375rem 0 0;
+    font-size: 0.9375rem;
     font-weight: 600;
   }
   .ws-save {
     display: inline-flex;
-    gap: 5px;
+    gap: 0.3125rem;
     align-items: center;
-    font-size: 12px;
+    font-size: 0.75rem;
     color: var(--color-muted-foreground);
     transition: color var(--m-fast);
     white-space: nowrap;
@@ -48,18 +48,18 @@
     color: oklch(var(--warning));
   }
   .ws-banner {
-    margin: 8px 16px 0;
+    margin: 0.5rem 1rem 0;
   }
   .ws-confirm {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 8px;
-    padding: 10px 12px;
+    gap: 0.5rem;
+    padding: 0.625rem 0.75rem;
     border-radius: 10px;
     border: 1px solid var(--color-border);
     background: var(--color-card);
-    font-size: 12px;
+    font-size: 0.75rem;
   }
   .ws-confirm p {
     flex: 1 1 260px;
@@ -87,21 +87,21 @@
     view-transition-name: ws-drawer;
   }
   .ws-drawer[data-collapsed] {
-    width: 44px;
+    width: 2.75rem;
     align-items: center;
-    padding-top: 10px;
+    padding-top: 0.625rem;
   }
   .ws-drawer-tab {
     display: flex;
-    gap: 8px;
+    gap: 0.5rem;
     align-items: center;
-    padding: 10px 6px;
+    padding: 0.625rem 0.375rem;
     border: 0;
     border-radius: 8px;
     background: none;
     color: var(--color-muted-foreground);
     font-weight: 500;
-    font-size: 12px;
+    font-size: 0.75rem;
     writing-mode: vertical-rl;
     transform: rotate(180deg);
     cursor: pointer;
@@ -114,15 +114,15 @@
     outline: 2px solid oklch(var(--accent));
   }
   .ws-drawer-head {
-    padding: 12px 12px 8px;
+    padding: 0.75rem 0.75rem 0.5rem;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 0.5rem;
   }
   .ws-drawer-title {
     flex: 1;
     margin: 0;
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 600;
     color: oklch(var(--fg-tertiary));
   }
@@ -130,19 +130,19 @@
     flex: 1;
     min-height: 0;
     overflow: auto;
-    padding-bottom: 12px;
+    padding-bottom: 0.75rem;
   }
   .ws-drawer-group {
     margin: 0;
-    padding: 10px 12px 6px;
-    font-size: 12px;
+    padding: 0.625rem 0.75rem 0.375rem;
+    font-size: 0.75rem;
     font-weight: 600;
     color: oklch(var(--fg-tertiary));
   }
   .ws-drawer-empty {
     margin: 0;
-    padding: 2px 12px 8px;
-    font-size: 12px;
+    padding: 2px 0.75rem 0.5rem;
+    font-size: 0.75rem;
     color: oklch(var(--fg-quaternary));
   }
   .ws-drawer ul {
@@ -152,7 +152,7 @@
   }
   .ws-drawer-row {
     border-top: 1px solid var(--color-border);
-    padding: 6px 8px 8px;
+    padding: 0.375rem 0.5rem 0.5rem;
   }
   .ws-drawer-row[draggable='true'] {
     cursor: grab;
@@ -163,7 +163,7 @@
   .ws-drawer-open {
     display: block;
     width: 100%;
-    padding: 2px 4px;
+    padding: 2px 0.25rem;
     border: 0;
     border-radius: 6px;
     background: none;
@@ -180,17 +180,17 @@
   .ws-drawer-open b {
     display: block;
     font-weight: 550;
-    font-size: 12.5px;
+    font-size: 0.78125rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
   .ws-drawer-open span {
-    font-size: 11.5px;
+    font-size: 0.71875rem;
     color: oklch(var(--fg-tertiary));
   }
   .ws-drawer-row > .cx-btn {
-    margin-top: 4px;
+    margin-top: 0.25rem;
   }
 
   /* Side editor */
@@ -211,13 +211,13 @@
   }
   .ws-editor-head {
     display: flex;
-    gap: 8px;
+    gap: 0.5rem;
     align-items: center;
-    padding: 10px 12px 10px 14px;
+    padding: 0.625rem 0.75rem 0.625rem 0.875rem;
     border-bottom: 1px solid var(--color-border);
   }
   .ws-editor-kind {
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 600;
     color: oklch(var(--fg-tertiary));
   }
@@ -225,34 +225,34 @@
     flex: 1;
     min-height: 0;
     overflow: auto;
-    padding: 14px 16px 24px;
+    padding: 0.875rem 1rem 1.5rem;
   }
   .ws-editor[data-expanded] .ws-editor-inner {
-    max-width: 780px;
+    max-width: 48.75rem;
     margin: 0 auto;
   }
   .ws-editor-title {
-    margin: 0 0 12px;
-    font-size: 18px;
+    margin: 0 0 0.75rem;
+    font-size: 1.125rem;
     font-weight: 600;
   }
   .ws-editor-meta {
-    margin: 0 0 12px;
+    margin: 0 0 0.75rem;
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 0.375rem;
     align-items: center;
-    font-size: 12px;
+    font-size: 0.75rem;
     color: oklch(var(--fg-tertiary));
   }
   .ws-props {
     display: grid;
-    grid-template-columns: 84px minmax(0, 1fr);
-    gap: 9px 10px;
+    grid-template-columns: 5.25rem minmax(0, 1fr);
+    gap: 0.5625rem 0.625rem;
     align-items: center;
-    font-size: 12px;
-    margin-bottom: 14px;
-    padding-bottom: 14px;
+    font-size: 0.75rem;
+    margin-bottom: 0.875rem;
+    padding-bottom: 0.875rem;
     border-bottom: 1px solid var(--color-border);
   }
   .ws-props > span:nth-child(odd):not(:only-child) {
@@ -264,8 +264,8 @@
   .ws-props-stack {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    margin-bottom: 14px;
+    gap: 0.75rem;
+    margin-bottom: 0.875rem;
   }
   .ws-range {
     flex: 1;
@@ -293,13 +293,13 @@
   .ws-seg-option {
     position: relative;
     z-index: 1;
-    height: 26px;
-    padding: 0 10px;
+    height: 1.625rem;
+    padding: 0 0.625rem;
     border: 0;
     border-radius: 7px;
     background: none;
     color: oklch(var(--fg-tertiary));
-    font-size: 12.5px;
+    font-size: 0.78125rem;
     cursor: pointer;
   }
   .ws-seg-option[aria-checked='true'] {
@@ -313,16 +313,16 @@
   /* Chips (dependencies, meeting, "no quadro") */
   .ws-chip {
     display: inline-flex;
-    gap: 5px;
+    gap: 0.3125rem;
     align-items: center;
-    height: 22px;
+    height: 1.375rem;
     max-width: 100%;
-    padding: 0 8px;
+    padding: 0 0.5rem;
     border: 0;
     border-radius: 999px;
     background: var(--color-secondary);
     color: var(--color-foreground);
-    font-size: 12px;
+    font-size: 0.75rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -351,13 +351,13 @@
   }
   .ws-chip-group .ws-chip {
     background: none;
-    padding-right: 4px;
+    padding-right: 0.25rem;
   }
   .ws-chip-x {
     display: grid;
     place-items: center;
-    width: 20px;
-    height: 20px;
+    width: 1.25rem;
+    height: 1.25rem;
     margin-right: 2px;
     border: 0;
     border-radius: 999px;
@@ -373,8 +373,8 @@
   /* The note text in a 360px column: compact headings, room for the side menu.
      `!important` because BlockNote's stylesheet is unlayered. */
   .ws-editor .bn-editor {
-    padding-inline: 22px 4px !important;
-    font-size: 14px;
+    padding-inline: 1.375rem 0.25rem !important;
+    font-size: 0.875rem;
   }
   .ws-editor [data-content-type='heading'] {
     --level: 1.45em !important;
@@ -395,8 +395,8 @@
     --level: 1.1em !important;
   }
   .ws-editor[data-expanded] .bn-editor {
-    padding-inline: 48px !important;
-    font-size: 15px;
+    padding-inline: 3rem !important;
+    font-size: 0.9375rem;
   }
 
   /* Checklist overlay over the editor document */
@@ -410,7 +410,7 @@
     right: 0;
     display: flex;
     align-items: center;
-    padding-left: 14px;
+    padding-left: 0.875rem;
     background: linear-gradient(90deg, transparent, oklch(var(--bg-surface)) 14px);
     opacity: 0;
     pointer-events: auto;
@@ -423,10 +423,10 @@
 
   /* Layout / geometry details */
   .ws-more {
-    margin-top: 18px;
+    margin-top: 1.125rem;
     border-top: 1px solid var(--color-border);
-    padding-top: 10px;
-    font-size: 12px;
+    padding-top: 0.625rem;
+    font-size: 0.75rem;
   }
   .ws-more > summary {
     cursor: pointer;
@@ -435,23 +435,23 @@
   .ws-more-body {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    margin-top: 10px;
+    gap: 0.625rem;
+    margin-top: 0.625rem;
   }
   .ws-geometry {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
+    gap: 0.5rem;
   }
   .ws-number {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 0.25rem;
     color: oklch(var(--fg-tertiary));
   }
   .ws-number input {
-    height: 28px;
-    padding: 0 8px;
+    height: 1.75rem;
+    padding: 0 0.5rem;
     border-radius: 7px;
     border: 1px solid var(--color-border);
     background: var(--color-secondary);
@@ -462,6 +462,6 @@
   }
   .ws-number-error {
     color: oklch(var(--danger));
-    font-size: 11px;
+    font-size: 0.6875rem;
   }
 }

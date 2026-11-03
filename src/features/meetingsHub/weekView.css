@@ -1,6 +1,6 @@
 @layer theme, base, components, utilities;
 
-/* Week view (spec 0104): seven day columns on a 48 px-per-hour axis. */
+/* Week view (spec 0104): seven day columns on a 3 rem-per-hour axis. */
 @layer components {
   /* The grid scrolls as one so the sticky header keeps the columns aligned. */
   .mh-week-grid {
@@ -27,14 +27,16 @@
   }
   .mh-week-day {
     display: flex;
+    flex-wrap: wrap;
+    min-width: 0;
     align-items: baseline;
-    gap: 6px;
-    padding: 8px 10px;
-    font-size: 11px;
+    gap: 0.375rem;
+    padding: 0.5rem 0.625rem;
+    font-size: 0.6875rem;
     color: var(--color-muted-foreground);
   }
   .mh-week-day b {
-    font-size: 18px;
+    font-size: 1.125rem;
     font-weight: 600;
     color: var(--color-foreground);
     font-variant-numeric: tabular-nums;
@@ -43,14 +45,14 @@
     box-shadow: inset 0 2px 0 var(--color-primary);
   }
   .mh-week-day[data-today] b {
-    color: var(--color-primary);
+    color: var(--color-primary-ink);
   }
   .mh-week-allday {
     border-bottom: 1px solid var(--color-border);
   }
   .mh-week-gutter {
-    padding: 6px 8px 6px 0;
-    font-size: 10.5px;
+    padding: 0.375rem 0.5rem 0.375rem 0;
+    font-size: 0.65625rem;
     text-align: right;
     color: var(--color-muted-foreground);
   }
@@ -58,7 +60,7 @@
     display: grid;
     gap: 2px;
     align-content: start;
-    min-height: 26px;
+    min-height: 1.625rem;
     padding: 3px 2px;
     border-left: 1px solid var(--color-border);
   }
@@ -79,12 +81,15 @@
   /* Like Outlook: the label hangs just under its hour line, not across it. */
   .mh-week-zone span {
     position: absolute;
-    right: 8px;
-    padding-top: 4px;
-    font-size: 10.5px;
+    right: 0.5rem;
+    padding-top: 0.25rem;
+    font-size: 0.65625rem;
     line-height: 1.2;
     color: var(--color-muted-foreground);
     font-variant-numeric: tabular-nums;
+  }
+  .mh-week-hours:not([data-zones]) .mh-week-zone span {
+    white-space: nowrap;
   }
   .mh-week-hours[data-zones] .mh-week-zone span {
     left: 0;
@@ -94,8 +99,8 @@
   .mh-week-zones {
     display: flex;
     align-items: flex-end;
-    padding-bottom: 6px;
-    font-size: 10.5px;
+    padding-bottom: 0.375rem;
+    font-size: 0.65625rem;
     color: var(--color-muted-foreground);
   }
   .mh-week-zones span {
@@ -112,7 +117,7 @@
     background-image: repeating-linear-gradient(
       to bottom,
       var(--color-border) 0 1px,
-      transparent 1px 48px
+      transparent 1px 3rem
     );
   }
   .mh-week-col[aria-current='date'] {
@@ -127,14 +132,14 @@
     flex-direction: column;
     gap: 1px;
     min-width: 0;
-    padding: 3px 6px 3px 9px;
+    padding: 3px 0.375rem 3px 0.5625rem;
     overflow: hidden;
     border: 0;
     border-radius: 5px;
     background: var(--cx-cat-bg);
     box-shadow: inset 3px 0 0 var(--cx-cat);
     color: var(--color-foreground);
-    font-size: 11.5px;
+    font-size: 0.71875rem;
     line-height: 1.3;
     text-align: left;
     cursor: pointer;
@@ -192,7 +197,7 @@
     font-weight: 600;
   }
   .mh-week-ev-meta {
-    font-size: 10.5px;
+    font-size: 0.65625rem;
     color: color-mix(in oklab, var(--color-foreground) 72%, transparent);
     font-variant-numeric: tabular-nums;
   }
@@ -205,12 +210,12 @@
     left: 2px;
     right: 2px;
     z-index: 1;
-    padding: 3px 6px;
+    padding: 3px 0.375rem;
     border: 1px dashed var(--color-primary);
     border-radius: 5px;
     background: color-mix(in oklab, var(--color-primary) 18%, transparent);
     color: var(--color-foreground);
-    font-size: 11px;
+    font-size: 0.6875rem;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
     pointer-events: none;
@@ -227,10 +232,10 @@
   .mh-week-now::before {
     content: '';
     position: absolute;
-    left: -4px;
+    left: -0.25rem;
     top: -3px;
-    width: 8px;
-    height: 8px;
+    width: 0.5rem;
+    height: 0.5rem;
     border-radius: 999px;
     background: var(--color-live);
   }

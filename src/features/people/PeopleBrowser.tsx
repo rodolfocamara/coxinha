@@ -156,7 +156,7 @@ export function PeopleBrowser({
         </Button>
       )}
       {query.loaded && query.items.length > 0 && (
-        <p role="status" className="text-[11px] text-muted-foreground">
+        <p role="status" className="text-[0.6875rem] text-muted-foreground">
           {t(`voiceCuration.${query.more ? 'peopleLoadedPartial' : 'peopleLoadedComplete'}`, {
             count: query.items.length,
           })}

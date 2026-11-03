@@ -128,7 +128,7 @@ export function NoteActionsMenu({
       ref={panelRef}
       role="menu"
       aria-label={t('noteMenu.title')}
-      className="fixed z-50 w-[280px] max-h-[min(80vh,560px)] overflow-y-auto rounded-[10px] border border-border bg-popover text-popover-foreground shadow-[0_10px_28px_rgb(0_0_0_/_0.18)]"
+      className="fixed z-50 w-[17.5rem] max-h-[min(80vh,560px)] overflow-y-auto rounded-[10px] border border-border bg-popover text-popover-foreground shadow-[0_10px_28px_rgb(0_0_0_/_0.18)]"
       style={{ top: position.top, right: position.right, paddingTop: 8, paddingBottom: 8 }}
       data-testid="note-actions-menu"
     >
@@ -242,7 +242,7 @@ export function NoteActionsMenu({
         <>
           <Divider />
           <div
-            className="flex flex-col gap-0.5 px-3.5 pt-2 pb-1 text-[11px] text-muted-foreground"
+            className="flex flex-col gap-0.5 px-3.5 pt-2 pb-1 text-[0.6875rem] text-muted-foreground"
             data-testid="note-actions-footer"
           >
             <span>{t('noteMenu.footer.wordCount', { count: footer.wordCount })}</span>
@@ -281,11 +281,11 @@ function Row({
       type="button"
       role="menuitem"
       onClick={onClick}
-      className="flex items-center gap-2 mx-1 rounded-md px-3 py-1.5 text-[13px] text-foreground text-left transition-colors hover:bg-secondary/70 focus-visible:bg-secondary/70 focus-visible:outline-none"
+      className="flex items-center gap-2 mx-1 rounded-md px-3 py-1.5 text-[0.8125rem] text-foreground text-left transition-colors hover:bg-secondary/70 focus-visible:bg-secondary/70 focus-visible:outline-none"
     >
       <span className="text-muted-foreground shrink-0">{icon}</span>
       <span className="flex-1 truncate">{label}</span>
-      {hint && <span className="font-mono text-[10px] text-muted-foreground">{hint}</span>}
+      {hint && <span className="font-mono text-[0.625rem] text-muted-foreground">{hint}</span>}
     </button>
   );
 }
@@ -307,7 +307,7 @@ function ToggleRow({
       role="menuitemcheckbox"
       aria-checked={value}
       onClick={() => onChange?.(!value)}
-      className="flex items-center gap-2 mx-1 rounded-md px-3 py-1.5 text-[13px] text-foreground text-left transition-colors hover:bg-secondary/70 focus-visible:bg-secondary/70 focus-visible:outline-none"
+      className="flex items-center gap-2 mx-1 rounded-md px-3 py-1.5 text-[0.8125rem] text-foreground text-left transition-colors hover:bg-secondary/70 focus-visible:bg-secondary/70 focus-visible:outline-none"
     >
       <span className="text-muted-foreground shrink-0">{icon}</span>
       <span className="flex-1 truncate">{label}</span>
@@ -346,13 +346,16 @@ function FontPickerOption({
       onClick={onClick}
       className={clsx(
         'flex-1 flex flex-col items-center gap-0.5 rounded-md px-2 py-1.5 transition-colors',
-        active ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-secondary/60'
+        active ? 'bg-primary/10 text-primary-ink' : 'text-muted-foreground hover:bg-secondary/60'
       )}
       aria-pressed={active}
     >
-      <span className={clsx('text-[22px] leading-none', fontClassName)}>Ag</span>
+      <span className={clsx('text-[1.375rem] leading-none', fontClassName)}>Ag</span>
       <span
-        className={clsx('text-[11px]', active ? 'font-semibold text-foreground' : 'font-normal')}
+        className={clsx(
+          'text-[0.6875rem]',
+          active ? 'font-semibold text-foreground' : 'font-normal'
+        )}
       >
         {label}
       </span>
