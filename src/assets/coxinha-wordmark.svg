@@ -1,7 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 72" fill="none">
-  <g transform="translate(4 4)">
-    <path d="M32 6c-8 0-14 6-14 14 0 4 1 7 2 10-6 3-10 9-10 16 0 9 8 14 22 14s22-5 22-14c0-7-4-13-10-16 1-3 2-6 2-10 0-8-6-14-14-14z" fill="#B8684A"></path>
-    <path d="M44 18c-2.5 0-5 1.5-6 4-0.6 1.5-0.4 3 0.5 4.3 1 1.3 2.6 2 4.3 1.7 2.4-0.4 4.2-2.5 4.2-5 0-2.8-1.6-5-3-5z" fill="#F6F4EE"></path>
+  <svg viewBox="8 8 84 84" x="4" y="4" width="64" height="64">
+  <defs>
+    <mask id="am-m" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100"><rect width="100" height="100" fill="#fff"/><circle cx="73" cy="29" r="12.5" fill="#000"/><circle cx="86" cy="45.5" r="12" fill="#000"/></mask>
+    <clipPath id="am-body"><path d="M50 10 C54.6 10 57.6 13.4 57.6 18 C57.6 22.2 60 27.2 64 33 C68 39 81 50 81 64.5 C81 79.5 68 88 50 88 C32 88 19 79.5 19 64.5 C19 50 32 39 36 33 C40 27.2 42.4 22.2 42.4 18 C42.4 13.4 45.4 10 50 10 Z"/></clipPath>
+    <clipPath id="am-in"><path d="M50 10 C54.6 10 57.6 13.4 57.6 18 C57.6 22.2 60 27.2 64 33 C68 39 81 50 81 64.5 C81 79.5 68 88 50 88 C32 88 19 79.5 19 64.5 C19 50 32 39 36 33 C40 27.2 42.4 22.2 42.4 18 C42.4 13.4 45.4 10 50 10 Z" transform="translate(50 62) scale(0.89) translate(-50 -62)"/></clipPath>
+  </defs>
+  <g mask="url(#am-m)">
+    
+    <path d="M50 10 C54.6 10 57.6 13.4 57.6 18 C57.6 22.2 60 27.2 64 33 C68 39 81 50 81 64.5 C81 79.5 68 88 50 88 C32 88 19 79.5 19 64.5 C19 50 32 39 36 33 C40 27.2 42.4 22.2 42.4 18 C42.4 13.4 45.4 10 50 10 Z" fill="#E8892C"/>
+    <g clip-path="url(#am-body)"><path d="M80 40 C86 70 70 96 36 92 C64 86 78 66 72 40 Z" fill="#C46A1A"/></g>
+    <g clip-path="url(#am-body)"><circle cx="36" cy="56" r="1.5" fill="#A4520F"/><circle cx="44" cy="47" r="1.1" fill="#F6B565"/><circle cx="30" cy="68" r="1.1" fill="#F6B565"/><circle cx="40" cy="79" r="1.5" fill="#F6B565"/><circle cx="53" cy="71" r="1.1" fill="#A4520F"/><circle cx="48" cy="33" r="1.1" fill="#F6B565"/><circle cx="62" cy="80" r="1.5" fill="#F6B565"/><circle cx="27" cy="59" r="1.1" fill="#F6B565"/><circle cx="46" cy="62" r="1.1" fill="#A4520F"/><circle cx="35" cy="72" r="1.5" fill="#F6B565"/><circle cx="58" cy="58" r="1.1" fill="#F6B565"/><circle cx="51" cy="49" r="1.1" fill="#F6B565"/><circle cx="41" cy="39" r="1.5" fill="#A4520F"/><circle cx="66" cy="69" r="1.1" fill="#F6B565"/><circle cx="55" cy="84" r="1.1" fill="#F6B565"/><circle cx="31" cy="78" r="1.5" fill="#F6B565"/></g>
+    <g clip-path="url(#am-in)" fill="#FBE7BC"><circle cx="73" cy="29" r="21.5"/><circle cx="86" cy="45.5" r="21"/></g>
+    <g clip-path="url(#am-in)"></g>
   </g>
+  </svg>
   <text x="84" y="54" font-family="Instrument Serif, Georgia, serif" font-style="italic" font-size="48" fill="#3A332C" letter-spacing="-0.5">coxinha</text>
 </svg>

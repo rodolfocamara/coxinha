@@ -25,8 +25,9 @@ pub fn setup(app: &AppHandle) -> Result<()> {
         &[&open_item, &new_note_item, &sep, &settings_item, &quit_item],
     )?;
 
+    // A dedicated glyph: the app icon's tile and crumbs turn to mush at 16-22 px.
     let _tray = TrayIconBuilder::with_id("main-tray")
-        .icon(app.default_window_icon().unwrap().clone())
+        .icon(tauri::include_image!("icons/tray.png"))
         .menu(&menu)
         .on_menu_event(move |app, event| match event.id.as_ref() {
             "open" => show_main(app),
