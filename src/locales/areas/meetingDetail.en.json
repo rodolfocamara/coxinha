@@ -1,0 +1,34 @@
+{
+  "meetingDetail": {
+    "underWay": "Under way, {{left}} left",
+    "noOutcome": "Nothing came out of this meeting yet: no summary, notes, transcript or files.",
+    "noInvitees": "No invitees: this block is only on your calendar.",
+    "preparation": "Preparation",
+    "invitation": "Invitation",
+    "memory": "Memory",
+    "facts": {
+      "location": "Location:",
+      "organizer": "Organized by {{name}}"
+    },
+    "people": {
+      "coming": "Who is coming",
+      "invited": "Who was invited",
+      "counts_one": "{{count}} invited: {{required}} required, {{optional}} optional",
+      "counts_other": "{{count}} invited: {{required}} required, {{optional}} optional",
+      "organizer": "Organizer",
+      "required": "Required",
+      "optional": "Optional",
+      "spoke": "Confirmed on the recording",
+      "more_one": "and {{count}} more",
+      "more_other": "and {{count}} more"
+    },
+    "signals": {
+      "speakers_one": "{{count}} speaker, {{named}} named",
+      "speakers_other": "{{count}} speakers, {{named}} named",
+      "followUps_one": "{{count}} follow-up",
+      "followUps_other": "{{count}} follow-ups",
+      "files_one": "{{count}} file",
+      "files_other": "{{count}} files"
+    }
+  }
+}

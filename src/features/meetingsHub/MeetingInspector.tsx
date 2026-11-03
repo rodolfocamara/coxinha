@@ -6,12 +6,14 @@ import { Button } from '../../components/ui';
 import { library, type LibraryDetail, type ParticipantCandidate } from '../meetings/library';
 import type { CalendarEvent } from '../agenda/calendar';
 import type { Lane } from './lanes';
-import { durationLabel, hueFor, initials, mediaClock, whenLabel } from './format';
+import { durationLabel, mediaClock, whenLabel } from './format';
 import { normalize } from './meetingRows';
 import { EventCategories } from '../agenda/EventCategories';
 import { requestMeetingsSheet } from './meetingsSheets';
 import { ItemLinks } from '../items/ItemLinks';
-import { EventDetails } from './EventDetails';
+import { EventFacts, EventInvitation, EventLinks, isJoinable } from './EventDetails';
+import { InviteeList } from './InviteeList';
+import { PersonAvatar } from './PersonAvatar';
 import { WhoCame } from './PeekSections';
 import { presentSignals, useSessionSignals } from './meetingSignals';
 import { SignalIcons } from './SignalIcons';
@@ -60,11 +62,13 @@ export function MeetingInspector(p: Props) {
     if (!people.some((person) => sameCandidate(person, attendee))) people.push(attendee);
   const audio = audioFacts(p, t);
   const signals = useSessionSignals(p.sessionId);
+  const ended = !!p.end && p.end <= p.now;
   const laneOf = (name: string) =>
     p.lanes.find((l) => l.name && normalize(l.name) === normalize(name));
   const share = (name: string) => laneOf(name)?.share;
   return (
     <aside className="mh-insp" aria-label={k('label')}>
+      {p.event && <EventLinks key={p.event.id} event={p.event} ended={ended} primary={false} />}
       <div>
         <h3 className="mh-insp-h">{k('meeting')}</h3>
         <dl className="mh-kv">
@@ -89,14 +93,7 @@ export function MeetingInspector(p: Props) {
         </dl>
       </div>
       <SignalIcons items={presentSignals(signals)} labelled />
-      {p.event && (
-        <EventDetails
-          key={p.event.id}
-          event={p.event}
-          ended={!!p.end && p.end <= p.now}
-          headingClassName="mh-insp-h"
-        />
-      )}
+      {p.event && <EventFacts event={p.event} joinable={isJoinable(p.event, ended)} />}
       <WhoCame meetingId={p.meetingId} headingClassName="mh-insp-h" />
       {p.event && (
         <EventCategories
@@ -131,20 +128,10 @@ export function MeetingInspector(p: Props) {
         ) : (
           <ul>
             {people.map((person, i) => {
-              const hue = laneOf(person.name)?.hue ?? hueFor(person.name);
               const pct = share(person.name);
               return (
                 <li key={`${person.email ?? person.name}-${i}`} className="mh-person">
-                  <span
-                    className="mh-av"
-                    aria-hidden="true"
-                    style={{
-                      background: `oklch(var(--p${hue}-bg))`,
-                      color: `oklch(var(--p${hue}))`,
-                    }}
-                  >
-                    {initials(person.name)}
-                  </span>
+                  <PersonAvatar name={person.name} hue={laneOf(person.name)?.hue} />
                   <span className="truncate" title={person.email ?? undefined}>
                     {person.name}
                   </span>
@@ -157,6 +144,10 @@ export function MeetingInspector(p: Props) {
           </ul>
         )}
       </div>
+      {p.event && (
+        <InviteeList key={p.event.id} event={p.event} past={ended} headingClassName="mh-insp-h" />
+      )}
+      {p.event && <EventInvitation event={p.event} headingClassName="mh-insp-h" />}
       <div>
         <h3 className="mh-insp-h">{k('actions')}</h3>
         <div className="flex flex-col items-start gap-1">

@@ -1,0 +1,337 @@
+@layer theme, base, components, utilities;
+
+/* Spec 0126: the meeting detail panel. Sizes follow the px of the CSS around it. */
+@layer components {
+  .ch-peek {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    border-left: 1px solid var(--color-border);
+  }
+
+  /* Head: stays while the body scrolls, so the main action is always there. */
+  .ch-peek-head {
+    display: grid;
+    flex: none;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .ch-peek-titlerow {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 8px;
+  }
+  .ch-peek-title {
+    display: -webkit-box;
+    margin: 0;
+    overflow: hidden;
+    font-size: 17px;
+    font-weight: 650;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+  }
+  .ch-peek-title[data-look='declined'] {
+    color: var(--color-muted-foreground);
+    text-decoration: line-through;
+  }
+  /* Focus lands here so screen readers start at the title; it is not a control. */
+  .ch-peek-title:focus {
+    outline: none;
+  }
+  .ch-peek-when {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 8px;
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.4;
+    font-variant-numeric: tabular-nums;
+  }
+  .ch-peek-when > :first-child::first-letter {
+    text-transform: uppercase;
+  }
+  .ch-peek-when > :first-child {
+    display: inline-block;
+  }
+  .ch-peek-rel {
+    color: var(--color-muted-foreground);
+  }
+  .ch-peek-rel[data-state='now'] {
+    color: var(--color-foreground);
+    font-weight: 600;
+  }
+  .ch-peek-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px 12px;
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--color-muted-foreground);
+  }
+  .ch-peek-meta > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .ch-peek-meta [data-cancelled] {
+    color: var(--color-destructive);
+    font-weight: 600;
+  }
+  .ch-peek-primary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 2px;
+  }
+  .ch-peek-primary > .cx-btn:not([data-icon-only]):not([data-variant='ghost']) {
+    flex: 1 1 auto;
+  }
+
+  /* Labels grow to two lines rather than past the panel. */
+  .ch-peek .cx-btn:not([data-icon-only]),
+  .mh-insp .cx-btn:not([data-icon-only]) {
+    height: auto;
+    min-height: 32px;
+    max-width: 100%;
+    padding-block: 6px;
+    line-height: 1.25;
+    white-space: normal;
+  }
+  .ch-peek .cx-btn[data-size='md']:not([data-icon-only]),
+  .mh-insp .cx-btn[data-size='md']:not([data-icon-only]) {
+    min-height: 36px;
+  }
+  .mh-insp .cx-btn[data-size='xs']:not([data-icon-only]) {
+    min-height: 26px;
+    padding-block: 3px;
+  }
+  .ch-peek .cx-btn svg,
+  .mh-insp .cx-btn svg {
+    flex: none;
+  }
+
+  /* Body */
+  .ch-peek-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 18px;
+    min-height: 0;
+    padding: 14px 16px 20px;
+    overflow-y: auto;
+  }
+  .ch-peek-body > * {
+    flex: none;
+    min-width: 0;
+  }
+  /* The head must not eat a short window: there, the whole panel scrolls. */
+  @media (max-height: 520px) {
+    .ch-peek {
+      overflow-y: auto;
+    }
+    .ch-peek-body {
+      flex: none;
+      overflow-y: visible;
+    }
+  }
+  .ch-peek-sec {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+    min-width: 0;
+  }
+  .ch-peek .ch-peek-h {
+    margin: 0;
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0;
+    line-height: 1.35;
+    text-transform: none;
+    color: var(--color-foreground);
+  }
+  .ch-peek-line {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+  }
+  .ch-peek-line[data-bullet] {
+    padding-left: 0.62em;
+    text-indent: -0.62em;
+  }
+  .ch-peek-note {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--color-muted-foreground);
+    overflow-wrap: anywhere;
+  }
+  .ch-peek-error {
+    margin: 0;
+    font-size: 12px;
+    color: var(--color-destructive);
+    overflow-wrap: anywhere;
+  }
+  .ch-peek-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-top: 2px;
+  }
+  .ch-peek-link {
+    justify-self: start;
+    padding: 2px 0;
+    border: 0;
+    background: none;
+    color: var(--color-foreground);
+    font-size: 12px;
+    text-align: left;
+    text-decoration: underline;
+    text-decoration-color: color-mix(in oklab, currentColor 40%, transparent);
+    text-underline-offset: 2px;
+    cursor: pointer;
+  }
+  .ch-peek-link:hover {
+    text-decoration-color: currentColor;
+  }
+  .ch-peek-link:focus-visible {
+    outline: 2px solid var(--color-ring);
+  }
+
+  /* What came out */
+  .ch-outcome {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .ch-peek-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 5px;
+    padding: 12px;
+    border-radius: var(--radius-md);
+    background: var(--color-secondary);
+  }
+  .ch-peek-quote {
+    margin: 0;
+    font-size: 12.5px;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+  }
+  .ch-peek-quote b {
+    font-weight: 600;
+  }
+  .ch-peek-quote time {
+    color: var(--color-muted-foreground);
+    font-size: 11.5px;
+    font-variant-numeric: tabular-nums;
+  }
+  .ch-files {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1px;
+    margin: 0 -6px;
+    padding: 0;
+    list-style: none;
+  }
+  .ch-files button {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    width: 100%;
+    padding: 4px 6px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: none;
+    color: inherit;
+    font-size: 12.5px;
+    line-height: 1.35;
+    text-align: left;
+    overflow-wrap: anywhere;
+    cursor: pointer;
+  }
+  .ch-files svg {
+    flex: none;
+    margin-top: 2px;
+    color: var(--color-muted-foreground);
+  }
+  .ch-files span {
+    min-width: 0;
+  }
+  .ch-files button:hover:not(:disabled) {
+    background: var(--color-secondary);
+  }
+  .ch-files button:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+  .ch-files button:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: -2px;
+  }
+
+  /* Facts of the event */
+  .ch-facts {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 13px;
+    line-height: 1.35;
+  }
+  .ch-facts li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .ch-facts svg {
+    flex: none;
+    margin-top: 2px;
+    color: var(--color-muted-foreground);
+  }
+  .ch-facts span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .ch-facts [data-response='accepted'] svg {
+    color: var(--color-success);
+  }
+  .ch-facts [data-response='tentative'] svg {
+    color: var(--color-warning);
+  }
+  .ch-facts [data-response='declined'] svg {
+    color: var(--color-destructive);
+  }
+  .ch-peek-memory {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.35;
+  }
+  .ch-peek-memory svg {
+    flex: none;
+    margin-top: 2px;
+    color: var(--color-muted-foreground);
+  }
+
+  .mh-av-photo {
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    object-fit: cover;
+  }
+}

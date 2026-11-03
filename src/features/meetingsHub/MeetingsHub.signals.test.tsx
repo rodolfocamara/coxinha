@@ -99,24 +99,25 @@ it('shows the event details Outlook has, and opens links by event id only', asyn
   await week();
   fireEvent.click(await block(/Roadmap sync/));
   const peek = await screen.findByRole('complementary', { name: 'Roadmap sync' });
-  const details = within(peek).getByRole('region', { name: 'From Outlook' });
-  expect(within(details).getByText('Your response: tentative')).toBeInTheDocument();
-  expect(within(details).getByText('Location: Room 4')).toBeInTheDocument();
-  expect(
-    within(details).getByRole('heading', { name: 'Invitees: 3 (2 required, 1 optional)' })
-  ).toBeInTheDocument();
-  expect(within(details).getByText('Accepted (1)')).toBeInTheDocument();
-  expect(within(details).getByText('Declined (1)')).toBeInTheDocument();
-  expect(within(details).getByText('No answer (1)')).toBeInTheDocument();
-  expect(within(details).getByText('Bruno (optional)')).toBeInTheDocument();
-  expect(within(details).queryByText(/Room 4 \(/)).toBeNull();
+  const details = within(peek);
+  expect(details.getByText('Your response: tentative')).toBeInTheDocument();
+  expect(details.getByRole('list', { name: 'From Outlook' })).toHaveTextContent('Location: Room 4');
+  expect(details.getByText('3 invited: 2 required, 1 optional')).toBeInTheDocument();
+  expect(details.getByText('Accepted (1)')).toBeInTheDocument();
+  expect(details.getByText('Declined (1)')).toBeInTheDocument();
+  expect(details.getByText('No answer (1)')).toBeInTheDocument();
+  const bruno = details.getByText('Bruno').closest('li')!;
+  expect(within(bruno).getByText('Optional')).toBeInTheDocument();
+  // A room is the place, not a person.
+  expect(details.queryByRole('listitem', { name: /Room 4/ })).toBeNull();
+  expect(peek.querySelectorAll('.ch-person')).toHaveLength(3);
 
   // Text from other people is text: the tag is shown, never parsed.
-  expect(within(details).getByText(/<img src=x/)).toBeInTheDocument();
-  expect(details.querySelector('img')).toBeNull();
+  expect(details.getByText(/<img src=x/)).toBeInTheDocument();
+  expect(peek.querySelector('img')).toBeNull();
 
-  fireEvent.click(within(details).getByRole('button', { name: 'Join in Teams' }));
-  fireEvent.click(within(details).getByRole('button', { name: 'Open in Outlook' }));
+  fireEvent.click(details.getByRole('button', { name: 'Join in Teams' }));
+  fireEvent.click(details.getByRole('button', { name: 'Open in Outlook' }));
   expect(calledWith(db, 'calendar_open_link')).toEqual([
     { eventId: 'rich', link: 'join' },
     { eventId: 'rich', link: 'outlook' },
@@ -395,6 +396,11 @@ it('shows the details and signals on the meeting page too', async () => {
   expect(await within(inspector).findByText('Your response: tentative')).toBeInTheDocument();
   expect(within(inspector).getByText('Accepted (1)')).toBeInTheDocument();
   expect(await within(inspector).findByText('Has a note')).toBeInTheDocument();
+  // Join leads the column; the page's own header holds the primary action.
+  const join = within(inspector).getByRole('button', { name: 'Join in Teams' });
+  expect(join).toHaveAttribute('data-variant', 'secondary');
+  expect(inspector.querySelector('button')).toBe(join);
+  expect(inspector.querySelectorAll('.ch-person').length).toBeGreaterThan(0);
 });
 
 it('shows signals in the rows of the review list', async () => {

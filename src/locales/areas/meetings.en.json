@@ -301,16 +301,12 @@
         "declined": "Your response: declined",
         "none": "Your response: not answered"
       },
-      "location": "Location: {{location}}",
-      "inviteesCount_one": "Invitees: {{count}} ({{required}} required, {{optional}} optional)",
-      "inviteesCount_other": "Invitees: {{count}} ({{required}} required, {{optional}} optional)",
       "group": {
         "accepted": "Accepted ({{count}})",
         "tentative": "Tentative ({{count}})",
         "declined": "Declined ({{count}})",
         "noAnswer": "No answer ({{count}})"
       },
-      "optionalPerson": "{{name}} (optional)",
       "join": "Join in Teams",
       "openInOutlook": "Open in Outlook",
       "openFailed": "Could not open the link.",
