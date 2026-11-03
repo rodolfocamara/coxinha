@@ -66,7 +66,7 @@ afterEach(() => {
 });
 
 const region = (name: string | RegExp) => screen.getByRole('region', { name });
-const page = (name: RegExp) => region(name);
+const grid = () => document.querySelector<HTMLElement>('.ch-main')!;
 const columns = () =>
   screen
     .getAllByRole('region')
@@ -74,10 +74,8 @@ const columns = () =>
     .filter((label) => /^\w+day, October \d+$/.test(label ?? ''));
 const heading = (name: RegExp) => screen.findByRole('heading', { level: 2, name });
 
-it('opens the week from the Calendar tab with blocks in their day columns', async () => {
-  const router = renderAt('/meetings');
-  fireEvent.click(await screen.findByRole('tab', { name: 'Calendar' }));
-  await waitFor(() => expect(router.state.location.search).toMatchObject({ tab: 'calendar' }));
+it('opens Reuniões on the week view with blocks in their day columns', async () => {
+  renderAt('/meetings');
   await heading(/October 12.*18, 2026/);
   expect(screen.getByRole('button', { name: 'Week', pressed: true })).toBeInTheDocument();
 
@@ -98,32 +96,28 @@ it('opens the week from the Calendar tab with blocks in their day columns', asyn
   );
   // All-day events sit in the strip above the hours, not in a column.
   expect(within(region('Monday, October 12')).queryByRole('button')).toBeNull();
-  const week = page(/October 12.*18, 2026/);
-  expect(within(week).getByRole('button', { name: /Holiday/ })).toBeInTheDocument();
-  expect(within(week).queryByRole('button', { name: /Planning/ })).toBeNull();
+  expect(within(grid()).getByRole('button', { name: /Holiday/ })).toBeInTheDocument();
+  expect(within(grid()).queryByRole('button', { name: /Planning/ })).toBeNull();
 });
 
-it('maps the old week URL, moves between weeks and opens a meeting in the list view', async () => {
+it('maps the old week URL, moves between weeks and opens a meeting on double click', async () => {
   const router = renderAt('/meetings?tab=week');
   await heading(/October 12.*18, 2026/);
+  expect(router.state.location.search).toMatchObject({ view: 'week' });
   expect(screen.getByRole('button', { name: 'Week', pressed: true })).toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: 'Next week' }));
   await heading(/October 19.*25, 2026/);
-  fireEvent.click(
-    await within(page(/October 19.*25, 2026/)).findByRole('button', { name: /Planning/ })
-  );
+  fireEvent.doubleClick(await within(grid()).findByRole('button', { name: /Planning/ }));
   await waitFor(() => expect(router.state.location.search).toMatchObject({ event: 'e-next' }));
-  expect(router.state.location.search).not.toHaveProperty('tab');
-  expect(
-    screen.getByRole('tab', { name: 'Upcoming and recent', selected: true })
-  ).toBeInTheDocument();
-  fireEvent.click(screen.getByRole('tab', { name: 'Calendar' }));
-  fireEvent.click(await screen.findByRole('button', { name: 'Today' }));
+  expect(await screen.findByRole('heading', { level: 2, name: 'Planning' })).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Calendar' }));
+  await heading(/October 19.*25, 2026/);
+  fireEvent.click(screen.getByRole('button', { name: 'Today' }));
   await heading(/October 12.*18, 2026/);
 });
 
 it('picks 1–7 days from the day menu, steps by those days and remembers the view', async () => {
-  const router = renderAt('/meetings?tab=calendar');
+  const router = renderAt('/meetings');
   await heading(/October 12.*18, 2026/);
   const caret = screen.getByRole('button', { name: 'Number of days' });
   fireEvent.click(caret);
@@ -143,9 +137,7 @@ it('picks 1–7 days from the day menu, steps by those days and remembers the vi
   fireEvent.keyDown(menu, { key: 'ArrowDown' });
   expect(items[2]).toHaveFocus();
   fireEvent.click(items[2]);
-  await waitFor(() =>
-    expect(router.state.location.search).toMatchObject({ tab: 'calendar', view: 'day', days: 3 })
-  );
+  await waitFor(() => expect(router.state.location.search).toMatchObject({ view: 'day', days: 3 }));
   expect(screen.queryByRole('menu')).toBeNull();
   expect(caret).toHaveFocus();
   expect(screen.getByRole('button', { name: 'Day', pressed: true })).toBeInTheDocument();
@@ -159,13 +151,13 @@ it('picks 1–7 days from the day menu, steps by those days and remembers the vi
 
   // A fresh visit without a view in the URL opens the last one chosen.
   cleanup();
-  renderAt('/meetings?tab=calendar');
+  renderAt('/meetings');
   await heading(/October 15.*17, 2026/);
   expect(screen.getByRole('button', { name: 'Day', pressed: true })).toBeInTheDocument();
 });
 
 it('shows Monday to Friday in the work week and steps a week at a time', async () => {
-  renderAt('/meetings?tab=calendar');
+  renderAt('/meetings');
   await heading(/October 12.*18, 2026/);
   fireEvent.click(screen.getByRole('button', { name: 'Work week' }));
   await heading(/October 12.*16, 2026/);
@@ -176,39 +168,47 @@ it('shows Monday to Friday in the work week and steps a week at a time', async (
     'Thursday, October 15',
     'Friday, October 16',
   ]);
-  expect(
-    within(page(/October 12.*16, 2026/)).queryByRole('button', { name: /Weekend workshop/ })
-  ).toBeNull();
+  expect(within(grid()).queryByRole('button', { name: /Weekend workshop/ })).toBeNull();
   fireEvent.click(screen.getByRole('button', { name: 'Next week' }));
   await heading(/October 19.*23, 2026/);
 });
 
-it('filters every view with the list search, including by category name', async () => {
-  renderAt('/meetings?tab=calendar&view=week');
-  const week = () => page(/October 12.*18, 2026/);
-  await within(await waitFor(week)).findByRole('button', { name: /Architecture review/ });
-  const search = screen.getByRole('searchbox', { name: 'Search title or person' });
+it('hides categories from the rail in every view and in search results', async () => {
+  renderAt('/meetings?view=week');
+  await screen.findByRole('button', { name: /Architecture review/ });
+  const rail = screen.getByRole('complementary', { name: 'Calendar navigation and filters' });
+  const filter = within(rail).getByRole('group', { name: 'Categories' });
+  expect(
+    within(filter)
+      .getAllByRole('checkbox')
+      .map((box) => box.closest('label')!.textContent)
+  ).toEqual(['Architect', 'Personal', 'No category']);
 
-  fireEvent.change(search, { target: { value: 'personal' } });
-  await waitFor(() =>
-    expect(within(week()).queryByRole('button', { name: /Architecture review/ })).toBeNull()
-  );
-  expect(within(week()).getByRole('button', { name: /Lunch/ })).toBeInTheDocument();
-  expect(screen.queryByRole('status')).toBeNull();
-
-  fireEvent.change(search, { target: { value: 'nothing like this' } });
-  expect(await screen.findByRole('status')).toHaveTextContent(
-    'No meeting matches the search in this period'
-  );
-  expect(region('Thursday, October 15')).toBeInTheDocument();
+  fireEvent.click(within(filter).getByRole('checkbox', { name: 'Architect' }));
+  expect(within(grid()).queryByRole('button', { name: /Architecture review/ })).toBeNull();
+  expect(within(grid()).getByRole('button', { name: /Lunch/ })).toBeInTheDocument();
+  fireEvent.click(within(filter).getByRole('checkbox', { name: 'No category' }));
+  expect(within(grid()).queryByRole('button', { name: /Team sync/ })).toBeNull();
 
   fireEvent.click(screen.getByRole('button', { name: 'Month' }));
-  await heading(/October 2026/);
-  expect(screen.getByRole('status')).toHaveTextContent(
-    'No meeting matches the search in this period'
+  const month = await within(grid()).findByRole('table');
+  expect(within(month).queryByRole('button', { name: /Architecture review/ })).toBeNull();
+  expect(within(month).getByRole('button', { name: /Lunch/ })).toBeInTheDocument();
+
+  // Search matches category names, and still follows the rail.
+  const search = screen.getByRole('searchbox', { name: 'Search meetings, notes and transcripts' });
+  fireEvent.change(search, { target: { value: 'personal' } });
+  const results = await screen.findByRole('region', { name: 'Results for personal' });
+  expect(within(results).getByRole('button', { name: /Lunch/ })).toHaveTextContent(
+    'Category: Personal'
   );
   fireEvent.change(search, { target: { value: 'architect' } });
-  const grid = await screen.findByRole('table');
-  await within(grid).findByRole('button', { name: /Architecture review/ });
-  expect(within(grid).queryByRole('button', { name: /Lunch/ })).toBeNull();
+  expect(await screen.findByText('Nothing found for “architect”')).toBeInTheDocument();
+  fireEvent.click(within(filter).getByRole('checkbox', { name: 'Architect' }));
+  expect(
+    await within(screen.getByRole('region', { name: 'Results for architect' })).findByRole(
+      'button',
+      { name: /Architecture review/ }
+    )
+  ).toBeInTheDocument();
 });

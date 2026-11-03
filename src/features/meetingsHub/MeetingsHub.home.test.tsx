@@ -71,6 +71,7 @@ beforeEach(async () => {
       ends_at: at(-3, 9, 44),
       meeting_id: 'm-daily',
       recording: recording('m-daily', 'Squad daily'),
+      personal_note: { id: 'n1', relative_path: 'notes/session-n1.md' },
     }),
     session({
       id: 'interview',
@@ -112,75 +113,88 @@ afterEach(async () => {
   await i18n.changeLanguage('en');
 });
 
-const list = () => screen.getByRole('region', { name: 'Meetings' });
-const rowTitles = () =>
-  [...list().querySelectorAll('[data-row-title]')].map((el) => el.textContent);
+const grid = () => document.querySelector<HTMLElement>('.ch-main')!;
+const rail = () => screen.getByRole('complementary', { name: 'Calendar navigation and filters' });
+const findRail = () =>
+  screen.findByRole('complementary', { name: 'Calendar navigation and filters' });
+const findInGrid = async (name: RegExp) =>
+  (await waitFor(() => within(grid()).getAllByRole('button', { name })))[0];
+const inGrid = (name: RegExp) => within(grid()).queryAllByRole('button', { name });
 
-it('merges sessions, unclaimed Outlook events and loose recordings into dated groups', async () => {
+it('shows the calendar first, each meeting once and no list beside it', async () => {
   renderAt('/meetings');
-  await waitFor(() => expect(rowTitles()).toContain('Product committee'));
-  const titles = rowTitles();
+  await waitFor(() => expect(inGrid(/Roadmap review/)).toHaveLength(1));
   // The event claimed by the Roadmap session and the recording owned by Rita's session appear once.
-  expect(titles.filter((t) => t === 'Roadmap review')).toHaveLength(1);
-  expect(titles.filter((t) => t === '1:1 with Rita')).toHaveLength(1);
-  expect(titles).toContain('Imported interview');
-  expect(titles).toContain('Undated manual meeting');
-  const groups = within(list())
-    .getAllByRole('heading', { level: 2 })
-    .map((h) => h.textContent);
-  expect(groups).toEqual(['Next days', 'Earlier']);
-  expect(within(list()).getByRole('button', { name: /Product committee/ })).toHaveTextContent(
-    'Outlook · 1 person'
-  );
-  expect(within(list()).getByRole('button', { name: /Imported interview/ })).toHaveTextContent(
-    'standalone recording'
-  );
+  expect(inGrid(/1:1 with Rita/)).toHaveLength(1);
+  expect(inGrid(/Product committee/)).toHaveLength(1);
+  expect(screen.queryByRole('tab', { name: 'Upcoming and recent' })).toBeNull();
+  expect(
+    screen.getByRole('heading', { level: 2, name: /October 12.*18, 2026/ })
+  ).toBeInTheDocument();
   // Never starts an Outlook authorization just by opening the screen.
   expect(calledWith(db, 'calendar_begin')).toHaveLength(0);
 });
 
-it('filters the A revisar tab to interrupted, failed and untranscribed meetings', async () => {
-  renderAt('/meetings');
-  const reviewTab = await screen.findByRole('tab', { name: /To review/ });
-  await waitFor(() => expect(reviewTab).toHaveTextContent('2'));
-  fireEvent.click(reviewTab);
-  await waitFor(() => expect(rowTitles()).toEqual(['Squad daily', 'Backend interview']));
-  expect(screen.getByRole('heading', { name: 'Waiting for you' })).toBeInTheDocument();
-  expect(within(list()).getByRole('button', { name: /Backend interview/ })).toHaveTextContent(
+it('lists interrupted, failed and untranscribed meetings in the review sheet', async () => {
+  const router = renderAt('/meetings');
+  const button = await within(await findRail()).findByRole('button', { name: /To review/ });
+  await waitFor(() => expect(button).toHaveAccessibleName(/2 meetings to review/));
+  fireEvent.click(button);
+  const sheet = await screen.findByRole('dialog', { name: 'To review' });
+  const titles = [...sheet.querySelectorAll('[data-row-title]')].map((el) => el.textContent);
+  expect(titles).toEqual(['Squad daily', 'Backend interview']);
+  expect(within(sheet).getByRole('button', { name: /Backend interview/ })).toHaveTextContent(
     'interrupted'
   );
+  fireEvent.click(within(sheet).getByRole('button', { name: /Backend interview/ }));
+  await waitFor(() => expect(router.state.location.pathname).toBe('/meetings/interview'));
 });
 
-it('searches by title and invitee', async () => {
-  renderAt('/meetings');
-  await waitFor(() => expect(rowTitles()).toContain('Product committee'));
-  fireEvent.change(screen.getByRole('searchbox', { name: 'Search title or person' }), {
-    target: { value: 'juliana' },
-  });
-  expect(rowTitles()).toEqual(['Product committee']);
+it('opens the review sheet from the old review tab URL', async () => {
+  const router = renderAt('/meetings?tab=review');
+  expect(await screen.findByRole('dialog', { name: 'To review' })).toBeInTheDocument();
+  await waitFor(() => expect(router.state.location.search).not.toHaveProperty('review'));
 });
 
-it('opens the month view from the old calendar path and opens a meeting from a day', async () => {
+it('jumps to any day from the rail and keeps the date when a meeting is opened', async () => {
+  const router = renderAt('/meetings');
+  await waitFor(() => expect(inGrid(/Product committee/)).toHaveLength(1));
+  fireEvent.click(within(rail()).getByRole('button', { name: /October 21/ }));
+  expect(
+    await screen.findByRole('heading', { level: 2, name: /October 19.*25, 2026/ })
+  ).toBeInTheDocument();
+  fireEvent.click(within(rail()).getByRole('button', { name: /October 7/ }));
+  await screen.findByRole('heading', { level: 2, name: /October 5.*11, 2026/ });
+  const interview = await findInGrid(/Backend interview/);
+  fireEvent.doubleClick(interview);
+  await waitFor(() => expect(router.state.location.pathname).toBe('/meetings/interview'));
+  fireEvent.click(await screen.findByRole('button', { name: 'Calendar' }));
+  await waitFor(() => expect(router.state.location.pathname).toBe('/meetings'));
+  expect(
+    await screen.findByRole('heading', { level: 2, name: /October 5.*11, 2026/ })
+  ).toBeInTheDocument();
+});
+
+it('maps the old calendar path to the month view', async () => {
   const router = renderAt('/calendar');
   await waitFor(() => expect(router.state.location.pathname).toBe('/meetings'));
-  expect(router.state.location.search).toMatchObject({ tab: 'calendar', view: 'month' });
-  expect(await screen.findByRole('tab', { name: 'Calendar', selected: true })).toBeInTheDocument();
-  expect(screen.getByRole('button', { name: 'Month', pressed: true })).toBeInTheDocument();
-  const grid = await screen.findByRole('table');
-  const daily = await within(grid).findByRole('button', { name: /Squad daily/ });
-  fireEvent.click(daily);
-  await waitFor(() => expect(router.state.location.pathname).toBe('/meetings/daily'));
-  expect(
-    screen.getByRole('tab', { name: 'Upcoming and recent', selected: true })
-  ).toBeInTheDocument();
-  expect(await screen.findByRole('heading', { level: 2, name: 'Squad daily' })).toBeInTheDocument();
+  expect(router.state.location.search).toMatchObject({ view: 'month' });
+  expect(await screen.findByRole('button', { name: 'Month', pressed: true })).toBeInTheDocument();
+  expect(await within(grid()).findByRole('table')).toBeInTheDocument();
 });
 
-it('marks only a live capture with LiveBadge, never a persisted recording state', async () => {
+it('shows now and next above the calendar, with LiveBadge only for a live capture', async () => {
+  db.events.push(
+    event({ id: 'e-now', title: 'Steering', startsAt: at(0, 11, 30), endsAt: at(0, 12, 30) }),
+    event({ id: 'e-soon', title: 'Vendor call', startsAt: at(0, 12, 25), endsAt: at(0, 13) })
+  );
   renderAt('/meetings');
-  await waitFor(() => expect(rowTitles()).toContain('Backend interview'));
-  // Persisted capture_state "recording" without a live capture: no REC, needs recovery.
-  expect(within(list()).queryByText('REC')).toBeNull();
+  const strip = await screen.findByRole('region', { name: 'Now and next' });
+  await waitFor(() => expect(strip).toHaveTextContent('Steering'));
+  expect(strip).toHaveTextContent('In 25 min');
+  expect(strip).toHaveTextContent('Vendor call');
+  // A persisted capture state "recording" is not live: no REC anywhere.
+  expect(document.querySelector('.cx-live-badge')).toBeNull();
   act(() =>
     useCaptureStore.setState({
       status: {
@@ -195,32 +209,33 @@ it('marks only a live capture with LiveBadge, never a persisted recording state'
       },
     })
   );
-  const live = await within(list()).findByRole('button', { name: /Squad daily/ });
-  expect(live.querySelector('.cx-live-badge')).not.toBeNull();
-  expect(within(list()).getByRole('heading', { name: 'Now' })).toBeInTheDocument();
-  expect(
-    within(list())
-      .getByRole('button', { name: /Backend interview/ })
-      .querySelector('.cx-live-badge')
-  ).toBeNull();
+  await waitFor(() => expect(strip).toHaveTextContent('Squad daily'));
+  expect(strip.querySelector('.cx-live-badge')).not.toBeNull();
+
+  fireEvent.click(within(strip).getByRole('button', { name: 'Prepare Vendor call' }));
+  await waitFor(() =>
+    expect(calledWith(db, 'library_create_session')[0].input).toMatchObject({
+      title: 'Vendor call',
+    })
+  );
 });
 
 it('offers Outlook connection when no account is connected, without authorizing', async () => {
   db.account = null;
   db.events = [];
   renderAt('/meetings');
-  fireEvent.click(await screen.findByRole('button', { name: 'Connect Outlook' }));
+  fireEvent.click(await within(await findRail()).findByRole('button', { name: 'Connect Outlook' }));
   const sheet = await screen.findByRole('dialog', { name: 'Outlook' });
   expect(within(sheet).getByRole('button', { name: /Connect Outlook/ })).toBeInTheDocument();
   expect(calledWith(db, 'calendar_begin')).toHaveLength(0);
 });
 
-it('shows a load error with retry and recovers the list', async () => {
+it('shows a load error with retry and recovers the calendar', async () => {
   db.failSessions = 1;
   renderAt('/meetings');
   expect(await screen.findByText('Could not load meetings.')).toBeInTheDocument();
-  fireEvent.click(within(list()).getByRole('button', { name: 'Try again' }));
-  await waitFor(() => expect(rowTitles()).toContain('Squad daily'));
+  fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+  await waitFor(() => expect(inGrid(/Squad daily/)).toHaveLength(1));
   expect(screen.queryByText('Could not load meetings.')).toBeNull();
 });
 
@@ -267,7 +282,7 @@ it('shows an import failure and lets the user try again', async () => {
 
 it('creates a planned session from the new meeting sheet and opens it', async () => {
   const router = renderAt('/meetings');
-  fireEvent.click(await screen.findByRole('button', { name: 'New' }));
+  fireEvent.click(await screen.findByRole('button', { name: 'New meeting' }));
   const sheet = await screen.findByRole('dialog', { name: 'New meeting' });
   fireEvent.change(within(sheet).getByRole('textbox', { name: 'Title' }), {
     target: { value: 'Security alignment' },
@@ -285,7 +300,7 @@ it('creates a planned session from the new meeting sheet and opens it', async ()
 
 it('opens the new meeting sheet from the palette event while mounted', async () => {
   renderAt('/meetings');
-  await screen.findByRole('region', { name: 'Meetings' });
+  await screen.findByRole('button', { name: 'New meeting' });
   act(() => {
     window.dispatchEvent(new Event('coxinha:new-meeting'));
   });
@@ -302,8 +317,11 @@ it('speaks Portuguese', async () => {
   await i18n.changeLanguage('pt-BR');
   renderAt('/meetings');
   expect(await screen.findByRole('heading', { level: 1, name: 'Reuniões' })).toBeInTheDocument();
-  expect(screen.getByRole('tab', { name: 'Próximas e recentes' })).toBeInTheDocument();
-  expect(await screen.findByRole('heading', { name: 'Anteriores' })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Nova reunião' })).toBeInTheDocument();
+  expect(
+    screen.getByRole('searchbox', { name: 'Buscar em reuniões, notas e transcrições' })
+  ).toBeInTheDocument();
+  expect(await screen.findByRole('button', { name: /A revisar/ })).toBeInTheDocument();
 });
 
 it('asks whether earlier recordings are calendar meetings and sends both answers', async () => {
@@ -337,7 +355,7 @@ it('asks whether earlier recordings are calendar meetings and sends both answers
   expect(
     await screen.findByText('2 recordings look like meetings on your calendar.')
   ).toBeInTheDocument();
-  fireEvent.click(screen.getByRole('button', { name: 'Review' }));
+  fireEvent.click(within(rail()).getByRole('button', { name: 'Review' }));
   const sheet = await screen.findByRole('dialog');
   expect(within(sheet).getByText('IT committee')).toBeInTheDocument();
   expect(within(sheet).getByText(/1 invitee/)).toBeInTheDocument();

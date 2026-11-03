@@ -5,17 +5,11 @@ import { Alert, EmptyState, Sheet } from '../../components/ui';
 import { library } from '../meetings/library';
 import { OutlookConnectionCard } from '../agenda/OutlookConnectionCard';
 import type { CalendarEvent } from '../agenda/calendar';
-import {
-  attentionOf,
-  groupRows,
-  matchesSearch,
-  needsReview,
-  rowKey,
-  type MeetingRow,
-} from './meetingRows';
-import { MeetingList, type ListTab } from './MeetingList';
-import { MeetingDetail, type DetailTarget } from './MeetingDetail';
-import { CalendarPage } from './CalendarPage';
+import { attentionOf, needsReview, rowKey, type MeetingRow } from './meetingRows';
+import type { DetailTarget } from './MeetingDetail';
+import { MeetingPage } from './MeetingPage';
+import { CalendarHome } from './CalendarHome';
+import { ReviewSheet } from './ReviewSheet';
 import { readCalendarPrefs, writeCalendarPrefs, type CalendarView } from './calendarViews';
 import { NewMeetingSheet } from './NewMeetingSheet';
 import { ImportAudioSheet } from './ImportAudioSheet';
@@ -29,7 +23,7 @@ import {
   takePendingSheet,
   type MeetingsSheet,
 } from './meetingsSheets';
-import { validateMeetingsSearch } from './meetingsSearch';
+import { validateMeetingsSearch, type DetailPanel, type MeetingsSearch } from './meetingsSearch';
 import './meetingsHub.css';
 
 type SheetState =
@@ -37,6 +31,7 @@ type SheetState =
   | { kind: 'import'; title: string; forMeeting: boolean }
   | { kind: 'outlook' }
   | { kind: 'calendar' }
+  | { kind: 'review' }
   | { kind: 'participants'; meetingId: string; event: CalendarEvent | null }
   | null;
 
@@ -44,20 +39,18 @@ const sheetFor = (sheet: MeetingsSheet): SheetState =>
   sheet === 'import' ? { kind: 'import', title: '', forMeeting: false } : { kind: sheet };
 
 /**
- * Reuniões (spec 0096 P4): one list merging meeting sessions, Outlook events
- * and loose recordings, with detail + inspector or the month grid beside it.
- * Replaces the calendar, the Outlook agenda, the meeting library and the
- * session workspace.
+ * Reuniões (spec 0107): the calendar, Outlook-style, with a meeting's full
+ * page when one is addressed (`/meetings/$sessionId`, `?event=`,
+ * `?recording=`). Sheets for new meetings, imports, Outlook, calendar matches
+ * and review sit over both.
  */
 export function MeetingsHubRoute() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { sessionId } = useParams({ strict: false }) as { sessionId?: string };
   const search = validateMeetingsSearch(useSearch({ strict: false }) as Record<string, unknown>);
-  const tab: ListTab = search.tab ?? 'list';
   const { sessions, outlook, recordings, rows, refreshRecordings } = useMeetingsData();
   const isLive = useRowLiveness();
-  const [query, setQuery] = useState('');
   const [now, setNow] = useState(() => new Date());
   const [sheet, setSheet] = useState<SheetState>(null);
   const [participantsRevision, setParticipantsRevision] = useState(0);
@@ -92,18 +85,16 @@ export function MeetingsHubRoute() {
       window.removeEventListener(OUTLOOK_SHEET_EVENT, onOutlook);
     };
   }, []);
+  // The old review tab and `?review` open the sheet over the calendar.
+  useEffect(() => {
+    if (!search.review) return;
+    setSheet({ kind: 'review' });
+    void navigate({ to: '/meetings', search: { ...search, review: undefined }, replace: true });
+    // Only the flag arriving matters; the rest of the search is carried along.
+  }, [search.review]);
 
   const attention = (row: MeetingRow) => attentionOf(row, isLive(row));
-  const searched = rows.filter((row) => matchesSearch(row, query));
-  const review = searched.filter((row) => needsReview(attention(row)));
-  const reviewCount = rows.filter((row) => needsReview(attention(row))).length;
-  const groups =
-    tab === 'review'
-      ? review.length
-        ? [{ id: 'review' as const, rows: review }]
-        : []
-      : groupRows(searched, now, isLive);
-  const firstRow = groups[0]?.rows[0] ?? null;
+  const review = rows.filter((row) => needsReview(attention(row)));
 
   const target = useMemo<DetailTarget | null>(() => {
     const toTarget = (row: MeetingRow | null | undefined): DetailTarget | null =>
@@ -128,57 +119,44 @@ export function MeetingsHubRoute() {
         rows.find((r) => r.key === rowKey.recording(search.recording!)) ??
           rows.find((r) => r.kind === 'session' && r.session.meeting_id === search.recording)
       );
-    return toTarget(firstRow);
-  }, [rows, sessionId, search.event, search.recording, firstRow]);
-  const selectedKey = !target
-    ? null
-    : target.kind === 'session'
-      ? rowKey.session(target.sessionId)
-      : target.row.key;
+    return null;
+  }, [rows, sessionId, search.event, search.recording]);
+  const addressed = !!sessionId || !!search.event || !!search.recording;
 
-  const listTab = (next: ListTab) => (next === 'list' ? undefined : next);
-  const select = (row: MeetingRow, keepTab = true) => {
-    const nextTab = keepTab && tab === 'review' ? 'review' : undefined;
+  // The URL names the view; without one, the last view chosen (spec 0104 P4).
+  const remembered = readCalendarPrefs();
+  const view = search.view ?? remembered.view;
+  const days = search.days ?? remembered.days;
+  const calendarSearch = (): MeetingsSearch => ({ view: search.view, days: search.days });
+  const open = (row: MeetingRow, panel?: DetailPanel) => {
+    const base = { ...calendarSearch(), panel };
     if (row.kind === 'session')
       void navigate({
         to: '/meetings/$sessionId',
         params: { sessionId: row.session.id },
-        search: { tab: nextTab },
+        search: base,
       });
     else
       void navigate({
         to: '/meetings',
         search:
           row.kind === 'event'
-            ? { tab: nextTab, event: row.event.id }
-            : { tab: nextTab, recording: row.recording.id },
+            ? { ...base, event: row.event.id }
+            : { ...base, recording: row.recording.id },
       });
   };
   const openSession = (id: string) =>
-    void navigate({ to: '/meetings/$sessionId', params: { sessionId: id }, search: {} });
-  // The URL names the view; without one, the last view chosen (spec 0104 P4).
-  const remembered = readCalendarPrefs();
-  const calendar = {
-    view: search.view ?? remembered.view,
-    days: search.days ?? remembered.days,
-  };
-  const changeView = (view: CalendarView, days: number) => {
-    writeCalendarPrefs({ view, days });
-    const nextSearch = {
-      ...search,
-      tab: 'calendar' as const,
-      view,
-      days: view === 'day' ? days : undefined,
-    };
-    if (sessionId)
-      void navigate({ to: '/meetings/$sessionId', params: { sessionId }, search: nextSearch });
-    else void navigate({ to: '/meetings', search: nextSearch });
-  };
-  const changeTab = (next: ListTab) => {
-    const nextSearch = { ...search, tab: listTab(next) };
-    if (sessionId)
-      void navigate({ to: '/meetings/$sessionId', params: { sessionId }, search: nextSearch });
-    else void navigate({ to: '/meetings', search: nextSearch });
+    void navigate({
+      to: '/meetings/$sessionId',
+      params: { sessionId: id },
+      search: calendarSearch(),
+    });
+  const changeView = (next: CalendarView, count: number) => {
+    writeCalendarPrefs({ view: next, days: count });
+    void navigate({
+      to: '/meetings',
+      search: { view: next, days: next === 'day' ? count : undefined },
+    });
   };
   const closeSheet = (open: boolean) => {
     if (open) return;
@@ -192,58 +170,18 @@ export function MeetingsHubRoute() {
 
   return (
     <div className="mh-root">
-      <MeetingList
-        groups={groups}
-        reviewCount={reviewCount}
-        tab={tab}
-        onTab={changeTab}
-        query={query}
-        onQuery={setQuery}
-        selectedKey={tab === 'calendar' ? null : selectedKey}
-        onSelect={select}
-        onNew={() => setSheet({ kind: 'meeting' })}
-        onImport={() => setSheet({ kind: 'import', title: '', forMeeting: false })}
-        onOutlook={() => setSheet({ kind: 'outlook' })}
-        outlook={outlook}
-        isLive={isLive}
-        attention={attention}
-        now={now}
-        loadFailed={sessions.isError && !sessions.data}
-        loading={desktop && sessions.isPending}
-        onRetry={() => {
-          void sessions.refetch();
-          void recordings.refetch();
-        }}
-        desktop={desktop}
-        banner={
-          <CalendarMatchBanner
-            count={calendarMatches.matches.length}
-            onReview={() => setSheet({ kind: 'calendar' })}
-          />
-        }
-      />
       {!desktop ? (
         <div className="mh-detail p-6">
           <Alert tone="info">{t('meetingsHub.desktopRequired')}</Alert>
         </div>
-      ) : tab === 'calendar' ? (
-        <CalendarPage
-          view={calendar.view}
-          days={calendar.days}
-          rows={searched}
-          searching={!!query.trim()}
-          now={now}
-          isLive={isLive}
-          onView={changeView}
-          onSelect={(row) => select(row, false)}
-          onCreate={(start, end) => setSheet({ kind: 'meeting', slot: { start, end } })}
-        />
-      ) : target ? (
-        <MeetingDetail
-          key={selectedKey}
+      ) : addressed && target ? (
+        <MeetingPage
+          key={target.kind === 'session' ? target.sessionId : target.row.key}
           target={target}
           events={outlook.snapshot.events}
           now={now}
+          initialTab={search.panel}
+          onBack={() => void navigate({ to: '/meetings', search: calendarSearch() })}
           onOpenSession={openSession}
           onImport={(title) => setSheet({ kind: 'import', title, forMeeting: true })}
           onParticipants={(meetingId, event) =>
@@ -251,13 +189,62 @@ export function MeetingsHubRoute() {
           }
           participantsRevision={participantsRevision}
         />
-      ) : (
+      ) : addressed ? (
         <div className="mh-detail grid place-items-center p-6">
-          <EmptyState
-            title={t('meetingsHub.noSelection')}
-            description={t('meetingsHub.noSelectionHint')}
-          />
+          {sessions.isPending || recordings.isPending ? (
+            <p role="status" className="text-sm text-muted-foreground">
+              {t('meetingsHub.loading')}
+            </p>
+          ) : (
+            <EmptyState
+              title={t('meetingsHub.noSelection')}
+              description={t('meetingsHub.noSelectionHint')}
+            />
+          )}
         </div>
+      ) : (
+        <CalendarHome
+          rows={rows}
+          now={now}
+          isLive={isLive}
+          view={view}
+          days={days}
+          onView={changeView}
+          outlook={outlook}
+          reviewCount={review.length}
+          onReview={() => setSheet({ kind: 'review' })}
+          onNew={(slot) => setSheet({ kind: 'meeting', slot })}
+          onImport={() => setSheet({ kind: 'import', title: '', forMeeting: false })}
+          onOutlook={() => setSheet({ kind: 'outlook' })}
+          onOpen={open}
+          onOpenSession={openSession}
+          desktop={desktop}
+          loadFailed={sessions.isError && !sessions.data}
+          onRetry={() => {
+            void sessions.refetch();
+            void recordings.refetch();
+          }}
+          banner={
+            <CalendarMatchBanner
+              count={calendarMatches.matches.length}
+              onReview={() => setSheet({ kind: 'calendar' })}
+            />
+          }
+        />
+      )}
+      {sheet?.kind === 'review' && (
+        <ReviewSheet
+          open
+          onOpenChange={closeSheet}
+          rows={review}
+          now={now}
+          isLive={isLive}
+          attention={attention}
+          onOpen={(row) => {
+            setSheet(null);
+            open(row);
+          }}
+        />
       )}
       {sheet?.kind === 'meeting' && (
         <NewMeetingSheet

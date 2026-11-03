@@ -76,7 +76,7 @@ const deferred = () => {
   return { gate, release };
 };
 
-it('marks list rows with their first coloured category and names it for screen readers', async () => {
+it('marks calendar blocks with their first coloured category and names it for screen readers', async () => {
   renderAt('/meetings');
   await waitFor(() => expect(row('e:e-arch')).toHaveAttribute('data-category', 'blue'));
   expect(row('e:e-arch')!.style.getPropertyValue('--cx-cat')).toBe('var(--outlook-cat-7)');
@@ -91,7 +91,7 @@ it('marks list rows with their first coloured category and names it for screen r
 });
 
 it('tints month items with the category colour', async () => {
-  renderAt('/meetings?tab=month');
+  renderAt('/meetings?view=month');
   const grid = await screen.findByRole('table');
   const item = await within(grid).findByRole('button', { name: /Architecture review/ });
   await waitFor(() =>
@@ -107,6 +107,15 @@ it('tints month items with the category colour', async () => {
   expect(lunch).not.toHaveAttribute('data-category');
 });
 
+const chips = (inspector: HTMLElement) =>
+  within(inspector)
+    .queryAllByRole('listitem')
+    .map((li) => li.textContent);
+const backToCalendar = async () => {
+  fireEvent.click(screen.getByRole('button', { name: 'Calendar' }));
+  await screen.findByRole('complementary', { name: 'Calendar navigation and filters' });
+};
+
 it('changes categories optimistically and sends them to Outlook', async () => {
   const { gate, release } = deferred();
   db.setCategories.gate = gate;
@@ -119,7 +128,7 @@ it('changes categories optimistically and sends them to Outlook', async () => {
   expect(ux).toHaveAttribute('aria-pressed', 'false');
   fireEvent.click(ux);
   // Before the backend answers.
-  expect(row('e:e-none')).toHaveAttribute('data-category', 'teal');
+  expect(chips(inspector)).toContain('UX');
   expect(ux).toHaveAttribute('aria-pressed', 'true');
   await waitFor(() =>
     expect(calledWith(db, 'calendar_set_categories')).toEqual([
@@ -127,14 +136,25 @@ it('changes categories optimistically and sends them to Outlook', async () => {
     ])
   );
   await act(async () => release());
-  expect(row('e:e-none')).toHaveAttribute('data-category', 'teal');
-  // Removing the only category clears the mark.
-  fireEvent.click(ux);
-  await waitFor(() => expect(row('e:e-none')).not.toHaveAttribute('data-category'));
-  expect(calledWith(db, 'calendar_set_categories').at(-1)).toEqual({
-    eventId: 'e-none',
-    categories: [],
-  });
+  await backToCalendar();
+  await waitFor(() => expect(row('e:e-none')).toHaveAttribute('data-category', 'teal'));
+});
+
+it('removing the only category clears the colour in the calendar', async () => {
+  db.events = db.events.map((e) => (e.id === 'e-none' ? { ...e, categories: ['UX'] } : e));
+  renderAt('/meetings?event=e-none');
+  const inspector = await screen.findByRole('complementary', { name: 'Meeting details' });
+  fireEvent.click(await within(inspector).findByRole('button', { name: 'Change' }));
+  fireEvent.click(within(inspector).getByRole('button', { name: 'UX' }));
+  await waitFor(() =>
+    expect(calledWith(db, 'calendar_set_categories').at(-1)).toEqual({
+      eventId: 'e-none',
+      categories: [],
+    })
+  );
+  await backToCalendar();
+  await waitFor(() => expect(row('e:e-none')).toBeInTheDocument());
+  expect(row('e:e-none')).not.toHaveAttribute('data-category');
 });
 
 it('rolls back and explains when Outlook refuses the change', async () => {
@@ -144,17 +164,21 @@ it('rolls back and explains when Outlook refuses the change', async () => {
   const inspector = await screen.findByRole('complementary', { name: 'Meeting details' });
   fireEvent.click(within(inspector).getByRole('button', { name: 'Change' }));
   fireEvent.click(within(inspector).getByRole('button', { name: 'Architect' }));
-  // Architect removed: CTO (red) is now the first coloured category.
-  expect(row('e:e-arch')).toHaveAttribute('data-category', 'red');
+  // Architect removed before Outlook answers.
+  expect(within(inspector).getByRole('button', { name: 'Architect' })).toHaveAttribute(
+    'aria-pressed',
+    'false'
+  );
   await act(async () => release());
   expect(await within(inspector).findByRole('alert')).toHaveTextContent(
     'Outlook did not allow changing categories. Reconnect Outlook to grant it.'
   );
-  expect(row('e:e-arch')).toHaveAttribute('data-category', 'blue');
   expect(within(inspector).getByRole('button', { name: 'Architect' })).toHaveAttribute(
     'aria-pressed',
     'true'
   );
+  await backToCalendar();
+  await waitFor(() => expect(row('e:e-arch')).toHaveAttribute('data-category', 'blue'));
 });
 
 it('asks to reconnect when the categories scope is missing, without colours', async () => {
@@ -165,7 +189,6 @@ it('asks to reconnect when the categories scope is missing, without colours', as
   expect(
     await within(inspector).findByText('Reconnect Outlook to use categories and their colours.')
   ).toBeInTheDocument();
-  expect(row('e:e-arch')).not.toHaveAttribute('data-category');
   expect(within(inspector).queryByRole('button', { name: 'Change' })).toBeNull();
   fireEvent.click(within(inspector).getByRole('button', { name: 'Reconnect Outlook' }));
   const sheet = await screen.findByRole('dialog');
@@ -173,6 +196,11 @@ it('asks to reconnect when the categories scope is missing, without colours', as
     within(sheet).getByText(/Categories need a new permission/, { exact: false })
   ).toBeInTheDocument();
   expect(within(sheet).getByRole('button', { name: 'Reconnect Outlook' })).toBeEnabled();
+  fireEvent.keyDown(sheet, { key: 'Escape' });
+  await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+  await backToCalendar();
+  await waitFor(() => expect(row('e:e-arch')).toBeInTheDocument());
+  expect(row('e:e-arch')).not.toHaveAttribute('data-category');
 });
 
 it('shows categories read-only when only reading was granted', async () => {

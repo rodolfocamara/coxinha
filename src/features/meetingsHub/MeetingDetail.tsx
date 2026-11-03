@@ -1,12 +1,11 @@
 import { useRef, useState, type ReactNode } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { Mic, RotateCw } from 'lucide-react';
+import { Mic } from 'lucide-react';
 import { Alert, Button } from '../../components/ui';
 import { library, type CaptureStatus } from '../meetings/library';
 import { RecordingDetail } from '../meetings/RecordingDetail';
 import { SessionNotes } from '../sessions/SessionNotes';
-import { refreshSessionList, sessions, type Session } from '../sessions/sessions';
+import type { Session } from '../sessions/sessions';
 import { useCaptureStore, useIsLive } from '../capture/captureStore';
 import { LiveBadge } from '../capture/LiveBadge';
 import type { CalendarEvent } from '../agenda/calendar';
@@ -24,15 +23,16 @@ import { MediaPlaceholder, NotesPlaceholder } from './DetailPlaceholders';
 import { useMeetingMedia } from './useMeetingMedia';
 import { useMeetingActions } from './useMeetingActions';
 import { MeetingFiles } from '../items/MeetingFiles';
+import type { DetailPanel } from './meetingsSearch';
 
 type Row<K extends MeetingRow['kind']> = Extract<MeetingRow, { kind: K }>;
 export type DetailTarget =
   | { kind: 'session'; sessionId: string; row: Row<'session'> | null }
   | { kind: 'event'; row: Row<'event'> }
   | { kind: 'recording'; row: Row<'recording'> };
-type Tab = 'notes' | 'transcript' | 'people' | 'files';
+type Tab = DetailPanel;
 
-type Props = {
+export type DetailProps = {
   target: DetailTarget;
   events: CalendarEvent[];
   now: Date;
@@ -40,60 +40,11 @@ type Props = {
   onImport: (title: string) => void;
   onParticipants: (meetingId: string, event: CalendarEvent | null) => void;
   participantsRevision: number;
+  initialTab?: Tab;
 };
 
-/** Session detail is loaded by ID so a session created a moment ago opens at once. */
-export function MeetingDetail(props: Props) {
-  const { t } = useTranslation();
-  const { target } = props;
-  const sessionId = target.kind === 'session' ? target.sessionId : null;
-  const query = useQuery({
-    queryKey: ['session', sessionId],
-    queryFn: () => sessions.detail(sessionId!),
-    enabled: !!sessionId && sessions.available(),
-    retry: false,
-    refetchInterval: 3000,
-  });
-  const session = target.kind === 'session' ? (query.data ?? target.row?.session ?? null) : null;
-  if (target.kind === 'session' && !session)
-    return (
-      <div className="mh-detail p-6">
-        {query.isError ? (
-          <Alert
-            tone="error"
-            action={
-              <Button
-                size="sm"
-                onClick={() => void query.refetch()}
-                icon={<RotateCw size={14} aria-hidden="true" />}
-              >
-                {t('meetingsHub.retry')}
-              </Button>
-            }
-          >
-            {t('meetingsHub.detailFailed')}
-          </Alert>
-        ) : (
-          <p role="status" className="text-sm text-muted-foreground">
-            {t('meetingsHub.loading')}
-          </p>
-        )}
-      </div>
-    );
-  return (
-    <LoadedDetail
-      {...props}
-      session={session}
-      staleError={query.isError}
-      refetch={async () => {
-        if (sessionId) await query.refetch();
-        await refreshSessionList();
-      }}
-    />
-  );
-}
-
-function LoadedDetail({
+/** The meeting's full page body; `MeetingPage` loads the session first. */
+export function MeetingDetail({
   target,
   events,
   now,
@@ -101,14 +52,21 @@ function LoadedDetail({
   onImport,
   onParticipants,
   participantsRevision,
+  initialTab,
   session,
   staleError,
   refetch,
-}: Props & { session: Session | null; staleError: boolean; refetch: () => Promise<void> }) {
+}: DetailProps & {
+  session: Session | null;
+  staleError: boolean;
+  refetch: () => Promise<void>;
+}) {
   const { t, i18n } = useTranslation();
   const locale = i18n.resolvedLanguage ?? i18n.language;
   const k = (key: string, options?: Record<string, unknown>) => t(`meetingsHub.${key}`, options);
-  const [tab, setTab] = useState<Tab>(target.kind === 'recording' ? 'transcript' : 'notes');
+  const [tab, setTab] = useState<Tab>(
+    initialTab ?? (target.kind === 'recording' ? 'transcript' : 'notes')
+  );
   const [playback, setPlayback] = useState(false);
   const seekRef = useRef<((track: string, seconds: number) => void) | null>(null);
   const event =

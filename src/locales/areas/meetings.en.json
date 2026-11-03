@@ -3,11 +3,7 @@
     "title": "Meetings",
     "new": "New",
     "importAudio": "Import audio",
-    "views": "Meeting views",
     "tabs": {
-      "list": "Upcoming and recent",
-      "review": "To review",
-      "calendar": "Calendar",
       "notes": "Notes",
       "transcript": "Transcript",
       "live": "Live",
@@ -15,24 +11,14 @@
       "files": "Files"
     },
     "search": "Search title or person",
-    "groups": {
-      "now": "Now",
-      "today": "Today",
-      "upcoming": "Next days",
-      "earlier": "Earlier",
-      "review": "Waiting for you"
-    },
     "loading": "Loading…",
     "loadFailed": "Could not load meetings.",
     "detailFailed": "Could not open this meeting.",
     "audioFailed": "Could not load this meeting's audio.",
     "stale": "Showing the last loaded version. Trying to refresh.",
     "retry": "Try again",
-    "empty": "No meetings yet",
-    "emptyHint": "Create a meeting to take notes, record a call or connect Outlook.",
     "reviewEmpty": "Nothing waiting for you",
     "reviewEmptyHint": "Interrupted recordings and pending transcripts show up here.",
-    "noMatches": "Nothing found for “{{query}}”",
     "noSelection": "Pick a meeting",
     "noSelectionHint": "It opens here with notes, transcript and speakers.",
     "desktopRequired": "Meetings need the desktop app.",
@@ -164,10 +150,6 @@
       "allDay": "All day",
       "noMatch": "No meeting matches the search in this period"
     },
-    "month": {
-      "outlook": "Outlook",
-      "meeting": "meeting"
-    },
     "newSheet": {
       "title": "New meeting",
       "description": "A place to take notes now. Record later, when it starts.",
@@ -241,6 +223,73 @@
       "decline": "Not this one",
       "declineLabel": "Not this one: {{title}}",
       "done": "Nothing left to review."
+    },
+    "home": {
+      "newMeeting": "New meeting",
+      "search": "Search meetings, notes and transcripts",
+      "backToCalendar": "Calendar",
+      "results_one": "{{count}} meeting",
+      "results_other": "{{count}} meetings",
+      "miniMonth": "Pick a day",
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month",
+      "rail": "Calendar navigation and filters",
+      "categories": "Categories",
+      "noCategory": "No category",
+      "review": "To review",
+      "reviewCount_one": "{{count}} meeting to review",
+      "reviewCount_other": "{{count}} meetings to review",
+      "reviewHint": "Interrupted captures and meetings still without a transcript.",
+      "nowAndNext": "Now and next",
+      "now": "Now",
+      "inMinutes_one": "In {{count}} min",
+      "inMinutes_other": "In {{count}} min",
+      "at": "At {{time}}",
+      "record": "Record",
+      "recordNamed": "Record {{title}}",
+      "prepare": "Prepare",
+      "prepareNamed": "Prepare {{title}}",
+      "open": "Open",
+      "openNamed": "Open {{title}}",
+      "closePeek": "Close preview",
+      "recorded": "{{duration}} recorded",
+      "invitees": "Invitees",
+      "summary": "Summary",
+      "notesStart": "Notes",
+      "transcript": "Transcript",
+      "fullTranscript": "See the full transcript →",
+      "filesAndActivities": "Files and activities",
+      "openMeeting": "Open meeting",
+      "pageNav": "Meeting navigation",
+      "resultsLabel": "Results for {{query}}",
+      "filters": "Filters",
+      "period": {
+        "any": "Any date",
+        "30d": "Last 30 days",
+        "year": "This year"
+      },
+      "person": "Person",
+      "anyPerson": "Anyone",
+      "category": "Category",
+      "anyCategory": "Any category",
+      "withTranscript": "With transcript",
+      "searching": "Searching…",
+      "noResults": "Nothing found for “{{query}}”",
+      "noResultsHint": "Search looks at titles, people, categories, notes and transcripts.",
+      "group": {
+        "later": "Later",
+        "today": "Today",
+        "week": "This week",
+        "lastWeek": "Last week",
+        "undated": "Undated"
+      },
+      "field": {
+        "title": "Title",
+        "people": "People",
+        "category": "Category",
+        "notes": "Notes",
+        "transcript": "Transcript"
+      }
     }
   }
 }

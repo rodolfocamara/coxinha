@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { dayKey } from '../sessions/sessionDates';
 import type { MeetingRow } from './meetingRows';
 import { clockTime } from './format';
-import { CalendarBlock, blockTime, px } from './CalendarBlock';
+import { CalendarBlock, blockTime, px, type GridActions } from './CalendarBlock';
 import { HOUR_PX, allDayKeys, initialScroll, isAllDay, layoutDay } from './weekLayout';
 import { atMinutes, type Range } from './gridSelect';
 import { useGridCreate } from './useGridCreate';
@@ -13,8 +13,7 @@ const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 
 /**
  * Outlook's time grid for any list of days (spec 0104): day columns on an
- * hour axis, every meeting a block as tall as it lasts and a native button
- * that opens the meeting in the list view. An empty slot proposes a new
+ * hour axis, every meeting a block as tall as it lasts and a native button. An empty slot proposes a new
  * meeting (P5) when `onCreate` is given.
  */
 export function TimeGridView({
@@ -22,14 +21,13 @@ export function TimeGridView({
   rows,
   now,
   isLive,
-  onSelect,
   onCreate,
-}: {
+  ...actions
+}: GridActions & {
   days: Date[];
   rows: MeetingRow[];
   now: Date;
   isLive: (row: MeetingRow) => boolean;
-  onSelect: (row: MeetingRow) => void;
   onCreate?: (start: Date, end: Date) => void;
 }) {
   const { t, i18n } = useTranslation();
@@ -75,7 +73,7 @@ export function TimeGridView({
                       key={row.key}
                       row={row}
                       live={false}
-                      onSelect={onSelect}
+                      {...actions}
                       when={day.toLocaleDateString(locale, { weekday: 'long', day: 'numeric' })}
                     />
                   ))}
@@ -111,7 +109,7 @@ export function TimeGridView({
                 row={block.row}
                 block={block}
                 live={isLive(block.row)}
-                onSelect={onSelect}
+                {...actions}
                 when={blockTime(block, day, locale)}
               />
             ))}

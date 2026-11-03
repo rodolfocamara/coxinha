@@ -7,7 +7,7 @@ import { LiveBadge } from '../capture/LiveBadge';
 import { useIsLive } from '../capture/captureStore';
 import { transcriptStatus } from '../sessions/transcriptStatus';
 import { formatTime } from './format';
-import { hasEnded, rowAction, type AgendaRow } from './hojeData';
+import { hasEnded, nowAndNextAgenda, rowAction, type AgendaRow } from './hojeData';
 import { useGo, useOpenMeeting } from './hojeNavigation';
 import { Panel, PanelEmpty, PanelError, PanelLoading } from './Panel';
 import { markProps, useEventColour } from '../agenda/categories';
@@ -28,6 +28,7 @@ export function AgendaPanel(props: Props) {
   const go = useGo();
   const { rows, sessionsState, calendarState } = props;
   const loading = sessionsState === 'loading' && calendarState === 'loading';
+  const { current, upcoming } = nowAndNextAgenda(rows, props.now);
   return (
     <Panel
       id="hoje-agenda"
@@ -43,12 +44,17 @@ export function AgendaPanel(props: Props) {
       )}
       {loading ? (
         <PanelLoading />
+      ) : current.length || upcoming.length ? (
+        <>
+          {current.length > 0 && (
+            <AgendaGroup label={t('hoje.agenda.now')} rows={current} now={props.now} />
+          )}
+          {upcoming.length > 0 && (
+            <AgendaGroup label={t('hoje.agenda.next')} rows={upcoming} now={props.now} />
+          )}
+        </>
       ) : rows.length ? (
-        <ul className="cx-hoje-list">
-          {rows.map((row) => (
-            <AgendaItem key={row.key} row={row} now={props.now} />
-          ))}
-        </ul>
+        <PanelEmpty>{t('hoje.agenda.nothingLeft')}</PanelEmpty>
       ) : sessionsState === 'ready' && calendarState !== 'loading' ? (
         props.outlookConnected || calendarState === 'error' ? (
           <PanelEmpty>{t('hoje.agenda.empty')}</PanelEmpty>
@@ -69,6 +75,19 @@ export function AgendaPanel(props: Props) {
         )
       ) : null}
     </Panel>
+  );
+}
+
+function AgendaGroup({ label, rows, now }: { label: string; rows: AgendaRow[]; now: Date }) {
+  return (
+    <div role="group" aria-label={label}>
+      <h3 className="cx-hoje-subhead">{label}</h3>
+      <ul className="cx-hoje-list">
+        {rows.map((row) => (
+          <AgendaItem key={row.key} row={row} now={now} />
+        ))}
+      </ul>
+    </div>
   );
 }
 

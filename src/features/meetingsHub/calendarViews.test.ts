@@ -82,20 +82,20 @@ describe('prefs and URLs', () => {
     ]);
   });
 
-  it('maps the old week and month tabs to calendar views', () => {
-    expect(validateMeetingsSearch({ tab: 'week' })).toEqual({ tab: 'calendar', view: 'week' });
+  it('maps the old list tabs onto the calendar home (spec 0107)', () => {
+    expect(validateMeetingsSearch({ tab: 'week' })).toEqual({ view: 'week' });
     expect(validateMeetingsSearch({ tab: 'month', event: 'e' })).toEqual({
-      tab: 'calendar',
       view: 'month',
       event: 'e',
     });
     expect(validateMeetingsSearch({ tab: 'calendar', view: 'day', days: '3' })).toEqual({
-      tab: 'calendar',
       view: 'day',
       days: 3,
     });
-    expect(validateMeetingsSearch({ tab: 'review', view: 'day', days: 3 })).toEqual({
-      tab: 'review',
+    expect(validateMeetingsSearch({ tab: 'review' })).toEqual({ review: true });
+    expect(validateMeetingsSearch({ panel: 'transcript', bogus: 1 })).toEqual({
+      panel: 'transcript',
     });
+    expect(validateMeetingsSearch({ panel: 'nope' })).toEqual({});
   });
 });

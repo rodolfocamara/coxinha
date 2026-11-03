@@ -20,7 +20,7 @@
     },
     "agenda": {
       "title": "Today's agenda",
-      "all": "See all",
+      "all": "See calendar",
       "allDay": "all day",
       "outlook": "Outlook",
       "people_one": "{{count}} person",
@@ -35,7 +35,10 @@
       "emptyNoOutlook": "Nothing scheduled today. Connect Outlook to see your events here.",
       "connect": "Connect Outlook",
       "loadError": "Could not load meetings.",
-      "calendarError": "Could not read the Outlook calendar."
+      "calendarError": "Could not read the Outlook calendar.",
+      "now": "Now",
+      "next": "Next",
+      "nothingLeft": "Nothing else on today."
     },
     "review": {
       "title": "To review",

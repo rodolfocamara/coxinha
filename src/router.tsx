@@ -97,7 +97,7 @@ const calendarRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'calendar',
   beforeLoad: () => {
-    throw redirect({ to: '/meetings', search: { tab: 'calendar', view: 'month' } });
+    throw redirect({ to: '/meetings', search: { view: 'month' } });
   },
 });
 

@@ -3,11 +3,7 @@
     "title": "Reuniões",
     "new": "Nova",
     "importAudio": "Importar áudio",
-    "views": "Vistas de reuniões",
     "tabs": {
-      "list": "Próximas e recentes",
-      "review": "A revisar",
-      "calendar": "Calendário",
       "notes": "Notas",
       "transcript": "Transcrição",
       "live": "Ao vivo",
@@ -15,24 +11,14 @@
       "files": "Arquivos"
     },
     "search": "Buscar título ou pessoa",
-    "groups": {
-      "now": "Agora",
-      "today": "Hoje",
-      "upcoming": "Próximos dias",
-      "earlier": "Anteriores",
-      "review": "Esperando você"
-    },
     "loading": "Carregando…",
     "loadFailed": "Não foi possível carregar as reuniões.",
     "detailFailed": "Não foi possível abrir esta reunião.",
     "audioFailed": "Não foi possível carregar o áudio desta reunião.",
     "stale": "Mostrando a última versão carregada. Tentando atualizar.",
     "retry": "Tentar de novo",
-    "empty": "Nenhuma reunião ainda",
-    "emptyHint": "Crie uma reunião para anotar, grave uma chamada ou conecte o Outlook.",
     "reviewEmpty": "Nada esperando você",
     "reviewEmptyHint": "Gravações interrompidas e transcrições pendentes aparecem aqui.",
-    "noMatches": "Nada encontrado para “{{query}}”",
     "noSelection": "Escolha uma reunião",
     "noSelectionHint": "Ela abre aqui, com notas, transcrição e falantes.",
     "desktopRequired": "Reuniões precisam do app de desktop.",
@@ -164,10 +150,6 @@
       "allDay": "Dia todo",
       "noMatch": "Nenhuma reunião corresponde à busca neste período"
     },
-    "month": {
-      "outlook": "Outlook",
-      "meeting": "reunião"
-    },
     "newSheet": {
       "title": "Nova reunião",
       "description": "Para já ter onde anotar. Grave depois, quando começar.",
@@ -241,6 +223,73 @@
       "decline": "Não é",
       "declineLabel": "Não é: {{title}}",
       "done": "Nada mais para revisar."
+    },
+    "home": {
+      "newMeeting": "Nova reunião",
+      "search": "Buscar em reuniões, notas e transcrições",
+      "backToCalendar": "Agenda",
+      "results_one": "{{count}} reunião",
+      "results_other": "{{count}} reuniões",
+      "miniMonth": "Escolher um dia",
+      "previousMonth": "Mês anterior",
+      "nextMonth": "Próximo mês",
+      "rail": "Navegação e filtros da agenda",
+      "categories": "Categorias",
+      "noCategory": "Sem categoria",
+      "review": "A revisar",
+      "reviewCount_one": "{{count}} reunião a revisar",
+      "reviewCount_other": "{{count}} reuniões a revisar",
+      "reviewHint": "Gravações interrompidas e reuniões ainda sem transcrição.",
+      "nowAndNext": "Agora e a seguir",
+      "now": "Agora",
+      "inMinutes_one": "Em {{count}} min",
+      "inMinutes_other": "Em {{count}} min",
+      "at": "Às {{time}}",
+      "record": "Gravar",
+      "recordNamed": "Gravar {{title}}",
+      "prepare": "Preparar",
+      "prepareNamed": "Preparar {{title}}",
+      "open": "Abrir",
+      "openNamed": "Abrir {{title}}",
+      "closePeek": "Fechar prévia",
+      "recorded": "{{duration}} gravados",
+      "invitees": "Convidados",
+      "summary": "Resumo",
+      "notesStart": "Notas",
+      "transcript": "Transcrição",
+      "fullTranscript": "Ver transcrição completa →",
+      "filesAndActivities": "Arquivos e atividades",
+      "openMeeting": "Abrir reunião",
+      "pageNav": "Navegação da reunião",
+      "resultsLabel": "Resultados para {{query}}",
+      "filters": "Filtros",
+      "period": {
+        "any": "Qualquer data",
+        "30d": "Últimos 30 dias",
+        "year": "Este ano"
+      },
+      "person": "Pessoa",
+      "anyPerson": "Qualquer pessoa",
+      "category": "Categoria",
+      "anyCategory": "Qualquer categoria",
+      "withTranscript": "Com transcrição",
+      "searching": "Buscando…",
+      "noResults": "Nada encontrado para “{{query}}”",
+      "noResultsHint": "A busca olha títulos, pessoas, categorias, notas e transcrições.",
+      "group": {
+        "later": "Mais adiante",
+        "today": "Hoje",
+        "week": "Esta semana",
+        "lastWeek": "Semana passada",
+        "undated": "Sem data"
+      },
+      "field": {
+        "title": "Título",
+        "people": "Pessoas",
+        "category": "Categoria",
+        "notes": "Notas",
+        "transcript": "Transcrição"
+      }
     }
   }
 }

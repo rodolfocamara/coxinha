@@ -1,17 +1,7 @@
 @layer theme, base, components, utilities;
 
-/* Calendar page (spec 0104 P4): Outlook's switcher above day, week and month grids. */
+/* Calendar grids and Outlook's view switcher (spec 0104 P4). */
 @layer components {
-  .mh-cal {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-  .mh-cal-bar {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-  }
   .mh-month-body {
     flex: 1;
     min-height: 0;
@@ -21,6 +11,7 @@
   /* One pressed option at a time, like Outlook's view buttons. */
   .mh-cal-switch {
     display: inline-flex;
+    flex-shrink: 0;
     align-items: center;
     gap: 2px;
     padding: 2px;
@@ -33,6 +24,7 @@
   }
   .mh-cal-opt {
     display: inline-flex;
+    white-space: nowrap;
     align-items: center;
     gap: 6px;
     height: 28px;
@@ -101,12 +93,5 @@
   }
   .mh-cal-menu-item[aria-checked='true'] {
     font-weight: 600;
-  }
-  .mh-cal-empty {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    color: var(--color-muted-foreground);
   }
 }

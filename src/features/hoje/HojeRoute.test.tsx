@@ -112,6 +112,12 @@ describe('Hoje agenda', () => {
       .getAllByRole('button')
       .filter((b) => b.dataset.row);
     expect(rows.map((r) => r.dataset.row)).toEqual(['s:s-weekly', 's:s-committee', 'e:e-focus']);
+    // Spec 0107: only what is on now and the next three, grouped.
+    expect(
+      within(panel(/Agenda de hoje/))
+        .getAllByRole('group')
+        .map((g) => g.getAttribute('aria-label'))
+    ).toEqual(expect.arrayContaining(['A seguir']));
     expect(rows[0]).toHaveTextContent('Outlook · 2 pessoas');
     expect(rows[1]).toHaveTextContent('Preparar');
     fireEvent.click(rows[0]);
@@ -125,7 +131,7 @@ describe('Hoje agenda', () => {
     });
     fireEvent.click(rows[2]);
     expect(navigate).toHaveBeenLastCalledWith({ to: '/meetings', viewTransition: 'vt:nav' });
-    fireEvent.click(within(panel(/Agenda de hoje/)).getByRole('button', { name: /Ver todas/ }));
+    fireEvent.click(within(panel(/Agenda de hoje/)).getByRole('button', { name: /Ver agenda/ }));
     expect(navigate).toHaveBeenLastCalledWith({ to: '/meetings', viewTransition: 'vt:nav' });
   });
 

@@ -126,6 +126,21 @@ export function hasEnded(row: AgendaRow, now = new Date()) {
   return !row.allDay && !!end && end <= now;
 }
 
+/**
+ * Spec 0107: Hoje shows what is on now and the next three meetings; the
+ * calendar in Reuniões has the rest of the day.
+ */
+export function nowAndNextAgenda(rows: AgendaRow[], now = new Date(), count = 3) {
+  const timed = rows.filter((row) => !row.allDay && row.start);
+  const current = timed.filter(
+    (row) => !!row.session?.live || (row.start! <= now && !hasEnded(row, now))
+  );
+  const upcoming = timed
+    .filter((row) => row.start! > now && !current.includes(row))
+    .slice(0, count);
+  return { current, upcoming };
+}
+
 const newestFirst = (a: Session, b: Session) =>
   (sessionDate(b)?.date.getTime() ?? 0) - (sessionDate(a)?.date.getTime() ?? 0);
 

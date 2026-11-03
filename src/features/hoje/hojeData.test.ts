@@ -8,6 +8,7 @@ import {
   mainAreaProgress,
   mergeAgenda,
   nextRow,
+  nowAndNextAgenda,
   previewCards,
   reviewGroups,
   rowAction,
@@ -143,6 +144,27 @@ describe('mergeAgenda', () => {
       's:soon': 'prepare',
       'e:later': 'prepare',
     });
+  });
+});
+
+describe('nowAndNextAgenda', () => {
+  it('keeps what is on now and the next three, dropping ended and all-day rows', () => {
+    const rows = mergeAgenda(
+      [session({ id: 'live', starts_at: at(0, 7), ends_at: at(0, 8), live: { paused: false } })],
+      [
+        event({ id: 'ended', startsAt: at(0, 7), endsAt: at(0, 7, 30) }),
+        event({ id: 'now', startsAt: at(0, 8, 30), endsAt: at(0, 9, 30) }),
+        event({ id: 'a', startsAt: at(0, 10), endsAt: at(0, 11) }),
+        event({ id: 'b', startsAt: at(0, 11), endsAt: at(0, 12) }),
+        event({ id: 'c', startsAt: at(0, 14), endsAt: at(0, 15) }),
+        event({ id: 'd', startsAt: at(0, 16), endsAt: at(0, 17) }),
+        event({ id: 'holiday', startsAt: '2026-10-30', endsAt: '2026-10-31', allDay: true }),
+      ],
+      now
+    );
+    const { current, upcoming } = nowAndNextAgenda(rows, now);
+    expect(current.map((r) => r.title)).toEqual(['live', 'now']);
+    expect(upcoming.map((r) => r.title)).toEqual(['a', 'b', 'c']);
   });
 });
 

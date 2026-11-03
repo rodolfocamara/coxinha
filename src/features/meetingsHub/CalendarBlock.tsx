@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import type { CSSProperties, KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { nextDay } from '../sessions/sessionDates';
 import type { MeetingRow } from './meetingRows';
@@ -7,6 +7,32 @@ import { OUTLOOK_PRESETS, colourStyle, useEventColour } from '../agenda/categori
 import { HOUR_PX, type Block } from './weekLayout';
 
 export const px = (minutes: number) => (minutes / 60) * HOUR_PX;
+
+export type GridActions = {
+  onSelect: (row: MeetingRow) => void;
+  /** Double click or Enter: the full meeting page (spec 0107). */
+  onOpen?: (row: MeetingRow) => void;
+  selectedKey?: string | null;
+};
+
+/** Click selects (the peek opens); double click or Enter opens the meeting. */
+export function itemHandlers(row: MeetingRow, actions: GridActions) {
+  const open = actions.onOpen;
+  return {
+    onClick: () => actions.onSelect(row),
+    onDoubleClick: open ? () => open(row) : undefined,
+    onKeyDown: open
+      ? (event: KeyboardEvent<HTMLButtonElement>) => {
+          if (event.key !== 'Enter') return;
+          event.preventDefault();
+          open(row);
+        }
+      : undefined,
+    'aria-expanded':
+      actions.selectedKey === undefined ? undefined : actions.selectedKey === row.key,
+    'data-selected': actions.selectedKey === row.key || undefined,
+  };
+}
 
 /** "09:00–10:00" for the part of the block on this day. */
 export function blockTime(block: Block, day: Date, locale: string) {
@@ -27,13 +53,12 @@ export function CalendarBlock({
   block,
   live,
   when,
-  onSelect,
-}: {
+  ...actions
+}: GridActions & {
   row: MeetingRow;
   block?: Block;
   live: boolean;
   when: string;
-  onSelect: (row: MeetingRow) => void;
 }) {
   const { t } = useTranslation();
   const event = row.kind === 'recording' ? null : row.event;
@@ -61,7 +86,7 @@ export function CalendarBlock({
       aria-label={[when, title, colour && t('outlookCategories.mark', { name: colour.name })]
         .filter(Boolean)
         .join(', ')}
-      onClick={() => onSelect(row)}
+      {...itemHandlers(row, actions)}
     >
       <b>{title}</b>
       {block && height >= 34 && <span className="mh-week-ev-meta">{when}</span>}

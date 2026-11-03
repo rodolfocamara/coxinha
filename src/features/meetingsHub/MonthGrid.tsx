@@ -4,25 +4,24 @@ import { rowsByDay, type MeetingRow } from './meetingRows';
 import { clockTime } from './format';
 import { OUTLOOK_PRESETS, colourStyle, colourVar, useEventColour } from '../agenda/categories';
 import { CategoryLabel } from '../agenda/CategoryLabel';
+import { itemHandlers, type GridActions } from './CalendarBlock';
 import './monthView.css';
 
 /**
  * Month grid of the calendar page (spec 0104 P4): meetings and Outlook events
- * by day. Every item is a native button that opens the meeting in the list
- * view.
+ * by day. Every item is a native button.
  */
 export function MonthGrid({
   month,
   rows,
   now,
   isLive,
-  onSelect,
-}: {
+  ...actions
+}: GridActions & {
   month: Date;
   rows: MeetingRow[];
   now: Date;
   isLive: (row: MeetingRow) => boolean;
-  onSelect: (row: MeetingRow) => void;
 }) {
   const { i18n } = useTranslation();
   const locale = i18n.resolvedLanguage ?? i18n.language;
@@ -63,7 +62,7 @@ export function MonthGrid({
                   >
                     <span className="mh-day-n">{date.getDate()}</span>
                     {items.map((row) => (
-                      <MonthItem key={row.key} row={row} live={isLive(row)} onSelect={onSelect} />
+                      <MonthItem key={row.key} row={row} live={isLive(row)} {...actions} />
                     ))}
                   </td>
                 );
@@ -79,11 +78,10 @@ export function MonthGrid({
 function MonthItem({
   row,
   live,
-  onSelect,
-}: {
+  ...actions
+}: GridActions & {
   row: MeetingRow;
   live: boolean;
-  onSelect: (row: MeetingRow) => void;
 }) {
   const { t, i18n } = useTranslation();
   const locale = i18n.resolvedLanguage ?? i18n.language;
@@ -93,9 +91,10 @@ function MonthItem({
     <button
       type="button"
       className="mh-month-ev"
+      data-key={row.key}
       data-category={tinted ? OUTLOOK_PRESETS[colour.preset] : undefined}
       style={tinted ? colourStyle(colour.preset) : undefined}
-      onClick={() => onSelect(row)}
+      {...itemHandlers(row, actions)}
       title={`${clockTime(row.start!, locale)} ${row.title}`}
     >
       <i

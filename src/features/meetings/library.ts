@@ -92,6 +92,15 @@ export type ProcessingDetail = {
   people: { id: string; name: string }[];
 };
 export type ParticipantCandidate = { name: string; email: string | null };
+export type MeetingSummary = { markdown: string; generatedAt: string };
+/** Spec 0107: where a search matched a meeting. */
+export type SearchField = 'title' | 'people' | 'notes' | 'transcript' | 'category';
+export type SearchHit = {
+  id: string;
+  title: string;
+  startsAt: string | null;
+  matches: { field: SearchField; snippet: string }[];
+};
 export type Recognition = {
   job: string;
   calibrationStatus: 'uncalibrated' | 'calibrated';
@@ -159,6 +168,9 @@ export const library = {
   /** Spec 0099: bundled speaker models over the live transcript. */
   defaultProcessingConfig: () => invoke<ProcessingConfig>('speech_default_processing_config'),
   calendarMatches: () => invoke<CalendarMatch[]>('library_calendar_matches'),
+  summary: (meetingId: string) =>
+    invoke<MeetingSummary | null>('library_meeting_summary', { meetingId }),
+  search: (query: string, limit = 50) => invoke<SearchHit[]>('library_search', { query, limit }),
   resolveCalendarMatch: (sessionId: string, eventId: string, accept: boolean) =>
     invoke<unknown>('library_resolve_calendar_match', { sessionId, eventId, accept }),
   process: (meetingId: string, config: ProcessingConfig) =>

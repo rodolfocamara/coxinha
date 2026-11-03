@@ -57,7 +57,7 @@ const field = (name: string) => screen.getByLabelText<HTMLInputElement>(name);
 const outlookBox = () => screen.getByRole('checkbox', { name: 'Also create in Outlook' });
 
 async function openWeek() {
-  const router = renderAt('/meetings?tab=calendar&view=week');
+  const router = renderAt('/meetings?view=week');
   await waitFor(() => within(thursday()).getByRole('button', { name: /Lunch/ }));
   return router;
 }
@@ -102,7 +102,9 @@ it('cancels a drag with Escape and leaves presses on a block to the block', asyn
   fireEvent.pointerDown(lunch, { button: 0, pointerId: 2, clientY: 12 * HOUR });
   fireEvent.pointerUp(lunch, { pointerId: 2, clientY: 12 * HOUR });
   fireEvent.click(lunch);
-  await waitFor(() => expect(router.state.location.search).toMatchObject({ event: 'e-lunch' }));
+  // A press on a block selects it (spec 0107 peek); no new meeting is proposed.
+  expect(await screen.findByRole('complementary', { name: 'Lunch' })).toBeInTheDocument();
+  expect(router.state.location.search).not.toHaveProperty('event');
   expect(screen.queryByRole('dialog', { name: 'New meeting' })).toBeNull();
 });
 

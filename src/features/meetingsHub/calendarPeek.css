@@ -1,0 +1,241 @@
+@layer theme, base, components, utilities;
+
+/* Reuniões calendar (spec 0107): peek, search results and the meeting page. */
+@layer components {
+  /* Peek */
+  .ch-peek {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 0;
+    padding: 14px 16px 16px;
+    overflow-y: auto;
+    border-left: 1px solid var(--color-border);
+  }
+  .ch-peek-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .ch-peek-when {
+    flex: 1;
+    font-size: 11.5px;
+    color: var(--color-muted-foreground);
+  }
+  .ch-peek-title {
+    margin: -6px 0 0;
+    font-size: 16px;
+    font-weight: 650;
+    line-height: 1.3;
+  }
+  /* Focus lands here so screen readers start at the title; it is not a control. */
+  .ch-peek-title:focus {
+    outline: none;
+  }
+  .ch-peek-sec {
+    display: grid;
+    gap: 4px;
+  }
+  .ch-peek-h {
+    margin-bottom: 2px;
+  }
+  .ch-peek-line {
+    margin: 0;
+    font-size: 12.5px;
+    line-height: 1.45;
+  }
+  .ch-peek-quote {
+    margin: 0;
+    padding-left: 8px;
+    border-left: 2px solid var(--color-border);
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--color-muted-foreground);
+  }
+  .ch-peek-link {
+    justify-self: start;
+    padding: 2px 0;
+    border: 0;
+    background: none;
+    color: var(--color-primary);
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .ch-peek-link:focus-visible {
+    outline: 2px solid var(--color-ring);
+  }
+  .ch-peek-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .ch-peek-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 100%;
+    min-width: 0;
+    padding: 2px 8px;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: none;
+    color: inherit;
+    font-size: 11.5px;
+    cursor: pointer;
+  }
+  .ch-peek-chip[data-static] {
+    cursor: default;
+  }
+  button.ch-peek-chip:hover:not(:disabled) {
+    background: var(--color-secondary);
+  }
+  button.ch-peek-chip:disabled {
+    opacity: 0.5;
+  }
+  button.ch-peek-chip:focus-visible {
+    outline: 2px solid var(--color-ring);
+  }
+  .ch-peek-error {
+    margin: 0;
+    font-size: 12px;
+    color: var(--color-destructive);
+  }
+  .ch-peek-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-top: 4px;
+  }
+
+  /* Search results */
+  .ch-results {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-height: 0;
+    overflow-y: auto;
+  }
+  .ch-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .ch-filters .cx-select-trigger {
+    height: 28px;
+  }
+  .ch-filter {
+    height: 28px;
+    padding: 0 11px;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: none;
+    color: var(--color-muted-foreground);
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .ch-filter[aria-pressed='true'] {
+    border-color: var(--color-primary);
+    color: var(--color-foreground);
+    background: color-mix(in oklab, var(--color-primary) 10%, transparent);
+  }
+  .ch-filter:focus-visible {
+    outline: 2px solid var(--color-ring);
+  }
+  .ch-results-group {
+    margin-top: 10px;
+  }
+  .ch-results-list {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .ch-result {
+    display: grid;
+    grid-template-columns: 116px minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 12px;
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    background: var(--color-card);
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .ch-result:hover {
+    background: var(--color-secondary);
+  }
+  .ch-result[aria-expanded='true'] {
+    border-color: var(--color-primary);
+  }
+  .ch-result:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: -2px;
+  }
+  .ch-result-when {
+    font-size: 12px;
+    color: var(--color-muted-foreground);
+    font-variant-numeric: tabular-nums;
+  }
+  .ch-result-title {
+    display: block;
+    font-weight: 600;
+  }
+  .ch-result-snippet {
+    display: block;
+    margin-top: 4px;
+    padding-left: 8px;
+    border-left: 2px solid var(--color-border);
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--color-muted-foreground);
+  }
+  .ch-result-field {
+    font-weight: 600;
+  }
+  .ch-result mark {
+    border-radius: 3px;
+    padding: 0 2px;
+    background: color-mix(in oklab, var(--color-primary) 28%, transparent);
+    color: var(--color-foreground);
+  }
+  .ch-results-note {
+    font-size: 12.5px;
+    color: var(--color-muted-foreground);
+  }
+
+  /* Full meeting page */
+  .ch-page {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+  }
+  .ch-page-bar {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .ch-page > .mh-detail {
+    min-height: 0;
+  }
+  .mh-rowlist {
+    margin: 0 -8px;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* A selected block in the grid. */
+  .mh-week-ev[data-selected],
+  .mh-month-ev[data-selected] {
+    outline: 1.5px solid var(--color-foreground);
+    outline-offset: -1px;
+  }
+}

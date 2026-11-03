@@ -14,7 +14,9 @@ import type {
   CalendarMatch,
   LibraryDetail,
   LibraryMeeting,
+  MeetingSummary,
   ProcessingDetail,
+  SearchHit,
 } from '../meetings/library';
 import { at, event, recording, session } from './meetingsHub.fixtures';
 
@@ -24,6 +26,7 @@ import { initialCaptureState, useCaptureStore } from '../capture/captureStore';
 import { forgetProcessingConfig } from '../meetings/processingConfigMemory';
 import { takePendingSheet } from './meetingsSheets';
 import { CALENDAR_PREF_KEYS } from './calendarViews';
+import { resetCalendarHome } from './calendarHome';
 
 export type Db = {
   sessions: Session[];
@@ -56,6 +59,9 @@ export type Db = {
     updated_at: string;
   }[];
   links: { session: string; note: string; createdAt: string }[];
+  /** Spec 0107: backend search hits by query, and summaries by meeting. */
+  searchHits: Record<string, SearchHit[]>;
+  summaries: Record<string, MeetingSummary>;
 };
 
 export function freshDb(): Db {
@@ -78,6 +84,8 @@ export function freshDb(): Db {
     calls: [],
     notes: [],
     links: [],
+    searchHits: {},
+    summaries: {},
   };
 }
 
@@ -248,6 +256,10 @@ export function backend(db: Db) {
         return null;
       case 'items_list':
         return { folder: null, files: [], references: [] };
+      case 'library_search':
+        return db.searchHits[String(args.query).toLowerCase()] ?? [];
+      case 'library_meeting_summary':
+        return db.summaries[String(args.meetingId)] ?? null;
       default:
         throw new Error(`Unexpected command ${command}`);
     }
@@ -261,6 +273,8 @@ export function resetState() {
   takePendingSheet();
   resetOutlookCategories();
   for (const key of CALENDAR_PREF_KEYS) window.localStorage.removeItem(key);
+  window.localStorage.removeItem('coxinha:calendar-hidden-categories');
+  resetCalendarHome();
 }
 
 export function renderAt(path: string) {

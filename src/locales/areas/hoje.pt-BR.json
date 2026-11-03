@@ -20,7 +20,7 @@
     },
     "agenda": {
       "title": "Agenda de hoje",
-      "all": "Ver todas",
+      "all": "Ver agenda",
       "allDay": "dia todo",
       "outlook": "Outlook",
       "people_one": "{{count}} pessoa",
@@ -35,7 +35,10 @@
       "emptyNoOutlook": "Nada marcado para hoje. Conecte o Outlook para ver seus compromissos aqui.",
       "connect": "Conectar Outlook",
       "loadError": "Não deu para carregar as reuniões.",
-      "calendarError": "Não deu para ler a agenda do Outlook."
+      "calendarError": "Não deu para ler a agenda do Outlook.",
+      "now": "Agora",
+      "next": "A seguir",
+      "nothingLeft": "Nada mais marcado para hoje."
     },
     "review": {
       "title": "A revisar",
