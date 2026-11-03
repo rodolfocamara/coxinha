@@ -173,7 +173,7 @@ it('shows Monday to Friday in the work week and steps a week at a time', async (
   await heading(/October 19.*23, 2026/);
 });
 
-it('hides categories from the rail in every view and in search results', async () => {
+it('hides categories from the rail in every view', async () => {
   renderAt('/meetings?view=week');
   await screen.findByRole('button', { name: /Architecture review/ });
   const rail = screen.getByRole('complementary', { name: 'Calendar navigation and filters' });
@@ -194,21 +194,4 @@ it('hides categories from the rail in every view and in search results', async (
   const month = await within(grid()).findByRole('table');
   expect(within(month).queryByRole('button', { name: /Architecture review/ })).toBeNull();
   expect(within(month).getByRole('button', { name: /Lunch/ })).toBeInTheDocument();
-
-  // Search matches category names, and still follows the rail.
-  const search = screen.getByRole('searchbox', { name: 'Search meetings, notes and transcripts' });
-  fireEvent.change(search, { target: { value: 'personal' } });
-  const results = await screen.findByRole('region', { name: 'Results for personal' });
-  expect(within(results).getByRole('button', { name: /Lunch/ })).toHaveTextContent(
-    'Category: Personal'
-  );
-  fireEvent.change(search, { target: { value: 'architect' } });
-  expect(await screen.findByText('Nothing found for “architect”')).toBeInTheDocument();
-  fireEvent.click(within(filter).getByRole('checkbox', { name: 'Architect' }));
-  expect(
-    await within(screen.getByRole('region', { name: 'Results for architect' })).findByRole(
-      'button',
-      { name: /Architecture review/ }
-    )
-  ).toBeInTheDocument();
 });

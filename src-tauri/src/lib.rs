@@ -304,7 +304,7 @@ pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
             library::live_settings,
             library::set_live_settings,
             library::library_calendar_matches,
-            library::library_search,
+            library::universal_search,
             library::library_resolve_calendar_match,
             speech_download::speech_model_download,
             speech_download::speech_default_processing_config,

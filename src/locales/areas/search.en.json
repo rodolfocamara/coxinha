@@ -1,0 +1,16 @@
+{
+  "search": {
+    "bar": "Search everything",
+    "groups": {
+      "notes": "Notes",
+      "meetings": "Meetings",
+      "transcripts": "Transcripts",
+      "people": "People"
+    },
+    "activity": "Activity",
+    "alias": "Alias: {{alias}}",
+    "searching": "Searching…",
+    "count_one": "{{count}} result",
+    "count_other": "{{count}} results"
+  }
+}

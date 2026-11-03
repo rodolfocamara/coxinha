@@ -1,4 +1,5 @@
-import { act, render, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { SearchBar } from '../components/AppShell/SearchBar';
 import { expect, it, vi } from 'vitest';
 import { RootLayout } from './__root';
 const mocks = vi.hoisted(() => ({
@@ -18,7 +19,9 @@ vi.mock('@tanstack/react-router', () => ({
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 vi.mock('@tauri-apps/api/core', () => ({ invoke: mocks.invoke, isTauri: () => false }));
 vi.mock('../features/meetings/library', () => ({ library: { start: mocks.start } }));
-vi.mock('../features/shell/CommandPalette', () => ({ CommandPalette: () => null }));
+vi.mock('../features/shell/CommandPalette', () => ({
+  CommandPalette: ({ open }: { open: boolean }) => (open ? <div role="dialog">palette</div> : null),
+}));
 vi.mock('../components/Shell/Shell', () => ({
   Shell: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
@@ -63,4 +66,21 @@ it('returns to Hoje when asked to open the map, without starting capture', async
   });
   expect(mocks.navigate).toHaveBeenCalledWith({ to: '/' });
   expect(mocks.start).not.toHaveBeenCalled();
+});
+it('opens one search palette from Ctrl+K, Cmd+K and the shell search bar (spec 0122)', async () => {
+  render(
+    <>
+      <SearchBar />
+      <RootLayout />
+    </>
+  );
+  expect(screen.queryByRole('dialog')).toBeNull();
+  fireEvent.keyDown(window, { key: 'k', ctrlKey: true });
+  expect(screen.getByRole('dialog')).toBeInTheDocument();
+  fireEvent.keyDown(window, { key: 'K', metaKey: true });
+  expect(screen.queryByRole('dialog')).toBeNull();
+  fireEvent.keyDown(window, { key: 'k' });
+  expect(screen.queryByRole('dialog')).toBeNull();
+  fireEvent.click(screen.getByRole('button', { name: 'search.bar' }));
+  expect(screen.getByRole('dialog')).toBeInTheDocument();
 });

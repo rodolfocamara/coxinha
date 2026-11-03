@@ -16,7 +16,7 @@ import { HojeRoute } from './features/hoje/HojeRoute';
 import { MeetingsHubRoute } from './features/meetingsHub/MeetingsHubRoute';
 import { validateMeetingsSearch } from './features/meetingsHub/meetingsSearch';
 import { WorkspaceRoute } from './features/workspace/WorkspaceRoute';
-import { PeopleRoute } from './routes/PeopleRoute';
+import { PeopleRoute, validatePeopleSearch } from './routes/PeopleRoute';
 import { SettingsRoute } from './routes/SettingsRoute';
 
 export interface RouterContext {
@@ -124,6 +124,7 @@ const meetingDetailRoute = createRoute({
 const peopleRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'people',
+  validateSearch: validatePeopleSearch,
   component: PeopleRoute,
 });
 

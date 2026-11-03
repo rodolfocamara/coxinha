@@ -7,6 +7,7 @@ import type { UnlistenFn } from '@tauri-apps/api/event';
 import { useTranslation } from 'react-i18next';
 import { reportFrontendError } from '../lib/lifecycle';
 import { CommandPalette } from '../features/shell/CommandPalette';
+import { OPEN_PALETTE_EVENT } from '../components/AppShell/SearchBar';
 import { Button } from '../components/ui';
 import { events, type Route } from '../lib/bindings';
 import { mark } from '../lib/perf';
@@ -109,10 +110,10 @@ export function RootLayout() {
     const openPalette = () => setPaletteOpen(true);
     const openMap = () => void navigate({ to: '/' });
     window.addEventListener('coxinha:open-map', openMap);
-    window.addEventListener('coxinha:open-palette', openPalette);
+    window.addEventListener(OPEN_PALETTE_EVENT, openPalette);
     window.addEventListener('keydown', handler);
     return () => {
-      window.removeEventListener('coxinha:open-palette', openPalette);
+      window.removeEventListener(OPEN_PALETTE_EVENT, openPalette);
       window.removeEventListener('coxinha:open-map', openMap);
       window.removeEventListener('keydown', handler);
     };

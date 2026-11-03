@@ -101,6 +101,14 @@ it('opens the first person and loads samples only for the person being viewed', 
   await waitFor(() => expect(row(/Bruno/)).toHaveTextContent(tr('people.row.noSamples')));
 });
 
+it('opens the person the universal search asked for (spec 0122)', async () => {
+  render(<PeopleDirectory opened={{ personId: 'bruno', name: 'Bruno' }} />);
+  expect(await screen.findByRole('heading', { level: 2, name: 'Bruno' })).toBeVisible();
+  await waitFor(() => expect(row(/Bruno/)).toHaveAttribute('aria-current', 'true'));
+  expect(voiceCuration.samplesPage).toHaveBeenLastCalledWith('bruno', null);
+  expect(voiceCuration.samplesPage).not.toHaveBeenCalledWith('ana', null);
+});
+
 it('shows backend totals on every row without loading each person', async () => {
   vi.mocked(voiceCuration.profilesPage).mockResolvedValue({
     profileGeneration: 1,

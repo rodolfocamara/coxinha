@@ -228,10 +228,7 @@
     },
     "home": {
       "newMeeting": "New meeting",
-      "search": "Search meetings, notes and transcripts",
       "backToCalendar": "Calendar",
-      "results_one": "{{count}} meeting",
-      "results_other": "{{count}} meetings",
       "miniMonth": "Pick a day",
       "previousMonth": "Previous month",
       "nextMonth": "Next month",
@@ -263,35 +260,10 @@
       "filesAndActivities": "Files and activities",
       "openMeeting": "Open meeting",
       "pageNav": "Meeting navigation",
-      "resultsLabel": "Results for {{query}}",
-      "filters": "Filters",
       "period": {
         "any": "Any date",
         "30d": "Last 30 days",
         "year": "This year"
-      },
-      "person": "Person",
-      "anyPerson": "Anyone",
-      "category": "Category",
-      "anyCategory": "Any category",
-      "withTranscript": "With transcript",
-      "searching": "Searching…",
-      "noResults": "Nothing found for “{{query}}”",
-      "noResultsHint": "Search looks at titles, people, categories, notes and transcripts.",
-      "group": {
-        "later": "Later",
-        "today": "Today",
-        "week": "This week",
-        "lastWeek": "Last week",
-        "undated": "Undated"
-      },
-      "field": {
-        "title": "Title",
-        "people": "People",
-        "category": "Category",
-        "notes": "Notes",
-        "summary": "Summary",
-        "transcript": "Transcript"
       }
     },
     "views": "Meeting views",

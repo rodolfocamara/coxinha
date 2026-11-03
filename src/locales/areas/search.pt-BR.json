@@ -1,0 +1,16 @@
+{
+  "search": {
+    "bar": "Buscar em tudo",
+    "groups": {
+      "notes": "Notas",
+      "meetings": "Reuniões",
+      "transcripts": "Transcrições",
+      "people": "Pessoas"
+    },
+    "activity": "Atividade",
+    "alias": "Apelido: {{alias}}",
+    "searching": "Buscando…",
+    "count_one": "{{count}} resultado",
+    "count_other": "{{count}} resultados"
+  }
+}

@@ -16,7 +16,6 @@ import type {
   LibraryMeeting,
   MeetingSummary,
   ProcessingDetail,
-  SearchHit,
 } from '../meetings/library';
 import { at, event, recording, session } from './meetingsHub.fixtures';
 
@@ -60,8 +59,7 @@ export type Db = {
     updated_at: string;
   }[];
   links: { session: string; note: string; createdAt: string }[];
-  /** Spec 0107: backend search hits by query, and summaries by meeting. */
-  searchHits: Record<string, SearchHit[]>;
+  /** Spec 0108: summaries by meeting. */
   summaries: Record<string, MeetingSummary>;
 };
 
@@ -85,7 +83,6 @@ export function freshDb(): Db {
     calls: [],
     notes: [],
     links: [],
-    searchHits: {},
     summaries: {},
   };
 }
@@ -257,8 +254,6 @@ export function backend(db: Db) {
         return null;
       case 'items_list':
         return { folder: null, files: [], references: [] };
-      case 'library_search':
-        return db.searchHits[String(args.query).toLowerCase()] ?? [];
       case 'library_meeting_summary':
         return db.summaries[String(args.meetingId)] ?? null;
       default:

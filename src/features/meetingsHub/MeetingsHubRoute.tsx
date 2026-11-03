@@ -180,6 +180,7 @@ export function MeetingsHubRoute() {
           events={outlook.snapshot.events}
           now={now}
           initialTab={search.panel}
+          initialFind={search.find}
           onBack={() => void navigate({ to: '/meetings', search: calendarSearch() })}
           onOpenSession={openSession}
           onImport={(title) => setSheet({ kind: 'import', title, forMeeting: true })}

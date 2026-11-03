@@ -242,7 +242,7 @@ describe('CommandPalette', () => {
     const user = userEvent.setup();
     render(<CommandPalette open onClose={() => {}} />);
     await user.type(screen.getByPlaceholderText('people.palette.placeholder'), 'xyzzz');
-    expect(screen.getByText(/people\.palette\.empty/)).toBeInTheDocument();
+    expect(await screen.findByText(/people\.palette\.empty/)).toBeInTheDocument();
   });
 
   it.each(['/workspace/b', '/notes/b'])(

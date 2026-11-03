@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { buildRows, type MeetingRow } from './meetingRows';
 import { event, recording, session } from './meetingsHub.fixtures';
 import { NO_CATEGORY, categoryKey, nowAndNext, visibleRows } from './calendarHome';
-import { filterResults, groupResults, highlight, mergeResults, NO_FILTERS } from './searchResults';
 import { excerpt, noteLines, transcriptLines } from './peekData';
 
 // Thursday 15 October 2026, 12:00 local; the week runs Monday 12 to Sunday 18.
@@ -61,70 +60,6 @@ describe('calendar home', () => {
       current: null,
       next: null,
     });
-  });
-});
-
-describe('search results', () => {
-  const hits = [
-    {
-      id: 'okr',
-      title: 'OKR Q3',
-      startsAt: iso(-3, 14),
-      matches: [
-        { field: 'title' as const, snippet: 'ignored, the row title wins' },
-        { field: 'transcript' as const, snippet: 'Rosana: o headcount fecha na próxima' },
-      ],
-    },
-  ];
-
-  it('merges local and backend matches with one snippet per field in a fixed order', () => {
-    const found = mergeResults(rows, 'headcount', hits);
-    expect(found.map((r) => [r.row.key, r.matches.map((m) => m.field)])).toEqual([
-      ['s:okr', ['transcript']],
-      ['s:old', ['title']],
-    ]);
-    const people = mergeResults(rows, 'rosana@', []);
-    expect(people[0].matches).toEqual([{ field: 'people', snippet: 'Rosana Costa' }]);
-    const category = mergeResults(rows, 'cto', []);
-    expect(category[0].matches).toEqual([{ field: 'category', snippet: 'CTO' }]);
-    expect(mergeResults(rows, '  ', hits)).toEqual([]);
-  });
-
-  it('groups later, this week, last week and months, newest first', () => {
-    const all = mergeResults(rows, 'o', []).concat(mergeResults(rows, 'imported', []));
-    const groups = groupResults(all, now);
-    expect(groups.map((g) => g.id)).toEqual([
-      'later',
-      'today',
-      'week',
-      'lastWeek',
-      'month-2026-09',
-    ]);
-    // Newest first inside a past group.
-    expect(groups.find((g) => g.id === 'today')!.results.map((r) => r.row.key)).toEqual([
-      'e:soon',
-      'e:cto',
-    ]);
-  });
-
-  it('filters by period, person, category and transcript', () => {
-    const all = mergeResults(rows, 'o', hits);
-    const keys = (filters: Partial<typeof NO_FILTERS>) =>
-      filterResults(all, { ...NO_FILTERS, ...filters }, now).map((r) => r.row.key);
-    expect(keys({ period: '30d' })).not.toContain('s:old');
-    expect(keys({ period: '30d' })).not.toContain('e:later');
-    expect(keys({ period: 'year' })).toContain('s:old');
-    expect(keys({ person: 'Rosana Costa' })).toEqual(['e:cto']);
-    expect(keys({ category: 'CTO' })).toEqual(['e:cto']);
-    expect(keys({ transcript: true })).toEqual(['s:okr']);
-  });
-
-  it('marks matches ignoring accents and case', () => {
-    expect(highlight('Revisão do Orçamento', 'orcamento')).toEqual([
-      { text: 'Revisão do ', hit: false },
-      { text: 'Orçamento', hit: true },
-    ]);
-    expect(highlight('abc', '')).toEqual([{ text: 'abc', hit: false }]);
   });
 });
 

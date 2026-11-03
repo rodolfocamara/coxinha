@@ -20,9 +20,12 @@ export function TranscriptReader({
   busy,
   act,
   onSeek,
+  initialQuery = '',
   versionSelector,
 }: {
   meetingId: string;
+  /** Spec 0122: opens found at the universal search's text. */
+  initialQuery?: string;
   report: ProcessingReport;
   busy: boolean;
   act: (action: () => Promise<unknown>) => Promise<void>;
@@ -32,7 +35,7 @@ export function TranscriptReader({
   const { t } = useTranslation();
   const k = (key: string, options?: Record<string, unknown>) =>
     t(`library.processing.reader.${key}`, options);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(initialQuery);
   const [current, setCurrent] = useState(0);
   const [editing, setEditing] = useState<string | null>(null);
   const list = useRef<HTMLDivElement>(null);

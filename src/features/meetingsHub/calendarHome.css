@@ -29,23 +29,6 @@
     font-weight: 650;
     white-space: nowrap;
   }
-  .ch-search {
-    position: relative;
-    flex: 0 1 340px;
-    min-width: 180px;
-  }
-  .ch-search .cx-input {
-    padding-left: 30px;
-  }
-  .ch-search-icon {
-    position: absolute;
-    top: 50%;
-    left: 10px;
-    z-index: 1;
-    transform: translateY(-50%);
-    color: var(--color-muted-foreground);
-    pointer-events: none;
-  }
 
   /* Now and next */
   .ch-strip {
@@ -214,8 +197,7 @@
     min-width: 0;
   }
   .ch-cats legend,
-  .ch-peek-h,
-  .ch-results-group {
+  .ch-peek-h {
     margin: 0 0 6px;
     padding: 0;
     font-size: 11px;

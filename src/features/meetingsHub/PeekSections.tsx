@@ -53,14 +53,12 @@ export function PeekSummary({
   );
 }
 
-/** A few transcript lines: those matching the search, else the opening ones. */
+/** The opening transcript lines. */
 export function PeekTranscript({
   meetingId,
-  query,
   onFull,
 }: {
   meetingId: string | null;
-  query: string;
   onFull: () => void;
 }) {
   const { t } = useTranslation();
@@ -70,7 +68,7 @@ export function PeekTranscript({
     enabled: !!meetingId && library.available(),
     retry: false,
   });
-  const lines = excerpt(transcriptLines(processing.data?.report), query);
+  const lines = excerpt(transcriptLines(processing.data?.report), '');
   if (!lines.length) return null;
   return (
     <section className="ch-peek-sec">

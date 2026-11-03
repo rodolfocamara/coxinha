@@ -20,8 +20,10 @@ function ProcessingPanelForMeeting({
   playback,
   onTranscript,
   invitees,
+  find,
 }: {
   meetingId: string;
+  find?: string;
   invitees?: ParticipantCandidate[];
   closed: boolean;
   status: CaptureStatus;
@@ -141,6 +143,7 @@ function ProcessingPanelForMeeting({
           busy={busy}
           act={act}
           onSeek={onSeek}
+          initialQuery={find}
           versionSelector={versionSelector}
         />
       )}

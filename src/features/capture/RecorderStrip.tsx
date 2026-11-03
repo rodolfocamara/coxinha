@@ -19,6 +19,7 @@ import {
 import { dismissCaptureError, pauseCapture, stopCapture } from './captureActions';
 import { useCaptureStore } from './captureStore';
 import '../../components/Shell/shell.css';
+import { SearchBar } from '../../components/AppShell/SearchBar';
 import { useAutoStop, useEndedWithCall } from './autoRecord';
 import { BackgroundLine, EndedWithCall, RecordButton, useBackgroundWork } from './BackgroundWork';
 import {
@@ -330,6 +331,7 @@ export function RecorderStrip() {
           {failureText}
         </span>
       )}
+      <SearchBar />
       <WindowChrome>
         <div className="cx-strip-part" key={`${view.key}:actions`}>
           {view.actions}
