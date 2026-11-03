@@ -924,6 +924,7 @@ dependencies = [
  "keyring",
  "ndarray",
  "notify",
+ "notify-rust",
  "ort",
  "pyannote-rs",
  "reqwest",

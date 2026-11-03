@@ -42,6 +42,9 @@ The owner's afternoon of 2026-11-03 showed four gaps:
   closes raises a native notification ("A chamada terminou?" / "O {app}
   encerrou a chamada e o Coxinha continua gravando. Abra para parar ou
   continuar.") and brings the main window up, where the strip prompt waits.
+- On Linux the notice carries critical urgency, so Do Not Disturb (often
+  left on during calls) still shows it. The main window also requests
+  attention, because Wayland compositors refuse focus from the background.
 - Nothing is raised while another call is still active, without a capture,
   or when automatic recording will stop this call itself (spec 0097).
 

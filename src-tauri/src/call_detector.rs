@@ -199,17 +199,43 @@ async fn call_ended(app: &AppHandle, ended: &[ActiveCall]) {
         return;
     }
     // Only the fixed app label is used, never window titles, URLs or stream contents.
-    if app
-        .notification()
-        .builder()
-        .title(rust_i18n::t!("callDetection.endedTitle").to_string())
-        .body(rust_i18n::t!("callDetection.endedBody", app = ended[0].app_name).to_string())
-        .show()
-        .is_err()
-    {
-        tracing::debug!("call ended notification unavailable");
+    let title = rust_i18n::t!("callDetection.endedTitle").to_string();
+    let body = rust_i18n::t!("callDetection.endedBody", app = ended[0].app_name).to_string();
+    tracing::info!(app = %ended[0].app_name, "asking whether the recording should stop");
+    if let Err(e) = notify_ended(app, title, body).await {
+        tracing::warn!(error = %e, "call ended notification unavailable");
     }
     crate::window::show_main(app);
+    crate::window::request_attention(app);
+}
+
+/// Critical urgency: Plasma and GNOME still show it under Do Not Disturb,
+/// which owners often leave on during calls.
+#[cfg(target_os = "linux")]
+async fn notify_ended(app: &AppHandle, title: String, body: String) -> Result<(), String> {
+    let name = app.package_info().name.clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        notify_rust::Notification::new()
+            .appname(&name)
+            .summary(&title)
+            .body(&body)
+            .urgency(notify_rust::Urgency::Critical)
+            .show()
+            .map(|_| ())
+            .map_err(|e| e.to_string())
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[cfg(not(target_os = "linux"))]
+async fn notify_ended(app: &AppHandle, title: String, body: String) -> Result<(), String> {
+    app.notification()
+        .builder()
+        .title(title)
+        .body(body)
+        .show()
+        .map_err(|e| e.to_string())
 }
 
 #[cfg(test)]

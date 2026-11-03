@@ -44,9 +44,9 @@ fn disposable(vault: &Path, session: &Value) -> bool {
         return false;
     };
     let note = session["note_path"].as_str().map(|p| vault.join(p));
-    let blank = note.as_ref().map_or(true, |path| {
-        std::fs::read_to_string(path).is_ok_and(|raw| blank_note(&raw))
-    });
+    let blank = note
+        .as_ref()
+        .is_none_or(|path| std::fs::read_to_string(path).is_ok_and(|raw| blank_note(&raw)));
     let item = ItemRef {
         kind: ItemKind::Meeting,
         id: id.to_owned(),
