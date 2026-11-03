@@ -4,9 +4,10 @@
 1. Fetch the speaker models (spec 0099).
 2. Build the frontend and the binary, which also builds transcribe.cpp as a
    shared library when Tagarela is on (`stt-tagarela-shared`).
-3. Copy those libraries into src-tauri/resources/native/, which
-   `tauri.release.conf.json` ships next to the binary: the exe folder on
-   Windows, usr/lib/Coxinha (the binary's runpath) on Linux.
+3. Copy those libraries, and on Windows the Visual C++ runtime the binaries
+   import, into src-tauri/resources/native/, which `tauri.release.conf.json`
+   ships next to the binary: the exe folder on Windows, usr/lib/Coxinha (the
+   binary's runpath) on Linux.
 4. Bundle with `tauri build`, which reuses the dependencies built in step 2.
 
 Usage: python scripts/build_release.py [--platform linux|windows]
@@ -50,10 +51,29 @@ def native_libraries(platform: str) -> list[pathlib.Path]:
     return []
 
 
+def vc_runtime() -> list[pathlib.Path]:
+    """The Visual C++ runtime the DLLs import, from the Visual Studio redist.
+
+    A clean Windows lacks MSVCP140/VCRUNTIME140; Microsoft allows shipping
+    them next to the executable (app-local deployment).
+    """
+    names = ("msvcp140.dll", "vcruntime140.dll", "vcruntime140_1.dll")
+    roots = [pathlib.Path("C:/Program Files/Microsoft Visual Studio"),
+             pathlib.Path("C:/Program Files (x86)/Microsoft Visual Studio")]
+    for root in roots:
+        for crt in sorted(root.glob("*/*/VC/Redist/MSVC/*/x64/Microsoft.VC*.CRT"), reverse=True):
+            found = [crt / name for name in names]
+            if all(path.is_file() for path in found):
+                return found
+    sys.exit("Visual C++ runtime not found in the Visual Studio redist folder")
+
+
 def collect(platform: str) -> None:
     shutil.rmtree(NATIVE, ignore_errors=True)
     NATIVE.mkdir(parents=True)
     libraries = native_libraries(platform)
+    if platform == "windows":
+        libraries += vc_runtime()
     for library in libraries:
         target = NATIVE / library.name
         shutil.copyfile(library, target)

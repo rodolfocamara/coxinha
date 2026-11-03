@@ -104,7 +104,9 @@ treatment on their own. The decisions taken:
       checks the mapping). The deb built on 2026-11-03 holds
       `usr/lib/Coxinha/libtranscribe.so.0.2` and the three ggml libraries,
       and `ldd` resolves all four from the package with no
-      `LD_LIBRARY_PATH`.
+      `LD_LIBRARY_PATH`. On Windows the script also ships the Visual C++
+      runtime (`msvcp140`, `vcruntime140`, `vcruntime140_1`) next to the
+      exe, which a clean Windows lacks.
 - [ ] Windows installer built by the release workflow and checked on a
       Windows machine. `full-release` now includes `local-processing` and is
       CPU only: a CUDA build needs NVIDIA's DLLs at start and would not open
