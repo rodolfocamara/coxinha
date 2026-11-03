@@ -1,36 +1,45 @@
-//! Opt-in automatic recording of detected calls (spec 0097, ADR 0023).
-//! Runs next to the detector so it works with the window hidden in the tray.
+//! Recordings that follow their call (spec 0118) and opt-in automatic
+//! recording of detected calls (spec 0097, ADR 0023). Runs next to the
+//! detector so it works with the window hidden in the tray.
 use crate::library::Library;
-use crate::storage::Storage;
-use coxinha_core::store::session::NewSession;
 use serde::Serialize;
-use serde_json::{json, Value};
 use shared::ActiveCall;
 use specta::Type;
 use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
-use std::time::Instant;
+use std::sync::Mutex;
+use std::time::{Duration, Instant};
 use tauri::{AppHandle, Manager, State};
 use tauri_plugin_notification::NotificationExt;
 
+mod execute;
 pub(crate) mod plan;
 mod policy;
 pub use policy::Settings;
-use policy::{Binding, Capture, Command, Policy};
+use policy::{Capture, Policy};
 
 pub struct AutoRecord {
     settings: Mutex<Settings>,
     policy: Mutex<Policy>,
+    /// The last capture stopped with its call, for the strip line.
+    ended: Mutex<Option<EndedWithCall>>,
     path: PathBuf,
 }
 
+/// The live capture and the calls it follows.
 #[derive(Clone, Debug, Serialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub struct AutoRecordBinding {
-    session_id: String,
+    /// Set when automatic recording started the capture.
+    session_id: Option<String>,
     meeting_id: String,
-    call: ActiveCall,
+    calls: Vec<ActiveCall>,
     keep: bool,
+}
+#[derive(Clone, Debug, PartialEq, Serialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct EndedWithCall {
+    meeting_id: String,
+    app: String,
 }
 #[derive(Clone, Debug, Serialize, Type)]
 #[serde(rename_all = "camelCase")]
@@ -39,6 +48,7 @@ pub struct AutoRecordStatus {
     binding: Option<AutoRecordBinding>,
     /// Milliseconds until the pending automatic stop, if one is counting down.
     stop_in_ms: Option<u32>,
+    ended: Option<EndedWithCall>,
 }
 
 fn lock<T>(m: &Mutex<T>) -> std::sync::MutexGuard<'_, T> {
@@ -54,6 +64,7 @@ impl AutoRecord {
         Self {
             settings: Mutex::new(settings),
             policy: Mutex::default(),
+            ended: Mutex::default(),
             path,
         }
     }
@@ -73,17 +84,18 @@ impl AutoRecord {
         let policy = lock(&self.policy);
         AutoRecordStatus {
             settings: lock(&self.settings).clone(),
-            binding: policy.binding.as_ref().map(|b| AutoRecordBinding {
-                session_id: b.session.clone(),
-                meeting_id: b.meeting.clone(),
-                call: b.call.clone(),
-                keep: b.keep,
+            binding: policy.follow.as_ref().map(|f| AutoRecordBinding {
+                session_id: f.session.clone(),
+                meeting_id: f.meeting.clone(),
+                calls: f.calls.clone(),
+                keep: f.keep,
             }),
             stop_in_ms: policy.stop_at.map(|at| {
                 at.saturating_duration_since(Instant::now())
                     .as_millis()
                     .min(u32::MAX as u128) as u32
             }),
+            ended: lock(&self.ended).clone(),
         }
     }
 }
@@ -125,7 +137,7 @@ pub fn set_auto_record(
     changed(&app);
     Ok(state.status())
 }
-/// "Continuar gravando": the end of the bound call no longer stops it.
+/// "Continuar gravando": the end of the followed calls no longer stops it.
 #[tauri::command]
 #[specta::specta]
 pub fn auto_record_keep(app: AppHandle, state: State<'_, AutoRecord>) -> AutoRecordStatus {
@@ -134,21 +146,14 @@ pub fn auto_record_keep(app: AppHandle, state: State<'_, AutoRecord>) -> AutoRec
     state.status()
 }
 
-/// Whether automatic recording stops the capture when one of these calls ends.
+/// Whether the capture stops by itself (spec 0118) when one of these calls ends.
 pub fn stops_on_end(app: &AppHandle, calls: &[ActiveCall]) -> bool {
     let Some(state) = app.try_state::<AutoRecord>() else {
         return false;
     };
     let settings = lock(&state.settings).clone();
-    let policy = lock(&state.policy);
-    settings.enabled
-        && settings.stop_when_call_ends
-        && policy.binding.as_ref().is_some_and(|b| {
-            !b.keep
-                && calls
-                    .iter()
-                    .any(|c| c.pid == b.call.pid && c.process_name == b.call.process_name)
-        })
+    let stops = lock(&state.policy).stops_on_end(&settings, calls);
+    stops
 }
 
 /// A failed detector poll: evidence is unreliable, cancel any countdown.
@@ -170,182 +175,39 @@ pub async fn observe(app: &AppHandle, calls: &[ActiveCall]) {
         return;
     };
     let settings = lock(&state.settings).clone();
-    let capture = if settings.enabled {
-        let Ok(status) = app.state::<Library>().status_value().await else {
-            return unreliable(app);
-        };
-        Capture {
-            active: status["active"]["meetingId"].as_str().map(str::to_owned),
-            busy: !status["processing"].is_null(),
-        }
-    } else {
-        Capture::default()
+    let Ok(status) = app.state::<Library>().status_value().await else {
+        return unreliable(app);
     };
+    let capture = capture(&status);
+    if capture.active.is_some() {
+        lock(&state.ended).take();
+    }
     let (command, moved) = {
         let mut policy = lock(&state.policy);
-        let before = (policy.stop_at, policy.binding.is_some());
+        let shape = |p: &Policy| {
+            (
+                p.stop_at,
+                p.follow.as_ref().map(|f| (f.calls.len(), f.keep)),
+            )
+        };
+        let before = shape(&policy);
         let command = policy.observe(Instant::now(), &settings, calls, &capture);
-        (
-            command,
-            before != (policy.stop_at, policy.binding.is_some()),
-        )
+        (command, before != shape(&policy))
     };
     if moved {
         changed(app);
     }
     if let Some(command) = command {
         let app = app.clone();
-        tauri::async_runtime::spawn(async move { execute(&app, command).await });
+        tauri::async_runtime::spawn(async move { execute::execute(&app, command).await });
     }
 }
 
-async fn execute(app: &AppHandle, command: Command) {
-    let (stop, start) = match command {
-        Command::Start(call) => (None, Some(call)),
-        Command::Stop(meeting) => (Some(meeting), None),
-        Command::StopThenStart(meeting, call) => (Some(meeting), Some(call)),
-    };
-    if let Some(meeting) = stop {
-        let library = app.state::<Library>();
-        let still_ours = library
-            .status_value()
-            .await
-            .is_ok_and(|s| s["active"]["meetingId"].as_str() == Some(meeting.as_str()));
-        if still_ours && library.stop_capture().await.is_ok() {
-            notify(
-                app,
-                rust_i18n::t!("autoRecord.stopped").to_string(),
-                rust_i18n::t!("autoRecord.stoppedBody", app = app_label(&start, app)).to_string(),
-            );
-        }
+fn capture(status: &serde_json::Value) -> Capture {
+    Capture {
+        active: status["active"]["meetingId"].as_str().map(str::to_owned),
+        speech_ago: status["active"]["mic"]["speechAgoMs"]
+            .as_u64()
+            .map(Duration::from_millis),
     }
-    let Some(call) = start else {
-        changed(app);
-        return;
-    };
-    let state = app.state::<AutoRecord>();
-    match begin(app, &call).await {
-        Ok((binding, title, named_by_event)) => {
-            if !named_by_event {
-                crate::titles::watch::watch(
-                    app.clone(),
-                    binding.session.clone(),
-                    binding.meeting.clone(),
-                    title.clone(),
-                );
-            }
-            lock(&state.policy).started(binding);
-            notify(
-                app,
-                rust_i18n::t!("autoRecord.started", title = title).to_string(),
-                rust_i18n::t!("autoRecord.startedBody", app = call.app_name).to_string(),
-            );
-        }
-        Err(error) => {
-            tracing::warn!("automatic recording did not start: {error}");
-            lock(&state.policy).start_failed();
-            notify(
-                app,
-                rust_i18n::t!("autoRecord.failed").to_string(),
-                rust_i18n::t!("autoRecord.failedBody", app = call.app_name).to_string(),
-            );
-        }
-    }
-    changed(app);
-}
-
-fn app_label(next: &Option<ActiveCall>, app: &AppHandle) -> String {
-    let state = app.state::<AutoRecord>();
-    let policy = lock(&state.policy);
-    policy
-        .binding
-        .as_ref()
-        .map(|b| b.call.app_name.clone())
-        .or_else(|| next.as_ref().map(|c| c.app_name.clone()))
-        .unwrap_or_else(|| "Teams".into())
-}
-
-async fn sources() -> Result<Value, String> {
-    tauri::async_runtime::spawn_blocking(|| {
-        #[cfg(target_os = "linux")]
-        {
-            coxinha_core::capture::list_sources()
-                .and_then(|s| Ok(serde_json::to_value(s)?))
-                .map_err(|e| format!("{e:#}"))
-        }
-        #[cfg(not(target_os = "linux"))]
-        {
-            Err::<Value, String>("capture adapter unavailable on this platform".into())
-        }
-    })
-    .await
-    .map_err(|e| e.to_string())?
-}
-
-/// Devices, calendar title, session, start, invitees. Each step can fail
-/// once; there is no retry loop and the strip prompt stays available.
-async fn begin(app: &AppHandle, call: &ActiveCall) -> Result<(Binding, String, bool), String> {
-    let settings = lock(&app.state::<AutoRecord>().settings).clone();
-    let devices = sources().await?;
-    let mic = plan::pick_source(&devices, false, settings.mic_source.as_deref())
-        .ok_or("no microphone")?;
-    let output = plan::pick_source(&devices, true, settings.output_source.as_deref())
-        .ok_or("no computer audio")?;
-    let snapshot = crate::calendar::fresh(app).await;
-    let event = plan::current_event(&snapshot.events, chrono::Utc::now()).cloned();
-    let library = app.state::<Library>();
-    let storage = app.state::<Arc<Storage>>().inner().clone();
-    let reuse = match &event {
-        Some(e) => plan::reusable_session(&library.session_list().await?, e),
-        None => None,
-    };
-    let (session, title) = match (reuse, &event) {
-        (Some(id), Some(e)) => (id, e.title.trim().to_owned()),
-        _ => {
-            let input = match &event {
-                Some(e) => NewSession {
-                    title: e.title.trim().to_owned(),
-                    starts_at: plan::session_time(&e.starts_at),
-                    ends_at: plan::session_time(&e.ends_at),
-                    status: coxinha_core::store::session::SessionStatus::Planned,
-                },
-                None => NewSession::manual(
-                    rust_i18n::t!("autoRecord.title", app = call.app_name).to_string(),
-                ),
-            };
-            let title = input.title.clone();
-            let created = library.create_session(&storage, input).await?;
-            let id = created["id"].as_str().ok_or("session id missing")?;
-            (id.to_owned(), title)
-        }
-    };
-    let key = policy::call_key(call);
-    let still = app
-        .state::<crate::call_detector::Detector>()
-        .active_calls()
-        .iter()
-        .any(|c| policy::call_key(c) == key);
-    if !still {
-        return Err("call ended before the capture started".into());
-    }
-    let started = library
-        .start_session(&storage, &session, title.clone(), mic, output)
-        .await?;
-    let meeting = started["active"]["meetingId"]
-        .as_str()
-        .ok_or("capture was not acknowledged")?
-        .to_owned();
-    if let Some(e) = &event {
-        let people = json!(plan::invitees(e));
-        if let Err(error) = library.set_participants(&meeting, people).await {
-            tracing::debug!("invitees not saved: {error}");
-        }
-    }
-    let binding = Binding {
-        call: call.clone(),
-        meeting,
-        session,
-        keep: false,
-    };
-    Ok((binding, title, event.is_some()))
 }

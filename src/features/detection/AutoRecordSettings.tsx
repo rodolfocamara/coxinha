@@ -35,21 +35,20 @@ export function AutoRecordSettings() {
         }
         below={!detecting && !settings.enabled && <Alert tone="info">{k('needsDetection')}</Alert>}
       />
-      {settings.enabled && (
-        <SettingsRow
-          name="auto-stop"
-          icon={PhoneOff}
-          title={k('stopTitle')}
-          description={k('stopHint')}
-          control={
-            <Switch
-              name="auto-stop"
-              checked={settings.stopWhenCallEnds}
-              onChange={(stopWhenCallEnds) => void updateAutoRecord({ stopWhenCallEnds })}
-            />
-          }
-        />
-      )}
+      {/* Spec 0118: applies to every recording made during a call. */}
+      <SettingsRow
+        name="auto-stop"
+        icon={PhoneOff}
+        title={k('stopTitle')}
+        description={k('stopHint')}
+        control={
+          <Switch
+            name="auto-stop"
+            checked={settings.stopWhenCallEnds}
+            onChange={(stopWhenCallEnds) => void updateAutoRecord({ stopWhenCallEnds })}
+          />
+        }
+      />
     </>
   );
 }

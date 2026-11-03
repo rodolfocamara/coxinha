@@ -70,7 +70,7 @@ export async function recordDetectedCall(call: ActiveCall, title: string, event?
       throw new Error(failure);
     }
     const { status, reachable } = useCaptureStore.getState();
-    if (!reachable || status?.active || status?.processing) {
+    if (!reachable || status?.active) {
       failure = 'captureBusy';
       throw new Error(failure);
     }

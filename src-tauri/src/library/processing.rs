@@ -7,6 +7,17 @@ mod task;
 use task::Completion;
 pub(super) use task::ProcessingTask;
 
+/// Spec 0121: the job error that marks a run cancelled for a capture.
+pub(super) const YIELDED: &str = "yielded to a new recording; resumes after it";
+
+#[derive(Default)]
+pub(super) struct Resume {
+    /// The running job's request, kept so a yield can restart it.
+    running: Option<(String, Value)>,
+    /// Yielded to a capture; restarts once capture and live drain are idle.
+    pending: Option<(String, Value)>,
+}
+
 impl Worker {
     /// Only this actor can publish. Cancellation never releases the owner before join.
     pub(super) fn interrupt_processing(&mut self) -> anyhow::Result<()> {
@@ -26,12 +37,46 @@ impl Worker {
         self.processing = None;
         Ok(())
     }
+    /// Spec 0121: a capture outranks processing. The run stops at its next
+    /// checkpoint without publishing and restarts after the capture.
+    #[cfg_attr(not(target_os = "linux"), allow(dead_code))]
+    pub(super) fn yield_processing(&mut self) {
+        let Some(task) = self.processing.as_ref() else {
+            return;
+        };
+        if task.control.is_cancelled() {
+            return;
+        }
+        task.control.cancel();
+        tracing::info!(
+            meeting = task.meeting,
+            "local processing yields to a capture"
+        );
+        self.resume.pending = self.resume.running.take();
+    }
+    pub(super) fn pump_resume(&mut self) {
+        #[cfg(target_os = "linux")]
+        let capturing = self.active.is_some();
+        #[cfg(not(target_os = "linux"))]
+        let capturing = false;
+        if capturing || self.processing.is_some() || self.live.busy() {
+            return;
+        }
+        let Some((meeting, config)) = self.resume.pending.take() else {
+            return;
+        };
+        tracing::info!(meeting, "local processing resumes after the capture");
+        if let Err(error) = self.start_processing(meeting.clone(), config) {
+            tracing::warn!(meeting, "local processing did not resume: {error:#}");
+        }
+    }
     pub(super) fn start_processing(
         &mut self,
         meeting: String,
         config: Value,
     ) -> anyhow::Result<Value> {
         anyhow::ensure!(self.processing.is_none(), "local processing already active");
+        let request = (meeting.clone(), config.clone());
         self.live.yield_backlog();
         // B3: one ASR model resident; the live drain finishes first.
         anyhow::ensure!(
@@ -76,6 +121,7 @@ impl Worker {
                 control,
                 thread: Some(thread),
             });
+            self.resume.running = Some(request);
             self.error = None;
             Ok(self.status())
         }
@@ -95,7 +141,14 @@ impl Worker {
             }
         };
         let task = self.processing.take().unwrap();
-        let completion = if task.control.is_cancelled() {
+        let yielded = self
+            .resume
+            .pending
+            .as_ref()
+            .is_some_and(|(m, _)| *m == task.meeting);
+        let completion = if yielded {
+            Err(YIELDED.into())
+        } else if task.control.is_cancelled() {
             Err("interrupted by explicit desktop exit; retry processing".into())
         } else {
             completion
@@ -149,7 +202,12 @@ impl Worker {
                     .store
                     .finish_job(&input.job, Some(&format!("{error:#}")));
             }
-            self.error = Some(format!("{error:#}"));
+            if !yielded {
+                self.error = Some(format!("{error:#}"));
+            }
+        }
+        if self.processing.is_none() {
+            self.resume.running = None;
         }
     }
     fn spawn_inference(&mut self, prepared: PreparedProcessing) -> anyhow::Result<()> {

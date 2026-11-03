@@ -37,6 +37,8 @@ pub(crate) struct Shared {
     pub cancelled: bool,
     /// The active meeting is being deleted: stop without appending.
     pub abandon: bool,
+    /// A live capture outranks the ended meeting in flight: it steps back.
+    pub preempt: bool,
     pub meeting: Option<String>,
     pub state: &'static str,
     pub error: Option<String>,
@@ -127,6 +129,21 @@ impl LiveTranscriber {
             return;
         }
         s.queue.push_back(meeting.to_owned());
+        self.inner.notify(s);
+    }
+
+    /// A capture that just started: first in the queue, and an ended meeting
+    /// still draining steps back after the window in flight, keeping its end
+    /// and its cursor, so the new meeting stays real time (spec 0121).
+    pub fn enqueue_live(&self, meeting: &str) {
+        let mut s = self.inner.lock();
+        if s.cancelled || s.holds(meeting) {
+            return;
+        }
+        s.queue.push_front(meeting.to_owned());
+        if s.active.as_ref().is_some_and(|m| s.ended.contains_key(m)) {
+            s.preempt = true;
+        }
         self.inner.notify(s);
     }
 
@@ -257,10 +274,14 @@ fn main_loop(inner: &Inner, factory: &dyn AsrFactory) {
             }
         };
         let mut s = inner.lock();
-        s.ended.remove(&meeting);
         s.active = None;
         s.abandon = false;
         s.behind_ms = 0;
+        if std::mem::take(&mut s.preempt) && failure.is_none() && s.ended.contains_key(&meeting) {
+            s.queue.push_back(meeting);
+            continue;
+        }
+        s.ended.remove(&meeting);
         match failure {
             Some(error) => {
                 s.state = "failed";

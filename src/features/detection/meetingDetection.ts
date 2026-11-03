@@ -122,8 +122,8 @@ export function observeCallAudio(
     if (!active || active.paused || !s.recordedCallKey || !s.enabled)
       return s.lastOutputAt === null ? s : { lastOutputAt: null };
     if (s.lastOutputAt === null || active.output.peak >= OUTPUT_FLOOR) return { lastOutputAt: now };
+    // The backend only stops on the call's end, so silence still asks (spec 0118).
     if (s.callEndedPrompt || !s.trackedCall || now - s.lastOutputAt < SILENCE_MS) return s;
-    if (autoStopsCall(s.trackedCall)) return s;
     shouldFocus = true;
     return { callEndedPrompt: s.trackedCall, endedBy: 'silence' as const };
   });

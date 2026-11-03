@@ -7,6 +7,7 @@ fn worker(store: Store) -> Worker {
         curation: Default::default(),
         store,
         processing: None,
+        resume: Default::default(),
         error: None,
         finalization_failed: None,
         live: Default::default(),

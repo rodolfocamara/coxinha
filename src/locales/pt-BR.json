@@ -665,7 +665,7 @@
     "devicesMissing": "Não encontrei os dois dispositivos padrão. Escolha-os nas configurações de áudio e tente novamente.",
     "startFailed": "Não foi possível iniciar a gravação. Tente novamente; a sessão já criada aqui será reutilizada.",
     "callEnded": "Esta chamada não está mais sendo detectada. A gravação não foi iniciada.",
-    "captureBusy": "Há outra gravação ou processamento em andamento. A gravação não foi iniciada.",
+    "captureBusy": "Outra gravação está em andamento. A gravação não foi iniciada.",
     "started": "Gravação iniciada: {{title}}",
     "metadataFailed": "A gravação começou, mas não foi possível copiar os convidados. O áudio continua sendo gravado.",
     "viewSession": "Abrir reunião",

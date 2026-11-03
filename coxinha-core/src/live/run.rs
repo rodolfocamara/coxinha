@@ -13,7 +13,8 @@ use anyhow::Result;
 const TRACKS: [Track; 2] = [Track::Mic, Track::Output];
 
 /// Returns when the meeting has ended and every committed frame is
-/// transcribed, or early on cancel or `forget`. Errors fail only this meeting.
+/// transcribed, or early on cancel, `forget` or a preempting capture. Errors
+/// fail only this meeting.
 pub(crate) fn drain(inner: &Inner, meeting: &str, asr: &mut dyn Asr) -> Result<()> {
     let root = &inner.root;
     let journal = root.join("raw").join(meeting).join("timing.jsonl");
@@ -23,7 +24,7 @@ pub(crate) fn drain(inner: &Inner, meeting: &str, asr: &mut dyn Asr) -> Result<(
     loop {
         let ended = {
             let mut s = inner.lock();
-            if s.cancelled || s.abandon {
+            if s.cancelled || s.abandon || s.preempt {
                 return Ok(());
             }
             s.wake = false;

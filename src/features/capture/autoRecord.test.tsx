@@ -3,18 +3,25 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { invoke } from '@tauri-apps/api/core';
 import i18n from '../../lib/i18n';
 import type { ActiveCall } from '../../lib/bindings';
-import { acceptDetectionStatus, useMeetingDetection } from '../detection/meetingDetection';
+import {
+  acceptDetectionStatus,
+  callKey,
+  observeCallAudio,
+  SILENCE_MS,
+  useMeetingDetection,
+} from '../detection/meetingDetection';
 import { AutoRecordSettings } from '../detection/AutoRecordSettings';
 import { useAutoRecord, type AutoRecordStatus } from './autoRecord';
 import { chooseDevices } from './captureActions';
 import { initialCaptureState, useCaptureStore } from './captureStore';
 import { RecorderStrip } from './RecorderStrip';
 
+const { navigate } = vi.hoisted(() => ({ navigate: vi.fn() }));
 vi.mock('@tauri-apps/api/core', () => ({ invoke: vi.fn(), isTauri: () => true }));
 vi.mock('@tauri-apps/api/window', () => ({
   getCurrentWindow: () => ({ show: vi.fn(), unminimize: vi.fn(), setFocus: vi.fn() }),
 }));
-vi.mock('@tanstack/react-router', () => ({ useNavigate: () => vi.fn() }));
+vi.mock('@tanstack/react-router', () => ({ useNavigate: () => navigate }));
 vi.mock('../../components/AppShell/WindowChrome', () => ({
   WindowChrome: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
@@ -22,7 +29,11 @@ vi.mock('../sessions/sessions', async () => {
   const { create } = await import('zustand');
   return {
     sessions: { create: vi.fn() },
-    sessionListCache: create(() => ({ data: [], isError: false, updatedAt: 0 })),
+    sessionListCache: create(() => ({
+      data: [{ id: 's-done', meeting_id: 'm-done', title: 'Pulso MX' }],
+      isError: false,
+      updatedAt: 0,
+    })),
   };
 });
 
@@ -37,8 +48,9 @@ const meter = { peak: 0.2, lastBlockMs: 10, error: null };
 const settings = { enabled: true, stopWhenCallEnds: true, micSource: null, outputSource: null };
 const status = (over: Partial<AutoRecordStatus> = {}): AutoRecordStatus => ({
   settings,
-  binding: { sessionId: 's1', meetingId: 'm1', call, keep: false },
+  binding: { sessionId: 's1', meetingId: 'm1', calls: [call], keep: false },
   stopInMs: null,
+  ended: null,
   ...over,
 });
 
@@ -53,7 +65,7 @@ beforeEach(async () => {
       error: null,
     },
   });
-  useAutoRecord.setState({ status: null, stopAt: null });
+  useAutoRecord.setState({ status: null, stopAt: null, dismissedEnded: null });
   useMeetingDetection.setState({
     enabled: true,
     status: null,
@@ -135,4 +147,52 @@ it('device choices reach the backend so automatic captures use them', async () =
       settings: { ...settings, micSource: 'usb-headset' },
     })
   );
+});
+
+it('a recording started by hand counts down too, with automatic recording off', () => {
+  const manual = status({
+    settings: { ...settings, enabled: false },
+    binding: { sessionId: null, meetingId: 'm1', calls: [call], keep: false },
+    stopInMs: 45_000,
+  });
+  useAutoRecord.setState({ status: manual, stopAt: Date.now() + 45_000 });
+  render(<RecorderStrip />);
+  expect(screen.getByRole('alert')).toHaveTextContent('A chamada no Microsoft Teams terminou');
+  expect(screen.getByText(/parando sozinho em 0:4[45]/)).toBeVisible();
+});
+
+it('after stopping with the call the strip says so, links the recording and can be closed', () => {
+  useCaptureStore.setState({ status: { active: null, error: null } });
+  useAutoRecord.setState({
+    status: status({ binding: null, ended: { meetingId: 'm-done', app: 'Google Chrome' } }),
+  });
+  render(<RecorderStrip />);
+  expect(screen.getByText('Gravação encerrada')).toBeVisible();
+  expect(screen.getByText('O Coxinha parou junto com a chamada no Google Chrome.')).toBeVisible();
+  expect(screen.getByRole('button', { name: 'Gravar' })).toBeEnabled();
+  fireEvent.click(screen.getByRole('button', { name: 'Abrir a reunião' }));
+  expect(navigate).toHaveBeenCalledWith({
+    to: '/meetings/$sessionId',
+    params: { sessionId: 's-done' },
+  });
+  fireEvent.click(screen.getByRole('button', { name: 'Dispensar aviso' }));
+  expect(screen.queryByText('Gravação encerrada')).toBeNull();
+});
+
+it('a silent call still asks even when the backend follows it', () => {
+  useAutoRecord.setState({ status: status() });
+  useMeetingDetection.setState({
+    trackedCall: call,
+    recordedCallKey: callKey(call),
+    lastOutputAt: 0,
+  });
+  const active = { paused: false, output: { peak: 0 } };
+  observeCallAudio(active, SILENCE_MS + 1);
+  expect(useMeetingDetection.getState().endedBy).toBe('silence');
+});
+
+it('the stop-with-the-call switch shows with automatic recording off', () => {
+  useAutoRecord.setState({ status: status({ settings: { ...settings, enabled: false } }) });
+  render(<AutoRecordSettings />);
+  expect(screen.getByRole('checkbox', { name: 'Parar quando a chamada terminar' })).toBeChecked();
 });

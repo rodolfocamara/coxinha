@@ -6,6 +6,7 @@ import type { ActiveCall } from '../../lib/bindings';
 import { useDirectCapture } from '../detection/directCapture';
 import { acceptDetectionStatus, callKey, useMeetingDetection } from '../detection/meetingDetection';
 import { initialCaptureState, useCaptureStore } from './captureStore';
+import { useLiveStatus } from './live';
 import { RecorderStrip, formatElapsed } from './RecorderStrip';
 
 const { navigate, createSession, library, windowBridge } = vi.hoisted(() => ({
@@ -60,6 +61,7 @@ beforeEach(async () => {
   vi.clearAllMocks();
   localStorage.clear();
   useCaptureStore.setState({ ...initialCaptureState });
+  useLiveStatus.setState({ snapshot: null });
   useMeetingDetection.setState({
     enabled: true,
     status: null,
@@ -88,9 +90,9 @@ it('formats elapsed time with hours only when needed', () => {
   expect(formatElapsed(3_725_000)).toBe('1:02:05');
 });
 
-it('idle shows a quiet ready line and no capture controls', () => {
+it('idle offers to record and no capture controls (spec 0121)', () => {
   render(<RecorderStrip />);
-  expect(screen.getByText(/Ready to record/)).toBeVisible();
+  expect(screen.getByRole('button', { name: 'Record' })).toBeEnabled();
   expect(screen.queryByRole('button', { name: /Stop and save/ })).toBeNull();
   expect(screen.queryByRole('button', { name: /Pause/ })).toBeNull();
 });
@@ -138,7 +140,7 @@ it('recording exposes pause and stop, and paused offers resume', async () => {
   expect(await screen.findByText('Paused 12:04')).toBeVisible();
   fireEvent.click(screen.getByRole('button', { name: 'Stop and save' }));
   await waitFor(() => expect(library.stop).toHaveBeenCalledOnce());
-  expect(await screen.findByText(/Ready to record/)).toBeVisible();
+  expect(await screen.findByRole('button', { name: 'Record' })).toBeEnabled();
 });
 
 it('prompts to stop when the recorded call ends, and focuses the window', async () => {
@@ -168,17 +170,52 @@ it('offers to record a back-to-back call as a new meeting', async () => {
   await waitFor(() => expect(createSession).toHaveBeenCalledOnce());
 });
 
-it('shows background processing with its phase', () => {
-  useCaptureStore.setState({
-    status: {
-      active: null,
-      error: null,
-      processing: { meetingId: 'm1', job: 'j', phase: 'inference' },
-    },
-  });
+const processing = {
+  active: null,
+  error: null,
+  processing: { meetingId: 'm0', job: 'j', phase: 'inference' },
+};
+
+it('shows processing as a secondary line and records a new meeting at once', async () => {
+  useCaptureStore.setState({ status: processing });
   render(<RecorderStrip />);
   expect(screen.getByRole('status')).toHaveTextContent('Transcribing');
-  expect(screen.getByText('continues in the background')).toBeVisible();
+  expect(screen.getByText(/continues in the background/)).toBeVisible();
+  fireEvent.click(screen.getByRole('button', { name: 'Record' }));
+  await waitFor(() =>
+    expect(invoke).toHaveBeenCalledWith('library_start_session', {
+      sessionId: 'new-session',
+      micSource: 'mic',
+      outputSource: 'output',
+    })
+  );
+  expect(useCaptureStore.getState().failure).toBeNull();
+  expect(await screen.findByText('Recording 12:04')).toBeVisible();
+});
+
+it('a detected call keeps its prompt while processing runs', () => {
+  useCaptureStore.setState({ status: processing });
+  acceptDetectionStatus(detection, false);
+  render(<RecorderStrip />);
+  expect(screen.getByText('Call in Microsoft Teams')).toBeVisible();
+  expect(screen.getByText('Transcribing')).toBeVisible();
+  expect(screen.getByRole('button', { name: 'Record' })).toBeVisible();
+});
+
+it("names the previous meeting's live transcript, never the live one", () => {
+  useLiveStatus.setState({
+    snapshot: { meeting: 'm0', state: 'draining', error: null, behindMs: 9000, queued: [] },
+  });
+  const view = render(<RecorderStrip />);
+  expect(screen.getByText('Transcribing the previous meeting')).toBeVisible();
+  expect(screen.getByRole('button', { name: 'Record' })).toBeVisible();
+  view.unmount();
+  useLiveStatus.setState({
+    snapshot: { meeting: 'm1', state: 'running', error: null, behindMs: 0, queued: [] },
+  });
+  useCaptureStore.setState({ status: live() });
+  render(<RecorderStrip />);
+  expect(screen.queryByText('Transcribing the previous meeting')).toBeNull();
 });
 
 it('shows an interrupted capture once and lets the user dismiss it', () => {

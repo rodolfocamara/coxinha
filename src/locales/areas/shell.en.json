@@ -17,7 +17,6 @@
   },
   "recorder": {
     "label": "Recording",
-    "ready": "Ready to record · Ctrl+Alt+W",
     "untitled": "Untitled meeting",
     "openMeeting": "Open the meeting",
     "recording": "Recording {{time}}",
@@ -60,7 +59,7 @@
       "stop": "Could not stop. Try again.",
       "devices": "Could not list audio devices.",
       "devicesMissing": "No microphone or computer audio found.",
-      "captureBusy": "A recording or transcription is already running."
+      "captureBusy": "A recording is already running."
     },
     "autoStopIn": "stopping on its own in {{time}}",
     "stopNow": "Stop now",
@@ -72,6 +71,9 @@
       "solo": "Record without a meeting",
       "soloHelp": "A new recording, not tied to the calendar"
     },
-    "callSilent": "No one has spoken in the {{app}} call for 2 minutes. Did it end?"
+    "callSilent": "No one has spoken in the {{app}} call for 2 minutes. Did it end?",
+    "previousTranscript": "Transcribing the previous meeting",
+    "endedWithCall": "Recording ended",
+    "endedWithCallBody": "Coxinha stopped together with the {{app}} call."
   }
 }

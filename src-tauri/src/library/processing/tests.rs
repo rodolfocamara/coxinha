@@ -4,6 +4,7 @@ pub(super) fn worker(store: Store) -> Worker {
         curation: Default::default(),
         store,
         processing: None,
+        resume: Default::default(),
         error: None,
         finalization_failed: None,
         live: Default::default(),
@@ -13,7 +14,7 @@ pub(super) fn worker(store: Store) -> Worker {
     }
 }
 #[test]
-fn pending_validation_keeps_status_and_list_available_and_blocks_capture() {
+fn pending_validation_keeps_status_and_list_available_and_blocks_recovery() {
     let directory = tempfile::tempdir().unwrap();
     let store = Store::open(directory.path()).unwrap();
     let id = store.create_meeting("responsive fixture").unwrap();
@@ -32,16 +33,6 @@ fn pending_validation_keeps_status_and_list_available_and_blocks_capture() {
         "validation"
     );
     assert_eq!(worker.execute(Action::List).unwrap()[0]["id"], id);
-    assert!(worker
-        .execute(Action::Start {
-            session: None,
-            title: "blocked".into(),
-            mic: "none".into(),
-            output: "none".into()
-        })
-        .unwrap_err()
-        .to_string()
-        .contains("processing"));
     assert!(worker
         .execute(Action::Recover(id))
         .unwrap_err()

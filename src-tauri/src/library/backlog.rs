@@ -46,6 +46,14 @@ pub(super) fn choose(
         .cloned()
 }
 
+/// Spec 0121: a run that yielded to a capture and never resumed, as after
+/// a restart, is still owed its speaker separation.
+fn last_yielded(jobs: &[Value]) -> bool {
+    jobs.first().is_some_and(|job| {
+        job["state"] == "failed" && job["error"].as_str() == Some(super::processing::YIELDED)
+    })
+}
+
 fn eligible(root: &std::path::Path, meeting: &str) -> bool {
     use coxinha_core::capture::{CommittedTrack, Track};
     // Imported or broken recordings have no committed checkpoint to resume.
@@ -119,6 +127,10 @@ impl Worker {
                 self.store
                     .processing_engine_versions(m)
                     .is_ok_and(|v| crate::speech_models::superseded(&v))
+                    || self
+                        .store
+                        .meeting_processing_jobs(m)
+                        .is_ok_and(|jobs| last_yielded(&jobs))
             })
             .cloned()
             .collect();
@@ -187,5 +199,16 @@ mod tests {
         );
         let everything = BTreeSet::from(["new".to_string(), "old".to_string()]);
         assert_eq!(choose(&all, &everything, eligible, complete), None);
+    }
+
+    #[test]
+    fn only_a_last_run_that_yielded_is_owed_separation() {
+        let yielded = json!({"state": "failed", "error": super::super::processing::YIELDED});
+        let failed = json!({"state": "failed", "error": "model missing"});
+        let done = json!({"state": "succeeded", "error": null});
+        assert!(last_yielded(&[yielded.clone(), done.clone()]));
+        assert!(!last_yielded(&[done, yielded]));
+        assert!(!last_yielded(&[failed]));
+        assert!(!last_yielded(&[]));
     }
 }

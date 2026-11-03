@@ -1,13 +1,14 @@
-//! Pure auto-record decisions (spec 0097 P1, ADR 0023). Fed by every
-//! successful detector poll; never touches the library itself.
+//! Pure decisions for recordings that follow their call (spec 0097 P1,
+//! spec 0118, ADR 0023). Fed by every successful detector poll; never
+//! touches the library itself.
 use serde::{Deserialize, Serialize};
 use shared::ActiveCall;
 use specta::Type;
 use std::collections::BTreeSet;
 use std::time::{Duration, Instant};
 
-/// Spec 0087: grace after the detector's debounced absence (~12 s).
-pub const STOP_GRACE: Duration = Duration::from_secs(20);
+/// Spec 0118: no followed call and a quiet microphone for this long stops.
+pub const QUIET_MINUTE: Duration = Duration::from_secs(60);
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase", default)]
@@ -32,8 +33,8 @@ impl Default for Settings {
 #[derive(Clone, Debug, Default)]
 pub struct Capture {
     pub active: Option<String>,
-    /// Processing running or library unreachable: a start would be refused.
-    pub busy: bool,
+    /// Time since the microphone last carried speech, if it ever did.
+    pub speech_ago: Option<Duration>,
 }
 
 /// One call episode: same process and the instant the detector confirmed it.
@@ -45,36 +46,83 @@ pub fn call_key(call: &ActiveCall) -> CallKey {
         call.detected_at.to_rfc3339(),
     )
 }
+/// Followed across reconnects: the same process, whatever the episode.
+fn same_process(a: &ActiveCall, b: &ActiveCall) -> bool {
+    a.pid == b.pid && a.process_name == b.process_name
+}
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct Binding {
-    pub call: ActiveCall,
+pub struct Follow {
     pub meeting: String,
-    pub session: String,
-    /// "Continuar gravando": the end of this call no longer stops it.
+    /// Set when automatic recording started this capture.
+    pub session: Option<String>,
+    pub calls: Vec<ActiveCall>,
+    /// "Continuar gravando": the end of these calls no longer stops it.
     pub keep: bool,
+    gone: Option<Instant>,
+}
+impl Follow {
+    pub fn new(meeting: String, session: Option<String>, calls: &[ActiveCall]) -> Self {
+        let mut follow = Self {
+            meeting,
+            session,
+            calls: vec![],
+            keep: false,
+            gone: None,
+        };
+        follow.adopt(calls);
+        follow
+    }
+    pub fn follows(&self, call: &ActiveCall) -> bool {
+        self.calls.iter().any(|c| same_process(c, call))
+    }
+    fn adopt(&mut self, calls: &[ActiveCall]) {
+        for call in calls {
+            if !self.follows(call) {
+                self.calls.push(call.clone());
+            }
+        }
+    }
+    pub fn app(&self) -> String {
+        self.calls
+            .first()
+            .map(|c| c.app_name.clone())
+            .unwrap_or_default()
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Command {
     Start(ActiveCall),
-    Stop(String),
-    /// Back-to-back: the bound call ended and another one began.
-    StopThenStart(String, ActiveCall),
+    Stop {
+        meeting: String,
+        app: String,
+    },
+    /// Back-to-back: the followed call ended and another one began.
+    StopThenStart {
+        meeting: String,
+        app: String,
+        call: ActiveCall,
+    },
 }
 
 #[derive(Default)]
 pub struct Policy {
-    pub binding: Option<Binding>,
+    pub follow: Option<Follow>,
     pub stop_at: Option<Instant>,
     starting: Option<CallKey>,
-    /// Calls already started, or observed while the user was recording.
+    /// Asked to stop: this meeting is never followed again.
+    stopping: Option<String>,
+    /// Calls already started, or observed while automatic recording could not.
     handled: BTreeSet<CallKey>,
 }
 impl Policy {
     /// A failed poll is unreliable evidence: never count it toward an ending.
     pub fn unreliable(&mut self) {
         self.stop_at = None;
+        if let Some(f) = &mut self.follow {
+            f.gone = None;
+        }
     }
 
     pub fn observe(
@@ -89,84 +137,108 @@ impl Policy {
         if self.starting.is_some() {
             return None;
         }
-        if self
-            .binding
-            .as_ref()
-            .is_some_and(|b| capture.active.as_deref() != Some(b.meeting.as_str()))
-        {
-            // Stopped or switched by hand: nothing else stops automatically.
-            self.binding = None;
+        if self.stopping.is_some() && self.stopping != capture.active {
+            self.stopping = None;
+        }
+        match &capture.active {
+            None => self.follow = None,
+            Some(m) if self.follow.as_ref().is_some_and(|f| &f.meeting == m) => {}
+            Some(m) if self.stopping.as_ref() == Some(m) => self.follow = None,
+            Some(m) => self.follow = Some(Follow::new(m.clone(), None, calls)),
+        }
+        if self.follow.is_none() {
             self.stop_at = None;
         }
-        if !settings.enabled {
-            self.binding = None;
-            self.stop_at = None;
-            self.handled.extend(keys);
-            return None;
-        }
-        let bound = self.binding.as_ref().map(|b| call_key(&b.call));
-        if capture.active.is_some() && bound.is_none() {
+        let automatic = self.follow.as_ref().is_some_and(|f| f.session.is_some());
+        if !settings.enabled || (capture.active.is_some() && !automatic) {
             // The user's own recording owns every call seen meanwhile.
+            self.handled.extend(keys.iter().cloned());
+        }
+        let fresh = calls.iter().find(|c| !self.handled.contains(&call_key(c)));
+        let Some(follow) = self.follow.as_mut() else {
+            return match fresh {
+                Some(call) if settings.enabled && capture.active.is_none() => {
+                    let call = call.clone();
+                    self.begin(&call);
+                    Some(Command::Start(call))
+                }
+                _ => None,
+            };
+        };
+        let live = calls.iter().any(|c| follow.follows(c));
+        if live {
+            // A second call while a followed one is on stays a prompt.
             self.handled.extend(keys);
+        }
+        let stops = settings.stop_when_call_ends && !follow.keep;
+        if !live && !follow.calls.is_empty() && stops && automatic {
+            if let Some(call) = fresh.cloned() {
+                let (meeting, app) = (follow.meeting.clone(), follow.app());
+                self.begin(&call);
+                return Some(Command::StopThenStart { meeting, app, call });
+            }
+        }
+        if !live {
+            // Never stop in the middle of a call: one that is on now is followed.
+            follow.adopt(calls);
+        }
+        for call in calls.iter().filter(|c| follow.follows(c)) {
+            self.handled.insert(call_key(call));
+        }
+        if calls.iter().any(|c| follow.follows(c)) || follow.calls.is_empty() {
+            follow.gone = None;
+            self.stop_at = None;
             return None;
         }
-        let mut due = None;
-        if let Some(b) = &self.binding {
-            if keys.contains(&call_key(&b.call)) {
-                self.stop_at = None;
-            } else if settings.stop_when_call_ends && !b.keep {
-                let at = *self.stop_at.get_or_insert(now + STOP_GRACE);
-                if now >= at {
-                    due = Some(b.meeting.clone());
-                }
-            }
+        let gone = *follow.gone.get_or_insert(now);
+        if !stops {
+            self.stop_at = None;
+            return None;
         }
-        let fresh = calls.iter().find(|c| {
-            let k = call_key(c);
-            Some(&k) != bound.as_ref() && !self.handled.contains(&k)
-        });
-        match (fresh, &self.binding) {
-            (Some(call), None) if capture.active.is_none() && !capture.busy => {
-                self.begin(call);
-                Some(Command::Start(call.clone()))
-            }
-            (Some(call), Some(b)) if self.stop_at.is_some() => {
-                let meeting = b.meeting.clone();
-                self.begin(call);
-                Some(Command::StopThenStart(meeting, call.clone()))
-            }
-            (Some(call), Some(_)) => {
-                // A second call while the bound one is live stays a prompt.
-                self.handled.insert(call_key(call));
-                due.map(|m| self.stopped(m))
-            }
-            _ => due.map(|m| self.stopped(m)),
+        let speech = capture.speech_ago.and_then(|ago| now.checked_sub(ago));
+        let at = speech.map_or(gone, |s| s.max(gone)) + QUIET_MINUTE;
+        self.stop_at = Some(at);
+        if now < at {
+            return None;
         }
+        let (meeting, app) = (follow.meeting.clone(), follow.app());
+        self.follow = None;
+        self.stop_at = None;
+        self.stopping = Some(meeting.clone());
+        Some(Command::Stop { meeting, app })
+    }
+
+    /// Whether the end of these calls will stop the live capture by itself.
+    pub fn stops_on_end(&self, settings: &Settings, ended: &[ActiveCall]) -> bool {
+        settings.stop_when_call_ends
+            && self
+                .follow
+                .as_ref()
+                .is_some_and(|f| !f.keep && ended.iter().any(|c| f.follows(c)))
     }
 
     fn begin(&mut self, call: &ActiveCall) {
         let key = call_key(call);
         self.handled.insert(key.clone());
         self.starting = Some(key);
-        self.binding = None;
+        self.follow = None;
         self.stop_at = None;
     }
-    fn stopped(&mut self, meeting: String) -> Command {
-        self.binding = None;
-        self.stop_at = None;
-        Command::Stop(meeting)
-    }
-    pub fn started(&mut self, binding: Binding) {
+    pub fn started(&mut self, meeting: String, session: String, call: &ActiveCall) {
         self.starting = None;
         self.stop_at = None;
-        self.binding = Some(binding);
+        self.follow = Some(Follow::new(
+            meeting,
+            Some(session),
+            std::slice::from_ref(call),
+        ));
     }
     pub fn start_failed(&mut self) {
         self.starting = None;
     }
     pub fn keep(&mut self) {
-        if let Some(b) = &mut self.binding {
-            b.keep = true;
+        if let Some(f) = &mut self.follow {
+            f.keep = true;
         }
         self.stop_at = None;
     }

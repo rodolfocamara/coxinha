@@ -22,10 +22,7 @@ export function CallDetectionController() {
         const status = await invoke<DetectionStatus>('call_detection_status');
         // Capture state comes from the single controller; an unreachable library is not idle.
         const capture = useCaptureStore.getState();
-        publish(
-          status,
-          !capture.reachable || !!capture.status?.active || !!capture.status?.processing
-        );
+        publish(status, !capture.reachable || !!capture.status?.active);
       } catch {
         if (live) useMeetingDetection.setState({ failed: true });
       } finally {

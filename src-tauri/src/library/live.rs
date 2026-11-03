@@ -100,7 +100,9 @@ impl LiveSlot {
             self.publish();
         }
     }
-    pub(super) fn started(&mut self, root: &std::path::Path, meeting: &str) {
+    /// `capture`: a recording that just started, which goes ahead of any
+    /// ended meeting still draining (spec 0121).
+    pub(super) fn started(&mut self, root: &std::path::Path, meeting: &str, capture: bool) {
         if !self.settings.enabled || self.settings.model_path.trim().is_empty() {
             return;
         }
@@ -119,7 +121,11 @@ impl LiveSlot {
         if let Some((_, t)) = &self.transcriber {
             // "Pausar transcrição" applies to one meeting; a new capture starts unpaused.
             t.pause(false);
-            t.enqueue(meeting);
+            if capture {
+                t.enqueue_live(meeting);
+            } else {
+                t.enqueue(meeting);
+            }
         }
     }
     pub(super) fn backlog_on(&self) -> bool {
@@ -137,7 +143,7 @@ impl LiveSlot {
     }
     pub(super) fn capture_started(&mut self, root: &std::path::Path, meeting: &str) {
         self.yield_backlog();
-        self.started(root, meeting);
+        self.started(root, meeting, true);
     }
     pub(super) fn committed(&self, meeting: &str) {
         if let Some((_, t)) = &self.transcriber {
@@ -151,7 +157,7 @@ impl LiveSlot {
     }
     /// "Transcrever o resto": queue a finished meeting from its last segment.
     pub(super) fn resume(&mut self, root: &std::path::Path, meeting: &str) {
-        self.started(root, meeting);
+        self.started(root, meeting, false);
         self.ended(meeting, EndState::Finished);
     }
     pub(super) fn pause(&self, paused: bool) {
