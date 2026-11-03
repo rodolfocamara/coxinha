@@ -93,6 +93,18 @@ describe('grouping', () => {
     expect([...days.values()].flat().some((r) => r.key === 's:undated')).toBe(false);
     expect(days.size).toBeGreaterThanOrEqual(4);
   });
+
+  it('places all-day events on their civil days, not on midnight UTC shifted', () => {
+    const trip = event({
+      id: 'trip',
+      title: 'Trip',
+      startsAt: '2026-11-02T00:00:00Z',
+      endsAt: '2026-11-04T00:00:00Z',
+      allDay: true,
+    });
+    const days = rowsByDay(buildRows([], [trip], []));
+    expect([...days.keys()].sort()).toEqual(['2026-11-02', '2026-11-03']);
+  });
 });
 
 describe('A revisar', () => {

@@ -3,6 +3,7 @@ import type { LibraryMeeting } from '../meetings/library';
 import type { Session } from '../sessions/sessions';
 import { dayKey, nextDay, localDay, recordingInstant, sessionDate } from '../sessions/sessionDates';
 import { transcriptStatus } from '../sessions/transcriptStatus';
+import { allDayKeys, isAllDay } from './weekLayout';
 
 /**
  * One line of the Reuniões list (spec 0096 P4). Sessions are the meetings the
@@ -191,17 +192,21 @@ export function matchesSearch(row: MeetingRow, query: string) {
     ...(event?.attendees ?? []).flatMap((a) => [a.name, a.email ?? '']),
     event?.organizer?.name ?? '',
     event?.organizer?.email ?? '',
+    ...(event?.categories ?? []),
   ];
   return haystack.some((value) => normalize(value).includes(q));
 }
 
-/** Rows per local civil day, for the month grid. Undated rows are not placed. */
+/**
+ * Rows per local civil day, for the month grid. Undated rows are not placed;
+ * all-day events go on every civil day they cover.
+ */
 export function rowsByDay(rows: MeetingRow[]) {
   const days = new Map<string, MeetingRow[]>();
   for (const row of rows) {
     if (!row.start) continue;
-    const key = dayKey(row.start);
-    days.set(key, [...(days.get(key) ?? []), row]);
+    for (const key of isAllDay(row) ? allDayKeys(row) : [dayKey(row.start)])
+      days.set(key, [...(days.get(key) ?? []), row]);
   }
   for (const list of days.values())
     list.sort((a, b) => a.start!.getTime() - b.start!.getTime() || a.key.localeCompare(b.key));
