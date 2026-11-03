@@ -1,12 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
-import { FileText, Search, Trash2 } from 'lucide-react';
-import clsx from 'clsx';
+import { Search } from 'lucide-react';
 
 import { useAppStore } from '../../lib/store';
 import { noteDeletionErrorKey } from '../../lib/noteFileErrors';
-import { usePaletteActions, type PaletteAction } from './usePaletteActions';
+import { buildGroups, type Target } from '../search/universalSearch';
+import { useUniversalSearch } from '../search/useUniversalSearch';
+import { usePaletteActions } from './usePaletteActions';
+import {
+  LISTBOX_ID,
+  optionId,
+  PaletteList,
+  type NoteRow,
+  type PaletteGroup,
+  type PaletteRow,
+} from './PaletteList';
 import './palette.css';
 
 interface Props {
@@ -14,16 +23,13 @@ interface Props {
   onClose: () => void;
 }
 
-type NoteRow = { kind: 'note'; id: string; label: string };
-type PaletteRow = NoteRow | PaletteAction;
-type Group = { id: string; label: string; items: PaletteRow[] };
-
 const isMac = () => typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
 
 /**
- * Ctrl+K overlay (spec 0096): actions (record, new meeting, new note, import
- * audio), every rail destination and note titles. Note rows open in the
- * Workspace; the trash button and Ctrl+Backspace delete with confirmation.
+ * Ctrl+K overlay (specs 0096, 0122): actions, every rail destination and the
+ * universal search over notes, meetings, transcripts and people. Note rows
+ * open in the Workspace; the trash button and Ctrl+Backspace delete with
+ * confirmation.
  */
 export function CommandPalette({ open, onClose }: Props) {
   const { t } = useTranslation();
@@ -37,15 +43,24 @@ export function CommandPalette({ open, onClose }: Props) {
   const [deleteFailure, setDeleteFailure] = useState<{ error: unknown } | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const untitled = t('sidebar.untitled');
+  const search = useUniversalSearch(query, open);
+  const opener = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (!open) return;
     setQuery('');
     setDeleteFailure(null);
     setCursor(0);
+    opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const id = setTimeout(() => inputRef.current?.focus(), 10);
     return () => clearTimeout(id);
   }, [open]);
+
+  /** Esc and the backdrop hand focus back to where the palette was opened. */
+  function dismiss() {
+    onClose();
+    if (opener.current?.isConnected) opener.current.focus();
+  }
 
   const currentNoteId = pathname.match(/^\/(?:workspace|notes)\/([^/]+)/)?.[1];
   const currentNote = useMemo(
@@ -74,24 +89,66 @@ export function CommandPalette({ open, onClose }: Props) {
     onDeleteCurrent: (note) => void confirmAndDelete(note),
   });
 
-  const groups = useMemo<Group[]>(() => {
+  const groups = useMemo<PaletteGroup[]>(() => {
     const q = query.trim().toLowerCase();
     const match = (label: string) => !q || label.toLowerCase().includes(q);
-    const noteRows = notes
-      .filter((n) => match(n.title || untitled))
-      .slice(0, q ? 20 : undefined)
-      .map<NoteRow>((n) => ({ kind: 'note', id: n.id, label: n.title || untitled }));
     const g = (key: string) => t(`people.palette.groups.${key}`);
-    return [
+    const commands: PaletteGroup[] = [
       { id: 'actions', label: g('actions'), items: actions.filter((a) => match(a.label)) },
       { id: 'go', label: g('goTo'), items: destinations.filter((a) => match(a.label)) },
-      { id: 'notes', label: g('notes'), items: noteRows },
-    ].filter((group) => group.items.length > 0);
-  }, [query, notes, actions, destinations, t, untitled]);
+    ];
+    if (!q)
+      commands.push({
+        id: 'notes',
+        label: g('notes'),
+        items: notes.map<NoteRow>((n) => ({ kind: 'note', id: n.id, label: n.title || untitled })),
+      });
+    const found = buildGroups(query, notes, search.answer, new Date(), untitled).map(
+      (group): PaletteGroup => ({
+        id: group.kind,
+        label: t(`search.groups.${group.kind}`),
+        items: group.items.map(
+          (item): PaletteRow =>
+            item.target.view === 'note'
+              ? {
+                  kind: 'note',
+                  id: item.target.noteId,
+                  label: item.label,
+                  detail: item.detail,
+                  activity: item.activity,
+                }
+              : { kind: 'result', id: item.key, item }
+        ),
+      })
+    );
+    return [...commands, ...found].filter((group) => group.items.length > 0);
+  }, [query, notes, actions, destinations, t, untitled, search.answer]);
 
   const flat = useMemo(() => groups.flatMap((g) => g.items), [groups]);
 
   useEffect(() => setCursor(0), [query]);
+  useEffect(() => {
+    document.getElementById(optionId(cursor))?.scrollIntoView?.({ block: 'nearest' });
+  }, [cursor]);
+
+  function openTarget(target: Target) {
+    switch (target.view) {
+      case 'note':
+        return navigate({ to: '/workspace/$noteId', params: { noteId: target.noteId } });
+      case 'session':
+        return navigate({ to: '/meetings/$sessionId', params: { sessionId: target.sessionId } });
+      case 'event':
+        return navigate({ to: '/meetings', search: { event: target.eventId } });
+      case 'transcript':
+        return navigate({
+          to: '/meetings/$sessionId',
+          params: { sessionId: target.sessionId },
+          search: { panel: 'transcript', find: target.find },
+        });
+      case 'person':
+        return navigate({ to: '/people', search: { person: target.personId, name: target.name } });
+    }
+  }
 
   function pick(row: PaletteRow) {
     if (row.kind === 'action' && row.keepOpen) {
@@ -100,13 +157,15 @@ export function CommandPalette({ open, onClose }: Props) {
     }
     onClose();
     if (row.kind === 'action') void row.run();
-    else void navigate({ to: '/workspace/$noteId', params: { noteId: row.id } });
+    else if (row.kind === 'note')
+      void navigate({ to: '/workspace/$noteId', params: { noteId: row.id } });
+    else void openTarget(row.item.target);
   }
 
   async function onKey(e: React.KeyboardEvent) {
     if (e.key === 'Escape') {
       e.preventDefault();
-      onClose();
+      dismiss();
       return;
     }
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
@@ -132,13 +191,12 @@ export function CommandPalette({ open, onClose }: Props) {
 
   if (!open) return null;
 
-  let flatIdx = -1;
   const mod = isMac() ? '⌘' : 'Ctrl';
 
   return (
     <div
       className="cx-palette-overlay fixed inset-0 z-50 flex justify-center bg-black/35 px-4 pt-[90px] backdrop-blur-[3px]"
-      onClick={onClose}
+      onClick={dismiss}
       role="presentation"
     >
       <div
@@ -155,6 +213,11 @@ export function CommandPalette({ open, onClose }: Props) {
             ref={inputRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            role="combobox"
+            aria-expanded="true"
+            aria-controls={LISTBOX_ID}
+            aria-autocomplete="list"
+            aria-activedescendant={flat[cursor] ? optionId(cursor) : undefined}
             placeholder={t('people.palette.placeholder')}
             aria-label={t('people.palette.placeholder')}
             className="flex-1 bg-transparent text-[15px] text-foreground outline-none placeholder:text-muted-foreground"
@@ -170,41 +233,28 @@ export function CommandPalette({ open, onClose }: Props) {
         <div className="flex-1 overflow-y-auto p-2">
           {flat.length === 0 && (
             <div className="px-4 py-7 text-center text-sm text-muted-foreground">
-              {t('people.palette.empty', { query })}
+              {search.pending ? t('search.searching') : t('people.palette.empty', { query })}
             </div>
           )}
-          {groups.map((group) => (
-            <div key={group.id} role="group" aria-labelledby={`palette-group-${group.id}`}>
-              <h6
-                id={`palette-group-${group.id}`}
-                className="mx-2 mt-1 mb-1 text-[11px] font-semibold text-muted-foreground"
-              >
-                {group.label}
-              </h6>
-              {group.items.map((item) => {
-                flatIdx++;
-                const index = flatIdx;
-                return (
-                  <PaletteItemRow
-                    key={`${item.kind}-${item.id}`}
-                    item={item}
-                    active={index === cursor}
-                    onHover={() => setCursor(index)}
-                    onPick={() => pick(item)}
-                    onDelete={
-                      item.kind === 'note'
-                        ? () => {
-                            const note = notes.find((n) => n.id === item.id);
-                            if (note) void confirmAndDelete({ id: note.id, title: note.title });
-                          }
-                        : undefined
-                    }
-                  />
-                );
-              })}
-            </div>
-          ))}
+          <PaletteList
+            groups={groups}
+            cursor={cursor}
+            query={query}
+            onHover={setCursor}
+            onPick={pick}
+            onDelete={(id) => {
+              const note = notes.find((n) => n.id === id);
+              if (note) void confirmAndDelete({ id: note.id, title: note.title });
+            }}
+          />
         </div>
+        <p role="status" aria-live="polite" className="sr-only">
+          {query.trim()
+            ? search.pending
+              ? t('search.searching')
+              : t('search.count', { count: flat.length })
+            : ''}
+        </p>
 
         <div className="flex gap-3.5 border-t border-border px-3.5 py-2 text-[11px] text-muted-foreground">
           <span>
@@ -222,61 +272,6 @@ export function CommandPalette({ open, onClose }: Props) {
           </span>
         </div>
       </div>
-    </div>
-  );
-}
-
-function PaletteItemRow({
-  item,
-  active,
-  onHover,
-  onPick,
-  onDelete,
-}: {
-  item: PaletteRow;
-  active: boolean;
-  onHover: () => void;
-  onPick: () => void;
-  onDelete?: () => void;
-}) {
-  const { t } = useTranslation();
-  return (
-    <div
-      className={clsx(
-        'group flex h-9 w-full items-center rounded-lg text-sm text-foreground transition-colors duration-(--m-instant)',
-        active && 'bg-accent'
-      )}
-      data-active={active || undefined}
-      onMouseEnter={onHover}
-    >
-      <button
-        type="button"
-        onClick={onPick}
-        className="flex h-full min-w-0 flex-1 items-center gap-2.5 px-2 text-left outline-none"
-      >
-        <span
-          className={clsx(
-            'shrink-0',
-            item.kind === 'action' && item.danger ? 'text-destructive' : 'text-muted-foreground'
-          )}
-        >
-          {item.kind === 'note' ? <FileText size={15} aria-hidden="true" /> : item.icon}
-        </span>
-        <span className="flex-1 truncate">{item.label}</span>
-      </button>
-      {onDelete ? (
-        <button
-          type="button"
-          onClick={onDelete}
-          aria-label={t('people.palette.actions.deleteNote')}
-          title={t('people.palette.actions.deleteNote')}
-          className="mx-1 shrink-0 rounded p-1.5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive focus-visible:opacity-100"
-        >
-          <Trash2 size={14} aria-hidden="true" />
-        </button>
-      ) : item.kind === 'action' && item.hint ? (
-        <kbd className="cx-kbd mr-2 shrink-0">{item.hint}</kbd>
-      ) : null}
     </div>
   );
 }

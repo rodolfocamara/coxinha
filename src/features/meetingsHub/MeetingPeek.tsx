@@ -19,7 +19,6 @@ import './calendarPeek.css';
 type Props = {
   row: MeetingRow;
   now: Date;
-  query: string;
   live: boolean;
   onClose: () => void;
   onOpen: (row: MeetingRow, panel?: DetailPanel) => void;
@@ -39,7 +38,6 @@ type Props = {
 export function MeetingPeek({
   row,
   now,
-  query,
   live,
   onClose,
   onOpen,
@@ -179,11 +177,7 @@ export function MeetingPeek({
         />
       )}
       <PeekSummary meetingId={meetingId} session={session} />
-      <PeekTranscript
-        meetingId={meetingId}
-        query={query}
-        onFull={() => onOpen(row, 'transcript')}
-      />
+      <PeekTranscript meetingId={meetingId} onFull={() => onOpen(row, 'transcript')} />
       {session && <PeekFilesAndLinks session={session} start={row.start} />}
       {actions.error && (
         <p className="ch-peek-error" role="alert">

@@ -23,19 +23,14 @@ type HomeState = {
   /** Where the calendar looks; kept while a meeting is open so "← Agenda" returns there. */
   anchor: Date | null;
   hidden: string[];
-  /** The search, kept like the anchor so coming back shows the same results. */
-  query: string;
   setAnchor: (anchor: Date) => void;
-  setQuery: (query: string) => void;
   toggleCategory: (name: string) => void;
 };
 
 export const useCalendarHome = create<HomeState>((set) => ({
   anchor: null,
   hidden: readHidden(),
-  query: '',
   setAnchor: (anchor) => set({ anchor }),
-  setQuery: (query) => set({ query }),
   toggleCategory: (name) =>
     set((state) => {
       const hidden = state.hidden.includes(name)
@@ -48,7 +43,7 @@ export const useCalendarHome = create<HomeState>((set) => ({
 }));
 
 export function resetCalendarHome() {
-  useCalendarHome.setState({ anchor: null, hidden: [], query: '' });
+  useCalendarHome.setState({ anchor: null, hidden: [] });
 }
 
 const categoriesOf = (row: MeetingRow) => (row.kind === 'recording' ? [] : row.event?.categories);

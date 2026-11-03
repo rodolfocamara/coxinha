@@ -303,4 +303,38 @@
     border-radius: 999px;
     background: currentColor;
   }
+  .cx-searchbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 1;
+    min-width: 140px;
+    width: 300px;
+    height: 28px;
+    padding: 0 6px 0 10px;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background: color-mix(in oklab, var(--color-card) 70%, transparent);
+    color: var(--color-muted-foreground);
+    font-size: 12px;
+    transition:
+      border-color var(--m-instant),
+      color var(--m-instant);
+  }
+  .cx-searchbar:hover {
+    color: var(--color-foreground);
+    border-color: color-mix(in oklab, var(--color-foreground) 22%, transparent);
+  }
+  .cx-searchbar:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 1px;
+  }
+  .cx-searchbar-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+    white-space: nowrap;
+  }
 }

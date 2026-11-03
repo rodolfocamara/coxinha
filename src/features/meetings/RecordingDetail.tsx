@@ -29,10 +29,13 @@ export function RecordingDetail({
   showRecover = true,
   seekRef,
   invitees,
+  find,
 }: {
   detail: LibraryDetail;
   /** The calendar event's attendees, for naming speakers (spec 0110 P3). */
   invitees?: ParticipantCandidate[];
+  /** Text the transcript opens found at (spec 0122). */
+  find?: string;
   status: CaptureStatus;
   onStatus: (status: CaptureStatus) => void;
   onRecover: () => Promise<void>;
@@ -232,6 +235,7 @@ export function RecordingDetail({
               },
             }}
             onTranscript={onTranscript}
+            find={find}
             onSeek={seek}
             invitees={invitees}
           />

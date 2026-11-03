@@ -41,6 +41,7 @@ export type DetailProps = {
   onParticipants: (meetingId: string, event: CalendarEvent | null) => void;
   participantsRevision: number;
   initialTab?: Tab;
+  initialFind?: string;
 };
 
 /** The meeting's full page body; `MeetingPage` loads the session first. */
@@ -53,6 +54,7 @@ export function MeetingDetail({
   onParticipants,
   participantsRevision,
   initialTab,
+  initialFind,
   session,
   staleError,
   refetch,
@@ -323,6 +325,7 @@ export function MeetingDetail({
                   showRecover={false}
                   seekRef={seekRef}
                   invitees={invitees}
+                  find={initialFind}
                 />
               </div>
               <section

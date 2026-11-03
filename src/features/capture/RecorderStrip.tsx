@@ -19,6 +19,7 @@ import {
 import { dismissCaptureError, pauseCapture, stopCapture } from './captureActions';
 import { capturePhase, useCaptureStore } from './captureStore';
 import '../../components/Shell/shell.css';
+import { SearchBar } from '../../components/AppShell/SearchBar';
 import { useAutoStop } from './autoRecord';
 import {
   AutoStopNotice,
@@ -326,6 +327,7 @@ export function RecorderStrip() {
           {failureText}
         </span>
       )}
+      <SearchBar />
       <WindowChrome>
         <div className="cx-strip-part" key={`${view.key}:actions`}>
           {view.actions}

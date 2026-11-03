@@ -6,6 +6,7 @@ import brandMark from '../../assets/coxinha-mark.svg';
 import { toggleCapture } from '../../features/capture/captureActions';
 import { useCaptureStore } from '../../features/capture/captureStore';
 import { prepareRouteTransition, setZoomOrigin, type TransitionKind } from '../../lib/motion';
+import { openSearch } from '../AppShell/SearchBar';
 
 export type NavArea = 'hoje' | 'meetings' | 'workspace' | 'people' | 'settings';
 
@@ -99,11 +100,7 @@ export function NavRail() {
       {item('meetings', <CalendarDays size={16} aria-hidden="true" />, t('shell.nav.meetings'))}
       {item('workspace', <LayoutGrid size={16} aria-hidden="true" />, t('shell.nav.workspace'))}
       {item('people', <Users size={16} aria-hidden="true" />, t('shell.nav.people'))}
-      <button
-        type="button"
-        className="cx-nav-item"
-        onClick={() => window.dispatchEvent(new Event('coxinha:open-palette'))}
-      >
+      <button type="button" className="cx-nav-item" onClick={openSearch} aria-haspopup="dialog">
         <Search size={16} aria-hidden="true" />
         {t('shell.nav.search')}
       </button>

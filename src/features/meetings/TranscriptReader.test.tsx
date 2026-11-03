@@ -102,6 +102,17 @@ it('finds across lines, counts, wraps and marks the current match', async () => 
   expect(screen.getByText('No matches')).toBeInTheDocument();
 });
 
+it('opens found at the universal search text and scrolls to it (spec 0122)', async () => {
+  const scrolled = vi.spyOn(HTMLElement.prototype, 'scrollIntoView');
+  render(<ProcessingPanel {...props} onSeek={vi.fn()} find="sem headcount" />);
+  const find = await screen.findByRole('searchbox', { name: 'Search the transcript' });
+  expect(find).toHaveValue('sem headcount');
+  expect(screen.getByText('1/1')).toBeInTheDocument();
+  const current = document.querySelector('mark[data-current]');
+  expect(current).toHaveTextContent('Sem headcount');
+  await waitFor(() => expect(scrolled).toHaveBeenCalled());
+});
+
 it('opens a correction for one line, cancels with Escape and saves', async () => {
   render(<ProcessingPanel {...props} onSeek={vi.fn()} />);
   await screen.findByText('Vamos falar do headcount.');

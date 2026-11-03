@@ -58,13 +58,14 @@ destinations:
 
 - Board activities are notes; they appear under Notes marked as activity.
 - Meeting notes (`notes/session-*`) appear under their meeting, not twice.
-- Outlook-only events match on what the calendar cache already holds.
+- Outlook-only events (no session of their own) match on the local
+  calendar cache: title, invitees, organizer and categories.
 
 ### P3 Ranking and grouping
 
 - Each result gets a tier: 0 the title or name starts with the query,
-  1 contains it, 2 a person or alias, 3 body, notes or summary,
-  4 transcript only.
+  1 contains it, 2 a person, alias or category, 3 body, notes or summary,
+  4 transcript.
 - Inside a kind, results sort by tier; meetings then by closeness to now,
   notes by the index's BM25 rank, people by name.
 - Kinds are ordered by their best tier, ties in the order of the table.
@@ -76,8 +77,10 @@ destinations:
 - Typing is debounced (200 ms); titles of notes already loaded answer at
   once, before the backend.
 - One backend command, `universal_search`, runs off the UI thread and
-  answers notes, meetings and people together. A newer query makes the one
-  still scanning stop early, so fast typing never queues scans.
+  answers notes, meetings, events and people together. It replaces
+  `library_search`; the CLI `search` keeps its own entry point. A newer
+  query makes the one still scanning stop at its next meeting, so fast
+  typing never queues scans.
 - Fewer than two characters search only actions, destinations and note
   titles.
 
@@ -91,24 +94,30 @@ destinations:
 
 ## Acceptance
 
-- [ ] Notes match by title and body with word prefixes, ranked title first,
-      bounded by the limit, without meeting notes
+- [x] Notes match by title and body with word prefixes, ranked title first,
+      bounded by the limit, without meeting notes; activities are marked
       (`cli::universal::tests::notes_rank_titles_first_and_respect_the_limit`).
-- [ ] Meetings rank title before people before notes before transcript, and
-      the transcript match carries the line's time
+- [x] Meetings rank title before people and category before notes before
+      transcript, and the transcript match carries the line's time
       (`cli::universal::tests::meetings_rank_by_field_and_transcript_has_time`).
-- [ ] People match by name and alias, name first, bounded
+- [x] Outlook events without a session match on the cache
+      (`cli::universal::tests::events_without_a_session_match_on_the_cache`).
+- [x] People match by name and alias, name first, bounded
       (`cli::universal::tests::people_match_names_and_aliases`).
-- [ ] A superseded query stops scanning and returns nothing
+- [x] A superseded query stops scanning and returns nothing
       (`cli::universal::tests::a_newer_query_stops_the_scan`).
-- [ ] Results are grouped by kind, kinds ordered by best tier, at most 6
-      per kind (`universalSearch.test.ts`).
-- [ ] The shell's search field and Ctrl+K open the palette; ↑/↓ and Enter
-      open a note, a meeting, a transcript moment and a person; Esc closes
-      (`UniversalSearch.test.tsx`).
-- [ ] The Reuniões toolbar opens the universal palette instead of its own
-      result list (`MeetingsHub.home.test.tsx`).
-- [ ] The transcript opens found at the searched text
+- [x] Results are grouped by kind, kinds ordered by best tier, at most 6
+      per kind, transcripts apart with their time
+      (`src/features/search/universalSearch.test.ts`).
+- [x] The palette lists the groups, announces the count, moves with ↑/↓,
+      opens a note, a meeting, a transcript moment and a person with Enter,
+      answers loaded titles before the backend, and Esc closes returning
+      focus (`src/features/shell/UniversalSearch.test.tsx`).
+- [x] Ctrl+K, ⌘K and the shell's search field open the same palette
+      (`src/routes/__root.test.tsx`).
+- [x] The Reuniões toolbar opens the universal palette and has no result
+      list of its own (`MeetingsHub.peek.test.tsx`, `MeetingsHub.home.test.tsx`).
+- [x] The transcript opens found at the searched text and scrolls to it
       (`TranscriptReader.test.tsx`).
-- [ ] Pessoas opens the person named in `?person=`
+- [x] Pessoas opens the person named in `?person=`
       (`PeopleDirectory.test.tsx`).

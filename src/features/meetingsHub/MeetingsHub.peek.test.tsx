@@ -6,7 +6,6 @@ import i18n from '../../lib/i18n';
 import {
   at,
   backend,
-  calledWith,
   event,
   freshDb,
   recording,
@@ -115,47 +114,19 @@ const findInGrid = async (name: RegExp) =>
 const inGrid = (name: RegExp) => within(grid()).queryAllByRole('button', { name });
 const peek = () => document.querySelector<HTMLElement>('.ch-peek');
 
-it('searches titles and invitees here and notes and transcripts in the backend', async () => {
-  db.searchHits.backend = [
-    {
-      id: 'daily',
-      title: 'Squad daily',
-      startsAt: at(-3, 9, 30),
-      matches: [{ field: 'transcript', snippet: '[01:05] Ana: o backend do Digital 360' }],
-    },
-  ];
-  renderAt('/meetings');
-  await waitFor(() => expect(inGrid(/Product committee/)).toHaveLength(1));
-  const search = screen.getByRole('searchbox', { name: 'Search meetings, notes and transcripts' });
-  fireEvent.change(search, { target: { value: 'juliana' } });
-  const results = await screen.findByRole('region', { name: 'Results for juliana' });
-  const committee = within(results).getByRole('button', { name: /Product committee/ });
-  expect(committee).toHaveTextContent('People: Juliana Alves');
-  expect(committee.querySelector('mark')).toHaveTextContent('Juliana');
-  expect(screen.getByRole('status')).toHaveTextContent('1 meeting');
-
-  fireEvent.change(search, { target: { value: 'backend' } });
-  await waitFor(() =>
-    expect(screen.getByRole('region', { name: 'Results for backend' })).toHaveTextContent(
-      'Transcript: [01:05] Ana: o backend'
-    )
-  );
-  const region = screen.getByRole('region', { name: 'Results for backend' });
-  expect(
-    within(region)
-      .getAllByRole('heading', { level: 3 })
-      .map((h) => h.textContent)
-  ).toEqual(['This week', 'Last week']);
-  expect(calledWith(db, 'library_search').at(-1)).toEqual({ query: 'backend', limit: 50 });
-
-  fireEvent.click(within(region).getByRole('button', { name: 'With transcript' }));
-  expect(within(region).queryByRole('button', { name: /Backend interview/ })).toBeNull();
-  expect(within(region).getByRole('button', { name: /Squad daily/ })).toBeInTheDocument();
-
-  fireEvent.keyDown(search, { key: 'Escape' });
-  expect(search).toHaveValue('');
-  expect(screen.queryByRole('region', { name: /Results for/ })).toBeNull();
-  expect(inGrid(/Product committee/)).toHaveLength(1);
+it('searches through the universal palette, not a list of its own (spec 0122)', async () => {
+  const opened = vi.fn();
+  window.addEventListener('coxinha:open-palette', opened);
+  try {
+    renderAt('/meetings');
+    await waitFor(() => expect(inGrid(/Product committee/)).toHaveLength(1));
+    expect(screen.queryByRole('searchbox')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Search everything' }));
+    expect(opened).toHaveBeenCalledTimes(1);
+    expect(inGrid(/Product committee/)).toHaveLength(1);
+  } finally {
+    window.removeEventListener('coxinha:open-palette', opened);
+  }
 });
 
 it('peeks on click, closes on Escape, and opens the page on double click or Enter', async () => {

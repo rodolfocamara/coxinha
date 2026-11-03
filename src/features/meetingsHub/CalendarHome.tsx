@@ -1,9 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RotateCw } from 'lucide-react';
 import { Alert, Button } from '../../components/ui';
-import { library, type CalendarMatch } from '../meetings/library';
+import type { CalendarMatch } from '../meetings/library';
 import type { CalendarEvent } from '../agenda/calendar';
 import { useOutlookCategories } from '../agenda/categories';
 import type { OutlookConnection } from '../agenda/useOutlookConnection';
@@ -15,9 +14,7 @@ import { CalendarToolbar } from './CalendarToolbar';
 import { CalendarRail } from './CalendarRail';
 import { NowStrip } from './NowStrip';
 import { MeetingPeek } from './MeetingPeek';
-import { SearchResults } from './SearchResults';
 import { useCalendarHome, visibleRows } from './calendarHome';
-import { filterResults, mergeResults, NO_FILTERS, type ResultFilters } from './searchResults';
 import type { DetailPanel } from './meetingsSearch';
 import './calendarHome.css';
 
@@ -48,7 +45,6 @@ type Props = {
 /**
  * Reuniões is the calendar (spec 0107): Outlook's views at full width, what
  * is happening now, a rail to jump and filter, and a peek beside the grid.
- * A search replaces the grid with results; no meeting is shown twice.
  */
 export function CalendarHome(p: Props) {
   const { t, i18n } = useTranslation();
@@ -56,35 +52,18 @@ export function CalendarHome(p: Props) {
   const stored = useCalendarHome((s) => s.anchor);
   const setAnchor = useCalendarHome((s) => s.setAnchor);
   const hidden = useCalendarHome((s) => s.hidden);
-  const query = useCalendarHome((s) => s.query);
-  const setQuery = useCalendarHome((s) => s.setQuery);
   const master = useOutlookCategories((s) => s.master);
-  const [filters, setFilters] = useState<ResultFilters>(NO_FILTERS);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [matchEvent, setMatchEvent] = useState<string | null>(null);
   const anchor = stored ?? p.now;
   const range = viewRange(p.view, anchor, p.days);
   const shown = visibleRows(p.rows, hidden, master);
-  const searching = !!query.trim();
-  const debounced = useDebounced(query.trim(), 250);
-  const remote = useQuery({
-    queryKey: ['library-search', debounced],
-    queryFn: () => library.search(debounced).catch(() => []),
-    enabled: debounced.length >= 2 && library.available(),
-    retry: false,
-  });
-  const all = searching ? mergeResults(shown, query, remote.data ?? []) : [];
-  const results = filterResults(all, filters, p.now);
   const selected = selectedKey ? (p.rows.find((r) => r.key === selectedKey) ?? null) : null;
   const matchRow = matchEvent
     ? p.rows.find((r) => r.kind !== 'recording' && r.event?.id === matchEvent)
     : undefined;
   const focusKeys = selected && matchRow ? [selected.key, matchRow.key] : null;
 
-  const changeQuery = (next: string) => {
-    setQuery(next);
-    if (!next.trim()) setFilters(NO_FILTERS);
-  };
   const close = useCallback(() => {
     const key = selectedKey;
     setSelectedKey(null);
@@ -106,23 +85,18 @@ export function CalendarHome(p: Props) {
         nextLabel={t(`meetingsHub.calendar.next${step}`, stepOptions)}
         onToday={() => setAnchor(p.now)}
         onStep={(direction) => setAnchor(stepAnchor(p.view, anchor, p.days, direction))}
-        query={query}
-        onQuery={changeQuery}
-        resultCount={searching && !(remote.isFetching && !results.length) ? results.length : null}
         onNew={() => p.onNew()}
         onImport={p.onImport}
         desktop={p.desktop}
       />
-      {!searching && (
-        <NowStrip
-          rows={p.rows}
-          now={p.now}
-          isLive={p.isLive}
-          onSelect={(row) => setSelectedKey(row.key)}
-          onOpen={(row) => p.onOpen(row)}
-          onOpenSession={p.onOpenSession}
-        />
-      )}
+      <NowStrip
+        rows={p.rows}
+        now={p.now}
+        isLive={p.isLive}
+        onSelect={(row) => setSelectedKey(row.key)}
+        onOpen={(row) => p.onOpen(row)}
+        onOpenSession={p.onOpenSession}
+      />
       {p.loadFailed && (
         <div className="ch-alert">
           <Alert
@@ -147,10 +121,7 @@ export function CalendarHome(p: Props) {
           first={range.first}
           last={range.last}
           now={p.now}
-          onPick={(day) => {
-            setAnchor(day);
-            if (searching) changeQuery('');
-          }}
+          onPick={setAnchor}
           reviewCount={p.reviewCount}
           onReview={p.onReview}
           outlook={p.outlook}
@@ -161,7 +132,6 @@ export function CalendarHome(p: Props) {
               onReview={() => {
                 const first = p.matches[0];
                 if (!first) return;
-                if (searching) changeQuery('');
                 setAnchor(new Date(first.startsAt));
                 setSelectedKey(rowKey.session(first.sessionId));
               }}
@@ -169,41 +139,25 @@ export function CalendarHome(p: Props) {
           }
         />
         <div className="ch-main">
-          {searching ? (
-            <SearchResults
-              query={query}
-              results={results}
-              all={all}
-              filters={filters}
-              onFilters={setFilters}
-              searching={remote.isFetching || debounced !== query.trim()}
-              now={p.now}
-              selectedKey={selectedKey}
-              onSelect={(row) => setSelectedKey(row.key)}
-              onOpen={(row) => p.onOpen(row)}
-            />
-          ) : (
-            <CalendarGrid
-              view={p.view}
-              days={p.days}
-              anchor={anchor}
-              rows={shown}
-              now={p.now}
-              isLive={p.isLive}
-              selectedKey={selectedKey}
-              focusKeys={focusKeys}
-              onSelect={(row) => setSelectedKey(row.key)}
-              onOpen={(row) => p.onOpen(row)}
-              onCreate={p.desktop ? (start, end) => p.onNew({ start, end }) : undefined}
-            />
-          )}
+          <CalendarGrid
+            view={p.view}
+            days={p.days}
+            anchor={anchor}
+            rows={shown}
+            now={p.now}
+            isLive={p.isLive}
+            selectedKey={selectedKey}
+            focusKeys={focusKeys}
+            onSelect={(row) => setSelectedKey(row.key)}
+            onOpen={(row) => p.onOpen(row)}
+            onCreate={p.desktop ? (start, end) => p.onNew({ start, end }) : undefined}
+          />
         </div>
         {selected && (
           <MeetingPeek
             key={selected.key}
             row={selected}
             now={p.now}
-            query={query}
             live={p.isLive(selected)}
             onClose={close}
             onOpen={p.onOpen}
@@ -220,13 +174,4 @@ export function CalendarHome(p: Props) {
       </div>
     </div>
   );
-}
-
-function useDebounced(value: string, ms: number) {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const timer = setTimeout(() => setDebounced(value), ms);
-    return () => clearTimeout(timer);
-  }, [value, ms]);
-  return debounced;
 }

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert } from '../../components/ui';
 import { library } from './library';
@@ -12,7 +12,12 @@ import { ImportPeopleSheet } from '../people/ImportPeopleSheet';
  * samples in the list + detail grammar. Mutations run one at a time through
  * `act`, then the browser remounts so every page reloads from a fresh view.
  */
-export function PeopleDirectory() {
+export function PeopleDirectory({
+  opened,
+}: {
+  /** Spec 0122: the person the universal search opened. */
+  opened?: { personId: string; name: string };
+} = {}) {
   const { t } = useTranslation();
   const [version, setVersion] = useState(0);
   const [adding, setAdding] = useState(false);
@@ -22,8 +27,15 @@ export function PeopleDirectory() {
   const pending = useRef(false);
   const [error, setError] = useState<unknown>(null);
   const [created, setCreated] = useState<{ personId: string; name: string } | null>(null);
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string | null>(opened?.personId ?? null);
   const [search, setSearch] = useState('');
+  useEffect(() => {
+    if (!opened) return;
+    setSelected(opened.personId);
+    setSearch('');
+    // A new `?person=` arriving matters, not a new object for the same one.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [opened?.personId]);
   async function act(action: () => Promise<unknown>) {
     if (pending.current) return;
     pending.current = true;
@@ -78,7 +90,7 @@ export function PeopleDirectory() {
         onSearch={setSearch}
         onAdd={() => setAdding(true)}
         onImport={() => setImporting(true)}
-        created={created}
+        created={created ?? (opened?.personId === selected ? opened : null)}
         notices={notices}
       />
       <ImportPeopleSheet

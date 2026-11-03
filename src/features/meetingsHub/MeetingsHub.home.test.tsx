@@ -318,8 +318,6 @@ it('speaks Portuguese', async () => {
   renderAt('/meetings');
   expect(await screen.findByRole('heading', { level: 1, name: 'Reuniões' })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Nova reunião' })).toBeInTheDocument();
-  expect(
-    screen.getByRole('searchbox', { name: 'Buscar em reuniões, notas e transcrições' })
-  ).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Buscar em tudo' })).toBeInTheDocument();
   expect(await screen.findByRole('button', { name: /A revisar/ })).toBeInTheDocument();
 });

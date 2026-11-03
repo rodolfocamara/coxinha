@@ -228,10 +228,7 @@
     },
     "home": {
       "newMeeting": "Nova reunião",
-      "search": "Buscar em reuniões, notas e transcrições",
       "backToCalendar": "Agenda",
-      "results_one": "{{count}} reunião",
-      "results_other": "{{count}} reuniões",
       "miniMonth": "Escolher um dia",
       "previousMonth": "Mês anterior",
       "nextMonth": "Próximo mês",
@@ -263,35 +260,10 @@
       "filesAndActivities": "Arquivos e atividades",
       "openMeeting": "Abrir reunião",
       "pageNav": "Navegação da reunião",
-      "resultsLabel": "Resultados para {{query}}",
-      "filters": "Filtros",
       "period": {
         "any": "Qualquer data",
         "30d": "Últimos 30 dias",
         "year": "Este ano"
-      },
-      "person": "Pessoa",
-      "anyPerson": "Qualquer pessoa",
-      "category": "Categoria",
-      "anyCategory": "Qualquer categoria",
-      "withTranscript": "Com transcrição",
-      "searching": "Buscando…",
-      "noResults": "Nada encontrado para “{{query}}”",
-      "noResultsHint": "A busca olha títulos, pessoas, categorias, notas e transcrições.",
-      "group": {
-        "later": "Mais adiante",
-        "today": "Hoje",
-        "week": "Esta semana",
-        "lastWeek": "Semana passada",
-        "undated": "Sem data"
-      },
-      "field": {
-        "title": "Título",
-        "people": "Pessoas",
-        "category": "Categoria",
-        "notes": "Notas",
-        "summary": "Resumo",
-        "transcript": "Transcrição"
       }
     },
     "views": "Vistas de reuniões",

@@ -169,7 +169,7 @@
     },
     "palette": {
       "title": "Paleta de comandos",
-      "placeholder": "Buscar notas ou executar uma ação",
+      "placeholder": "Buscar notas, reuniões, transcrições, pessoas ou executar uma ação",
       "groups": {
         "actions": "Ações",
         "goTo": "Ir para",
