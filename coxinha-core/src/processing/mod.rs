@@ -10,6 +10,8 @@ mod persistence;
 mod publication;
 pub use alignment::attribute_segments;
 pub use persistence::{latest_report, report_for_job, AssignmentView, ProcessingReport};
+mod text;
+pub use text::{named_lines, named_transcript, NamedLine};
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ModelFile {
     pub path: PathBuf,
