@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { commands, type AppConfig, type ObsidianVault } from '../../lib/bindings';
 import { Alert, Button } from '../../components/ui';
 import { SettingsLayout } from './SettingsLayout';
-import { GeneralSection } from './GeneralSection';
+import { AppearanceSection } from './AppearanceSection';
 import { CalendarSection } from './CalendarSection';
 import { RecordingSection } from './RecordingSection';
 import { TranscriptionSection } from './TranscriptionSection';
@@ -30,7 +30,7 @@ type Props = {
 };
 
 /**
- * Ajustes (spec 0096 P6). Geral and Gravação work without the config;
+ * Ajustes (spec 0096 P6). Aparência and Gravação work without the config;
  * the rest waits for `get_config` + `list_obsidian_vaults`.
  */
 export function SettingsView({ onOpenAgenda, initialSection }: Props = {}) {
@@ -103,7 +103,13 @@ export function SettingsView({ onOpenAgenda, initialSection }: Props = {}) {
 
   return (
     <SettingsLayout ready={state.kind === 'ready'} initialSection={initialSection}>
-      <GeneralSection />
+      <AppearanceSection
+        onLocale={(locale) =>
+          setState((now) =>
+            now.kind === 'ready' ? { ...now, config: { ...now.config, locale } } : now
+          )
+        }
+      />
       <CalendarSection />
       <RecordingSection />
       {configSections}

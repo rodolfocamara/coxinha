@@ -1,11 +1,13 @@
 import { useLayoutEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAppearanceLayout } from '../../lib/appearance/useAppearanceLayout';
 
 type Kind = 'text' | 'card';
 
 /** Segmented "Nota | Atividade" with a sliding thumb; arrow keys move the choice. */
 export function KindSwitch({ value, onChange }: { value: Kind; onChange: (kind: Kind) => void }) {
   const { t } = useTranslation();
+  const layout = useAppearanceLayout();
   const thumb = useRef<HTMLSpanElement>(null);
   const buttons = useRef<Record<Kind, HTMLButtonElement | null>>({ text: null, card: null });
   useLayoutEffect(() => {
@@ -16,7 +18,7 @@ export function KindSwitch({ value, onChange }: { value: Kind; onChange: (kind: 
     el.style.transform = `translateX(${target.offsetLeft - 2}px)`;
     // Animate only changes, never the first placement.
     requestAnimationFrame(() => el.setAttribute('data-animate', 'true'));
-  }, [value]);
+  }, [value, layout]);
   const option = (kind: Kind, label: string) => (
     <button
       type="button"

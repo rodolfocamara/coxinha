@@ -1,3 +1,4 @@
+import { remScale } from '../../lib/appearance/units';
 import { HOUR_PX } from './weekLayout';
 
 const LAST_MINUTE = 24 * 60 - 1;
@@ -8,7 +9,7 @@ export type Range = { from: number; to: number };
 
 /** Minutes from midnight at a vertical offset inside a day column. */
 export function minutesAt(offsetY: number) {
-  return Math.min(Math.max((offsetY / HOUR_PX) * 60, 0), LAST_MINUTE);
+  return Math.min(Math.max((offsetY / (HOUR_PX * remScale())) * 60, 0), LAST_MINUTE);
 }
 
 /**

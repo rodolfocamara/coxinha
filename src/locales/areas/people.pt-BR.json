@@ -66,7 +66,7 @@
       "title": "Ajustes",
       "sectionsLabel": "Seções dos ajustes",
       "sections": {
-        "general": "Geral",
+        "appearance": "Aparência",
         "recording": "Gravação",
         "transcription": "Transcrição local",
         "integrations": "Integrações",
@@ -76,7 +76,7 @@
         "calendar": "Agenda e fusos horários"
       },
       "descriptions": {
-        "general": "Aparência.",
+        "appearance": "Tema, cores, texto e idioma. Salvo neste computador.",
         "recording": "Valem para o botão de gravar, para as reuniões e para chamadas detectadas.",
         "transcription": "Roda neste computador, nada é enviado para fora.",
         "integrations": "Opcional. Nada sai do computador sem você conectar.",
@@ -183,6 +183,55 @@
         "up": "Subir {{name}}",
         "down": "Descer {{name}}",
         "remove": "Remover {{name}}"
+      },
+      "accent": {
+        "title": "Cor de destaque",
+        "hint": "Botões, item ativo e foco. As categorias do Outlook mantêm as cores delas.",
+        "tangerine": "Tangerina",
+        "blue": "Azul",
+        "teal": "Verde-azulado",
+        "green": "Verde",
+        "violet": "Violeta",
+        "pink": "Rosa",
+        "graphite": "Grafite",
+        "custom": "Cor personalizada",
+        "picker": "Escolher a cor personalizada",
+        "hex": "Cor personalizada em hexadecimal, por exemplo #e8843c",
+        "chosen": "Cor de destaque: {{name}}",
+        "sample": "Botão de exemplo",
+        "readable": "{{ink}} sobre esta cor, contraste {{ratio}}:1.",
+        "darkText": "Texto escuro",
+        "lightText": "Texto claro",
+        "adjusted": "Luminosidade ajustada para aparecer neste tema."
+      },
+      "contrast": {
+        "title": "Contraste",
+        "hint": "Quanto o texto se destaca da página. O texto nunca fica abaixo de um nível legível.",
+        "reset": "Restaurar o contraste",
+        "wasReset": "Contraste de volta a 100%"
+      },
+      "fontSize": {
+        "title": "Tamanho da fonte da interface",
+        "hint": "Texto, controles e agenda crescem juntos. 16 é o tamanho original.",
+        "reset": "Restaurar o tamanho da fonte",
+        "wasReset": "Tamanho da fonte de volta a 16 px"
+      },
+      "fontFamilyDefault": "Fonte do sistema",
+      "fontSans": {
+        "title": "Fonte da interface",
+        "hint": "Nomes de fontes instaladas, separados por vírgula."
+      },
+      "fontMono": {
+        "title": "Fonte monoespaçada",
+        "hint": "Para atalhos, caminhos e notas na fonte mono."
+      },
+      "language": {
+        "title": "Idioma",
+        "hint": "Automático segue o sistema. A bandeja e as notificações mudam na próxima abertura.",
+        "auto": "Automático",
+        "ptBR": "Português (Brasil)",
+        "en": "English",
+        "changed": "Idioma: {{language}}"
       }
     },
     "palette": {

@@ -1,3 +1,4 @@
+import { rem } from '../../lib/appearance/units';
 import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { Outlet } from '@tanstack/react-router';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
@@ -85,8 +86,8 @@ it('opens Reuniões on the week view with blocks in their day columns', async ()
   expect(arch).toHaveAccessibleName('09:00 AM–10:30 AM, Architecture review, Category Architect');
   await waitFor(() => expect(arch).toHaveAttribute('data-category', 'blue'));
   expect(arch.style.getPropertyValue('--cx-cat-bg')).toBe('var(--outlook-cat-7-bg)');
-  expect(arch.style.top).toBe(`${9 * 48}px`);
-  expect(arch.style.height).toBe(`${1.5 * 48 - 2}px`);
+  expect(arch.style.top).toBe(rem(9 * 48));
+  expect(arch.style.height).toBe(rem(1.5 * 48 - 2));
 
   const today = region('Thursday, October 15');
   expect(today).toHaveAttribute('aria-current', 'date');

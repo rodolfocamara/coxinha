@@ -101,7 +101,7 @@ export function DetectedCall({ call }: { call: ActiveCall }) {
         </span>
       )}
       {details && (
-        <div className="cx-glass absolute left-3 top-[calc(var(--shell-strip-height)+6px)] z-40 w-[420px] rounded-md p-4 shadow-xl">
+        <div className="cx-glass absolute left-3 top-[calc(var(--shell-strip-height)+6px)] z-40 w-[26.25rem] max-w-[calc(100vw-6rem)] rounded-md p-4 shadow-xl">
           <MeetingDetails
             title={title}
             setTitle={setTitle}

@@ -45,7 +45,7 @@
   /* Card (prototype .bcard): title, excerpt, progress bar, side handles. */
   .ws-card {
     position: relative;
-    padding: 10px 12px;
+    padding: 0.625rem 0.75rem;
     border-radius: 12px;
     background: var(--ws-card-bg);
     border: 1px solid var(--color-border);
@@ -63,8 +63,8 @@
   }
   .ws-card-title {
     margin: 0 0 3px;
-    padding-right: 42px;
-    font-size: 13px;
+    padding-right: 2.625rem;
+    font-size: 0.8125rem;
     font-weight: 600;
     line-height: 1.35;
   }
@@ -73,7 +73,7 @@
   }
   .ws-card-excerpt {
     margin: 0;
-    font-size: 12px;
+    font-size: 0.75rem;
     line-height: 1.4;
     color: var(--color-muted-foreground);
     display: -webkit-box;
@@ -83,12 +83,12 @@
   }
   .ws-card-kind {
     position: absolute;
-    top: 9px;
-    right: 10px;
+    top: 0.5625rem;
+    right: 0.625rem;
     display: flex;
-    gap: 4px;
+    gap: 0.25rem;
     align-items: center;
-    font-size: 10.5px;
+    font-size: 0.65625rem;
     color: var(--color-muted-foreground);
     font-variant-numeric: tabular-nums;
   }
@@ -97,7 +97,7 @@
   }
   .ws-card-bar {
     height: 3px;
-    margin-top: 9px;
+    margin-top: 0.5625rem;
     border-radius: 2px;
     background: oklch(var(--fg-primary) / 0.12);
     overflow: hidden;
@@ -115,8 +115,8 @@
   }
   .ws-card-quick {
     position: absolute;
-    left: 10px;
-    bottom: -14px;
+    left: 0.625rem;
+    bottom: -0.875rem;
     opacity: 0;
     pointer-events: none;
     transition: opacity var(--m-fast);
@@ -133,8 +133,8 @@
     pointer-events: auto;
   }
   .ws-canvas .react-flow__handle {
-    width: 9px;
-    height: 9px;
+    width: 0.5625rem;
+    height: 0.5625rem;
     border-width: 1.5px;
   }
 
@@ -143,7 +143,7 @@
     --area: var(--fg-tertiary);
     position: absolute;
     inset: 0;
-    padding: 10px 12px;
+    padding: 0.625rem 0.75rem;
     border-radius: 16px;
     border: 1px solid oklch(var(--area) / 0.3);
     background: oklch(var(--area) / 0.05);
@@ -163,8 +163,8 @@
   .ws-area-heading {
     margin: 0;
     display: flex;
-    gap: 8px;
-    font-size: 12px;
+    gap: 0.5rem;
+    font-size: 0.75rem;
     font-weight: 600;
   }
   .ws-area-heading span {
@@ -173,8 +173,8 @@
   }
   .ws-area-meter {
     height: 3px;
-    margin-top: 6px;
-    max-width: 260px;
+    margin-top: 0.375rem;
+    max-width: 16.25rem;
     border-radius: 2px;
     background: oklch(var(--fg-primary) / 0.12);
     overflow: hidden;
@@ -185,9 +185,9 @@
   }
   .ws-area-drop {
     position: absolute;
-    left: 12px;
-    bottom: 10px;
-    font-size: 12px;
+    left: 0.75rem;
+    bottom: 0.625rem;
+    font-size: 0.75rem;
     color: oklch(var(--accent));
   }
   .ws-drop-target .ws-area {
@@ -199,8 +199,8 @@
   }
 
   .board-resize-handle {
-    width: 10px !important;
-    height: 10px !important;
+    width: 0.625rem !important;
+    height: 0.625rem !important;
     border-radius: 3px;
     background: oklch(var(--accent)) !important;
     border: 1.5px solid var(--ws-card-bg) !important;
@@ -210,7 +210,7 @@
   .board-resize-handle::before {
     content: '';
     position: absolute;
-    inset: -5px;
+    inset: -0.3125rem;
   }
   /* The sides grab 10px wide; the selection outline already draws the edge. */
   .react-flow__resize-control.line.board-resize-line {
@@ -218,13 +218,13 @@
   }
   .react-flow__resize-control.line.board-resize-line.left,
   .react-flow__resize-control.line.board-resize-line.right {
-    width: 10px;
+    width: 0.625rem;
     border-left-width: 0;
     border-right-width: 0;
   }
   .react-flow__resize-control.line.board-resize-line.top,
   .react-flow__resize-control.line.board-resize-line.bottom {
-    height: 10px;
+    height: 0.625rem;
     border-top-width: 0;
     border-bottom-width: 0;
   }
@@ -236,9 +236,9 @@
     box-shadow: 0 2px 8px oklch(0 0 0 / 0.06);
   }
   .ws-canvas .react-flow__controls-button {
-    width: 26px;
-    height: 26px;
-    padding: 5px;
+    width: 1.625rem;
+    height: 1.625rem;
+    padding: 0.3125rem;
   }
   .ws-canvas .react-flow__minimap {
     border: 1px solid var(--color-border);
@@ -254,7 +254,7 @@
   .ws-canvas .react-flow__edge.selected .react-flow__edge-path {
     stroke-width: 2.25;
   }
-  @container (max-width: 640px) {
+  @container (max-width: 40rem) {
     .ws-canvas .react-flow__minimap {
       display: none;
     }
@@ -264,15 +264,15 @@
   .ws-card-tasks {
     display: grid;
     gap: 3px;
-    margin: 4px 0 0;
+    margin: 0.25rem 0 0;
     padding: 0;
     list-style: none;
-    font-size: 12px;
+    font-size: 0.75rem;
     line-height: 1.35;
   }
   .ws-card-tasks li {
     display: flex;
-    gap: 6px;
+    gap: 0.375rem;
     align-items: flex-start;
   }
   .ws-card-tasks svg {
@@ -294,8 +294,8 @@
   .ws-area-name {
     min-width: 0;
     width: 220px;
-    margin: -3px 0 -3px -5px;
-    padding: 2px 5px;
+    margin: -3px 0 -3px -0.3125rem;
+    padding: 2px 0.3125rem;
     border: 1px solid oklch(var(--accent) / 0.6);
     border-radius: 5px;
     background: var(--ws-card-bg);
@@ -308,17 +308,17 @@
   .ws-undo {
     position: absolute;
     left: 50%;
-    bottom: 18px;
+    bottom: 1.125rem;
     z-index: 5;
     display: flex;
-    gap: 10px;
+    gap: 0.625rem;
     align-items: center;
-    padding: 6px 6px 6px 14px;
+    padding: 0.375rem 0.375rem 0.375rem 0.875rem;
     border: 1px solid var(--color-border);
     border-radius: 10px;
     background: var(--ws-card-bg);
     box-shadow: 0 6px 20px oklch(0 0 0 / 0.18);
-    font-size: 13px;
+    font-size: 0.8125rem;
     transform: translateX(-50%);
   }
 
@@ -327,7 +327,7 @@
     display: flex;
     align-items: center;
     gap: 2px;
-    padding: 4px;
+    padding: 0.25rem;
     border: 1px solid var(--color-border);
     border-radius: 10px;
     background: var(--ws-card-bg);
@@ -335,7 +335,7 @@
   }
   .ws-tools {
     position: absolute;
-    top: 12px;
+    top: 0.75rem;
     left: 50%;
     z-index: 5;
     transform: translateX(-50%);
@@ -344,14 +344,14 @@
     position: relative;
     display: grid;
     place-items: center;
-    min-width: 34px;
-    height: 34px;
-    padding: 0 6px;
+    min-width: 2.125rem;
+    height: 2.125rem;
+    padding: 0 0.375rem;
     border: 0;
     border-radius: 8px;
     background: none;
     color: var(--color-foreground);
-    font-size: 12px;
+    font-size: 0.75rem;
     font-variant-numeric: tabular-nums;
     cursor: pointer;
   }
@@ -374,18 +374,18 @@
     right: 3px;
     bottom: 1px;
     font: inherit;
-    font-size: 9px;
+    font-size: 0.5625rem;
     color: var(--color-muted-foreground);
   }
   .ws-zoom {
-    margin: 12px;
+    margin: 0.75rem;
   }
   .ws-zoom-level {
-    min-width: 48px;
+    min-width: 3rem;
   }
   .ws-island-sep {
     width: 1px;
-    height: 18px;
+    height: 1.125rem;
     margin: 0 3px;
     background: var(--color-border);
   }

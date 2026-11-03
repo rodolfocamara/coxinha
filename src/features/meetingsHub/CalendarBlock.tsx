@@ -1,5 +1,6 @@
 import type { CSSProperties, KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
+import { rem } from '../../lib/appearance/units';
 import { nextDay } from '../sessions/sessionDates';
 import type { MeetingRow } from './meetingRows';
 import { clockTime } from './format';
@@ -9,6 +10,7 @@ import { eventLook } from './eventDetails';
 import { sessionIdOf, signalItems, useSessionSignals } from './meetingSignals';
 import { SignalIcons, signalLabel } from './SignalIcons';
 
+/** Design pixels: text and blocks scale together, so these thresholds hold at any font size. */
 export const px = (minutes: number) => (minutes / 60) * HOUR_PX;
 /** An hour's block fits title, time and icons; below that, none rather than clipped. */
 const ICONS_FROM_PX = HOUR_PX;
@@ -85,8 +87,8 @@ export function CalendarBlock({
   const title = row.title || t('meetingsHub.untitled');
   const height = block ? px(block.bottom - block.top) : 0;
   const position: CSSProperties | undefined = block && {
-    top: px(block.top),
-    height: Math.max(height - 2, 12),
+    top: rem(px(block.top)),
+    height: rem(Math.max(height - 2, 12)),
     left: `calc(${(block.lane / block.lanes) * 100}% + 2px)`,
     width: `calc(${100 / block.lanes}% - 4px)`,
   };

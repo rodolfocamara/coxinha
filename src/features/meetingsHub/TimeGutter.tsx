@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import { clockTime } from './format';
+import { rem } from '../../lib/appearance/units';
 import { HOUR_PX } from './weekLayout';
 import { shortName, useTimeZones, zoneHour, zoneLabel, type ExtraZone } from './timeZones';
 import { regionOfZone } from './zoneCatalog';
@@ -9,7 +10,7 @@ const ZONE_PX = 34;
 
 /** Gutter width: Outlook's single clock, or one narrow column per zone. */
 export function gutterStyle(extra: number): CSSProperties {
-  return { '--mh-week-gutter': extra ? `${(extra + 1) * ZONE_PX}px` : '52px' } as CSSProperties;
+  return { '--mh-week-gutter': extra ? rem((extra + 1) * ZONE_PX) : rem(52) } as CSSProperties;
 }
 
 export function useExtraZones(): ExtraZone[] {
@@ -62,7 +63,7 @@ export function TimeGutter({
       {[...zones.map((z) => z.id), null].map((zone) => (
         <div key={zone ?? 'local'} className="mh-week-zone" data-zone={zone ?? 'local'}>
           {HOURS.map((hour) => (
-            <span key={hour} style={{ top: hour * HOUR_PX }}>
+            <span key={hour} style={{ top: rem(hour * HOUR_PX) }}>
               {zones.length
                 ? zoneHour(at(hour), locale, zone ?? undefined)
                 : clockTime(at(hour), locale)}

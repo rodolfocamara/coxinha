@@ -128,7 +128,7 @@
   .cx-cat-mark[data-category]::after {
     content: '';
     position: absolute;
-    inset: var(--cx-cat-block, 2px 4px);
+    inset: var(--cx-cat-block, 2px 0.25rem);
     z-index: -1;
     border-radius: 6px;
     background: var(--cx-cat-bg);
@@ -145,51 +145,51 @@
     position: absolute;
     top: var(--cx-cat-bar-y, 2px);
     bottom: var(--cx-cat-bar-y, 2px);
-    left: var(--cx-cat-inset, 4px);
-    width: 4px;
+    left: var(--cx-cat-inset, 0.25rem);
+    width: 0.25rem;
     border-radius: 6px 0 0 6px;
     background: var(--cx-cat);
   }
   .cx-cat-dot {
     display: inline-block;
     flex-shrink: 0;
-    width: 8px;
-    height: 8px;
+    width: 0.5rem;
+    height: 0.5rem;
     border-radius: 999px;
     background: var(--cx-cat, var(--color-muted-foreground));
   }
   .cx-cat-chips {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
+    gap: 0.25rem;
   }
   .cx-cat-chip {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    height: 22px;
-    padding: 0 8px;
+    gap: 0.375rem;
+    height: 1.375rem;
+    padding: 0 0.5rem;
     border: 1px solid var(--color-border);
     border-radius: 999px;
-    font-size: 12px;
+    font-size: 0.75rem;
     white-space: nowrap;
   }
   .cx-cat-options {
     display: grid;
     gap: 1px;
-    margin-top: 6px;
+    margin-top: 0.375rem;
   }
   .cx-cat-option {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 0.5rem;
     width: 100%;
-    padding: 5px 8px;
+    padding: 0.3125rem 0.5rem;
     border: 0;
     border-radius: 6px;
     background: none;
     color: inherit;
-    font-size: 12.5px;
+    font-size: 0.78125rem;
     text-align: left;
     cursor: pointer;
   }

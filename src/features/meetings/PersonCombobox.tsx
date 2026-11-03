@@ -117,7 +117,7 @@ export function PersonCombobox({
             >
               {option.kind === 'new' ? (
                 <>
-                  <UserPlus size={13} aria-hidden="true" className="self-center text-primary" />
+                  <UserPlus size={13} aria-hidden="true" className="self-center text-primary-ink" />
                   <span>{t('speakerNaming.create', { name: option.label })}</span>
                 </>
               ) : (

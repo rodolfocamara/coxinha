@@ -195,19 +195,19 @@ export function CommandPalette({ open, onClose }: Props) {
 
   return (
     <div
-      className="cx-palette-overlay fixed inset-0 z-50 flex justify-center bg-black/35 px-4 pt-[90px] backdrop-blur-[3px]"
+      className="cx-palette-overlay fixed inset-0 z-50 flex justify-center bg-black/35 px-4 pt-[5.625rem] backdrop-blur-[3px]"
       onClick={dismiss}
       role="presentation"
     >
       <div
-        className="cx-palette-panel flex max-h-[min(560px,70vh)] w-full max-w-[600px] flex-col self-start overflow-hidden rounded-[16px] border border-border bg-card shadow-xl"
+        className="cx-palette-panel flex max-h-[min(560px,70vh)] w-full max-w-[37.5rem] flex-col self-start overflow-hidden rounded-[16px] border border-border bg-card shadow-xl"
         onClick={(e) => e.stopPropagation()}
         onKeyDown={onKey}
         role="dialog"
         aria-modal="true"
         aria-label={t('people.palette.title')}
       >
-        <div className="flex h-[52px] items-center gap-2.5 border-b border-border px-4">
+        <div className="flex h-[3.25rem] items-center gap-2.5 border-b border-border px-4">
           <Search size={17} className="shrink-0 text-muted-foreground" aria-hidden="true" />
           <input
             ref={inputRef}
@@ -220,7 +220,7 @@ export function CommandPalette({ open, onClose }: Props) {
             aria-activedescendant={flat[cursor] ? optionId(cursor) : undefined}
             placeholder={t('people.palette.placeholder')}
             aria-label={t('people.palette.placeholder')}
-            className="flex-1 bg-transparent text-[15px] text-foreground outline-none placeholder:text-muted-foreground"
+            className="flex-1 bg-transparent text-[0.9375rem] text-foreground outline-none placeholder:text-muted-foreground"
           />
           <kbd className="cx-kbd">Esc</kbd>
         </div>
@@ -256,7 +256,7 @@ export function CommandPalette({ open, onClose }: Props) {
             : ''}
         </p>
 
-        <div className="flex gap-3.5 border-t border-border px-3.5 py-2 text-[11px] text-muted-foreground">
+        <div className="flex gap-3.5 border-t border-border px-3.5 py-2 text-[0.6875rem] text-muted-foreground">
           <span>
             <kbd className="cx-kbd">↑</kbd>
             <kbd className="cx-kbd ml-0.5">↓</kbd> {t('people.palette.hints.navigate')}

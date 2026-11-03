@@ -90,7 +90,7 @@ export function TitleLlmCard() {
           />
         }
       />
-      <CardBody className="grid grid-cols-[1fr_110px_1fr] gap-3">
+      <CardBody className="grid grid-cols-[1fr_6.875rem_1fr] gap-3">
         {field('sshTarget', k('target'))}
         <Field label={k('port')}>
           <Input

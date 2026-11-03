@@ -30,7 +30,7 @@ export function PersonAvatar({
       data-hue={hue}
       className={
         'grid shrink-0 place-items-center rounded-full font-bold ' +
-        (size === 40 ? 'size-10 text-sm' : 'size-[22px] text-[9.5px]')
+        (size === 40 ? 'size-10 text-sm' : 'size-[1.375rem] text-[0.59375rem]')
       }
       style={{ background: `oklch(var(--p${hue}-bg))`, color: `oklch(var(--p${hue}))` }}
     >

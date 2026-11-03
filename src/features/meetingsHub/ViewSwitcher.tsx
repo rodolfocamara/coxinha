@@ -31,10 +31,11 @@ export function ViewSwitcher({
           type="button"
           className="mh-cal-opt"
           aria-pressed={view === 'day'}
+          title={k('day')}
           onClick={() => onChange('day', days)}
         >
           <Rows3 size={14} aria-hidden="true" />
-          {k('day')}
+          <span className="ch-bar-label">{k('day')}</span>
         </button>
         <DayMenu days={days} onPick={(count) => onChange('day', count)} />
       </span>
@@ -44,10 +45,11 @@ export function ViewSwitcher({
           type="button"
           className="mh-cal-opt"
           aria-pressed={view === id}
+          title={k(id)}
           onClick={() => onChange(id, days)}
         >
           <Icon size={14} aria-hidden="true" />
-          {k(id)}
+          <span className="ch-bar-label">{k(id)}</span>
         </button>
       ))}
     </div>

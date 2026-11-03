@@ -20,9 +20,12 @@ export function SettingsSection({
 }) {
   const Icon = SECTION_ICONS[id];
   return (
-    <section id={id} data-settings-section aria-labelledby={headingId} className="mb-[22px]">
-      <h2 id={headingId} className="flex items-center gap-2 text-[15px] font-semibold outline-none">
-        {Icon && <Icon size={16} aria-hidden="true" className="text-primary" />}
+    <section id={id} data-settings-section aria-labelledby={headingId} className="mb-[1.375rem]">
+      <h2
+        id={headingId}
+        className="flex items-center gap-2 text-[0.9375rem] font-semibold outline-none"
+      >
+        {Icon && <Icon size={16} aria-hidden="true" className="text-primary-ink" />}
         {title}
       </h2>
       {description && <p className="mt-0.5 mb-2.5 text-muted-foreground">{description}</p>}
@@ -65,7 +68,7 @@ export function SettingsRow({
   const Title = heading ? 'h3' : 'p';
   return (
     <div className="cx-settings-row">
-      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,270px)] items-center gap-4 px-4 py-[13px]">
+      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,16.875rem)] items-center gap-4 px-4 py-[0.8125rem] @max-[38rem]:grid-cols-1 @max-[38rem]:gap-2">
         <div className="flex min-w-0 items-start gap-3">
           {Icon && (
             <span className="cx-settings-row-icon" aria-hidden="true">
@@ -83,9 +86,11 @@ export function SettingsRow({
             )}
           </div>
         </div>
-        <div className="flex min-w-0 items-center justify-end gap-2">{control}</div>
+        <div className="flex min-w-0 items-center justify-end gap-2 @max-[38rem]:justify-start">
+          {control}
+        </div>
       </div>
-      {below && <div className="space-y-2 px-4 pb-[13px]">{below}</div>}
+      {below && <div className="space-y-2 px-4 pb-[0.8125rem]">{below}</div>}
     </div>
   );
 }

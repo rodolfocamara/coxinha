@@ -10,7 +10,7 @@
     display: flex;
     width: 100%;
     align-items: center;
-    padding: 9px 14px;
+    padding: 0.5625rem 0.875rem;
     border-left: 2px solid transparent;
     font-weight: 550;
     text-align: left;
@@ -20,17 +20,17 @@
   }
   .cx-settings-nav-icon {
     flex-shrink: 0;
-    margin-right: 10px;
+    margin-right: 0.625rem;
     color: var(--color-muted-foreground);
   }
   .cx-settings-nav-item[aria-current='true'] .cx-settings-nav-icon {
-    color: var(--color-primary);
+    color: var(--color-primary-ink);
   }
   .cx-settings-row-icon {
     display: inline-flex;
     flex-shrink: 0;
-    width: 28px;
-    height: 28px;
+    width: 1.75rem;
+    height: 1.75rem;
     margin-top: 1px;
     align-items: center;
     justify-content: center;
@@ -66,8 +66,8 @@
   }
   .cx-switch-track {
     position: relative;
-    width: 34px;
-    height: 20px;
+    width: 2.125rem;
+    height: 1.25rem;
     border-radius: 999px;
     background: oklch(var(--fg-primary) / 0.18);
     transition: background-color var(--m-fast) var(--e-out);
@@ -77,8 +77,8 @@
     position: absolute;
     top: 2px;
     left: 2px;
-    width: 16px;
-    height: 16px;
+    width: 1rem;
+    height: 1rem;
     border-radius: 50%;
     background: #fff;
     box-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
@@ -88,7 +88,7 @@
     background: var(--color-primary);
   }
   .cx-switch-input:checked + .cx-switch-track::after {
-    transform: translateX(14px);
+    transform: translateX(0.875rem);
   }
   .cx-switch-input:focus-visible + .cx-switch-track {
     outline: 2px solid var(--color-ring);
@@ -112,7 +112,7 @@
     top: 2px;
     bottom: 2px;
     left: 2px;
-    width: calc((100% - 4px) / var(--count));
+    width: calc((100% - 0.25rem) / var(--count));
     border-radius: 7px;
     background: var(--color-card);
     box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
@@ -123,10 +123,10 @@
     position: relative;
     z-index: 1;
     display: inline-flex;
-    height: 26px;
+    height: 1.625rem;
     align-items: center;
     justify-content: center;
-    padding: 0 10px;
+    padding: 0 0.625rem;
     border-radius: 7px;
     color: var(--color-muted-foreground);
     font-size: var(--text-ui);
@@ -150,6 +150,133 @@
     }
   }
 
+  /* Appearance (spec 0125). The value column is wide enough for "200%", so the
+     track does not jump as the number changes. */
+  .cx-slider {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 2.75rem 1.5rem;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  .cx-slider-value {
+    font-size: var(--text-ui);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    white-space: nowrap;
+    color: var(--color-muted-foreground);
+  }
+  .cx-slider-reset {
+    display: inline-grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 6px;
+    color: var(--color-muted-foreground);
+    cursor: pointer;
+  }
+  .cx-slider-reset:hover {
+    background: var(--color-secondary);
+    color: var(--color-foreground);
+  }
+  .cx-slider-reset[hidden] {
+    display: none;
+  }
+  .cx-slider-reset:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 1px;
+  }
+  /* Drawn by hand: accent-color alone renders differently in WebKitGTK and WebView2. */
+  .cx-range {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    min-width: 0;
+    height: 1.25rem;
+    background: transparent;
+    cursor: pointer;
+  }
+  .cx-range::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(
+      to right,
+      var(--color-primary) var(--progress, 0%),
+      oklch(var(--fg-primary) / 0.22) var(--progress, 0%)
+    );
+  }
+  .cx-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 1rem;
+    height: 1rem;
+    margin-top: calc(2px - 0.5rem);
+    border: 2px solid var(--color-primary);
+    border-radius: 50%;
+    background: var(--color-card);
+  }
+  .cx-range:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  .cx-swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+  }
+  .cx-swatch {
+    display: inline-grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    background: var(--swatch);
+    box-shadow: inset 0 0 0 1px oklch(var(--fg-primary) / 0.14);
+    color: oklch(var(--fg-on-accent));
+    cursor: pointer;
+  }
+  .cx-swatch:has(input:checked) {
+    outline: 2px solid var(--color-foreground);
+    outline-offset: 1px;
+  }
+  .cx-swatch:focus-within {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+  .cx-swatch[data-custom] {
+    background: var(--color-secondary);
+    color: var(--color-foreground);
+  }
+  .cx-accent-details {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.625rem;
+  }
+  .cx-accent-sample {
+    padding: 0.1875rem 0.625rem;
+    border-radius: 8px;
+    font-size: var(--text-ui);
+    font-weight: 550;
+    white-space: nowrap;
+  }
+  .cx-color-input {
+    width: 2rem;
+    height: 1.5rem;
+    padding: 0;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: none;
+    cursor: pointer;
+  }
+  .cx-color-input:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+
   /* Extra time zones (spec 0119 P4). */
   .cx-zone-list {
     display: grid;
@@ -158,11 +285,11 @@
   .cx-zone-item {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 4px 8px;
+    gap: 0.625rem;
+    padding: 0.25rem 0.5rem;
     border-radius: 8px;
     background: var(--color-secondary);
-    font-size: 12.5px;
+    font-size: 0.78125rem;
   }
   .cx-zone-results {
     display: grid;
@@ -173,6 +300,6 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 6px;
+    gap: 0.375rem;
   }
 }
