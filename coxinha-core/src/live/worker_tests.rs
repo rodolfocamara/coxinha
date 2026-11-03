@@ -231,3 +231,35 @@ fn the_model_is_unloaded_after_the_idle_delay() -> Result<()> {
     assert_eq!(probe.loads.load(Ordering::SeqCst), 2);
     Ok(())
 }
+
+#[test]
+fn a_live_capture_preempts_a_draining_meeting_which_resumes_after_it() -> Result<()> {
+    let (_dir, store, probe) = fixture()?;
+    let pcm = speech(&[(1, 1.0), (2, 40.0), (3, 80.0)], 90.0);
+    let first = record(&store, &pcm, &pcm, true)?;
+    let second = short(&store, 5, false)?;
+    probe.set_hold(true);
+    let live = spawn(&store, &probe);
+    live.enqueue(&first);
+    live.end(&first, EndState::Finished);
+    wait_until("first window in flight", || {
+        probe.runs.load(Ordering::SeqCst) == 1
+    });
+    live.enqueue_live(&second);
+    assert_eq!(live.snapshot().queued, std::slice::from_ref(&second));
+    probe.set_hold(false);
+    wait_until("the capture goes first", || {
+        live.snapshot().meeting.as_deref() == Some(second.as_str())
+    });
+    // The ended meeting stepped back with its end; it resumes from its cursor.
+    assert_eq!(live.snapshot().queued, std::slice::from_ref(&first));
+    live.end(&second, EndState::Finished);
+    wait_until("both drained", || !live.is_busy());
+    assert_eq!(probe.loads.load(Ordering::SeqCst), 1);
+    let segments = read_transcript(&store.root, &first)?;
+    assert_eq!(texts(&segments, Track::Mic), ["w1", "w2", "w3"]);
+    assert_eq!(texts(&segments, Track::Output), ["w1", "w2", "w3"]);
+    let segments = read_transcript(&store.root, &second)?;
+    assert_eq!(texts(&segments, Track::Mic), ["w5", "w6"]);
+    Ok(())
+}

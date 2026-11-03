@@ -12,6 +12,7 @@ fn worker(store: Store) -> Worker {
     Worker {
         curation: Default::default(),
         processing: None,
+        resume: Default::default(),
         store,
         #[cfg(target_os = "linux")]
         active: None,

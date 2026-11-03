@@ -61,6 +61,7 @@ fn playback_rejects_symlink_to_private_file_even_with_valid_checksum() {
     let worker = Worker {
         curation: Default::default(),
         processing: None,
+        resume: Default::default(),
         store,
         #[cfg(target_os = "linux")]
         active: None,
@@ -223,6 +224,7 @@ fn failed_finalization_blocks_exit_until_matching_recovery() {
     let mut worker = Worker {
         curation: Default::default(),
         processing: None,
+        resume: Default::default(),
         store: Store::open(temp.path()).unwrap(),
         #[cfg(target_os = "linux")]
         active: None,
@@ -259,6 +261,7 @@ fn explicit_exit_after_failed_finalization_preserves_raw_and_next_start_recovery
     let mut worker = Worker {
         curation: Default::default(),
         processing: None,
+        resume: Default::default(),
         store,
         #[cfg(target_os = "linux")]
         active: None,

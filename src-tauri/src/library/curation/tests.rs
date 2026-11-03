@@ -62,6 +62,7 @@ fn private_curation_actions_preserve_old_confirm_and_revoke_commands() -> anyhow
         curation: Default::default(),
         store,
         processing: None,
+        resume: Default::default(),
         error: None,
         finalization_failed: None,
         live: Default::default(),

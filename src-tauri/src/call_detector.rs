@@ -178,7 +178,8 @@ pub async fn run_loop(app: AppHandle) -> anyhow::Result<()> {
 
 /// Spec 0115 P1: while a capture runs, the last call closing asks the owner
 /// natively. The strip prompt alone goes unseen with the window hidden or
-/// behind the call, where the compositor refuses focus.
+/// behind the call, where the compositor refuses focus. Spec 0118: no ask
+/// when the capture will stop with its call by itself.
 fn asks_to_stop(
     ended: &[ActiveCall],
     active: &[ActiveCall],
@@ -212,7 +213,11 @@ async fn call_ended(app: &AppHandle, ended: &[ActiveCall]) {
 /// Critical urgency: Plasma and GNOME still show it under Do Not Disturb,
 /// which owners often leave on during calls.
 #[cfg(target_os = "linux")]
-async fn notify_ended(app: &AppHandle, title: String, body: String) -> Result<(), String> {
+pub(crate) async fn notify_ended(
+    app: &AppHandle,
+    title: String,
+    body: String,
+) -> Result<(), String> {
     let name = app.package_info().name.clone();
     tauri::async_runtime::spawn_blocking(move || {
         notify_rust::Notification::new()
@@ -229,7 +234,11 @@ async fn notify_ended(app: &AppHandle, title: String, body: String) -> Result<()
 }
 
 #[cfg(not(target_os = "linux"))]
-async fn notify_ended(app: &AppHandle, title: String, body: String) -> Result<(), String> {
+pub(crate) async fn notify_ended(
+    app: &AppHandle,
+    title: String,
+    body: String,
+) -> Result<(), String> {
     app.notification()
         .builder()
         .title(title)

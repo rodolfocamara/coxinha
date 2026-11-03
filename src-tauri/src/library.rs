@@ -58,18 +58,10 @@ enum Action {
     },
     Status,
 }
-#[cfg(target_os = "linux")]
-struct Active {
-    capture: coxinha_core::capture::PulseCapture,
-    id: String,
-    paused: bool,
-    peaks: [f32; 2],
-    last: [Option<Instant>; 2],
-    checkpoint: Instant,
-}
 struct Worker {
     curation: curation_worker::CurationState,
     processing: Option<processing::ProcessingTask>,
+    resume: processing::Resume,
     store: Store,
     #[cfg(target_os = "linux")]
     active: Option<Active>,
@@ -106,6 +98,7 @@ impl Library {
                 let mut worker = Worker {
                     curation: Default::default(),
                     processing: None,
+                    resume: Default::default(),
                     store,
                     #[cfg(target_os = "linux")]
                     active: None,
@@ -191,11 +184,7 @@ impl Library {
 impl Worker {
     fn status(&self) -> Value {
         #[cfg(target_os = "linux")]
-        let active = self.active.as_ref().map(|a| {
-            let meter = |i: usize| json!({"peak": if a.last[i].is_some_and(|t| t.elapsed().as_millis() < 300) { a.peaks[i] } else { 0.0 },
-                "lastBlockMs": a.last[i].map(|t| t.elapsed().as_millis() as u64), "error": null});
-            json!({"meetingId":a.id,"paused":a.paused,"elapsedMs":a.capture.elapsed_ns()/1_000_000,"mic":meter(0),"output":meter(1),"storage":recording_storage::snapshot(&self.store.root, &a.id, None)})
-        });
+        let active = self.active.as_ref().map(|a| a.status(&self.store.root));
         #[cfg(not(target_os = "linux"))]
         let active: Option<Value> = None;
         json!({"active":active,"error":self.error,"processing":self.processing.as_ref().map(|p|p.status())})
@@ -314,38 +303,10 @@ impl Worker {
     fn pump(&mut self) {
         self.pump_comparison();
         self.pump_processing();
+        self.pump_resume();
         self.pump_backlog();
         #[cfg(target_os = "linux")]
-        if let Some(a) = self.active.as_mut() {
-            let mut checkpointed = false;
-            let result = (|| {
-                if a.checkpoint.elapsed().as_secs() >= 1 {
-                    a.capture.recording.request_checkpoint()?;
-                    a.checkpoint = Instant::now();
-                    checkpointed = true;
-                }
-                a.capture.pump()
-            })();
-            if checkpointed {
-                self.live.committed(&a.id);
-            }
-            match result {
-                Ok(Some((track, peak))) => {
-                    let i = if matches!(track, coxinha_core::capture::Track::Mic) {
-                        0
-                    } else {
-                        1
-                    };
-                    a.peaks[i] = peak;
-                    a.last[i] = Some(Instant::now());
-                }
-                Ok(None) => {}
-                Err(e) => {
-                    self.error = Some(format!("{e:#}"));
-                    let _ = self.finish(true);
-                }
-            }
-        }
+        self.pump_capture();
     }
 }
 
@@ -362,6 +323,8 @@ mod backlog;
 mod calendar_match;
 pub use calendar_match::*;
 mod capture;
+#[cfg(target_os = "linux")]
+use capture::Active;
 mod live;
 pub use live::*;
 mod commands;
