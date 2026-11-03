@@ -53,4 +53,5 @@
   };
   f.board_export_recovery = () => 'recovery/board-1.json';
   f.save_attachment = ({ filename }) => `attachments/${filename}`;
+  f.links_list = () => [];
 })();
