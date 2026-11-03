@@ -59,7 +59,16 @@ pub fn is_url(target: &str) -> bool {
 }
 
 pub fn list(vault: &Path, item: &ItemRef) -> Result<ItemFiles, String> {
-    let Some(dir) = folder::find(vault, item)? else {
+    list_in(folder::find(vault, item)?)
+}
+
+/// Same listing for readers that must not touch the vault (the CLI).
+pub fn list_readonly(vault: &Path, item: &ItemRef) -> Result<ItemFiles, String> {
+    list_in(folder::locate(vault, item)?)
+}
+
+fn list_in(dir: Option<PathBuf>) -> Result<ItemFiles, String> {
+    let Some(dir) = dir else {
         return Ok(ItemFiles {
             folder: None,
             files: Vec::new(),

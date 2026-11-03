@@ -124,7 +124,7 @@ impl Library {
                     outlook_event_id: event.map(|e| e.id.clone()),
                     note_path: session.note_path.clone(),
                     has_recording: session.meeting_id.is_some(),
-                    folder: folder::find(&paths.vault, &item_of(session))
+                    folder: folder::locate(&paths.vault, &item_of(session))
                         .ok()
                         .flatten()
                         .map(|p| p.display().to_string()),
@@ -175,7 +175,7 @@ fn meeting(paths: &Paths, args: &Args) -> Result<Value, String> {
         .find(|(_, s)| s.id == id)
         .ok_or_else(|| format!("no meeting {id}"))?;
     let report = library.report(session);
-    let files = files::list(&paths.vault, &item_of(session))?;
+    let files = files::list_readonly(&paths.vault, &item_of(session))?;
     let titles = data::notes(paths).unwrap_or_default();
     let linked: Vec<Value> = links::list(&paths.vault, Some(id), None)?
         .into_iter()

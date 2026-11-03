@@ -128,6 +128,18 @@ pub fn write_marker(dir: &Path, marker: &Marker) -> Result<(), String> {
 
 /// The item's folder, renamed to follow its title when that name is free.
 pub fn find(vault: &Path, item: &ItemRef) -> Result<Option<PathBuf>, String> {
+    let Some(dir) = locate(vault, item)? else {
+        return Ok(None);
+    };
+    let wanted = vault.join(item.kind.dir()).join(desired_name(item));
+    if wanted != dir && !wanted.exists() && fs::rename(&dir, &wanted).is_ok() {
+        return Ok(Some(wanted));
+    }
+    Ok(Some(dir))
+}
+
+/// The item's folder by its marker id, without renaming anything.
+pub fn locate(vault: &Path, item: &ItemRef) -> Result<Option<PathBuf>, String> {
     valid_id(&item.id)?;
     let base = vault.join(item.kind.dir());
     let Ok(entries) = fs::read_dir(&base) else {
@@ -143,10 +155,6 @@ pub fn find(vault: &Path, item: &ItemRef) -> Result<Option<PathBuf>, String> {
         };
         if marker.id != item.id || marker.kind != item.kind {
             continue;
-        }
-        let wanted = base.join(desired_name(item));
-        if wanted != dir && !wanted.exists() && fs::rename(&dir, &wanted).is_ok() {
-            return Ok(Some(wanted));
         }
         return Ok(Some(dir));
     }
