@@ -77,7 +77,7 @@ const ORT_LIB: &str = "libonnxruntime.1.22.0.dylib";
 #[cfg(not(any(target_os = "windows", target_os = "macos")))]
 const ORT_LIB: &str = "libonnxruntime.so.1.22.0";
 
-/// The bundled speaker models, where `tauri.speech.conf.json` puts them:
+/// The bundled speaker models, where `tauri.release.conf.json` puts them:
 /// next to the binary (Windows), in the package's lib dir (deb, AppImage) or
 /// in the bundle's resources (macOS).
 pub fn speaker_dir() -> Option<PathBuf> {
@@ -140,9 +140,12 @@ mod tests {
     #[test]
     fn finds_the_models_where_the_installer_puts_them() {
         let config: serde_json::Value =
-            serde_json::from_str(include_str!("../tauri.speech.conf.json")).unwrap();
+            serde_json::from_str(include_str!("../tauri.release.conf.json")).unwrap();
         let resources = config["bundle"]["resources"].as_object().unwrap();
         assert_eq!(resources["resources/speech/*"], "speech/");
+        // transcribe.cpp libraries land in the resource root, the binary's
+        // runpath on Linux (`$ORIGIN/../lib/Coxinha`) and its folder on Windows.
+        assert_eq!(resources["resources/native/*"], "./");
         for (binary, models) in [
             ("Coxinha.exe", "speech"),
             ("usr/bin/Coxinha", "usr/lib/Coxinha/speech"),

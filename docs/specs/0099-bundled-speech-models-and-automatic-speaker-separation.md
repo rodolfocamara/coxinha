@@ -94,11 +94,18 @@ treatment on their own. The decisions taken:
 - [x] "Transcrever" uses the bundled config when none was chosen
       (`MeetingsHub.detail.test.tsx`).
 - [x] Packaging: `scripts/fetch_speech_models.py` fetches the pinned files
-      (SHA-256 checked) and `tauri.speech.conf.json` ships them as `speech/`;
+      (SHA-256 checked) and `tauri.release.conf.json` ships them as `speech/`;
       the lookup matches the Windows, deb/AppImage and macOS layouts
       (`speech_models` tests). A Linux deb was built and holds
       `usr/lib/Coxinha/speech/` with the three files.
-- [ ] Windows installer built by the release workflow and checked on a
-      Windows machine.
+- [x] Native libraries: `scripts/build_release.py` copies the transcribe.cpp
+      shared libraries (Tagarela) next to the binary, which loads them at
+      start; the deb also depends on `libopenblas0` (`speech_models` test
+      checks the mapping). The deb built on 2026-11-03 holds
+      `usr/lib/Coxinha/libtranscribe.so.0.2` and the three ggml libraries,
+      and `ldd` resolves all four from the package with no
+      `LD_LIBRARY_PATH`.
+- [ ] Windows installer built by the release workflow (`full-release`, which
+      now includes `local-processing`) and checked on a Windows machine.
 - [x] Owner's library: every meeting transcribed with word timings and
       separated by speaker without a click (8 automatic runs, spec 0101).

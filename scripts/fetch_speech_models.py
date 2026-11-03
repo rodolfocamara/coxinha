@@ -2,7 +2,7 @@
 """Fetch the speaker-separation models bundled with the installer (spec 0099).
 
 Downloads pinned files, checks SHA-256 and writes them to
-src-tauri/resources/speech/, which `tauri.speech.conf.json` ships as
+src-tauri/resources/speech/, which `tauri.release.conf.json` ships as
 `speech/` next to the binary. Files already present with the right hash are
 kept. Usage: python scripts/fetch_speech_models.py [--platform linux|windows]
 """
