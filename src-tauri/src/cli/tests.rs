@@ -247,6 +247,57 @@ fn searches_titles_notes_and_transcripts() {
 }
 
 #[test]
+fn search_matches_people_and_serves_the_app_with_explicit_paths() {
+    let f = fixture();
+    let people = f.run(&["search", "bruno"]).unwrap();
+    assert_eq!(people["results"][0]["id"], "s1");
+    assert_eq!(people["results"][0]["matches"][0]["field"], "people");
+    assert_eq!(people["results"][0]["matches"][0]["snippet"], "Bruno Lima");
+
+    // `library_search` resolves these from the running app instead of flags.
+    let paths = paths::Paths {
+        vault: f.vault.clone().into(),
+        data: f.data.clone().into(),
+    };
+    let hits = search::search(&paths, "digital 360", 10).unwrap();
+    assert_eq!(hits.len(), 1);
+    assert_eq!(hits[0].id, "s1");
+    assert_eq!(hits[0].matches[0].field, "transcript");
+    assert!(hits[0].matches[0].snippet.contains("Digital 360"));
+    assert!(search::search(&paths, "   ", 10).unwrap().is_empty());
+    assert_eq!(search::search(&paths, "a", 1).unwrap().len(), 1);
+}
+
+#[test]
+fn search_fields_come_in_a_fixed_order() {
+    let people = [crate::calendar::Candidate {
+        name: "Rosana Costa".into(),
+        email: Some("rosana@x.com".into()),
+    }];
+    let found = search::matches(
+        &search::Fields {
+            title: "Headcount Q1",
+            people: &people,
+            notes: Some("headcount aprovado"),
+            transcript: Some("[00:10] Rosana: o headcount"),
+        },
+        "headcount",
+    );
+    let fields: Vec<_> = found.iter().map(|m| m.field).collect();
+    assert_eq!(fields, vec!["title", "notes", "transcript"]);
+    let by_email = search::matches(
+        &search::Fields {
+            title: "x",
+            people: &people,
+            notes: None,
+            transcript: None,
+        },
+        "ROSANA@",
+    );
+    assert_eq!(by_email[0].snippet, "Rosana Costa");
+}
+
+#[test]
 fn lists_activities_without_meeting_or_daily_notes() {
     let f = fixture();
     let found = f.run(&["activities"]).unwrap();

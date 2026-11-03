@@ -3,7 +3,8 @@
 mod args;
 mod data;
 mod meetings;
-mod paths;
+pub(crate) mod paths;
+pub(crate) mod search;
 mod write;
 
 #[cfg(test)]
@@ -204,38 +205,7 @@ fn meeting(paths: &Paths, args: &Args) -> Result<Value, String> {
 
 fn search(paths: &Paths, args: &Args) -> Result<Value, String> {
     let query = args.arg(0, "search text")?;
-    let limit = args.limit(20)?;
-    let library = Library::open(paths)?;
-    let mut hits = Vec::new();
-    for (summary, session) in library.summaries(paths) {
-        let mut matches = Vec::new();
-        if let Some(s) = meetings::snippet(&summary.title, query, 120) {
-            matches.push(json!({ "field": "title", "snippet": s }));
-        }
-        if let Some(s) = meetings::note_text(paths, session)
-            .and_then(|notes| meetings::snippet(&notes, query, 160))
-        {
-            matches.push(json!({ "field": "notes", "snippet": s }));
-        }
-        if let Some(s) = library
-            .report(session)
-            .map(|r| meetings::transcript(&r))
-            .and_then(|t| meetings::snippet(&t, query, 160))
-        {
-            matches.push(json!({ "field": "transcript", "snippet": s }));
-        }
-        if !matches.is_empty() {
-            hits.push(json!({
-                "id": summary.id,
-                "title": summary.title,
-                "startsAt": summary.starts_at,
-                "matches": matches,
-            }));
-        }
-        if hits.len() >= limit {
-            break;
-        }
-    }
+    let hits = search::search(paths, query, args.limit(20)?)?;
     Ok(json!({ "count": hits.len(), "results": hits }))
 }
 
