@@ -67,18 +67,18 @@ fn private_curation_actions_preserve_old_confirm_and_revoke_commands() -> anyhow
         finalization_failed: None,
         live: Default::default(),
         root: Default::default(),
+        voices: Default::default(),
         #[cfg(target_os = "linux")]
         active: None,
     };
-    let confirm = |enroll| Action::ConfirmSpeaker {
+    let confirm = || Action::ConfirmSpeaker {
         job: prepared.job.clone(),
         speaker: "speaker-0".into(),
         person: person.clone(),
         origin: "human".into(),
-        enroll,
         track: None,
     };
-    worker.execute(confirm(false))?;
+    worker.execute(confirm())?;
     let list = worker.execute(Action::Curation(CurationAction::Candidates(
         prepared.job.clone(),
         "mic".into(),
@@ -123,12 +123,17 @@ fn private_curation_actions_preserve_old_confirm_and_revoke_commands() -> anyhow
         worker.execute(Action::Curation(CurationAction::Profiles))?["profiles"][0]["revokedCount"],
         1
     );
-    worker.execute(confirm(true))?;
+    worker.execute(confirm())?;
     assert_eq!(
-        worker.execute(Action::Curation(CurationAction::Profiles))?["profiles"][0]["spaces"][0]
-            ["activeCount"],
-        2,
-        "legacy enrollment still includes all turns"
+        worker
+            .store
+            .processing_report_by_job(&prepared.job)?
+            .assignments[0]
+            .voice
+            .as_ref()
+            .map(|v| (v.state.as_str(), v.samples)),
+        Some(("pending", 0)),
+        "confirmation never enrolls synchronously (spec 0120)"
     );
     assert!(
         worker
@@ -141,9 +146,8 @@ fn private_curation_actions_preserve_old_confirm_and_revoke_commands() -> anyhow
         "legacy revoke without track".into(),
     ))?;
     assert_eq!(
-        worker.execute(Action::Curation(CurationAction::Profiles))?["profiles"][0]
-            ["invalidatedCount"],
-        2
+        worker.execute(Action::Curation(CurationAction::Profiles))?["profiles"][0]["revokedCount"],
+        1
     );
     Ok(())
 }

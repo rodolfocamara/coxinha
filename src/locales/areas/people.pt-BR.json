@@ -230,6 +230,19 @@
       "noMatch": "Nenhum participante corresponde à busca.",
       "consent": "Participante de reuniões da sua agenda",
       "done": "{{created}} importadas, {{skipped}} já existiam."
+    },
+    "voiceMemory": {
+      "title": "Memória de voz",
+      "forget": "Esquecer a voz",
+      "forgetReason": "Por que esquecer esta voz?",
+      "forgetConfirm": "Esquecer",
+      "cancel": "Cancelar",
+      "off": "Memória de voz desligada. Confirmar esta pessoa não memoriza a voz.",
+      "rememberAgain": "Lembrar a voz de novo",
+      "pending_one": "{{count}} confirmação aguardando para memorizar quando o Coxinha estiver livre",
+      "pending_other": "{{count}} confirmações aguardando para memorizar quando o Coxinha estiver livre",
+      "failed": "Não consegui memorizar uma confirmação em {{meeting}}: {{reason}}",
+      "retry": "Tentar de novo"
     }
   }
 }

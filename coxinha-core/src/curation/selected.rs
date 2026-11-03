@@ -12,7 +12,7 @@ pub struct SelectedEnrollment {
     pub turn_ids: Vec<String>,
     pub human_origin: String,
 }
-fn validate_origin(origin: &str) -> Result<()> {
+pub(super) fn validate_origin(origin: &str) -> Result<()> {
     ensure!(
         !origin.trim().is_empty() && origin.len() <= 1000 && !origin.chars().any(char::is_control),
         "valid explicit human origin required"

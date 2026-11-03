@@ -114,7 +114,9 @@ function ProcessingPanelForMeeting({
             meetingId={meetingId}
             data={data}
             report={report}
-            disabled={busy || !!status.active || !!processing}
+            // Naming never waits for a capture (spec 0120); only a run of this meeting replaces the report.
+            disabled={busy || processing?.meetingId === meetingId}
+            manualEnrollBlocked={!!status.active || !!processing}
             onSeek={onSeek}
             act={act}
             playback={playback}

@@ -11,6 +11,7 @@ import {
 import { PersonCombobox } from './PersonCombobox';
 import { personChoices, resolveTyped, type Pick } from './personChoices';
 import { SelectedVoiceEnrollment } from './SelectedVoiceEnrollment';
+import { SpeakerVoiceState } from './SpeakerVoiceState';
 import { voiceButton as speakerButton, voiceField as speakerField } from './voiceControls';
 import { speakerExcerpt } from './speakerExcerpt';
 import { excerptKey, type ExcerptPlayback } from './useBoundedPlayback';
@@ -21,7 +22,8 @@ const textAction =
 
 /**
  * One voice as a list row (specs 0102, 0110): listen, then type who it is.
- * A named voice keeps correction and voice memory behind "Trocar".
+ * Confirming also remembers the voice (spec 0120). A named voice keeps
+ * correction, "not a participant" and selected samples behind "Trocar".
  */
 export function SpeakerCard({
   meetingId,
@@ -36,6 +38,8 @@ export function SpeakerCard({
   act,
   playback,
   onSeek,
+  manualEnrollBlocked = false,
+  note,
 }: {
   meetingId: string;
   curationVersion: unknown;
@@ -50,6 +54,10 @@ export function SpeakerCard({
   act: (action: () => Promise<unknown>) => Promise<void>;
   playback?: ExcerptPlayback;
   onSeek: (track: string, seconds: number, end?: number) => void;
+  /** Selected samples still wait for an idle library; confirmation does not. */
+  manualEnrollBlocked?: boolean;
+  /** Why the row sits in the folded group. */
+  note?: string;
 }) {
   const { t } = useTranslation();
   const k = (name: string) => t(`library.processing.${name}`);
@@ -102,8 +110,18 @@ export function SpeakerCard({
           : choice.kind === 'invitee'
             ? await library.createPerson(choice.invitee.name.trim(), w('inviteeConsent'))
             : await library.createPerson(choice.label, t('speakerNaming.typedConsent'));
-      await library.confirmSpeaker(report.job, speaker, id, origin, false, track);
+      await library.confirmSpeaker(report.job, speaker, id, origin, track);
     }).then(reset, () => undefined);
+  }
+
+  /** Spec 0120 P6: leaves naming and sample collection; reversible. */
+  function notParticipant() {
+    const why = assignment ? reason.trim() : t('speakerNaming.notParticipantOrigin');
+    if (disabled || !why) return;
+    void act(() => library.rejectSpeaker(report.job, speaker, why, track)).then(
+      reset,
+      () => undefined
+    );
   }
 
   return (
@@ -157,7 +175,16 @@ export function SpeakerCard({
             <p className="truncate text-xs text-muted-foreground tabular-nums">
               {trackName}
               {range && ` · ${range}`}
+              {note && ` · ${note}`}
             </p>
+            {assignment && (
+              <SpeakerVoiceState
+                voice={assignment.voice}
+                assignmentId={assignment.id}
+                disabled={disabled}
+                act={act}
+              />
+            )}
           </div>
           {editing ? (
             <div className="flex min-w-0 basis-full items-center gap-2 sm:basis-80">
@@ -184,6 +211,11 @@ export function SpeakerCard({
               >
                 {assignment ? k('correctIdentity') : k('confirm')}
               </button>
+              {!assignment && (
+                <button type="button" className={`${textAction} shrink-0`} onClick={notParticipant}>
+                  {t('speakerNaming.notParticipant')}
+                </button>
+              )}
             </div>
           ) : (
             <button type="button" className={textAction} onClick={() => setChanging(true)}>
@@ -247,6 +279,14 @@ export function SpeakerCard({
               >
                 {k('revoke')}
               </button>
+              <button
+                type="button"
+                className={textAction}
+                disabled={!reason.trim()}
+                onClick={notParticipant}
+              >
+                {t('speakerNaming.notParticipant')}
+              </button>
               <button type="button" className={textAction} onClick={reset}>
                 {t('speakerNaming.cancel')}
               </button>
@@ -259,7 +299,7 @@ export function SpeakerCard({
                 speaker={speaker}
                 report={report}
                 assignment={assignment}
-                disabled={disabled}
+                disabled={disabled || manualEnrollBlocked}
                 act={act}
                 playback={playback}
                 version={curationVersion}

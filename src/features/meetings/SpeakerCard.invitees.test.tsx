@@ -65,7 +65,6 @@ it('creates an invitee as a person and confirms the voice with the prefilled ver
       'speaker-2',
       'p-bruno',
       'Ouvi o trecho e reconheci a voz',
-      false,
       'output'
     )
   );
@@ -129,7 +128,6 @@ it('creates a typed name nobody has and names the voice in one step', async () =
     'speaker-2',
     'p-carla',
     'Ouvi o trecho e reconheci a voz',
-    false,
     'output',
   ]);
   await waitFor(() => expect(field).toHaveValue(''));

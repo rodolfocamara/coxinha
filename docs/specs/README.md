@@ -205,5 +205,6 @@ Pending decisions that block or shape the implementation.
 - [0117 — Faces for people](0117-faces-for-people.md) — draft
 - [0118 — A recording ends with its call](0118-recording-ends-with-its-call.md) — in-progress
 - [0119 — Agenda polish: repairs without the view, recordings in view, Outlook's colours and time zones](0119-agenda-polish.md) — in-progress
+- [0120 — Voices from confirmations, and noise kept out of naming](0120-voices-from-confirmations.md) — in-progress
 - [0121 — Record while the previous meeting is processing](0121-record-while-processing.md) — in-progress
 - [0122 — Universal search](0122-universal-search.md) — in-progress

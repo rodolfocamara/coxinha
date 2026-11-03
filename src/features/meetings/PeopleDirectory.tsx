@@ -6,6 +6,7 @@ import { PersonFormSheet } from './PersonFormSheet';
 import { voiceCurationErrorText } from './voiceCurationError';
 import { PeopleBrowser } from '../people/PeopleBrowser';
 import { ImportPeopleSheet } from '../people/ImportPeopleSheet';
+import { useCaptureStore } from '../capture/captureStore';
 
 /**
  * Pessoas (spec 0096 P6): the global local registry of people and voice
@@ -36,6 +37,14 @@ export function PeopleDirectory({
     // A new `?person=` arriving matters, not a new object for the same one.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [opened?.personId]);
+  // Voices remembered later from confirmations (spec 0120) reload every page.
+  const voices = useCaptureStore((state) => state.status?.voices?.generation);
+  const seenVoices = useRef(voices);
+  useEffect(() => {
+    if (voices === seenVoices.current) return;
+    seenVoices.current = voices;
+    if (!pending.current) setVersion((value) => value + 1);
+  }, [voices]);
   async function act(action: () => Promise<unknown>) {
     if (pending.current) return;
     pending.current = true;

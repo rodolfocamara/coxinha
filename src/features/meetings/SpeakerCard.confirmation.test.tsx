@@ -105,7 +105,6 @@ it('R4 permits a genuine correction to a different UUID even with the same displ
       'speaker-1',
       'ana-22222222',
       'Human identity review',
-      false,
       'mic'
     )
   );
@@ -121,7 +120,6 @@ it('R4 preserves initial explicit confirmation when no confirmed assignment exis
       'speaker-1',
       'ana-11111111',
       'I listened to the excerpt and recognized the voice',
-      false,
       'mic'
     )
   );

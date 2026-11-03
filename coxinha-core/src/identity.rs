@@ -264,5 +264,6 @@ impl Store {
 mod tests;
 
 mod enrollment;
+pub use enrollment::{verify_enrollment_source_at, VerifiedEnrollmentSource};
 mod import;
 pub use import::{name_key, PeopleImport};

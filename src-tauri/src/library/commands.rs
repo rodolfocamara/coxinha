@@ -147,13 +147,14 @@ pub async fn library_confirm_speaker(
     enroll: Option<bool>,
     track: Option<String>,
 ) -> Result<Value, String> {
+    // Kept for older callers; confirmation always remembers the voice.
+    let _ = enroll;
     state
         .ask(Action::ConfirmSpeaker {
             job,
             speaker,
             person: person_id,
             origin: human_origin,
-            enroll: enroll.unwrap_or(false),
             track,
         })
         .await

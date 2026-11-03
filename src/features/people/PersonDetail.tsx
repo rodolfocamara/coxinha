@@ -10,6 +10,7 @@ import { PersonAvatar } from './personVisual';
 import { SampleRow, sampleDate } from './SampleRow';
 import { usePersonSamples, type VoiceSample } from './usePersonSamples';
 import { useSamplePlayer } from './useSamplePlayer';
+import { VoiceMemory } from './VoiceMemory';
 
 export type PersonSummary = { active: number; more: boolean; meetings: number };
 
@@ -285,6 +286,18 @@ export function PersonDetail({
                 })}
               </ul>
             )}
+          </div>
+          <div>
+            <h3 className="mb-2 text-[11px] font-semibold text-muted-foreground">
+              {t('people.voiceMemory.title')}
+            </h3>
+            <VoiceMemory
+              personId={person.personId}
+              version={version}
+              disabled={disabled}
+              act={act}
+              meetingTitle={titleFor}
+            />
           </div>
           <div>
             <h3 className="mb-2 text-[11px] font-semibold text-muted-foreground">

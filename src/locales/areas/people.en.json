@@ -230,6 +230,19 @@
       "noMatch": "No participant matches this search.",
       "consent": "Participant in meetings from your calendar",
       "done": "{{created}} imported, {{skipped}} already existed."
+    },
+    "voiceMemory": {
+      "title": "Voice memory",
+      "forget": "Forget the voice",
+      "forgetReason": "Why forget this voice?",
+      "forgetConfirm": "Forget",
+      "cancel": "Cancel",
+      "off": "Voice memory is off. Confirming this person does not remember the voice.",
+      "rememberAgain": "Remember the voice again",
+      "pending_one": "{{count}} confirmation waiting to be remembered when Coxinha is free",
+      "pending_other": "{{count}} confirmations waiting to be remembered when Coxinha is free",
+      "failed": "Could not remember a confirmation in {{meeting}}: {{reason}}",
+      "retry": "Try again"
     }
   }
 }

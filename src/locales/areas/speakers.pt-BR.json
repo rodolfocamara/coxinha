@@ -14,6 +14,23 @@
     "more": "Mais opções",
     "change": "Trocar",
     "reason": "Por que trocar ou remover este nome?",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "notParticipant": "Não é participante",
+    "notParticipantOrigin": "Marcado(a) como não participante ao revisar esta reunião",
+    "undo": "Desfazer",
+    "undoOrigin": "Desfeito ao revisar esta reunião",
+    "foldedGroup_one": "Ruído ou pouca fala ({{count}})",
+    "foldedGroup_other": "Ruído ou pouca fala ({{count}})",
+    "foldedHint": "Menos de 15 s de fala, ou bem mais baixo que você no microfone. Dê um nome só se for participante.",
+    "foldedBrief": "Pouca fala",
+    "foldedBleed": "Som do ambiente no microfone",
+    "rejectedGroup_one": "Não é participante ({{count}})",
+    "rejectedGroup_other": "Não são participantes ({{count}})",
+    "voiceEnrolled_one": "Voz memorizada · {{count}} amostra",
+    "voiceEnrolled_other": "Voz memorizada · {{count}} amostras",
+    "voicePending": "Vou memorizar a voz quando o Coxinha estiver livre",
+    "voiceFailed": "Não consegui memorizar a voz: {{reason}}",
+    "voiceRetry": "Tentar de novo",
+    "voiceOff": "Memória de voz desligada para esta pessoa"
   }
 }

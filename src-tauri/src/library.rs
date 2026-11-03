@@ -34,9 +34,9 @@ enum Action {
         speaker: String,
         person: String,
         origin: String,
-        enroll: bool,
         track: Option<String>,
     },
+    Voice(voices::VoiceAction),
     RevokeAssignment(String, String),
     Edit(String, String, String),
     List,
@@ -69,6 +69,7 @@ struct Worker {
     finalization_failed: Option<String>,
     live: live::LiveSlot,
     root: PathBuf,
+    voices: voices::Voices,
 }
 impl Library {
     pub fn open(root: PathBuf, notify: Option<Notifier>) -> anyhow::Result<Self> {
@@ -106,6 +107,7 @@ impl Library {
                     finalization_failed: None,
                     live: live_slot,
                     root: worker_root,
+                    voices: Default::default(),
                 };
                 let mut watch = watch::CaptureWatch::new(&worker, notify);
                 loop {
@@ -187,7 +189,7 @@ impl Worker {
         let active = self.active.as_ref().map(|a| a.status(&self.store.root));
         #[cfg(not(target_os = "linux"))]
         let active: Option<Value> = None;
-        json!({"active":active,"error":self.error,"processing":self.processing.as_ref().map(|p|p.status())})
+        json!({"active":active,"error":self.error,"processing":self.processing.as_ref().map(|p|p.status()),"voices":{"generation":self.voices.generation}})
     }
     fn execute(&mut self, action: Action) -> anyhow::Result<Value> {
         match action {
@@ -230,37 +232,26 @@ impl Worker {
             Action::ImportPeople(names, origin) => {
                 Ok(json!(self.store.import_people(&names, &origin)?))
             }
+            // Never refused for a capture or processing: the voice is
+            // remembered later, when the library is idle (spec 0120).
             Action::ConfirmSpeaker {
                 job,
                 speaker,
                 person,
                 origin,
-                enroll,
                 track,
             } => {
-                anyhow::ensure!(
-                    self.processing.is_none(),
-                    "finish local processing before voice enrollment"
-                );
-                #[cfg(target_os = "linux")]
-                anyhow::ensure!(
-                    self.active.is_none(),
-                    "finish capture before voice enrollment"
-                );
-                let id = self.store.confirm_processed_track_speaker(
+                self.store.confirm_processed_track_speaker(
                     &job,
                     &speaker,
                     track.as_deref(),
                     &person,
                     &origin,
                 )?;
-                if enroll {
-                    if let Err(error) = self.store.enroll_processed_speaker(&id, &job, &speaker) {
-                        return Err(error.context("name confirmed; voice enrollment failed and no new samples remain active"));
-                    }
-                }
+                self.voices.kick = true;
                 Ok(Value::Null)
             }
+            Action::Voice(action) => self.voice_action(action),
             Action::RevokeAssignment(id, origin) => {
                 self.store
                     .decide_assignment(&id, None, "revoked", &origin)?;
@@ -305,6 +296,7 @@ impl Worker {
         self.pump_processing();
         self.pump_resume();
         self.pump_backlog();
+        self.pump_voices();
         #[cfg(target_os = "linux")]
         self.pump_capture();
     }
@@ -334,10 +326,12 @@ mod note_deletion;
 mod processing;
 mod sessions;
 mod summaries;
+mod voices;
 mod watch;
 pub use commands::*;
 pub use sessions::*;
 pub use summaries::{MeetingSummary, StoredSummaryInput, SummarySource};
+pub use voices::*;
 pub use watch::Notifier;
 
 #[cfg(test)]

@@ -8,6 +8,7 @@ import {
   type ProcessingDetail,
   type ProcessingReport,
   type Recognition,
+  type SpeakerLevel,
 } from './library';
 import { VoiceProfilesPanel } from './VoiceProfilesPanel';
 import { VoiceComparisonPanel } from './VoiceComparisonPanel';
@@ -16,6 +17,8 @@ import { PersonFormSheet } from './PersonFormSheet';
 import { ImportPeopleSheet } from '../people/ImportPeopleSheet';
 import { SpeakerCard, speakerButton as button, speakerField as field } from './SpeakerCard';
 import { mergeParticipants } from './personChoices';
+import { foldedSpeakers, speakerKey } from './speakerNoise';
+import { FoldedSpeakers, RejectedSpeakers } from './SpeakerGroups';
 import type { ExcerptPlayback } from './useBoundedPlayback';
 function SpeakerReviewForRun({
   meetingId,
@@ -27,7 +30,10 @@ function SpeakerReviewForRun({
   playback,
   calendarInvitees = [],
   more,
+  manualEnrollBlocked = false,
 }: {
+  /** A capture or processing holds the disk; selected samples wait. */
+  manualEnrollBlocked?: boolean;
   /** Processing details shown under "Mais opções". */
   more?: ReactNode;
   meetingId: string;
@@ -90,19 +96,57 @@ function SpeakerReviewForRun({
       live = false;
     };
   }, [report.job, attempt, curationRevision]);
+  const [levels, setLevels] = useState<SpeakerLevel[] | null>(null);
+  useEffect(() => {
+    let live = true;
+    // Without levels only the brief rule folds speakers.
+    (async () => library.speakerLevels(report.job))().then(
+      (rows) => live && setLevels(rows),
+      () => live && setLevels(null)
+    );
+    return () => {
+      live = false;
+    };
+  }, [report.job]);
   const people = [
     ...data.people,
     ...created.filter((p) => !data.people.some((other) => other.id === p.id)),
   ];
-  const speakers = Array.from(
+  const rejected = report.assignments.filter((a) => a.track != null && a.state === 'rejected');
+  const rejectedKeys = new Set(rejected.map((a) => speakerKey(a.track!, a.speaker)));
+  const all = Array.from(
     new Map(
       [
         ...report.turns,
         ...report.assignments.filter((a) => a.track != null && a.state === 'confirmed'),
       ]
         .filter((s) => !s.speaker.toLowerCase().includes('unknown'))
-        .map((s) => [JSON.stringify([s.track, s.speaker]), { speaker: s.speaker, track: s.track! }])
+        .map((s) => [speakerKey(s.track!, s.speaker), { speaker: s.speaker, track: s.track! }])
     ).values()
+  ).filter((s) => !rejectedKeys.has(speakerKey(s.track, s.speaker)));
+  const folds = foldedSpeakers(report, levels);
+  const speakers = all.filter((s) => !folds.has(speakerKey(s.track, s.speaker)));
+  const folded = all.filter((s) => folds.has(speakerKey(s.track, s.speaker)));
+  const card = ({ speaker, track }: { speaker: string; track: string }, note?: string) => (
+    <SpeakerCard
+      key={speakerKey(track, speaker)}
+      {...{
+        meetingId,
+        curationVersion,
+        speaker,
+        track,
+        report,
+        people,
+        invitees,
+        recognition,
+        disabled,
+        playback,
+        onSeek,
+        manualEnrollBlocked,
+        note,
+      }}
+      act={curate}
+    />
   );
   const named = speakers.filter(({ speaker, track }) =>
     report.assignments.some(
@@ -155,30 +199,31 @@ function SpeakerReviewForRun({
           <p className="basis-full text-xs text-muted-foreground">{error}</p>
         </div>
       )}
-      {speakers.length === 0 ? (
+      {all.length === 0 && rejected.length === 0 ? (
         <p role="status">{w('noSpeakers')}</p>
       ) : (
-        <ul className="divide-y divide-border rounded-lg border border-border bg-card">
-          {speakers.map(({ speaker, track }) => (
-            <SpeakerCard
-              key={JSON.stringify([track, speaker])}
-              {...{
-                meetingId,
-                curationVersion,
-                speaker,
-                track,
-                report,
-                people,
-                invitees,
-                recognition,
-                disabled,
-                playback,
-                onSeek,
-              }}
-              act={curate}
-            />
-          ))}
-        </ul>
+        speakers.length > 0 && (
+          <ul className="divide-y divide-border rounded-lg border border-border bg-card">
+            {speakers.map((s) => card(s))}
+          </ul>
+        )
+      )}
+      {folded.length > 0 && (
+        <FoldedSpeakers count={folded.length}>
+          {folded.map((s) =>
+            card(
+              s,
+              t(
+                folds.get(speakerKey(s.track, s.speaker)) === 'bleed'
+                  ? 'speakerNaming.foldedBleed'
+                  : 'speakerNaming.foldedBrief'
+              )
+            )
+          )}
+        </FoldedSpeakers>
+      )}
+      {rejected.length > 0 && (
+        <RejectedSpeakers assignments={rejected} disabled={disabled} act={curate} />
       )}
       {report.turns.some((s) => s.speaker.toLowerCase().includes('unknown')) && (
         <p className="text-xs text-muted-foreground">{w('overlap')}</p>
