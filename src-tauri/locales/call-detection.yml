@@ -5,3 +5,9 @@ callDetection.title:
 callDetection.body:
   en: "Possible call in %{app}. Open Coxinha to prepare recording."
   pt-BR: "Possível chamada no %{app}. Abra o Coxinha para preparar a gravação."
+callDetection.endedTitle:
+  en: Did the call end?
+  pt-BR: A chamada terminou?
+callDetection.endedBody:
+  en: "%{app} closed the call and Coxinha is still recording. Open it to stop or keep recording."
+  pt-BR: "O %{app} encerrou a chamada e o Coxinha continua gravando. Abra para parar ou continuar."

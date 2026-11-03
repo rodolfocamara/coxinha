@@ -274,6 +274,58 @@ impl Store {
         Ok(())
     }
 
+    /// Spec 0115 P3: the recording of `retired` moves to `keep`, the session
+    /// prepared for the same calendar event, and `retired` disappears with its
+    /// note reservation, in one transaction. Returns the retired note's id for
+    /// the caller to trash.
+    pub fn absorb_session(&self, keep: &str, retired: &str) -> Result<Option<String>> {
+        ensure!(keep != retired, "a session cannot absorb itself");
+        let tx = self.db.unchecked_transaction()?;
+        let (meeting, note): (Option<String>, Option<String>) = tx
+            .query_row(
+                "SELECT meeting_id,note_id FROM session WHERE id=?1",
+                [retired],
+                |r| Ok((r.get(0)?, r.get(1)?)),
+            )
+            .optional()?
+            .context("session not found")?;
+        let meeting = meeting.context("the retired session has no recording")?;
+        let free: bool = tx
+            .query_row(
+                "SELECT meeting_id IS NULL FROM session WHERE id=?1",
+                [keep],
+                |r| r.get(0),
+            )
+            .optional()?
+            .context("session not found")?;
+        ensure!(free, "the kept session already has a recording");
+        tx.execute("UPDATE session SET meeting_id=NULL WHERE id=?1", [retired])?;
+        tx.execute(
+            "UPDATE session SET meeting_id=?2 WHERE id=?1",
+            params![keep, meeting],
+        )?;
+        tx.execute(
+            "DELETE FROM personal_note_intent WHERE session_id=?1",
+            [retired],
+        )?;
+        tx.execute("DELETE FROM session WHERE id=?1", [retired])?;
+        tx.commit()?;
+        Ok(note)
+    }
+
+    /// Spec 0115 P4: a recording made outside any calendar slot takes its real
+    /// span on the agenda, from the meeting's creation to `ends_at`. A
+    /// scheduled time is never replaced.
+    pub fn date_unscheduled(&self, meeting: &str, ends_at: &str) -> Result<bool> {
+        ensure!(valid_utc(ends_at), "session end must be UTC");
+        Ok(self.db.execute(
+            "UPDATE session SET starts_at=(SELECT strftime('%Y-%m-%dT%H:%M:%SZ',created_at) FROM meeting WHERE id=?1),ends_at=?2
+             WHERE meeting_id=?1 AND starts_at IS NULL AND ends_at IS NULL
+               AND ?2>=(SELECT strftime('%Y-%m-%dT%H:%M:%SZ',created_at) FROM meeting WHERE id=?1)",
+            params![meeting, ends_at],
+        )? == 1)
+    }
+
     /// Manual-first flow: the existing session owns the newly created meeting.
     pub fn create_meeting_for_session(&self, session: &str, title: &str) -> Result<String> {
         self.create_meeting_in_session(title, Some(session))

@@ -3,16 +3,25 @@ import { useTranslation } from 'react-i18next';
 import { CalendarCheck } from 'lucide-react';
 import { library, type CalendarMatch } from '../meetings/library';
 import { onCalendarChanged } from '../agenda/calendar';
+import { refreshSessionList } from '../sessions/sessions';
 
 /**
  * Spec 0100: earlier recordings that overlap a calendar event. Read again
  * when the Outlook cache changes; nothing is applied without an answer.
+ * Reading also joins confirmed recordings to their prepared session (spec
+ * 0115 P3), so the session list is read again after it.
  */
 export function useCalendarMatches(enabled: boolean) {
   const [matches, setMatches] = useState<CalendarMatch[]>([]);
   const reload = useCallback(() => {
     if (!enabled) return;
-    library.calendarMatches().then(setMatches, () => setMatches([]));
+    library.calendarMatches().then(
+      (next) => {
+        setMatches(next);
+        void refreshSessionList();
+      },
+      () => setMatches([])
+    );
   }, [enabled]);
   useEffect(() => {
     reload();

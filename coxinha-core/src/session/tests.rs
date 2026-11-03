@@ -237,3 +237,51 @@ fn retitle_if_only_replaces_the_expected_automatic_title() -> Result<()> {
     assert!(s.retitle_if(&session.id, "Meu título", "  ").is_err());
     Ok(())
 }
+
+#[test]
+fn absorbing_moves_the_recording_and_retires_the_duplicate() -> Result<()> {
+    let d = tempfile::tempdir()?;
+    let s = Store::open(d.path())?;
+    let prepared = s.create_session(&NewSession::manual("Roadmap"))?;
+    let recorded = s.create_session(&NewSession::manual("Roadmap"))?;
+    let meeting = s.create_meeting_for_session(&recorded.id, "Meeting in Google Chrome")?;
+    let note = PersonalNoteRef {
+        id: Uuid::new_v4(),
+        relative_path: "notes/session-recorded.md".into(),
+    };
+    s.bind_session_note(&recorded.id, &note)?;
+    assert!(s.absorb_session(&recorded.id, &recorded.id).is_err());
+    assert!(s.absorb_session(&recorded.id, &prepared.id).is_err());
+    assert_eq!(
+        s.absorb_session(&prepared.id, &recorded.id)?,
+        Some(note.id.to_string())
+    );
+    assert_eq!(s.session_for_meeting(&meeting)?.unwrap().id, prepared.id);
+    assert!(s.session(&recorded.id)?.is_none());
+    // A kept session that already has a recording is never overwritten.
+    let other = s.create_session(&NewSession::manual("Other"))?;
+    s.create_meeting_for_session(&other.id, "Other recording")?;
+    assert!(s.absorb_session(&prepared.id, &other.id).is_err());
+    assert!(s.session(&other.id)?.is_some());
+    Ok(())
+}
+
+#[test]
+fn an_unscheduled_recording_takes_its_real_span_once() -> Result<()> {
+    let d = tempfile::tempdir()?;
+    let s = Store::open(d.path())?;
+    let meeting = s.create_meeting("Meeting in Google Chrome")?;
+    s.db.execute(
+        "UPDATE meeting SET created_at='2026-11-03 14:52:42' WHERE id=?1",
+        [&meeting],
+    )?;
+    assert!(s.date_unscheduled(&meeting, "not a time").is_err());
+    assert!(!s.date_unscheduled(&meeting, "2026-11-03T14:00:00Z")?);
+    assert!(s.date_unscheduled(&meeting, "2026-11-03T15:01:41Z")?);
+    let session = s.session_for_meeting(&meeting)?.unwrap();
+    assert_eq!(session.starts_at.as_deref(), Some("2026-11-03T14:52:42Z"));
+    assert_eq!(session.ends_at.as_deref(), Some("2026-11-03T15:01:41Z"));
+    // A dated or scheduled session keeps its time.
+    assert!(!s.date_unscheduled(&meeting, "2026-11-03T16:00:00Z")?);
+    Ok(())
+}

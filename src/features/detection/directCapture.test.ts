@@ -194,7 +194,7 @@ it('records into the session prepared from the chosen event instead of creating 
   ).toMatchObject({ sessionId: 'prepared' });
 });
 
-it('prefers the meeting under way, then the one with invitees', async () => {
+it('prefers the meeting under way and never assumes a block without invitees', async () => {
   const { likelyInvitation } = await import('./invitations');
   const now = Date.parse('2026-10-26T12:05:00Z');
   const at = (id: string, start: string, end: string, attendees = event.attendees) => ({
@@ -208,7 +208,8 @@ it('prefers the meeting under way, then the one with invitees', async () => {
   const soon = at('soon', '2026-10-26T12:10:00Z', '2026-10-26T12:40:00Z');
   const block = at('block', '2026-10-26T12:03:00Z', '2026-10-26T13:00:00Z', []);
   expect(likelyInvitation([soon, block, started], now)?.id).toBe('started');
-  expect(likelyInvitation([soon, block], now)?.id).toBe('block');
+  expect(likelyInvitation([soon, block], now)?.id).toBe('soon');
+  expect(likelyInvitation([block], now)).toBeUndefined();
   expect(likelyInvitation([soon], now)?.id).toBe('soon');
   expect(likelyInvitation([], now)).toBeUndefined();
 });

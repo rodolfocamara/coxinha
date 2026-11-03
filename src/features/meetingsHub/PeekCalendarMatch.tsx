@@ -26,7 +26,8 @@ export function PeekCalendarMatch({
   durationMs: number | null;
   events: CalendarEvent[];
   proposal: CalendarMatch | null;
-  onResolved: () => void;
+  /** Receives the session that now owns the recording, when it changed. */
+  onResolved: (kept?: string) => void;
   /** The event checked while the question is open, for the calendar to single out. */
   onFocus?: (eventId: string | null) => void;
 }) {
@@ -50,9 +51,11 @@ export function PeekCalendarMatch({
     setBusy(true);
     setError('');
     try {
-      await library.resolveCalendarMatch(sessionId, eventId, accept);
+      const result = await library.resolveCalendarMatch(sessionId, eventId, accept);
       if (accept) await refreshSessionList();
-      onResolved();
+      // The session prepared for the event may now own the recording (spec 0115 P3).
+      const kept = accept ? (result as { id?: unknown } | null)?.id : undefined;
+      onResolved(typeof kept === 'string' && kept !== sessionId ? kept : undefined);
       if (!accept) setOpen(false);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));

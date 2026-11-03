@@ -356,6 +356,7 @@ mod recording_storage;
 mod search;
 pub use curation::*;
 pub use search::*;
+mod absorb;
 mod auto;
 mod backlog;
 mod calendar_match;

@@ -136,7 +136,15 @@ pub async fn run_loop(app: AppHandle) -> anyhow::Result<()> {
         for started in active.iter().filter(|c| !previous.contains(c)) {
             tracing::info!(app = %started.app_name, pid = started.pid, browser = started.is_browser, "call detected");
         }
+        let ended: Vec<ActiveCall> = previous
+            .iter()
+            .filter(|p| !active.contains(p))
+            .cloned()
+            .collect();
         previous = active.clone();
+        if !ended.is_empty() && active.is_empty() {
+            call_ended(&app, &ended).await;
+        }
         crate::auto_record::observe(&app, &active).await;
         if let Some(state) = app.try_state::<Arc<tokio::sync::Mutex<crate::config::AppState>>>() {
             let mut state = state.lock().await;
@@ -168,6 +176,42 @@ pub async fn run_loop(app: AppHandle) -> anyhow::Result<()> {
     }
 }
 
+/// Spec 0115 P1: while a capture runs, the last call closing asks the owner
+/// natively. The strip prompt alone goes unseen with the window hidden or
+/// behind the call, where the compositor refuses focus.
+fn asks_to_stop(
+    ended: &[ActiveCall],
+    active: &[ActiveCall],
+    recording: bool,
+    auto_stops: bool,
+) -> bool {
+    recording && !auto_stops && !ended.is_empty() && active.is_empty()
+}
+
+async fn call_ended(app: &AppHandle, ended: &[ActiveCall]) {
+    let recording = app
+        .state::<crate::library::Library>()
+        .status_value()
+        .await
+        .is_ok_and(|s| !s["active"]["meetingId"].is_null());
+    let auto_stops = crate::auto_record::stops_on_end(app, ended);
+    if !asks_to_stop(ended, &[], recording, auto_stops) {
+        return;
+    }
+    // Only the fixed app label is used, never window titles, URLs or stream contents.
+    if app
+        .notification()
+        .builder()
+        .title(rust_i18n::t!("callDetection.endedTitle").to_string())
+        .body(rust_i18n::t!("callDetection.endedBody", app = ended[0].app_name).to_string())
+        .show()
+        .is_err()
+    {
+        tracing::debug!("call ended notification unavailable");
+    }
+    crate::window::show_main(app);
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -189,6 +233,22 @@ mod tests {
             ),
             "Possível chamada no Microsoft Teams. Abra o Coxinha para preparar a gravação."
         );
+    }
+    #[test]
+    fn only_the_last_call_closing_during_a_capture_asks_to_stop() {
+        let call = |pid| ActiveCall {
+            app_name: "Google Chrome".into(),
+            process_name: "chrome".into(),
+            pid,
+            is_browser: true,
+            detected_at: chrono::Utc::now(),
+        };
+        let ended = [call(1)];
+        assert!(asks_to_stop(&ended, &[], true, false));
+        assert!(!asks_to_stop(&ended, &[], false, false));
+        assert!(!asks_to_stop(&ended, &[], true, true));
+        assert!(!asks_to_stop(&ended, &[call(2)], true, false));
+        assert!(!asks_to_stop(&[], &[], true, false));
     }
     #[test]
     fn disabling_clears_calls_and_invalidates_an_inflight_poll() {

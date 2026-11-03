@@ -145,17 +145,39 @@ fn recordings(root: &std::path::Path, sessions: &Value) -> Vec<Recording> {
 pub async fn library_calendar_matches(
     app: tauri::AppHandle,
     state: State<'_, Library>,
+    storage: State<'_, Arc<Storage>>,
 ) -> Result<Value, String> {
-    let sessions = state.session_list().await?;
     let events = crate::calendar::calendar_status(app.clone())
         .unwrap_or_default()
         .events;
+    super::absorb::sweep(&state, storage.inner(), &events).await;
+    let sessions = state.session_list().await?;
     let decisions: Decisions = crate::settings_file::app_file(&app, DECISIONS)
         .map(|p| crate::settings_file::load(&p))
         .unwrap_or_default();
     let root = state.root.clone();
+    let (recordings, sessions) =
+        tauri::async_runtime::spawn_blocking(move || (recordings(&root, &sessions), sessions))
+            .await
+            .map_err(|e| e.to_string())?;
+    // Recordings closed before spec 0115 take their real span once.
+    for r in &recordings {
+        let unscheduled = sessions.as_array().is_some_and(|list| {
+            list.iter().any(|s| {
+                s["id"].as_str() == Some(r.session.as_str())
+                    && s["starts_at"].is_null()
+                    && s["ends_at"].is_null()
+            })
+        });
+        if unscheduled {
+            let end = r.end.format("%Y-%m-%dT%H:%M:%SZ").to_string();
+            let action = SessionAction::DateUnscheduled(r.meeting.clone(), end);
+            if let Err(error) = state.ask(Action::Session(action)).await {
+                tracing::warn!("recording kept no agenda time: {error}");
+            }
+        }
+    }
     tauri::async_runtime::spawn_blocking(move || {
-        let recordings = recordings(&root, &sessions);
         let proposals = propose(&recordings, &events, &decisions.dismissed);
         json!(proposals
             .into_iter()
@@ -218,7 +240,15 @@ pub async fn library_resolve_calendar_match(
         let people = merge(existing, plan::invitees(&event));
         state.set_participants(meeting, json!(people)).await?;
     }
-    Ok(updated)
+    // Spec 0115 P3: the session prepared for the event takes the recording.
+    match super::absorb::into_prepared(&state, storage.inner(), &session_id, &event).await? {
+        Some(kept) => {
+            state
+                .ask(Action::Session(SessionAction::Detail(kept)))
+                .await
+        }
+        None => Ok(updated),
+    }
 }
 
 #[cfg(test)]

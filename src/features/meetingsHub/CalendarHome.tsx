@@ -210,7 +210,10 @@ export function CalendarHome(p: Props) {
             onOpenSession={p.onOpenSession}
             events={p.events}
             matches={p.matches}
-            onMatchResolved={p.onMatchResolved}
+            onMatchResolved={(kept) => {
+              if (kept) setSelectedKey(rowKey.session(kept));
+              p.onMatchResolved();
+            }}
             onMatchFocus={setMatchEvent}
           />
         )}

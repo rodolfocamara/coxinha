@@ -126,6 +126,13 @@ impl Worker {
                 Err(_) => coxinha_core::live::EndState::Failed,
             };
             self.live.ended(&a.id, end);
+            if result.is_ok() {
+                // Spec 0115 P4: an unscheduled recording shows its real span.
+                let now = chrono::Utc::now().format("%Y-%m-%dT%H:%M:%SZ").to_string();
+                if let Err(error) = self.store.date_unscheduled(&a.id, &now) {
+                    tracing::warn!("recording kept no agenda time: {error:#}");
+                }
+            }
             match result {
                 Ok(m) if m.state == "interrupted" => {
                     self.error = Some("capture interrupted; inspect recording details".into());

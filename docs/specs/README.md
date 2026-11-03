@@ -200,3 +200,4 @@ Pending decisions that block or shape the implementation.
 - [0112 — Board: rename, resize, delete and checklists on the canvas](0112-board-direct-editing.md) — in-progress
 - [0113 — Record a detected call into its calendar meeting](0113-record-into-the-calendar-meeting.md) — in-progress
 - [0114 — Notice when a detected call ends](0114-notice-when-a-call-ends.md) — in-progress
+- [0115 — One agenda: each meeting once, recordings at their real time](0115-one-agenda.md) — in-progress

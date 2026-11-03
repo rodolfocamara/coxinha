@@ -18,11 +18,14 @@ pub fn session_time(value: &str) -> Option<String> {
 }
 
 /// The event running now (or starting within 10 min): nearest start wins,
-/// then the shorter one. Cancelled and all-day events never name a call.
+/// then the shorter one. Cancelled and all-day events never name a call, nor
+/// do blocks without invitees (lunch, focus time): spec 0115 P2.
 pub fn current_event(events: &[Event], now: DateTime<Utc>) -> Option<&Event> {
     events
         .iter()
-        .filter(|e| !e.cancelled && !e.all_day && !e.title.trim().is_empty())
+        .filter(|e| {
+            !e.cancelled && !e.all_day && !e.title.trim().is_empty() && !e.attendees.is_empty()
+        })
         .filter_map(|e| Some((e, instant(&e.starts_at)?, instant(&e.ends_at)?)))
         .filter(|(_, start, end)| *start - Duration::minutes(EARLY) <= now && now <= *end)
         .min_by_key(|(_, start, end)| ((*start - now).num_seconds().abs(), *end - *start))

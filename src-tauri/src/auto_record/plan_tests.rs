@@ -42,7 +42,10 @@ fn picks_the_running_event_with_the_nearest_start_and_ignores_cancelled_or_all_d
         "2026-11-01T00:00:00Z",
     );
     all_day.all_day = true;
-    let events = vec![block.clone(), weekly.clone(), cancelled, all_day];
+    let mut lunch = event("l", "Lunch", "2026-10-31T10:02:00Z", "2026-10-31T11:00:00Z");
+    lunch.attendees.clear();
+    lunch.organizer = None;
+    let events = vec![block.clone(), weekly.clone(), cancelled, all_day, lunch];
     assert_eq!(
         current_event(&events, at("2026-10-31T10:03:00Z"))
             .unwrap()

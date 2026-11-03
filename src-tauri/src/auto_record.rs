@@ -134,6 +134,23 @@ pub fn auto_record_keep(app: AppHandle, state: State<'_, AutoRecord>) -> AutoRec
     state.status()
 }
 
+/// Whether automatic recording stops the capture when one of these calls ends.
+pub fn stops_on_end(app: &AppHandle, calls: &[ActiveCall]) -> bool {
+    let Some(state) = app.try_state::<AutoRecord>() else {
+        return false;
+    };
+    let settings = lock(&state.settings).clone();
+    let policy = lock(&state.policy);
+    settings.enabled
+        && settings.stop_when_call_ends
+        && policy.binding.as_ref().is_some_and(|b| {
+            !b.keep
+                && calls
+                    .iter()
+                    .any(|c| c.pid == b.call.pid && c.process_name == b.call.process_name)
+        })
+}
+
 /// A failed detector poll: evidence is unreliable, cancel any countdown.
 pub fn unreliable(app: &AppHandle) {
     let Some(state) = app.try_state::<AutoRecord>() else {

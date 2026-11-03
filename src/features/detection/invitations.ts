@@ -6,18 +6,21 @@ import { nearbyInvitations } from './MeetingDetails';
 
 /**
  * The calendar meeting a call most likely is (spec 0113): one already under
- * way before one about to start, then the nearest start, then one with
- * invitees over a personal block. Still a suggestion the owner can change.
+ * way before one about to start, then the nearest start. A block without
+ * invitees (lunch, focus time) is never assumed (spec 0115 P2); the owner
+ * can still pick it from the menu.
  */
 export function likelyInvitation(events: CalendarEvent[], now = Date.now()) {
   const rank = (e: CalendarEvent) => {
     const start = Date.parse(e.startsAt);
-    return [start <= now ? 0 : 1, Math.abs(start - now), e.attendees.length ? 0 : 1];
+    return [start <= now ? 0 : 1, Math.abs(start - now)];
   };
-  return [...nearbyInvitations(events ?? [], now)].sort((a, b) => {
-    const [x, y] = [rank(a), rank(b)];
-    return x[0] - y[0] || x[2] - y[2] || x[1] - y[1];
-  })[0];
+  return nearbyInvitations(events ?? [], now)
+    .filter((e) => e.attendees.length > 0)
+    .sort((a, b) => {
+      const [x, y] = [rank(a), rank(b)];
+      return x[0] - y[0] || x[1] - y[1];
+    })[0];
 }
 
 /** Nearby calendar meetings and the likely one, read once when a call shows up. */

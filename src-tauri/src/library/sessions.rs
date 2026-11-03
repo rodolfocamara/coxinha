@@ -15,6 +15,10 @@ pub(super) enum SessionAction {
     Pending,
     ProtectsNote(uuid::Uuid, Option<String>),
     RetitleIf(String, String, String),
+    /// Spec 0115 P3: (kept, retired).
+    Absorb(String, String),
+    /// Spec 0115 P4: (meeting, UTC end).
+    DateUnscheduled(String, String),
 }
 impl Worker {
     fn session_value(&self, id: &str) -> anyhow::Result<Value> {
@@ -123,6 +127,12 @@ impl Worker {
             SessionAction::RetitleIf(id, expected, title) => {
                 Ok(json!(self.store.retitle_if(&id, &expected, &title)?))
             }
+            SessionAction::Absorb(keep, retired) => {
+                Ok(json!(self.store.absorb_session(&keep, &retired)?))
+            }
+            SessionAction::DateUnscheduled(meeting, ends_at) => {
+                Ok(json!(self.store.date_unscheduled(&meeting, &ends_at)?))
+            }
         }
     }
 }
@@ -193,7 +203,11 @@ pub async fn library_session(
         .ask(Action::Session(SessionAction::Detail(session_id)))
         .await
 }
-async fn mutate(library: Library, storage: Arc<Storage>, action: Action) -> Result<Value, String> {
+pub(super) async fn mutate(
+    library: Library,
+    storage: Arc<Storage>,
+    action: Action,
+) -> Result<Value, String> {
     tauri::async_runtime::spawn(async move {
         let _permit = storage.mutation_permit().await.map_err(|e| e.to_string())?;
         library.ask(action).await

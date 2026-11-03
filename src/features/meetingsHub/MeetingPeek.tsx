@@ -27,7 +27,7 @@ type Props = {
   /** The Outlook cache and the open proposals, to ask which event a recording is (spec 0111). */
   events?: CalendarEvent[];
   matches?: CalendarMatch[];
-  onMatchResolved?: () => void;
+  onMatchResolved?: (kept?: string) => void;
   onMatchFocus?: (eventId: string | null) => void;
 };
 
