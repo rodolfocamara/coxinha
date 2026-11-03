@@ -92,9 +92,8 @@ export type ProcessingDetail = {
   people: { id: string; name: string }[];
 };
 export type ParticipantCandidate = { name: string; email: string | null };
-export type MeetingSummary = { markdown: string; generatedAt: string };
 /** Spec 0107: where a search matched a meeting. */
-export type SearchField = 'title' | 'people' | 'notes' | 'transcript' | 'category';
+export type SearchField = 'title' | 'people' | 'notes' | 'summary' | 'transcript' | 'category';
 export type SearchHit = {
   id: string;
   title: string;
@@ -143,6 +142,8 @@ function acceptAudio(detail: LibraryDetail): LibraryDetail {
   return detail;
 }
 
+/** Spec 0108: summary from the owner's LLM, kept with the transcript it came from. */
+export type MeetingSummary = { markdown: string; generatedAt: string };
 export const library = {
   available: isTauri,
   importAudio: (title: string, path: string) =>
@@ -153,6 +154,9 @@ export const library = {
   setParticipantContext: (meetingId: string, participants: ParticipantCandidate[]) =>
     invoke<ParticipantCandidate[]>('library_set_participant_context', { meetingId, participants }),
   list: () => invoke<LibraryMeeting[]>('library_list'),
+  summary: (meetingId: string) =>
+    invoke<MeetingSummary | null>('library_meeting_summary', { meetingId }),
+  summarize: (meetingId: string) => invoke<MeetingSummary>('library_summarize', { meetingId }),
   sources: () => invoke<Source[]>('library_sources'),
   status: () => invoke<CaptureStatus>('library_status'),
   start: (title: string, micSource: string, outputSource: string) =>
@@ -168,8 +172,6 @@ export const library = {
   /** Spec 0099: bundled speaker models over the live transcript. */
   defaultProcessingConfig: () => invoke<ProcessingConfig>('speech_default_processing_config'),
   calendarMatches: () => invoke<CalendarMatch[]>('library_calendar_matches'),
-  summary: (meetingId: string) =>
-    invoke<MeetingSummary | null>('library_meeting_summary', { meetingId }),
   search: (query: string, limit = 50) => invoke<SearchHit[]>('library_search', { query, limit }),
   resolveCalendarMatch: (sessionId: string, eventId: string, accept: boolean) =>
     invoke<unknown>('library_resolve_calendar_match', { sessionId, eventId, accept }),

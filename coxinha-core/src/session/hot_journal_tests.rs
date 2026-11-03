@@ -67,7 +67,7 @@ fn real_hot_journal_on_captured_v3_recovers_before_v4_upgrade() -> Result<()> {
     let s = Store::open(d.path()).context("recover real v3 hot journal before upgrade")?;
     assert_eq!(
         s.db.pragma_query_value(None, "user_version", |r| r.get::<_, u32>(0))?,
-        5
+        6
     );
     assert_eq!(snapshot(&path, true)?, committed);
     assert_committed_probe(&path)?;
@@ -139,7 +139,7 @@ fn recovery_writes_are_allowed_but_other_future_database_blocks_schema_upgrade()
 fn earlier_future_version_refusal_leaves_later_hot_profiles_untouched() -> Result<()> {
     let d = library(true)?;
     let public = d.path().join("meetings.db");
-    Connection::open(&public)?.pragma_update(None, "user_version", 6)?;
+    Connection::open(&public)?.pragma_update(None, "user_version", 7)?;
     let public_bytes = std::fs::read(&public)?;
     let path = d.path().join("private/profiles.db");
     seed_probe(&path)?;

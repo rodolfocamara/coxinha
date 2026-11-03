@@ -193,3 +193,4 @@ Pending decisions that block or shape the implementation.
 - [0105 — Files and links for meetings and activities](0105-item-files-and-links.md) — in-progress
 - [0106 — Meetings CLI and a Claude Code skill](0106-meetings-cli-and-skill.md) — in-progress
 - [0107 — Reuniões as the calendar](0107-reunioes-calendar-home.md) — in-progress
+- [0108 — Meeting summaries](0108-meeting-summaries.md) — in-progress

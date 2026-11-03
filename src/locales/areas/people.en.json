@@ -162,7 +162,9 @@
         "test": "Test",
         "testing": "Testing…",
         "testOk": "It worked: {{title}}",
-        "testFailed": "It did not work: {{error}}"
+        "testFailed": "It did not work: {{error}}",
+        "summaries": "Generate summaries",
+        "summariesPrivacy": "After each transcript, sends the whole transcript text, in parts, to this same server to write a summary with decisions and actions. Off by default; never audio."
       }
     },
     "palette": {

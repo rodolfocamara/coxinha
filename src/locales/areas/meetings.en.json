@@ -8,7 +8,10 @@
       "transcript": "Transcript",
       "live": "Live",
       "people": "Speakers",
-      "files": "Files"
+      "files": "Files",
+      "list": "Upcoming and recent",
+      "review": "To review",
+      "calendar": "Calendar"
     },
     "search": "Search title or person",
     "loading": "Loading…",
@@ -288,8 +291,34 @@
         "people": "People",
         "category": "Category",
         "notes": "Notes",
+        "summary": "Summary",
         "transcript": "Transcript"
       }
+    },
+    "views": "Meeting views",
+    "groups": {
+      "now": "Now",
+      "today": "Today",
+      "upcoming": "Next days",
+      "earlier": "Earlier",
+      "review": "Waiting for you"
+    },
+    "empty": "No meetings yet",
+    "emptyHint": "Create a meeting to take notes, record a call or connect Outlook.",
+    "noMatches": "Nothing found for “{{query}}”",
+    "month": {
+      "outlook": "Outlook",
+      "meeting": "meeting"
+    },
+    "summary": {
+      "title": "Summary",
+      "generated": "generated {{when}}",
+      "generate": "Generate summary",
+      "regenerate": "Generate again",
+      "generating": "Generating…",
+      "none": "No summary yet. It is written after the transcript.",
+      "setup": "To summarize, turn on the title model and \"Generate summaries\" in Settings › Integrations.",
+      "failed": "The summary did not work: {{error}}"
     }
   }
 }

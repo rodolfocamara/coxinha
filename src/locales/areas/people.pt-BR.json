@@ -162,7 +162,9 @@
         "test": "Testar",
         "testing": "Testando…",
         "testOk": "Funcionou: {{title}}",
-        "testFailed": "Não funcionou: {{error}}"
+        "testFailed": "Não funcionou: {{error}}",
+        "summaries": "Gerar resumos",
+        "summariesPrivacy": "Depois de cada transcrição, envia o texto inteiro da transcrição, em partes, para este mesmo servidor escrever um resumo com decisões e ações. Desligado por padrão; nunca áudio."
       }
     },
     "palette": {

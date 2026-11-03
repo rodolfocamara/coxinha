@@ -113,3 +113,38 @@ impl Worker {
         }
     }
 }
+
+impl Worker {
+    pub(super) fn finish(&mut self, interrupted: bool) -> anyhow::Result<()> {
+        #[cfg(target_os = "linux")]
+        if let Some(a) = self.active.take() {
+            let result = a.capture.finish(&self.store, interrupted);
+            // B1: every outcome is terminal for the live worker.
+            let end = match &result {
+                Ok(m) if m.state == "interrupted" => coxinha_core::live::EndState::Interrupted,
+                Ok(_) => coxinha_core::live::EndState::Finished,
+                Err(_) => coxinha_core::live::EndState::Failed,
+            };
+            self.live.ended(&a.id, end);
+            match result {
+                Ok(m) if m.state == "interrupted" => {
+                    self.error = Some("capture interrupted; inspect recording details".into());
+                    if !interrupted {
+                        self.finalization_failed = Some(a.id);
+                        anyhow::bail!("capture interrupted; recover recording before exiting");
+                    }
+                }
+                Err(e) => {
+                    self.finalization_failed = Some(a.id);
+                    self.error =
+                        Some("capture finalization failed; explicit recovery required".into());
+                    return Err(e);
+                }
+                _ => {}
+            }
+        }
+        #[cfg(not(target_os = "linux"))]
+        let _ = interrupted;
+        Ok(())
+    }
+}

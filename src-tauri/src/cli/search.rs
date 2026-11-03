@@ -24,10 +24,11 @@ pub struct Fields<'a> {
     pub title: &'a str,
     pub people: &'a [Candidate],
     pub notes: Option<&'a str>,
+    pub summary: Option<&'a str>,
     pub transcript: Option<&'a str>,
 }
 
-/// Matched fields in a fixed order: title, people, notes, transcript.
+/// Matched fields in a fixed order: title, people, notes, summary, transcript.
 pub fn matches(fields: &Fields, query: &str) -> Vec<Match> {
     let needle = meetings::fold(query);
     if needle.is_empty() {
@@ -57,7 +58,11 @@ pub fn matches(fields: &Fields, query: &str) -> Vec<Match> {
             snippet: people.join(", "),
         });
     }
-    for (field, text) in [("notes", fields.notes), ("transcript", fields.transcript)] {
+    for (field, text) in [
+        ("notes", fields.notes),
+        ("summary", fields.summary),
+        ("transcript", fields.transcript),
+    ] {
         if let Some(snippet) = text.and_then(|t| meetings::snippet(t, query, 160)) {
             found.push(Match { field, snippet });
         }
@@ -71,6 +76,9 @@ pub fn search(paths: &Paths, query: &str, limit: usize) -> Result<Vec<Hit>, Stri
     let mut hits = Vec::new();
     for (summary, session) in library.summaries(paths) {
         let notes = meetings::note_text(paths, session);
+        let generated = library
+            .generated_summary(session)
+            .and_then(|v| v["markdown"].as_str().map(str::to_string));
         let transcript = library
             .report(session)
             .map(|report| meetings::transcript(&report));
@@ -81,6 +89,7 @@ pub fn search(paths: &Paths, query: &str, limit: usize) -> Result<Vec<Hit>, Stri
                 title: &summary.title,
                 people: &people,
                 notes: notes.as_deref(),
+                summary: generated.as_deref(),
                 transcript: transcript.as_deref(),
             },
             query,

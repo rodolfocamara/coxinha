@@ -176,37 +176,7 @@ pub fn keep(summary: &Summary, day: Option<NaiveDate>, f: &Filters) -> bool {
 
 /// "[mm:ss] Name: text", corrections applied, names only when confirmed.
 pub fn transcript(report: &ProcessingReport) -> String {
-    let mut segments: Vec<_> = report.segments.iter().collect();
-    segments.sort_by_key(|s| (s.start_ms, s.id.clone()));
-    segments
-        .into_iter()
-        .map(|segment| {
-            let name = segment
-                .speaker
-                .as_deref()
-                .map(|speaker| {
-                    report
-                        .assignments
-                        .iter()
-                        .find(|a| {
-                            a.speaker == speaker
-                                && a.track.as_deref() == Some(segment.track.as_str())
-                                && a.state == "confirmed"
-                        })
-                        .and_then(|a| a.name.clone())
-                        .unwrap_or_else(|| speaker.to_string())
-                })
-                .unwrap_or_else(|| segment.track.clone());
-            let text = report
-                .corrections
-                .get(&segment.id)
-                .unwrap_or(&segment.text)
-                .trim();
-            let seconds = segment.start_ms / 1000;
-            format!("[{:02}:{:02}] {name}: {text}", seconds / 60, seconds % 60)
-        })
-        .collect::<Vec<_>>()
-        .join("\n")
+    coxinha_core::processing::named_transcript(report)
 }
 
 /// Up to `width` characters around the first match, on one line.

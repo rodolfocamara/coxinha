@@ -119,3 +119,33 @@ fn empty_input_gives_an_empty_excerpt() {
         ""
     );
 }
+
+#[test]
+fn chunks_cover_every_line_in_order_within_the_cap() {
+    let lines: Vec<TranscriptLine> = (0..20)
+        .map(|i| TranscriptLine {
+            start_ms: i * 1000,
+            speaker_hint: Some("Ana".into()),
+            text: format!("frase número {i} da reunião"),
+        })
+        .collect();
+    let chunks = chunk_lines(&lines, 40);
+    assert!(chunks.len() > 1);
+    for chunk in &chunks {
+        assert!(estimate_tokens(chunk) <= 40, "{chunk}");
+    }
+    let joined = chunks.join("\n");
+    assert_eq!(joined.lines().count(), 20);
+    assert!(joined.starts_with("[00:00] Ana: frase número 0"));
+    assert!(joined.ends_with("frase número 19 da reunião"));
+    let long = [TranscriptLine {
+        start_ms: 0,
+        speaker_hint: None,
+        text: "x".repeat(500),
+    }];
+    assert_eq!(
+        chunk_lines(&long, 10),
+        vec!["[00:00] ".to_string() + &"x".repeat(22)]
+    );
+    assert!(chunk_lines(&[], 10).is_empty());
+}

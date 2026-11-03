@@ -7,6 +7,9 @@ pub mod session;
 
 pub mod transcript_summary;
 
+pub mod meeting_summary;
+pub use meeting_summary::{read_summary, StoredSummary};
+
 #[derive(Clone, Copy)]
 enum DatabaseKind {
     Meetings,
@@ -15,7 +18,7 @@ enum DatabaseKind {
 impl DatabaseKind {
     fn maximum_version(self) -> u32 {
         match self {
-            Self::Meetings => 5,
+            Self::Meetings => 6,
             Self::Profiles => 4,
         }
     }
@@ -87,6 +90,12 @@ fn migrate(path: &Path, schema: &str, kind: DatabaseKind) -> Result<Connection> 
         let tx = db.transaction()?;
         tx.execute_batch(include_str!("session/note_intent.sql"))?;
         tx.pragma_update(None, "user_version", 5)?;
+        tx.commit()?;
+    }
+    if matches!(kind, DatabaseKind::Meetings) && version < 6 {
+        let tx = db.transaction()?;
+        tx.execute_batch(meeting_summary::SCHEMA)?;
+        tx.pragma_update(None, "user_version", 6)?;
         tx.commit()?;
     }
     if matches!(kind, DatabaseKind::Profiles) && version < 4 {

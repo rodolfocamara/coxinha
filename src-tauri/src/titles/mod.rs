@@ -8,10 +8,10 @@ use std::net::{Ipv4Addr, Ipv6Addr};
 use std::time::Duration;
 
 mod excerpt;
-mod sanitize;
-mod transport;
+pub(crate) mod sanitize;
+pub(crate) mod transport;
 
-pub use excerpt::{build_excerpt, estimate_tokens, ExcerptMode, TranscriptLine};
+pub use excerpt::{build_excerpt, chunk_lines, estimate_tokens, ExcerptMode, TranscriptLine};
 pub use sanitize::sanitize_title;
 pub mod watch;
 
@@ -33,6 +33,8 @@ pub struct TitleLlmSettings {
     pub ssh_target: String,
     pub remote_port: u16,
     pub model: String,
+    /// Spec 0108: whole transcripts go to the same endpoint, so it is its own opt-in.
+    pub summaries: bool,
 }
 
 impl Default for TitleLlmSettings {
@@ -42,6 +44,7 @@ impl Default for TitleLlmSettings {
             ssh_target: String::new(),
             remote_port: 8000,
             model: "qwen3.5-4b".into(),
+            summaries: false,
         }
     }
 }
@@ -161,6 +164,26 @@ async fn suggest_with(
     let body = transport::request_body(&settings.model, excerpt);
     let raw = transport::complete(program, args, settings.remote_port, body, timeout).await?;
     sanitize_title(&raw).ok_or_else(|| "the model returned no usable title".into())
+}
+
+/// One chat request over the same SSH transport as titles (spec 0108).
+pub(crate) async fn chat(
+    settings: &TitleLlmSettings,
+    system: &str,
+    user: &str,
+    max_tokens: u32,
+    timeout: Duration,
+) -> Result<String, String> {
+    settings.validate()?;
+    let body = transport::chat_body(&settings.model, system, user, max_tokens);
+    transport::complete(
+        OsStr::new(SSH_PROGRAM),
+        &ssh_args(settings),
+        settings.remote_port,
+        body,
+        timeout,
+    )
+    .await
 }
 
 #[cfg(test)]

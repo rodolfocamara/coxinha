@@ -39,6 +39,8 @@ export type TitleLlmSettings = {
   sshTarget: string;
   remotePort: number;
   model: string;
+  /** Spec 0108: whole transcripts to the same host; its own opt-in. */
+  summaries: boolean;
 };
 export type TitleSuggestion = {
   title: string;

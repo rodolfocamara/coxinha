@@ -8,7 +8,10 @@
       "transcript": "Transcrição",
       "live": "Ao vivo",
       "people": "Falantes",
-      "files": "Arquivos"
+      "files": "Arquivos",
+      "list": "Próximas e recentes",
+      "review": "A revisar",
+      "calendar": "Calendário"
     },
     "search": "Buscar título ou pessoa",
     "loading": "Carregando…",
@@ -288,8 +291,34 @@
         "people": "Pessoas",
         "category": "Categoria",
         "notes": "Notas",
+        "summary": "Resumo",
         "transcript": "Transcrição"
       }
+    },
+    "views": "Vistas de reuniões",
+    "groups": {
+      "now": "Agora",
+      "today": "Hoje",
+      "upcoming": "Próximos dias",
+      "earlier": "Anteriores",
+      "review": "Esperando você"
+    },
+    "empty": "Nenhuma reunião ainda",
+    "emptyHint": "Crie uma reunião para anotar, grave uma chamada ou conecte o Outlook.",
+    "noMatches": "Nada encontrado para “{{query}}”",
+    "month": {
+      "outlook": "Outlook",
+      "meeting": "reunião"
+    },
+    "summary": {
+      "title": "Resumo",
+      "generated": "gerado {{when}}",
+      "generate": "Gerar resumo",
+      "regenerate": "Gerar de novo",
+      "generating": "Gerando…",
+      "none": "Ainda sem resumo. Ele é escrito depois da transcrição.",
+      "setup": "Para resumir, ligue o modelo de títulos e \"Gerar resumos\" em Ajustes › Integrações.",
+      "failed": "O resumo não funcionou: {{error}}"
     }
   }
 }

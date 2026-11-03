@@ -12,7 +12,7 @@ pub fn sanitize_title(raw: &str) -> Option<String> {
 
 /// Drops `<think>` blocks. An unclosed block hides everything after it, and
 /// a lone closing tag (the template opened it) hides everything before it.
-fn strip_think(raw: &str) -> String {
+pub(crate) fn strip_think(raw: &str) -> String {
     const OPEN: &str = "<think>";
     const CLOSE: &str = "</think>";
     // ASCII lowercasing keeps byte offsets, so indexes map back onto `raw`.
@@ -56,7 +56,7 @@ fn clean_line(line: &str) -> String {
 }
 
 /// Markdown links keep their text: `[x](https://y)` becomes `x`.
-fn strip_links(line: &str) -> String {
+pub(crate) fn strip_links(line: &str) -> String {
     let mut out = line.to_string();
     while let Some(mid) = out.find("](") {
         let Some(end) = out[mid..].find(')').map(|i| mid + i) else {
@@ -67,7 +67,7 @@ fn strip_links(line: &str) -> String {
     out
 }
 
-fn is_url(word: &str) -> bool {
+pub(crate) fn is_url(word: &str) -> bool {
     let lower = word
         .trim_start_matches(|c: char| !c.is_alphanumeric())
         .to_ascii_lowercase();

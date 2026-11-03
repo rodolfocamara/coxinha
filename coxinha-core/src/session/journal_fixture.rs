@@ -58,7 +58,12 @@ pub(super) fn snapshot(path: &Path, skip_session: bool) -> Result<String> {
         .collect::<rusqlite::Result<Vec<_>>>()?;
     let mut result = String::new();
     for (kind, name, table, sql) in schema {
-        if skip_session && matches!(table.as_str(), "session" | "personal_note_intent") {
+        if skip_session
+            && matches!(
+                table.as_str(),
+                "session" | "personal_note_intent" | "meeting_summary"
+            )
+        {
             continue;
         }
         result.push_str(&format!("{kind:?} {name:?} {table:?} {sql:?}\n"));
