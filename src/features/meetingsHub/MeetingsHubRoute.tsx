@@ -33,7 +33,7 @@ import { validateMeetingsSearch } from './meetingsSearch';
 import './meetingsHub.css';
 
 type SheetState =
-  | { kind: 'meeting' }
+  | { kind: 'meeting'; slot?: { start: Date; end: Date } }
   | { kind: 'import'; title: string; forMeeting: boolean }
   | { kind: 'outlook' }
   | { kind: 'calendar' }
@@ -236,6 +236,7 @@ export function MeetingsHubRoute() {
           isLive={isLive}
           onView={changeView}
           onSelect={(row) => select(row, false)}
+          onCreate={(start, end) => setSheet({ kind: 'meeting', slot: { start, end } })}
         />
       ) : target ? (
         <MeetingDetail
@@ -264,6 +265,8 @@ export function MeetingsHubRoute() {
           onOpenChange={closeSheet}
           events={upcomingEvents}
           now={now}
+          initial={sheet.slot}
+          onReconnect={() => setSheet({ kind: 'outlook' })}
           onCreated={(id) => {
             setSheet(null);
             openSession(id);

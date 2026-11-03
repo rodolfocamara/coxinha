@@ -5,6 +5,8 @@ import type { MeetingRow } from './meetingRows';
 import { clockTime } from './format';
 import { CalendarBlock, blockTime, px } from './CalendarBlock';
 import { HOUR_PX, allDayKeys, initialScroll, isAllDay, layoutDay } from './weekLayout';
+import { atMinutes, type Range } from './gridSelect';
+import { useGridCreate } from './useGridCreate';
 import './weekView.css';
 
 const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
@@ -12,7 +14,8 @@ const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 /**
  * Outlook's time grid for any list of days (spec 0104): day columns on an
  * hour axis, every meeting a block as tall as it lasts and a native button
- * that opens the meeting in the list view.
+ * that opens the meeting in the list view. An empty slot proposes a new
+ * meeting (P5) when `onCreate` is given.
  */
 export function TimeGridView({
   days,
@@ -20,12 +23,14 @@ export function TimeGridView({
   now,
   isLive,
   onSelect,
+  onCreate,
 }: {
   days: Date[];
   rows: MeetingRow[];
   now: Date;
   isLive: (row: MeetingRow) => boolean;
   onSelect: (row: MeetingRow) => void;
+  onCreate?: (start: Date, end: Date) => void;
 }) {
   const { t, i18n } = useTranslation();
   const locale = i18n.resolvedLanguage ?? i18n.language;
@@ -33,6 +38,7 @@ export function TimeGridView({
   const scroller = useRef<HTMLDivElement>(null);
   const allDay = rows.filter(isAllDay);
   const columns = { '--mh-week-days': days.length } as CSSProperties;
+  const create = useGridCreate(onCreate);
 
   const rangeKey = days.map(dayKey).join();
   useLayoutEffect(() => {
@@ -96,6 +102,8 @@ export function TimeGridView({
               month: 'long',
             })}
             aria-current={dayKey(day) === today ? 'date' : undefined}
+            data-creating={create.selecting || undefined}
+            {...create.columnProps(day)}
           >
             {layoutDay(rows, day, now, isLive).map((block) => (
               <CalendarBlock
@@ -107,6 +115,7 @@ export function TimeGridView({
                 when={blockTime(block, day, locale)}
               />
             ))}
+            <Draft range={create.preview(day)} day={day} locale={locale} />
             {dayKey(day) === today && (
               <i
                 className="mh-week-now"
@@ -117,6 +126,21 @@ export function TimeGridView({
           </section>
         ))}
       </div>
+    </div>
+  );
+}
+
+/** The slot being dragged, before the sheet opens. */
+function Draft({ range, day, locale }: { range: Range | null; day: Date; locale: string }) {
+  if (!range) return null;
+  const at = (minutes: number) => clockTime(atMinutes(day, minutes), locale);
+  return (
+    <div
+      className="mh-week-draft"
+      aria-hidden="true"
+      style={{ top: px(range.from), height: px(range.to - range.from) }}
+    >
+      {at(range.from)}–{at(range.to)}
     </div>
   );
 }

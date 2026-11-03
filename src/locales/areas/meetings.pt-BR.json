@@ -180,7 +180,16 @@
       "eventHint": "Traz título e horário do convite.",
       "noEvent": "Nenhum",
       "create": "Criar reunião",
-      "failed": "Não foi possível criar a reunião. Tente de novo."
+      "failed": "Não foi possível criar a reunião. Tente de novo.",
+      "alsoOutlook": "Criar também no Outlook",
+      "alsoOutlookHint": "Adiciona o evento à sua agenda do Outlook com este título e horário. Ninguém é convidado.",
+      "outlookNeedsWrite": "Reconecte o Outlook para criar eventos por aqui.",
+      "outlookOff": "Conecte o Outlook para criar o evento lá também.",
+      "connectOutlook": "Conectar Outlook",
+      "openMeeting": "Abrir reunião",
+      "retryOutlook": "Tentar de novo no Outlook",
+      "outlookFailed": "A reunião foi criada no Coxinha, mas não no Outlook.",
+      "outlookFailedReconnect": "A reunião foi criada no Coxinha, mas o Outlook recusou o evento. Reconecte o Outlook e tente de novo."
     },
     "importSheet": {
       "title": "Importar áudio",

@@ -180,7 +180,16 @@
       "eventHint": "Brings the invitation's title and time.",
       "noEvent": "None",
       "create": "Create meeting",
-      "failed": "Could not create the meeting. Try again."
+      "failed": "Could not create the meeting. Try again.",
+      "alsoOutlook": "Also create in Outlook",
+      "alsoOutlookHint": "Adds the event to your Outlook calendar with this title and time. Nobody is invited.",
+      "outlookNeedsWrite": "Reconnect Outlook to create events from here.",
+      "outlookOff": "Connect Outlook to also create the event there.",
+      "connectOutlook": "Connect Outlook",
+      "openMeeting": "Open meeting",
+      "retryOutlook": "Try Outlook again",
+      "outlookFailed": "The meeting was created in Coxinha, but not in Outlook.",
+      "outlookFailedReconnect": "The meeting was created in Coxinha, but Outlook refused the event. Reconnect Outlook and try again."
     },
     "importSheet": {
       "title": "Import audio",

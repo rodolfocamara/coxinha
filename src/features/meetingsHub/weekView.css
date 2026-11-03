@@ -146,6 +146,25 @@
     color: color-mix(in oklab, var(--color-foreground) 72%, transparent);
     font-variant-numeric: tabular-nums;
   }
+  /* A slot being picked for a new meeting (spec 0104 P5). */
+  .mh-week-col[data-creating] {
+    user-select: none;
+  }
+  .mh-week-draft {
+    position: absolute;
+    left: 2px;
+    right: 2px;
+    z-index: 1;
+    padding: 3px 6px;
+    border: 1px dashed var(--color-primary);
+    border-radius: 5px;
+    background: color-mix(in oklab, var(--color-primary) 18%, transparent);
+    color: var(--color-foreground);
+    font-size: 11px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    pointer-events: none;
+  }
   .mh-week-now {
     position: absolute;
     left: 0;

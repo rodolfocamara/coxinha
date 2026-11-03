@@ -14,9 +14,10 @@ a day but not when, how long, or what overlaps. The owner asked for the week
 
 ## Non-goals
 
-- Creating, moving or resizing meetings by dragging. Blocks open the meeting;
-  Outlook stays where the calendar is edited.
-- Day and work-week views, working-hours shading, time-zone columns.
+- Moving, resizing or renaming meetings in the grid. Blocks open the meeting;
+  Outlook stays where existing events are edited. Creating from an empty
+  slot is P5.
+- Working-hours shading, time-zone columns.
 - Outlook's first day of the week. The week starts on Monday, as the month
   grid and the period filters already do.
 
@@ -80,6 +81,34 @@ The owner asked for Outlook's switcher on one page instead of separate
   category name. When it hides everything in range, the toolbar says so; the
   grid stays.
 
+### P5 Create from the grid (2026-11-03)
+
+The owner chose one way to edit: pick an empty slot and create a Coxinha
+meeting there, optionally also in Outlook. Nothing else in the grid edits.
+
+- In the day, work week and week views, a click on an empty slot snaps to
+  the half hour and proposes 30 minutes; dragging up or down in one column
+  selects a range snapped to 15 minutes, at least 15 minutes long, never
+  past 23:59. A translucent block with the time range follows the drag;
+  Escape cancels it. A press on a meeting block still opens the meeting and
+  never starts a selection.
+- Releasing opens the existing "Nova reunião" sheet with the date, start and
+  end filled in; nothing is created until the owner confirms there. The
+  "Nova" button stays the keyboard path; empty slots are not focusable.
+- The sheet has "Criar também no Outlook", off by default. It is enabled only
+  when Outlook is connected with write access (`categoryAccess.write`, spec
+  0103); otherwise it is disabled with a hint and "Reconectar Outlook".
+- With it checked, the session is created first; then
+  `calendar_create_event` posts an event to the default calendar with the
+  same subject, start and end (UTC `dateTime`, `timeZone: "UTC"`),
+  `showAs: busy`, no body and no attendees, so nobody is invited. The
+  session ID is the Graph `transactionId`, so a retry never makes a second
+  event. A 403 clears write access, as for categories. The cache is
+  refreshed (the created event is added if the refresh misses it), so the
+  session matches the event by title and start (`matchEvent`).
+- If Outlook fails, the session stays; the sheet says the Outlook part
+  failed and offers "Tentar de novo" and "Abrir reunião".
+
 ## Acceptance
 
 - [ ] Week start, day columns, clipping at midnight, minimum height, default
@@ -96,3 +125,14 @@ The owner asked for Outlook's switcher on one page instead of separate
       five columns, old URLs mapped, the remembered view used, search
       filtering the grid including by category name
       (`MeetingsHub.calendar` tests).
+- [x] Grid selection: click snaps to the half hour for 30 minutes, drag
+      snaps to 15 minutes with a 15-minute minimum and the 23:59 cap
+      (`gridSelect` tests).
+- [x] Click and drag open the sheet prefilled, a press on a block opens the
+      meeting instead, Escape cancels (`MeetingsHub.create` tests).
+- [x] "Criar também no Outlook": disabled without write access with the
+      reconnect hint; creates the session then the event; an Outlook failure
+      keeps the session and retries the same event (`MeetingsHub.create`
+      tests).
+- [x] Event body with UTC times, no attendees, `showAs: busy` and the
+      transaction ID; URL and 403 handling (`calendar::create` tests).

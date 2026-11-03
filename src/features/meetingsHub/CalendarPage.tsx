@@ -25,6 +25,7 @@ export function CalendarPage({
   isLive,
   onView,
   onSelect,
+  onCreate,
 }: {
   view: CalendarView;
   days: number;
@@ -34,6 +35,7 @@ export function CalendarPage({
   isLive: (row: MeetingRow) => boolean;
   onView: (view: CalendarView, days: number) => void;
   onSelect: (row: MeetingRow) => void;
+  onCreate?: (start: Date, end: Date) => void;
 }) {
   const { t, i18n } = useTranslation();
   const locale = i18n.resolvedLanguage ?? i18n.language;
@@ -106,6 +108,7 @@ export function CalendarPage({
           now={now}
           isLive={isLive}
           onSelect={onSelect}
+          onCreate={onCreate}
         />
       )}
     </section>

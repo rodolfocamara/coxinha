@@ -57,4 +57,14 @@ export const calendar = {
     invoke<void>('calendar_disconnect').then(() => publishCategories(emptyCalendar)),
   setCategories: (eventId: string, categories: string[]) =>
     published(invoke<CalendarSnapshot>('calendar_set_categories', { eventId, categories })),
+  /** Spec 0104 P5: subject and times only, nobody invited; `transactionId` dedupes retries. */
+  createEvent: (subject: string, startsAt: string, endsAt: string, transactionId: string) =>
+    published(
+      invoke<CalendarSnapshot>('calendar_create_event', {
+        subject,
+        startsAt,
+        endsAt,
+        transactionId,
+      })
+    ),
 };

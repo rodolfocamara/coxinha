@@ -16,7 +16,7 @@ import type {
   LibraryMeeting,
   ProcessingDetail,
 } from '../meetings/library';
-import { at, recording, session } from './meetingsHub.fixtures';
+import { at, event, recording, session } from './meetingsHub.fixtures';
 
 export * from './meetingsHub.fixtures';
 import { sessionListCache } from '../sessions/sessions';
@@ -43,6 +43,8 @@ export type Db = {
   categories: OutlookCategory[];
   categoryAccess: CategoryAccess;
   setCategories: { gate: Promise<void> | null; error: string | null };
+  /** Spec 0104 P5: the Outlook event a new meeting may also create. */
+  createEvent: { error: string | null };
   calls: { command: string; args: Record<string, unknown> }[];
   /** Spec 0105: notes that can be linked and meeting ↔ activity links. */
   notes: {
@@ -72,6 +74,7 @@ export function freshDb(): Db {
     categories: [],
     categoryAccess: { read: true, write: true },
     setCategories: { gate: null, error: null },
+    createEvent: { error: null },
     calls: [],
     notes: [],
     links: [],
@@ -143,6 +146,19 @@ export function backend(db: Db) {
         if (db.setCategories.error) throw new Error(db.setCategories.error);
         const names = args.categories as string[];
         db.events = db.events.map((e) => (e.id === args.eventId ? { ...e, categories: names } : e));
+        return calendarSnapshot(db);
+      }
+      case 'calendar_create_event': {
+        if (db.createEvent.error) throw db.createEvent.error;
+        db.events = [
+          ...db.events,
+          event({
+            id: `e-created-${db.events.length}`,
+            title: args.subject as string,
+            startsAt: args.startsAt as string,
+            endsAt: args.endsAt as string,
+          }),
+        ];
         return calendarSnapshot(db);
       }
       case 'library_detail':
