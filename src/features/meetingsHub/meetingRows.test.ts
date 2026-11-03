@@ -135,6 +135,11 @@ describe('A revisar', () => {
     });
     const planned = row({ id: 'e', title: 'e' });
     expect(attentionOf(interrupted, false)).toBe('recover');
+    const sealed = { ...recording('m', 'a', 'interrupted'), needsRecovery: false };
+    const settled = (status: 'available' | 'none') =>
+      row({ id: 'a', title: 'a', meeting_id: 'm', recording: sealed, transcript_status: status });
+    expect(attentionOf(settled('available'), false)).toBeNull();
+    expect(attentionOf(settled('none'), false)).toBe('untranscribed');
     expect(attentionOf(interrupted, true)).toBeNull();
     expect(attentionOf(failed, false)).toBe('failed');
     expect(attentionOf(missing, false)).toBe('untranscribed');

@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react';
 import { clockTime } from './format';
 import { HOUR_PX } from './weekLayout';
 import { shortName, useTimeZones, zoneHour, zoneLabel, type ExtraZone } from './timeZones';
+import { regionOfZone } from './zoneCatalog';
 
 const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 const ZONE_PX = 34;
@@ -32,7 +33,11 @@ export function ZoneHeadings({
       {zones.map((zone) => (
         <span key={zone.id}>{zoneLabel(zone, day, locale)}</span>
       ))}
-      <span>{local || shortName(day, locale)}</span>
+      <span>
+        {local ||
+          regionOfZone(Intl.DateTimeFormat().resolvedOptions().timeZone) ||
+          shortName(day, locale)}
+      </span>
     </span>
   );
 }

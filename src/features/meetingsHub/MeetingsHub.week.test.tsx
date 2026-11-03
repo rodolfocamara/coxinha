@@ -1,4 +1,4 @@
-import { cleanup, screen, within } from '@testing-library/react';
+import { cleanup, screen, waitFor, within } from '@testing-library/react';
 import { Outlet } from '@tanstack/react-router';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { invoke } from '@tauri-apps/api/core';
@@ -141,4 +141,12 @@ it('puts each hour label under its line, with the extra zones from Settings besi
   expect(column('local')[9]).toBe('09');
   const grid = document.querySelector<HTMLElement>('.mh-week-grid')!;
   expect(grid.style.getPropertyValue('--mh-week-gutter')).toBe('102px');
+});
+
+it('leads from the agenda to the time zone setting (spec 0123)', async () => {
+  const router = renderAt('/meetings?view=week');
+  await heading(/October 12.*18, 2026/);
+  screen.getByRole('button', { name: 'Time zones' }).click();
+  await waitFor(() => expect(router.state.location.pathname).toBe('/settings'));
+  expect(router.state.location.hash).toBe('calendar');
 });

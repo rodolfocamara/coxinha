@@ -185,6 +185,15 @@ it('opens the speakers tab from the "Revisar" finding', async () => {
   expect(tab(/Speakers/)).toHaveAttribute('aria-selected', 'true');
 });
 
+it('asks nothing of an interrupted capture recovery already sealed (spec 0123)', async () => {
+  const broken = db.sessions.find((s) => s.id === 'broken')!;
+  broken.recording = { ...broken.recording!, needsRecovery: false };
+  renderAt('/meetings/broken');
+  const page = await screen.findByRole('article');
+  await within(page).findByRole('heading', { name: 'Crashed weekly' });
+  expect(within(page).queryByRole('button', { name: 'Recover' })).toBeNull();
+});
+
 it('recovers an interrupted capture explicitly from the finding', async () => {
   renderAt('/meetings/broken');
   const recover = await within(await screen.findByRole('article')).findByRole('button', {

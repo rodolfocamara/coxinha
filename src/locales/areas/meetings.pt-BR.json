@@ -238,6 +238,7 @@
       "review": "A revisar",
       "reviewCount_one": "{{count}} reunião a revisar",
       "reviewCount_other": "{{count}} reuniões a revisar",
+      "timeZones": "Fusos horários",
       "reviewHint": "Gravações interrompidas e reuniões ainda sem transcrição.",
       "nowAndNext": "Agora e a seguir",
       "now": "Agora",

@@ -51,6 +51,7 @@ type State = {
   /** False when the zone is unknown, already listed, or the list is full. */
   add: (id: string, label: string) => boolean;
   remove: (id: string) => void;
+  relabel: (id: string, label: string) => void;
   move: (id: string, by: -1 | 1) => void;
 };
 
@@ -75,6 +76,14 @@ export const useTimeZones = create<State>((set, get) => ({
     return true;
   },
   remove: (id) => set(save(get().zones.filter((z) => z.id !== id))),
+  relabel: (id, label) =>
+    set(
+      save(
+        get().zones.map((z) =>
+          z.id === id ? { ...z, label: label.trim().slice(0, MAX_LABEL) } : z
+        )
+      )
+    ),
   move: (id, by) => {
     const zones = [...get().zones];
     const from = zones.findIndex((z) => z.id === id);

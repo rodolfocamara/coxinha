@@ -6,6 +6,8 @@ export type LibraryMeeting = {
   title: string;
   createdAt: string;
   captureState: 'new' | 'recording' | 'finished' | 'interrupted';
+  /** Spec 0123: false once an interrupted capture is sealed by recovery. */
+  needsRecovery?: boolean;
 };
 /** Spec 0100: an earlier recording and the calendar event it overlaps. */
 export type CalendarMatch = {

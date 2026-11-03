@@ -1,5 +1,6 @@
+import { useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
-import { ChevronLeft, ChevronRight, Plus, Search, Upload } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Globe2, Plus, Search, Upload } from 'lucide-react';
 import { Button } from '../../components/ui';
 import { openSearch } from '../../components/AppShell/SearchBar';
 import type { CalendarView } from './calendarViews';
@@ -22,6 +23,7 @@ type Props = {
 /** Outlook's calendar bar (spec 0107); its search opens the universal one (spec 0122). */
 export function CalendarToolbar(p: Props) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const k = (key: string, options?: Record<string, unknown>) =>
     t(`meetingsHub.home.${key}`, options);
   return (
@@ -77,6 +79,15 @@ export function CalendarToolbar(p: Props) {
       >
         {t('search.bar')}
       </Button>
+      <Button
+        size="sm"
+        variant="ghost"
+        iconOnly
+        icon={<Globe2 size={15} aria-hidden="true" />}
+        aria-label={k('timeZones')}
+        title={k('timeZones')}
+        onClick={() => void navigate({ to: '/settings', hash: 'calendar' })}
+      />
       <ViewSwitcher view={p.view} days={p.days} onChange={p.onView} />
     </header>
   );

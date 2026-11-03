@@ -211,12 +211,34 @@ impl Store {
             .db
             .prepare("SELECT id,title,created_at,capture_state FROM meeting ORDER BY rowid DESC")?;
         let rows = query.query_map([], |r| {
+            let (id, state) = (r.get::<_, String>(0)?, r.get::<_, String>(3)?);
             Ok(serde_json::json!({
-                "id": r.get::<_, String>(0)?, "title": r.get::<_, String>(1)?,
-                "createdAt": r.get::<_, String>(2)?, "captureState": r.get::<_, String>(3)?
+                "needsRecovery": self.needs_recovery(&id, &state),
+                "id": id, "title": r.get::<_, String>(1)?,
+                "createdAt": r.get::<_, String>(2)?, "captureState": state
             }))
         })?;
         Ok(rows.collect::<rusqlite::Result<_>>()?)
+    }
+
+    /// Spec 0123: recovery ends in `interrupted`, so the state alone cannot
+    /// tell a sealed capture from one still waiting. Sealing hashes each track.
+    fn needs_recovery(&self, meeting: &str, state: &str) -> bool {
+        match state {
+            "recording" => true,
+            "interrupted" => {
+                !std::fs::read(self.root.join("raw").join(meeting).join("manifest.json"))
+                    .ok()
+                    .and_then(|raw| serde_json::from_slice::<serde_json::Value>(&raw).ok())
+                    .and_then(|m| {
+                        m["tracks"].as_array().map(|tracks| {
+                            !tracks.is_empty() && tracks.iter().all(|t| t["sha256"].is_string())
+                        })
+                    })
+                    .unwrap_or(false)
+            }
+            _ => false,
+        }
     }
 
     pub fn edit(&self, meeting: &str, target: &str, body: &str) -> Result<i64> {

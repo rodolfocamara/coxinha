@@ -104,3 +104,33 @@ fn concurrent_header_checkpoints_preserve_writer_offsets() -> Result<()> {
     }
     Ok(())
 }
+
+#[test]
+fn only_an_unsealed_interruption_needs_recovery() -> Result<()> {
+    let d = tempfile::tempdir()?;
+    let s = Store::open(d.path())?;
+    let id = s.create_meeting("Cut")?;
+    let state = |s: &Store| -> Result<bool> {
+        let list = s.meeting_summaries()?;
+        Ok(list[0]["needsRecovery"].as_bool().unwrap())
+    };
+    assert!(!state(&s)?, "a new meeting has nothing to recover");
+    s.db.execute(
+        "UPDATE meeting SET capture_state='interrupted' WHERE id=?1",
+        [&id],
+    )?;
+    assert!(state(&s)?, "no manifest to read");
+    let dir = d.path().join("raw").join(&id);
+    std::fs::create_dir_all(&dir)?;
+    let manifest = |hash: &str| format!(r#"{{"tracks":[{{"file":"mic.wav",{hash}"frames":1}}]}}"#);
+    std::fs::write(dir.join("manifest.json"), manifest(""))?;
+    assert!(state(&s)?, "a track without its checksum");
+    std::fs::write(dir.join("manifest.json"), manifest(r#""sha256":"abc","#))?;
+    assert!(!state(&s)?, "sealed");
+    s.db.execute(
+        "UPDATE meeting SET capture_state='recording' WHERE id=?1",
+        [&id],
+    )?;
+    assert!(state(&s)?, "open captures still recover");
+    Ok(())
+}

@@ -208,3 +208,4 @@ Pending decisions that block or shape the implementation.
 - [0120 — Voices from confirmations, and noise kept out of naming](0120-voices-from-confirmations.md) — in-progress
 - [0121 — Record while the previous meeting is processing](0121-record-while-processing.md) — in-progress
 - [0122 — Universal search](0122-universal-search.md) — in-progress
+- [0123 — Settled interruptions, and time zones by country](0123-settled-interruptions-and-zone-picker.md) — in-progress

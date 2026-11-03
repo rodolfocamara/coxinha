@@ -12,46 +12,47 @@ beforeEach(async () => {
 });
 
 const list = () => screen.getByRole('list', { name: 'Extra time zones' });
-const items = () =>
+const rows = () =>
   within(list())
     .getAllByRole('listitem')
-    .map((li) => li.textContent);
+    .map((li) => li.querySelector('.font-mono')?.textContent);
+const search = () => screen.getByRole('textbox', { name: 'Country or city' });
 
-it('adds, reorders and removes extra time zones, saved on this computer', async () => {
+it('adds a zone by country with its code, then reorders, relabels and removes it', async () => {
   const user = userEvent.setup();
   render(<CalendarSection />);
-  expect(screen.getByRole('heading', { level: 2, name: 'Calendar' })).toBeInTheDocument();
+  expect(
+    screen.getByRole('heading', { level: 2, name: 'Calendar and time zones' })
+  ).toBeInTheDocument();
   expect(screen.queryByRole('list', { name: 'Extra time zones' })).toBeNull();
 
-  const zone = screen.getByRole('combobox', { name: 'Time zone (IANA name)' });
-  const label = screen.getByRole('textbox', { name: 'Short label' });
-  await user.type(zone, 'Asia/Jerusalem');
-  await user.type(label, 'IL');
-  await user.click(screen.getByRole('button', { name: 'Add' }));
-  expect(zone).toHaveValue('');
-  await user.type(zone, 'America/Mexico_City');
-  await user.type(label, 'MX{Enter}');
-  expect(items()).toEqual(['ILAsia/Jerusalem', 'MXAmerica/Mexico_City']);
+  await user.type(search(), 'Israel');
+  await user.click(screen.getByRole('button', { name: 'Add Israel · Jerusalem' }));
+  expect(search()).toHaveValue('');
+  await user.type(search(), 'Mexico{Enter}');
+  expect(rows()).toEqual(['Asia/Jerusalem', 'America/Mexico_City']);
+  expect(useTimeZones.getState().zones.map((z) => z.label)).toEqual(['IL', 'MX']);
 
-  await user.click(screen.getByRole('button', { name: 'Move MX up' }));
-  expect(items()).toEqual(['MXAmerica/Mexico_City', 'ILAsia/Jerusalem']);
-  expect(screen.getByRole('button', { name: 'Move MX up' })).toBeDisabled();
-  await user.click(screen.getByRole('button', { name: 'Remove IL' }));
-  expect(items()).toEqual(['MXAmerica/Mexico_City']);
+  await user.click(screen.getByRole('button', { name: 'Move America/Mexico_City up' }));
+  expect(rows()).toEqual(['America/Mexico_City', 'Asia/Jerusalem']);
+  const label = screen.getByRole('textbox', { name: 'Label for America/Mexico_City' });
+  expect(label).toHaveValue('MX');
+  await user.clear(label);
+  await user.type(label, 'CDMX');
+  await user.click(screen.getByRole('button', { name: 'Remove Asia/Jerusalem' }));
+  expect(rows()).toEqual(['America/Mexico_City']);
   expect(JSON.parse(window.localStorage.getItem('coxinha:calendar-time-zones')!)).toEqual([
-    { id: 'America/Mexico_City', label: 'MX' },
+    { id: 'America/Mexico_City', label: 'CDMX' },
   ]);
 });
 
-it('explains an unknown zone and names the local column', async () => {
+it('says when nothing matches, and names the local column', async () => {
   const user = userEvent.setup();
   render(<CalendarSection />);
-  const zone = screen.getByRole('combobox', { name: 'Time zone (IANA name)' });
-  await user.type(zone, 'Mars/Base{Enter}');
-  expect(screen.getByRole('alert')).toHaveTextContent('Unknown or already listed time zone');
-  expect(zone).toHaveAttribute('aria-invalid', 'true');
-  await user.type(zone, 'x');
-  expect(screen.queryByRole('alert')).toBeNull();
+  await user.type(search(), 'Atlantida');
+  expect(screen.getByRole('status')).toHaveTextContent('Nothing found');
+  await user.keyboard('{Enter}');
+  expect(useTimeZones.getState().zones).toEqual([]);
 
   const local = screen.getByRole('textbox', { name: "Label for this computer's time zone" });
   await user.type(local, 'BR');

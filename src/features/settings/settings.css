@@ -164,6 +164,11 @@
     background: var(--color-secondary);
     font-size: 12.5px;
   }
+  .cx-zone-results {
+    display: grid;
+    gap: 2px;
+    justify-items: start;
+  }
   .cx-zone-form {
     display: flex;
     flex-wrap: wrap;

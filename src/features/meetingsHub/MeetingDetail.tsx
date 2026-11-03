@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Mic } from 'lucide-react';
 import { Alert, Button } from '../../components/ui';
 import { library, type CaptureStatus } from '../meetings/library';
+import { awaitsRecovery } from '../meetings/recovery';
 import { RecordingDetail } from '../meetings/RecordingDetail';
 import type { Session } from '../sessions/sessions';
 import { useCaptureStore, useIsLive } from '../capture/captureStore';
@@ -96,7 +97,8 @@ export function MeetingDetail({
   const status: CaptureStatus = storeStatus ?? { active: null, error: null };
   const captureBusy = useCaptureStore((s) => s.busy !== null);
   const media = useMeetingMedia(meetingId, recordingMeta?.captureState);
-  const captureState = media.detail?.meeting.captureState ?? recordingMeta?.captureState;
+  const captureMeta = media.detail?.meeting ?? recordingMeta;
+  const captureState = captureMeta?.captureState;
   const processingHere = !!meetingId && status.processing?.meetingId === meetingId;
   const report = media.processing?.report ?? null;
   const latestJob = media.processing?.jobs[0];
@@ -138,6 +140,7 @@ export function MeetingDetail({
     live,
     meetingId,
     captureState,
+    needsRecovery: !!captureMeta && awaitsRecovery(captureMeta),
     processingHere,
     processing: media.processing,
     unconfirmed,
@@ -160,7 +163,11 @@ export function MeetingDetail({
     hasRecording: !!meetingId,
   });
   const canTranscribeAgain =
-    !!meetingId && captureState === 'finished' && !live && !processingHere && !!latestJob;
+    !!meetingId &&
+    (captureState === 'finished' || captureState === 'interrupted') &&
+    !live &&
+    !processingHere &&
+    !!latestJob;
 
   const panel = (id: Tab, children: ReactNode) => (
     <section

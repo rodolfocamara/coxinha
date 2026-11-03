@@ -17,6 +17,7 @@ export function findingFor({
   live,
   meetingId,
   captureState,
+  needsRecovery,
   processingHere,
   processing,
   unconfirmed,
@@ -26,6 +27,7 @@ export function findingFor({
   live: boolean;
   meetingId: string | null;
   captureState: LibraryMeeting['captureState'] | undefined;
+  needsRecovery: boolean;
   processingHere: boolean;
   processing: ProcessingDetail | null;
   unconfirmed: number;
@@ -34,14 +36,18 @@ export function findingFor({
 }): Finding | null {
   if (live) return null;
   if (!meetingId) return planned ? { kind: 'planned', ...planned } : null;
-  if (captureState === 'recording' || captureState === 'interrupted') return { kind: 'recover' };
+  if (needsRecovery) return { kind: 'recover' };
   const latest = processing?.jobs[0];
   if (processingHere || (latest && ['queued', 'running'].includes(latest.state)))
     return { kind: 'processing' };
   if (latest?.state === 'failed' && !processing?.report)
     return { kind: 'failed', error: latest.error };
   if (processing?.report && unconfirmed > 0) return { kind: 'speakers', count: unconfirmed };
-  if (captureState === 'finished' && processing && !processing.jobs.length)
+  if (
+    (captureState === 'finished' || captureState === 'interrupted') &&
+    processing &&
+    !processing.jobs.length
+  )
     return { kind: 'untranscribed', durationMs };
   return null;
 }

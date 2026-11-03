@@ -238,6 +238,7 @@
       "review": "To review",
       "reviewCount_one": "{{count}} meeting to review",
       "reviewCount_other": "{{count}} meetings to review",
+      "timeZones": "Time zones",
       "reviewHint": "Interrupted captures and meetings still without a transcript.",
       "nowAndNext": "Now and next",
       "now": "Now",

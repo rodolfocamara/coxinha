@@ -11,6 +11,7 @@ import {
   type LibraryDetail,
   type ParticipantCandidate,
 } from './library';
+import { awaitsRecovery } from './recovery';
 import { Alert, Button } from '../../components/ui';
 export function RecordingDetail({
   detail,
@@ -185,27 +186,25 @@ export function RecordingDetail({
         {detail.manifest && (!compact || audioVisible) && (
           <p className="text-xs text-muted-foreground break-words">{detail.manifest.alignment}</p>
         )}
-        {showRecover &&
-          ['recording', 'interrupted'].includes(detail.meeting.captureState) &&
-          !active && (
-            <Button
-              variant="primary"
-              disabled={busy}
-              onClick={async () => {
-                setBusy(true);
-                setError(null);
-                try {
-                  await onRecover();
-                } catch (e) {
-                  setError(errorText(e));
-                } finally {
-                  setBusy(false);
-                }
-              }}
-            >
-              {key('recover')}
-            </Button>
-          )}
+        {showRecover && awaitsRecovery(detail.meeting) && !active && (
+          <Button
+            variant="primary"
+            disabled={busy}
+            onClick={async () => {
+              setBusy(true);
+              setError(null);
+              try {
+                await onRecover();
+              } catch (e) {
+                setError(errorText(e));
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            {key('recover')}
+          </Button>
+        )}
         <div
           hidden={!showProcessing && !people}
           id={people ? 'session-panel-people' : processingPanelId}

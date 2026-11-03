@@ -1,5 +1,6 @@
 import type { CalendarEvent } from '../agenda/calendar';
 import type { LibraryMeeting } from '../meetings/library';
+import { awaitsRecovery } from '../meetings/recovery';
 import type { Session } from '../sessions/sessions';
 import { dayKey, nextDay, localDay, recordingInstant, sessionDate } from '../sessions/sessionDates';
 import { transcriptStatus } from '../sessions/transcriptStatus';
@@ -167,15 +168,18 @@ export function groupRows(
 export function attentionOf(row: MeetingRow, live: boolean): Attention {
   if (live || row.kind === 'event') return null;
   if (row.kind === 'recording')
-    return ['recording', 'interrupted'].includes(row.recording.captureState) ? 'recover' : null;
+    return awaitsRecovery(row.recording) ? 'recover' : null;
   const { session } = row;
   const capture = session.recording?.captureState;
-  if (capture === 'recording' || capture === 'interrupted') return 'recover';
+  if (session.recording && awaitsRecovery(session.recording)) return 'recover';
   if (session.processing || ['queued', 'running'].includes(String(session.processing_state)))
     return 'processing';
   const transcript = transcriptStatus(session);
   if (session.processing_state === 'failed' && transcript !== 'available') return 'failed';
-  if (capture === 'finished' && (transcript === 'none' || transcript === 'empty'))
+  if (
+    (capture === 'finished' || capture === 'interrupted') &&
+    (transcript === 'none' || transcript === 'empty')
+  )
     return 'untranscribed';
   return null;
 }
