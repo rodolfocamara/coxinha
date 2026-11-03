@@ -224,6 +224,7 @@ pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
             calendar::calendar_sync,
             calendar::calendar_disconnect,
             calendar::categories::calendar_set_categories,
+            calendar::create::calendar_create_event,
             board::board_load,
             board::board_save,
             board::board_export_recovery,

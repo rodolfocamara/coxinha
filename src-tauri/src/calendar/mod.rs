@@ -1,5 +1,6 @@
-//! Explicit Outlook synchronization. The only write is an event's categories
-//! (spec 0103). Errors never include provider bodies or tokens.
+//! Explicit Outlook synchronization. The writes are an event's categories
+//! (spec 0103) and creating a bare event (spec 0104 P5). Errors never include
+//! provider bodies or tokens.
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
 use chrono::{Duration, Utc};
 use serde::{Deserialize, Serialize};
@@ -14,6 +15,7 @@ use tauri::Manager;
 mod auth;
 mod background;
 pub(crate) mod categories;
+pub(crate) mod create;
 mod graph;
 mod store;
 use auth::*;
