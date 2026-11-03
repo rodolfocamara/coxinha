@@ -188,3 +188,4 @@ Pending decisions that block or shape the implementation.
 - [0100 — Match past recordings to calendar events](0100-match-recordings-to-calendar-events.md) — in-progress
 - [0101 — Offline speaker clustering and per-word attribution](0101-offline-speaker-clustering.md) — in-progress
 - [0102 — Name speakers from the meeting's invitees](0102-name-speakers-from-invitees.md) — in-progress
+- [0103 — Outlook categories and colours](0103-outlook-categories-and-colours.md) — in-progress
