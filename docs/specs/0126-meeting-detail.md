@@ -47,15 +47,15 @@ References are recorded in `docs/design/meeting-detail/README.md`.
 
 ### P2 Two orders
 
-| Upcoming or under way | Past |
-| --- | --- |
-| My response, location, organizer | What came out: summary or notes, transcript excerpt, facts |
-| Who is coming | Files, references and activities |
-| Preparation: signals, notes, files, or the "no preparation" mark | Calendar match question (spec 0111) |
-| Invitation text | Who came, then who was invited |
-| | Useful or not useful |
-| | Memory state (spec 0124 P6) |
-| | My response, location, organizer; invitation collapsed |
+| Upcoming or under way                                            | Past                                                       |
+| ---------------------------------------------------------------- | ---------------------------------------------------------- |
+| My response, location, organizer                                 | What came out: summary or notes, transcript excerpt, facts |
+| Who is coming                                                    | Files, references and activities                           |
+| Preparation: signals, notes, files, or the "no preparation" mark | Calendar match question (spec 0111)                        |
+| Invitation text                                                  | Who came, then who was invited                             |
+|                                                                  | Useful or not useful                                       |
+|                                                                  | Memory state (spec 0124 P6)                                |
+|                                                                  | My response, location, organizer; invitation collapsed     |
 
 - A past meeting with no outcome says so in one sentence instead of leaving a gap.
 - A location that only repeats the Teams placeholder is hidden while the join
