@@ -253,7 +253,10 @@ async fn delete_note_removes_file_and_db_entry() {
 #[tokio::test]
 async fn restore_note_brings_the_newest_trashed_copy_back_with_its_id() {
     let (tmp, storage) = fresh_storage().await;
-    let note = storage.create_note("Plan", "# Plan\n\n- [ ] one\n").await.unwrap();
+    let note = storage
+        .create_note("Plan", "# Plan\n\n- [ ] one\n")
+        .await
+        .unwrap();
     storage.delete_note(note.id).await.unwrap();
     // A file now sits where the note was: the restored copy takes a free name.
     std::fs::write(tmp.path().join(&note.path), "# Someone else\n").unwrap();
@@ -266,13 +269,19 @@ async fn restore_note_brings_the_newest_trashed_copy_back_with_its_id() {
     assert!(restored.path.ends_with(" (2).md"), "{}", restored.path);
     let fetched = storage.get_note(note.id).await.unwrap();
     assert_eq!(fetched.markdown, "# Plan\n\n- [ ] one\n");
-    assert!(storage.restore_note(note.id).await.is_err(), "already restored");
+    assert!(
+        storage.restore_note(note.id).await.is_err(),
+        "already restored"
+    );
 }
 
 #[tokio::test]
 async fn restore_note_fails_when_nothing_was_trashed() {
     let (_tmp, storage) = fresh_storage().await;
-    let error = storage.restore_note(uuid::Uuid::new_v4()).await.unwrap_err();
+    let error = storage
+        .restore_note(uuid::Uuid::new_v4())
+        .await
+        .unwrap_err();
     assert!(error.to_string().contains("not found in the trash"));
 }
 

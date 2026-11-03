@@ -71,6 +71,7 @@
       "choose": "Which meeting to record into",
       "solo": "Record without a meeting",
       "soloHelp": "A new recording, not tied to the calendar"
-    }
+    },
+    "callSilent": "No one has spoken in the {{app}} call for 2 minutes. Did it end?"
   }
 }

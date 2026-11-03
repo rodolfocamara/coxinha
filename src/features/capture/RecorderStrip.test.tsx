@@ -239,3 +239,20 @@ it('records into the calendar meeting under way, and the arrow offers recording 
     starts_at: null,
   });
 });
+
+it('says when the call went silent, and keeps recording on request', async () => {
+  useCaptureStore.setState({ status: live() });
+  acceptDetectionStatus(detection, true);
+  useMeetingDetection.setState({
+    trackedCall: call,
+    recordedCallKey: callKey(call),
+    callEndedPrompt: call,
+    endedBy: 'silence',
+  });
+  render(<RecorderStrip />);
+  expect(screen.getByRole('alert')).toHaveTextContent(
+    'No one has spoken in the Microsoft Teams call for 2 minutes. Did it end?'
+  );
+  fireEvent.click(screen.getByRole('button', { name: 'Keep recording' }));
+  expect(useMeetingDetection.getState().callEndedPrompt).toBeNull();
+});

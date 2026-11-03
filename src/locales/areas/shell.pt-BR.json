@@ -71,6 +71,7 @@
       "choose": "Em qual reunião gravar",
       "solo": "Gravar sem reunião",
       "soloHelp": "Uma gravação nova, sem ligar à agenda"
-    }
+    },
+    "callSilent": "Ninguém fala na chamada do {{app}} há 2 minutos. Ela terminou?"
   }
 }

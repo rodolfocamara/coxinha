@@ -165,7 +165,11 @@ export function RecorderStrip() {
       content: (
         <>
           <Phone size={14} aria-hidden="true" />
-          <b role="alert">{t('recorder.callEnded', { app: detection.callEndedPrompt.app_name })}</b>
+          <b role="alert">
+            {t(detection.endedBy === 'silence' ? 'recorder.callSilent' : 'recorder.callEnded', {
+              app: detection.callEndedPrompt.app_name,
+            })}
+          </b>
           <span className="cx-strip-muted tabular-nums">
             {t('recorder.stillRecordingFor', { title, time: formatElapsed(active.elapsedMs) })}
           </span>

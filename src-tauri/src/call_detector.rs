@@ -93,6 +93,7 @@ pub async fn run_loop(app: AppHandle) -> anyhow::Result<()> {
     tick.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
     let mut episodes = episodes::Episodes::default();
     let mut generation = control.generation.load(Ordering::SeqCst);
+    let mut previous: Vec<ActiveCall> = Vec::new();
     loop {
         tokio::select! { _ = control.stop.notified() => return Ok(()), _ = tick.tick() => {} }
         let observed = control.generation.load(Ordering::SeqCst);
@@ -128,6 +129,14 @@ pub async fn run_loop(app: AppHandle) -> anyhow::Result<()> {
                 }
             }
         };
+        // Spec 0114: the app label and process only, never titles or stream contents.
+        for ended in previous.iter().filter(|p| !active.contains(p)) {
+            tracing::info!(app = %ended.app_name, pid = ended.pid, "call ended");
+        }
+        for started in active.iter().filter(|c| !previous.contains(c)) {
+            tracing::info!(app = %started.app_name, pid = started.pid, browser = started.is_browser, "call detected");
+        }
+        previous = active.clone();
         crate::auto_record::observe(&app, &active).await;
         if let Some(state) = app.try_state::<Arc<tokio::sync::Mutex<crate::config::AppState>>>() {
             let mut state = state.lock().await;

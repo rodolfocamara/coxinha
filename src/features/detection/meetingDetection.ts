@@ -41,6 +41,10 @@ export const useMeetingDetection = create<{
   trackedCall: ActiveCall | null;
   recordedCallKey: string | null;
   callEndedPrompt: ActiveCall | null;
+  /** Why the prompt shows: the call's streams closed, or nobody spoke for a while. */
+  endedBy: 'call' | 'silence' | null;
+  /** Last time the recorded call's output carried sound (spec 0114). */
+  lastOutputAt: number | null;
   alertedNextCallKeys: string[];
 }>(() => ({
   enabled: enabledPreference(),
@@ -51,6 +55,8 @@ export const useMeetingDetection = create<{
   trackedCall: null,
   recordedCallKey: null,
   callEndedPrompt: null,
+  endedBy: null,
+  lastOutputAt: null,
   alertedNextCallKeys: [],
 }));
 
@@ -87,12 +93,41 @@ export function trackRecordedCall(call: ActiveCall) {
     trackedCall: call,
     recordedCallKey: key,
     callEndedPrompt: null,
+    endedBy: null,
+    lastOutputAt: null,
     dismissed: [...s.dismissed.filter((k) => k !== key), key].slice(-64),
   }));
 }
 
 export function acknowledgeCallEnded() {
-  useMeetingDetection.setState({ callEndedPrompt: null });
+  // "Continuar gravando" restarts the silence clock instead of asking again at once.
+  useMeetingDetection.setState({ callEndedPrompt: null, endedBy: null, lastOutputAt: Date.now() });
+}
+
+/** Two minutes without the other side's audio is a second sign the call is over. */
+export const SILENCE_MS = 120_000;
+const OUTPUT_FLOOR = 0.01;
+
+/**
+ * Spec 0114: a browser can keep its microphone stream after the owner leaves
+ * a meeting, so stream presence alone may never end the call. While a
+ * detected call is recorded, a long silence on the output track asks too.
+ */
+export function observeCallAudio(
+  active: { paused: boolean; output: { peak: number } } | null | undefined,
+  now = Date.now()
+) {
+  let shouldFocus = false;
+  useMeetingDetection.setState((s) => {
+    if (!active || active.paused || !s.recordedCallKey || !s.enabled)
+      return s.lastOutputAt === null ? s : { lastOutputAt: null };
+    if (s.lastOutputAt === null || active.output.peak >= OUTPUT_FLOOR) return { lastOutputAt: now };
+    if (s.callEndedPrompt || !s.trackedCall || now - s.lastOutputAt < SILENCE_MS) return s;
+    if (autoStopsCall(s.trackedCall)) return s;
+    shouldFocus = true;
+    return { callEndedPrompt: s.trackedCall, endedBy: 'silence' as const };
+  });
+  if (shouldFocus) void focusMainWindow();
 }
 
 export function acceptDetectionStatus(status: DetectionStatus, recording: boolean) {
@@ -110,12 +145,14 @@ export function acceptDetectionStatus(status: DetectionStatus, recording: boolea
         trackedCall: null,
         recordedCallKey: null,
         callEndedPrompt: null,
+        endedBy: null,
         alertedNextCallKeys: [],
       };
     }
     let trackedCall = s.trackedCall;
     let recordedCallKey = s.recordedCallKey;
     let callEndedPrompt = s.callEndedPrompt;
+    let endedBy = s.endedBy;
     if (!recordedCallKey && status.calls.length > 0) {
       trackedCall = status.calls[0];
       recordedCallKey = callKey(status.calls[0]);
@@ -124,6 +161,7 @@ export function acceptDetectionStatus(status: DetectionStatus, recording: boolea
       // With automatic stop on, the strip shows the backend countdown instead.
       if (!autoStopsCall(trackedCall)) {
         callEndedPrompt = trackedCall;
+        endedBy = 'call';
         shouldFocus = true;
       }
       trackedCall = null;
@@ -152,6 +190,7 @@ export function acceptDetectionStatus(status: DetectionStatus, recording: boolea
       trackedCall,
       recordedCallKey,
       callEndedPrompt,
+      endedBy: callEndedPrompt ? endedBy : null,
       alertedNextCallKeys: nextAlerted,
     };
   });

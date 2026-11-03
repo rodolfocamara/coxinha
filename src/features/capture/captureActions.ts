@@ -1,3 +1,4 @@
+import { observeCallAudio } from '../detection/meetingDetection';
 import { invoke } from '@tauri-apps/api/core';
 import { library, type CaptureStatus } from '../meetings/library';
 import { selectDevice } from '../meetings/useCaptureDevices';
@@ -25,6 +26,7 @@ function writePref(key: string, value: string) {
 }
 
 function accept(status: CaptureStatus) {
+  observeCallAudio(status.active);
   useCaptureStore.setState((s) => ({
     status,
     reachable: true,

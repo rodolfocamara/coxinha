@@ -1,6 +1,6 @@
 //! The caller supplies a canonical-library protection query, never a UI assertion.
-use super::*;
 use super::index::collect_md_files;
+use super::*;
 use chrono::Local;
 
 #[derive(Debug, thiserror::Error)]
@@ -70,7 +70,9 @@ impl Storage {
                 let mut files = Vec::new();
                 collect_md_files(&day.join(sub), &mut files).await?;
                 for file in files {
-                    let Ok(raw) = fs::read_to_string(&file).await else { continue };
+                    let Ok(raw) = fs::read_to_string(&file).await else {
+                        continue;
+                    };
                     if NoteFile::parse(&raw).ok().and_then(|d| d.id) != Some(id) {
                         continue;
                     }
