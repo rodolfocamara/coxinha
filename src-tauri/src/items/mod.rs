@@ -2,6 +2,7 @@
 pub mod files;
 pub mod folder;
 pub mod links;
+pub mod lock;
 
 #[cfg(test)]
 mod files_tests;

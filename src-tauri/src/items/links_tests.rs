@@ -41,11 +41,13 @@ fn the_links_file_is_versioned_json_without_temporary_leftovers() {
     assert_eq!(raw["version"], 1);
     assert_eq!(raw["links"][0]["session"], "s-1");
     assert!(raw["links"][0]["createdAt"].is_string());
-    let entries: Vec<_> = std::fs::read_dir(vault.path().join(".coxinha"))
+    let mut entries: Vec<_> = std::fs::read_dir(vault.path().join(".coxinha"))
         .unwrap()
         .map(|e| e.unwrap().file_name())
         .collect();
-    assert_eq!(entries, ["links.json"]);
+    entries.sort();
+    // The lock file stays; the app and `Coxinha cli` share it.
+    assert_eq!(entries, ["links.json", "links.lock"]);
 }
 
 #[test]

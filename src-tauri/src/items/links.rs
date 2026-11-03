@@ -70,6 +70,7 @@ pub fn add(vault: &Path, session: &str, note: &str) -> Result<(), String> {
     super::folder::valid_id(session)?;
     super::folder::valid_id(note)?;
     let _guard = LOCK.lock().map_err(|_| "links lock poisoned")?;
+    let _lock = super::lock::exclusive(vault, "links.lock")?;
     let mut file = read(vault)?;
     if file
         .links
@@ -89,6 +90,7 @@ pub fn add(vault: &Path, session: &str, note: &str) -> Result<(), String> {
 
 pub fn remove(vault: &Path, session: &str, note: &str) -> Result<(), String> {
     let _guard = LOCK.lock().map_err(|_| "links lock poisoned")?;
+    let _lock = super::lock::exclusive(vault, "links.lock")?;
     let mut file = read(vault)?;
     let before = file.links.len();
     file.links

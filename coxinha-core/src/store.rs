@@ -213,8 +213,7 @@ impl Store {
     }
 
     pub fn latest_edit(&self, meeting: &str, target: &str) -> Result<Option<String>> {
-        use rusqlite::OptionalExtension;
-        Ok(self.db.query_row("SELECT body FROM human_edit WHERE meeting_id=?1 AND target=?2 ORDER BY id DESC LIMIT 1", params![meeting,target], |r|r.get(0)).optional()?)
+        latest_edit(&self.db, meeting, target)
     }
 
     pub fn backup(&self, destination: &Path) -> Result<()> {
@@ -249,6 +248,11 @@ impl Store {
         crate::artifacts::copy_tree(&self.root.join("raw"), &destination.join("raw"))?;
         Ok(())
     }
+}
+
+pub(crate) fn latest_edit(db: &Connection, meeting: &str, target: &str) -> Result<Option<String>> {
+    use rusqlite::OptionalExtension;
+    Ok(db.query_row("SELECT body FROM human_edit WHERE meeting_id=?1 AND target=?2 ORDER BY id DESC LIMIT 1", params![meeting,target], |r|r.get(0)).optional()?)
 }
 
 #[cfg(test)]

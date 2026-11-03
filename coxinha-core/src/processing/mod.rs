@@ -9,7 +9,7 @@ pub use control::{ProcessingCancelled, ProcessingControl};
 mod persistence;
 mod publication;
 pub use alignment::attribute_segments;
-pub use persistence::{AssignmentView, ProcessingReport};
+pub use persistence::{latest_report, report_for_job, AssignmentView, ProcessingReport};
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ModelFile {
     pub path: PathBuf,
