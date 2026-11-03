@@ -1,0 +1,173 @@
+@layer theme, base, components, utilities;
+
+/* Week view (spec 0104): seven day columns on a 48 px-per-hour axis. */
+@layer components {
+  .mh-week {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  /* The grid scrolls as one so the sticky header keeps the columns aligned. */
+  .mh-week-grid {
+    --mh-week-gutter: 52px;
+    flex: 1;
+    min-height: 0;
+    border-radius: 14px;
+    overflow-y: auto;
+  }
+  .mh-week-top {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background: var(--color-background);
+  }
+  .mh-week-head,
+  .mh-week-allday,
+  .mh-week-body {
+    display: grid;
+    grid-template-columns: var(--mh-week-gutter) repeat(7, minmax(0, 1fr));
+  }
+  .mh-week-head {
+    border-bottom: 1px solid var(--color-border);
+  }
+  .mh-week-day {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 8px 10px;
+    font-size: 11px;
+    color: var(--color-muted-foreground);
+  }
+  .mh-week-day b {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-foreground);
+    font-variant-numeric: tabular-nums;
+  }
+  .mh-week-day[data-today] {
+    box-shadow: inset 0 2px 0 var(--color-primary);
+  }
+  .mh-week-day[data-today] b {
+    color: var(--color-primary);
+  }
+  .mh-week-allday {
+    border-bottom: 1px solid var(--color-border);
+  }
+  .mh-week-gutter {
+    padding: 6px 8px 6px 0;
+    font-size: 10.5px;
+    text-align: right;
+    color: var(--color-muted-foreground);
+  }
+  .mh-week-allday-cell {
+    display: grid;
+    gap: 2px;
+    align-content: start;
+    min-height: 26px;
+    padding: 3px 2px;
+    border-left: 1px solid var(--color-border);
+  }
+  .mh-week-body {
+    position: relative;
+  }
+  .mh-week-hours {
+    position: relative;
+  }
+  .mh-week-hours span {
+    position: absolute;
+    right: 8px;
+    transform: translateY(-50%);
+    font-size: 10.5px;
+    color: var(--color-muted-foreground);
+    font-variant-numeric: tabular-nums;
+  }
+  .mh-week-col {
+    position: relative;
+    border-left: 1px solid var(--color-border);
+    background-image: repeating-linear-gradient(
+      to bottom,
+      var(--color-border) 0 1px,
+      transparent 1px 48px
+    );
+  }
+  .mh-week-col[aria-current='date'] {
+    background-color: color-mix(in oklab, var(--color-primary) 4%, transparent);
+  }
+
+  /* Blocks: a filled body and a bar at the left edge, as in Outlook. */
+  .mh-week-ev {
+    --cx-cat: var(--color-muted-foreground);
+    --cx-cat-bg: var(--color-secondary);
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+    padding: 3px 6px 3px 9px;
+    overflow: hidden;
+    border: 0;
+    border-radius: 5px;
+    background: var(--cx-cat-bg);
+    box-shadow: inset 3px 0 0 var(--cx-cat);
+    color: var(--color-foreground);
+    font-size: 11.5px;
+    line-height: 1.3;
+    text-align: left;
+    cursor: pointer;
+  }
+  .mh-week-col .mh-week-ev {
+    position: absolute;
+  }
+  .mh-week-ev[data-tone='event'] {
+    --cx-cat: var(--color-info);
+  }
+  .mh-week-ev[data-tone='live'] {
+    --cx-cat: var(--color-live);
+  }
+  .mh-week-ev:hover {
+    background: color-mix(in oklab, var(--cx-cat-bg) 88%, var(--color-foreground));
+  }
+  .mh-week-ev:focus-visible {
+    z-index: 1;
+    outline: 2px solid var(--color-ring);
+    outline-offset: 1px;
+  }
+  .mh-week-ev[data-cancelled] {
+    opacity: 0.55;
+  }
+  .mh-week-ev[data-cancelled] b {
+    text-decoration: line-through;
+  }
+  .mh-week-ev b,
+  .mh-week-ev-meta {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .mh-week-ev b {
+    font-weight: 600;
+  }
+  .mh-week-ev-meta {
+    font-size: 10.5px;
+    color: color-mix(in oklab, var(--color-foreground) 72%, transparent);
+    font-variant-numeric: tabular-nums;
+  }
+  .mh-week-now {
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    height: 2px;
+    background: var(--color-live);
+    pointer-events: none;
+  }
+  .mh-week-now::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: -3px;
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--color-live);
+  }
+}

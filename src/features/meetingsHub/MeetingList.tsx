@@ -17,7 +17,7 @@ import { localDay, nextDay } from '../sessions/sessionDates';
 import { markProps, useEventColour } from '../agenda/categories';
 import { CategoryLabel } from '../agenda/CategoryLabel';
 
-export type ListTab = 'list' | 'review' | 'month';
+export type ListTab = 'list' | 'review' | 'week' | 'month';
 
 type Props = {
   groups: { id: GroupId | 'review'; rows: MeetingRow[] }[];
@@ -95,6 +95,7 @@ export function MeetingList(p: Props) {
               </>
             ),
           },
+          { id: 'week', label: k('tabs.week') },
           { id: 'month', label: k('tabs.month') },
         ]}
       />

@@ -7,6 +7,7 @@
     "tabs": {
       "list": "Próximas e recentes",
       "review": "A revisar",
+      "week": "Semana",
       "month": "Mês",
       "notes": "Notas",
       "transcript": "Transcrição",
@@ -141,6 +142,12 @@
       "importAudio": "Importar áudio para esta reunião",
       "transcribeAgain": "Transcrever de novo",
       "transcriptLiveNow": "ao vivo, provisória"
+    },
+    "week": {
+      "previous": "Semana anterior",
+      "next": "Próxima semana",
+      "today": "Hoje",
+      "allDay": "Dia todo"
     },
     "month": {
       "previous": "Mês anterior",

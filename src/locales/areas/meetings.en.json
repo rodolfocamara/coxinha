@@ -7,6 +7,7 @@
     "tabs": {
       "list": "Upcoming and recent",
       "review": "To review",
+      "week": "Week",
       "month": "Month",
       "notes": "Notes",
       "transcript": "Transcript",
@@ -141,6 +142,12 @@
       "importAudio": "Import audio for this meeting",
       "transcribeAgain": "Transcribe again",
       "transcriptLiveNow": "live, provisional"
+    },
+    "week": {
+      "previous": "Previous week",
+      "next": "Next week",
+      "today": "Today",
+      "allDay": "All day"
     },
     "month": {
       "previous": "Previous month",

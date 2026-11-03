@@ -16,6 +16,7 @@ import {
 import { MeetingList, type ListTab } from './MeetingList';
 import { MeetingDetail, type DetailTarget } from './MeetingDetail';
 import { MonthView } from './MonthView';
+import { WeekView } from './WeekView';
 import { NewMeetingSheet } from './NewMeetingSheet';
 import { ImportAudioSheet } from './ImportAudioSheet';
 import { ParticipantsSheet } from './ParticipantsSheet';
@@ -180,7 +181,7 @@ export function MeetingsHubRoute() {
         onTab={changeTab}
         query={query}
         onQuery={setQuery}
-        selectedKey={tab === 'month' ? null : selectedKey}
+        selectedKey={tab === 'month' || tab === 'week' ? null : selectedKey}
         onSelect={select}
         onNew={() => setSheet({ kind: 'meeting' })}
         onImport={() => setSheet({ kind: 'import', title: '', forMeeting: false })}
@@ -207,6 +208,8 @@ export function MeetingsHubRoute() {
         <div className="mh-detail p-6">
           <Alert tone="info">{t('meetingsHub.desktopRequired')}</Alert>
         </div>
+      ) : tab === 'week' ? (
+        <WeekView rows={rows} now={now} isLive={isLive} onSelect={(row) => select(row, false)} />
       ) : tab === 'month' ? (
         <MonthView rows={rows} now={now} isLive={isLive} onSelect={(row) => select(row, false)} />
       ) : target ? (

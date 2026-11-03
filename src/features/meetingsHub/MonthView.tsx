@@ -7,6 +7,7 @@ import { rowsByDay, type MeetingRow } from './meetingRows';
 import { clockTime } from './format';
 import { OUTLOOK_PRESETS, colourStyle, colourVar, useEventColour } from '../agenda/categories';
 import { CategoryLabel } from '../agenda/CategoryLabel';
+import './monthView.css';
 
 /**
  * "Mês" tab: a month grid of meetings and Outlook events. Every item is a
