@@ -10,7 +10,7 @@ use std::path::Path;
 use std::sync::Arc;
 
 /// Text after the frontmatter with a letter or digit belongs to the owner.
-pub(super) fn blank_note(raw: &str) -> bool {
+pub(crate) fn blank_note(raw: &str) -> bool {
     let body = raw
         .strip_prefix("---")
         .and_then(|rest| rest.split_once("\n---"))
@@ -96,6 +96,9 @@ pub(super) async fn into_prepared(
         Action::Session(SessionAction::Absorb(keep.clone(), session_id.to_owned())),
     )
     .await?;
+    if let Some(data) = library.root.parent() {
+        crate::signals::marks::follow(data, session_id, &keep);
+    }
     if let Some(note) = note.as_str().and_then(|n| uuid::Uuid::parse_str(n).ok()) {
         // The empty note goes to the trash; a failure leaves a harmless file.
         if let Err(error) = library.delete_note(storage.clone(), note).await {

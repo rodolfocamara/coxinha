@@ -310,6 +310,7 @@ mod search;
 pub use curation::*;
 pub use search::*;
 mod absorb;
+pub(crate) use absorb::blank_note;
 mod auto;
 mod backlog;
 mod calendar_match;

@@ -1,7 +1,7 @@
 //! `Coxinha cli …` (spec 0106): JSON access to meetings for scripts and AI
 //! agents. Reads are read-only; writes go through the app's item rules.
 mod args;
-mod data;
+pub(crate) mod data;
 mod meetings;
 pub(crate) mod paths;
 pub(crate) mod search;

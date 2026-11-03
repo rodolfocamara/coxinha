@@ -112,9 +112,23 @@ mod tests {
             )
             .unwrap();
         drop(store);
-        let library = Library::open(root, None).unwrap();
+        let library = Library::open(root.clone(), None).unwrap();
+        // Spec 0124 P5: the owner's verdict goes with the recording.
+        let data = root.parent().unwrap();
+        crate::signals::marks::set(
+            data,
+            &recorded.id,
+            Some(crate::signals::marks::Mark::Useful),
+        )
+        .unwrap();
 
         reconcile(&library, &storage, &[event()]).await.unwrap();
+        let marks = crate::signals::marks::load(data).marks;
+        assert_eq!(
+            marks.get(&prepared.id),
+            Some(&crate::signals::marks::Mark::Useful)
+        );
+        assert!(!marks.contains_key(&recorded.id));
         let after = library.session_list().await.unwrap();
         let ids: Vec<_> = after
             .as_array()

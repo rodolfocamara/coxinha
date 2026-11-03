@@ -59,3 +59,18 @@ fn sanitizing_drops_reasoning_fences_html_and_links() {
     let long = "a".repeat(7000);
     assert!(sanitize_summary(&long).unwrap().ends_with('…'));
 }
+
+#[test]
+fn counts_action_items_of_the_section() {
+    let pt = "## Resumo\nTexto.\n## Decisões\n- Usar X\n## Ações\n- Ana envia o deck\n- Revisar o custo\n## Pendências\n- Quem paga?\n";
+    assert_eq!(action_items(pt), 2);
+    let en = "## Summary\nText.\n## Actions\n- Send the deck\n## Open items\n- None\n";
+    assert_eq!(action_items(en), 1);
+    assert_eq!(
+        action_items("## Ações\n- Nenhuma\n## Pendências\n- Algo\n"),
+        0
+    );
+    assert_eq!(action_items("## Actions\n- None.\n"), 0);
+    assert_eq!(action_items("## AÇÕES\n- Fazer\n"), 0);
+    assert_eq!(action_items("Free text\n- not in a section\n"), 0);
+}

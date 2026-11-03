@@ -31,6 +31,7 @@ mod note_errors;
 mod obsidian;
 mod recorder;
 mod shortcuts;
+mod signals;
 mod storage;
 mod summaries;
 mod summarizer;
@@ -231,6 +232,7 @@ pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
             calendar::calendar_disconnect,
             calendar::categories::calendar_set_categories,
             calendar::create::calendar_create_event,
+            calendar::details::calendar_open_link,
             board::board_load,
             board::board_save,
             board::board_export_recovery,
@@ -325,6 +327,8 @@ pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
             titles::watch::library_dismiss_title_suggestion,
             summaries::library_meeting_summary,
             summaries::library_summarize,
+            signals::library_meeting_signals,
+            signals::library_set_meeting_mark,
             commands::save_attachment,
             commands::get_config,
             commands::update_config,

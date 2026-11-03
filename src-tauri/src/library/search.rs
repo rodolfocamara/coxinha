@@ -8,6 +8,21 @@ use std::sync::Arc;
 /// The newest query; an older scan still running stops at its next session.
 static LATEST: AtomicU64 = AtomicU64::new(0);
 
+impl Library {
+    /// The same read-only view of the data the CLI has.
+    pub(crate) fn paths(&self, storage: &Storage) -> Result<Paths, String> {
+        let data = self
+            .root
+            .parent()
+            .ok_or("library has no data folder")?
+            .to_path_buf();
+        Ok(Paths {
+            vault: storage.vault().to_path_buf(),
+            data,
+        })
+    }
+}
+
 #[tauri::command]
 #[specta::specta]
 pub async fn universal_search(
@@ -16,15 +31,7 @@ pub async fn universal_search(
     query: String,
     limit: Option<u32>,
 ) -> Result<Value, String> {
-    let data = state
-        .root
-        .parent()
-        .ok_or("library has no data folder")?
-        .to_path_buf();
-    let paths = Paths {
-        vault: storage.vault().to_path_buf(),
-        data,
-    };
+    let paths = state.paths(&storage)?;
     let limit = limit.unwrap_or(20).clamp(1, 20) as usize;
     let generation = LATEST.fetch_add(1, Ordering::SeqCst) + 1;
     tauri::async_runtime::spawn_blocking(move || {

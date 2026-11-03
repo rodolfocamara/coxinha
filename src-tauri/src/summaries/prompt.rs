@@ -52,6 +52,29 @@ pub fn detect(text: &str) -> Language {
     }
 }
 
+/// Bullets under the actions section the prompt asks for, either language.
+/// "- Nenhuma" is the prompt's way of saying there are none.
+pub fn action_items(markdown: &str) -> u32 {
+    const LANGUAGES: [Language; 2] = [Language::Portuguese, Language::English];
+    let mut inside = false;
+    let mut count = 0;
+    for line in markdown.lines().map(str::trim) {
+        if let Some(heading) = line.strip_prefix("##") {
+            let heading = heading.trim_start_matches('#').trim();
+            inside = LANGUAGES
+                .iter()
+                .any(|l| l.sections()[2].eq_ignore_ascii_case(heading));
+        } else if let Some(item) = line.strip_prefix("- ").or(line.strip_prefix("* ")) {
+            let item = item.trim().trim_end_matches('.');
+            let nothing = LANGUAGES
+                .iter()
+                .any(|l| l.nothing().eq_ignore_ascii_case(item));
+            count += u32::from(inside && !item.is_empty() && !nothing);
+        }
+    }
+    count
+}
+
 /// A request: system and user messages and the answer budget.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Prompt {
