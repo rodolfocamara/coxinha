@@ -1,5 +1,5 @@
 import { useNavigate } from '@tanstack/react-router';
-import { AlertTriangle, ChevronRight, Eye, Mic, Pause, Phone, Play, Square, X } from 'lucide-react';
+import { AlertTriangle, ChevronRight, Eye, Pause, Phone, Play, Square, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../components/ui';
 import { WindowChrome } from '../../components/AppShell/WindowChrome';
@@ -309,14 +309,7 @@ export function RecorderStrip() {
           {background}
         </>
       ),
-      actions: background ? (
-        <RecordButton />
-      ) : (
-        <span className="cx-strip-muted flex items-center gap-1.5">
-          <Mic size={13} aria-hidden="true" />
-          {t('recorder.ready')}
-        </span>
-      ),
+      actions: <RecordButton />,
     };
   }
 

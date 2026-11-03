@@ -17,7 +17,6 @@
   },
   "recorder": {
     "label": "Recording",
-    "ready": "Ready to record · Ctrl+Alt+W",
     "untitled": "Untitled meeting",
     "openMeeting": "Open the meeting",
     "recording": "Recording {{time}}",

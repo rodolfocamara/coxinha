@@ -47,6 +47,7 @@ export function RecordButton() {
       variant="primary"
       icon={<Mic size={13} aria-hidden="true" />}
       disabled={busy}
+      title={t('shell.record.startHint')}
       onClick={() => void toggleCapture(quickCaptureTitle(t('shell.record.quickTitle')))}
     >
       {t('recorder.record')}

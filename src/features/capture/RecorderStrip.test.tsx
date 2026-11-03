@@ -90,9 +90,9 @@ it('formats elapsed time with hours only when needed', () => {
   expect(formatElapsed(3_725_000)).toBe('1:02:05');
 });
 
-it('idle shows a quiet ready line and no capture controls', () => {
+it('idle offers to record and no capture controls (spec 0121)', () => {
   render(<RecorderStrip />);
-  expect(screen.getByText(/Ready to record/)).toBeVisible();
+  expect(screen.getByRole('button', { name: 'Record' })).toBeEnabled();
   expect(screen.queryByRole('button', { name: /Stop and save/ })).toBeNull();
   expect(screen.queryByRole('button', { name: /Pause/ })).toBeNull();
 });
@@ -140,7 +140,7 @@ it('recording exposes pause and stop, and paused offers resume', async () => {
   expect(await screen.findByText('Paused 12:04')).toBeVisible();
   fireEvent.click(screen.getByRole('button', { name: 'Stop and save' }));
   await waitFor(() => expect(library.stop).toHaveBeenCalledOnce());
-  expect(await screen.findByText(/Ready to record/)).toBeVisible();
+  expect(await screen.findByRole('button', { name: 'Record' })).toBeEnabled();
 });
 
 it('prompts to stop when the recorded call ends, and focuses the window', async () => {
