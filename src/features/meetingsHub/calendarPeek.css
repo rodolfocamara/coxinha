@@ -238,6 +238,26 @@
     outline: 1.5px solid var(--color-foreground);
     outline-offset: -1px;
   }
+  /* Only the recording and the event it may be stay in colour (spec 0111). */
+  .mh-week-ev[data-dimmed],
+  .mh-month-ev[data-dimmed] {
+    opacity: 0.28;
+    filter: grayscale(1);
+  }
+  .mh-week-ev[data-candidate],
+  .mh-month-ev[data-candidate] {
+    z-index: 1;
+    outline: 1.5px dashed var(--color-foreground);
+    outline-offset: -1px;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .mh-week-ev,
+    .mh-month-ev {
+      transition:
+        opacity 160ms ease,
+        filter 160ms ease;
+    }
+  }
 }
 
 /* "É esta reunião?" (spec 0111): pick the calendar event a recording belongs to. */

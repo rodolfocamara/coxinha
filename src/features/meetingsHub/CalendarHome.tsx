@@ -61,6 +61,7 @@ export function CalendarHome(p: Props) {
   const master = useOutlookCategories((s) => s.master);
   const [filters, setFilters] = useState<ResultFilters>(NO_FILTERS);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const [matchEvent, setMatchEvent] = useState<string | null>(null);
   const anchor = stored ?? p.now;
   const range = viewRange(p.view, anchor, p.days);
   const shown = visibleRows(p.rows, hidden, master);
@@ -75,6 +76,10 @@ export function CalendarHome(p: Props) {
   const all = searching ? mergeResults(shown, query, remote.data ?? []) : [];
   const results = filterResults(all, filters, p.now);
   const selected = selectedKey ? (p.rows.find((r) => r.key === selectedKey) ?? null) : null;
+  const matchRow = matchEvent
+    ? p.rows.find((r) => r.kind !== 'recording' && r.event?.id === matchEvent)
+    : undefined;
+  const focusKeys = selected && matchRow ? [selected.key, matchRow.key] : null;
 
   const changeQuery = (next: string) => {
     setQuery(next);
@@ -186,6 +191,7 @@ export function CalendarHome(p: Props) {
               now={p.now}
               isLive={p.isLive}
               selectedKey={selectedKey}
+              focusKeys={focusKeys}
               onSelect={(row) => setSelectedKey(row.key)}
               onOpen={(row) => p.onOpen(row)}
               onCreate={p.desktop ? (start, end) => p.onNew({ start, end }) : undefined}
@@ -205,6 +211,7 @@ export function CalendarHome(p: Props) {
             events={p.events}
             matches={p.matches}
             onMatchResolved={p.onMatchResolved}
+            onMatchFocus={setMatchEvent}
           />
         )}
       </div>

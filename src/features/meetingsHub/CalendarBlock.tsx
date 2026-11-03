@@ -13,6 +13,8 @@ export type GridActions = {
   /** Double click or Enter: the full meeting page (spec 0107). */
   onOpen?: (row: MeetingRow) => void;
   selectedKey?: string | null;
+  /** While the peek asks which event a recording is (spec 0111): only these stay in colour. */
+  focusKeys?: string[] | null;
 };
 
 /** Click selects (the peek opens); double click or Enter opens the meeting. */
@@ -31,6 +33,9 @@ export function itemHandlers(row: MeetingRow, actions: GridActions) {
     'aria-expanded':
       actions.selectedKey === undefined ? undefined : actions.selectedKey === row.key,
     'data-selected': actions.selectedKey === row.key || undefined,
+    'data-dimmed': (actions.focusKeys && !actions.focusKeys.includes(row.key)) || undefined,
+    'data-candidate':
+      (actions.focusKeys?.includes(row.key) && actions.selectedKey !== row.key) || undefined,
   };
 }
 

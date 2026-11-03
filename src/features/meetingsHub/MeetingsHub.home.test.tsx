@@ -365,10 +365,11 @@ function chromeRecording() {
 it('asks in the peek which calendar meeting a recording is, and links the one picked', async () => {
   chromeRecording();
   renderAt('/meetings');
-  expect(
-    await screen.findByText('1 recording looks like a meeting on your calendar.')
-  ).toBeInTheDocument();
-  fireEvent.click(within(rail()).getByRole('button', { name: 'Review' }));
+  fireEvent.click(
+    await within(await findRail()).findByRole('button', {
+      name: /1 recording looks like a meeting on your calendar/,
+    })
+  );
   const peek = await screen.findByRole('complementary', { name: 'Meeting in Google Chrome' });
   const question = within(peek).getByRole('radiogroup', { name: 'Is this the meeting?' });
   const options = within(question).getAllByRole('radio');
@@ -377,20 +378,31 @@ it('asks in the peek which calendar meeting a recording is, and links the one pi
     expect.stringMatching(/Standup/),
   ]);
   expect(options[0]).toBeChecked();
+  // The calendar keeps only the recording and the checked event in colour.
+  const block = (key: string) => grid().querySelector(`[data-key="${key}"]`)!;
+  expect(block('s:s-chrome')).toHaveAttribute('data-selected');
+  expect(block('e:e-committee')).toHaveAttribute('data-candidate');
+  expect(block('e:e-lunch')).toHaveAttribute('data-dimmed');
   fireEvent.click(options[1]);
+  expect(block('e:e-standup')).toHaveAttribute('data-candidate');
+  expect(block('e:e-committee')).toHaveAttribute('data-dimmed');
   fireEvent.click(within(peek).getByRole('button', { name: 'Same meeting' }));
   await waitFor(() =>
     expect(calledWith(db, 'library_resolve_calendar_match')).toEqual([
       { sessionId: 's-chrome', eventId: 'e-standup', accept: true },
     ])
   );
-  await waitFor(() => expect(screen.queryByText(/looks like a meeting/)).toBeNull());
+  await waitFor(() =>
+    expect(within(rail()).queryByRole('button', { name: /looks like a meeting/ })).toBeNull()
+  );
 });
 
 it('remembers "none of these" for the proposed event', async () => {
   chromeRecording();
   renderAt('/meetings');
-  fireEvent.click(within(await findRail()).getByRole('button', { name: 'Review' }));
+  fireEvent.click(
+    await within(await findRail()).findByRole('button', { name: /looks like a meeting/ })
+  );
   const peek = await screen.findByRole('complementary', { name: 'Meeting in Google Chrome' });
   fireEvent.click(within(peek).getByRole('button', { name: 'None of these' }));
   await waitFor(() =>
@@ -401,4 +413,5 @@ it('remembers "none of these" for the proposed event', async () => {
   expect(
     await within(peek).findByRole('button', { name: 'Link to a calendar meeting' })
   ).toBeInTheDocument();
+  expect(grid().querySelector('[data-dimmed]')).toBeNull();
 });

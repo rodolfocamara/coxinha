@@ -34,18 +34,27 @@ could not be linked to the other.
 - Without a proposal the peek shows only "Vincular a uma reunião da agenda",
   which opens the same list.
 
-### P2 The banner leads to the peek
+### P2 The calendar shows the two in question
 
-- "N gravações parecem reuniões da sua agenda" stays in the rail. "Revisar"
-  moves the calendar to the first such recording and opens its peek. The
-  separate sheet is gone.
+- While the question is open, the grid dims and greys every block except
+  the recording (selected) and the checked event (dashed outline). Checking
+  another event moves the highlight; closing the peek or answering restores
+  the colours. Reduced motion drops the fade.
+
+### P3 The rail leads to the peek
+
+- "Vincular à agenda" with the count sits in the rail under "A revisar"'s
+  shape. It moves the calendar to the first such recording and opens its
+  peek. The separate sheet is gone.
 
 ## Acceptance
 
 - [x] Candidates: proposal first, nearby events by overlap, no cancelled or
       all-day events, at most four (`peekMatch` tests).
-- [x] The banner opens the recording's peek; picking another event links it;
-      "Nenhuma destas" declines the proposal (`MeetingsHub.home` tests).
+- [x] The rail opens the recording's peek; only the recording and the
+      checked event stay in colour; picking another event links it; "Nenhuma
+      destas" declines the proposal and restores the colours
+      (`MeetingsHub.home` tests).
 - [ ] Owner: a "Meeting in Google Chrome" recording linked from the peek.
 
 ## Evidence

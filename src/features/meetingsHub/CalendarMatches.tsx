@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CalendarCheck } from 'lucide-react';
-import { Alert, Button } from '../../components/ui';
 import { library, type CalendarMatch } from '../meetings/library';
 import { onCalendarChanged } from '../agenda/calendar';
 
@@ -22,25 +21,23 @@ export function useCalendarMatches(enabled: boolean) {
   return { matches, reload };
 }
 
+/** The rail's entry to the recordings to link (spec 0111 P2), shaped like "A revisar". */
 export function CalendarMatchBanner({ count, onReview }: { count: number; onReview: () => void }) {
   const { t } = useTranslation();
   if (count === 0) return null;
   return (
-    <div className="p-3 pb-0">
-      <Alert
-        tone="info"
-        action={
-          <Button
-            size="sm"
-            icon={<CalendarCheck size={14} aria-hidden="true" />}
-            onClick={onReview}
-          >
-            {t('meetingsHub.calendarMatch.review')}
-          </Button>
-        }
-      >
-        {t('meetingsHub.calendarMatch.banner', { count })}
-      </Alert>
-    </div>
+    <button
+      type="button"
+      className="ch-review"
+      onClick={onReview}
+      title={t('meetingsHub.calendarMatch.banner', { count })}
+    >
+      <CalendarCheck size={14} aria-hidden="true" />
+      <span className="flex-1">{t('meetingsHub.calendarMatch.review')}</span>
+      <span className="mh-pill">
+        <span className="sr-only">{t('meetingsHub.calendarMatch.banner', { count })}</span>
+        <span aria-hidden="true">{count}</span>
+      </span>
+    </button>
   );
 }

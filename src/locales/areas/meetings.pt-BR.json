@@ -215,7 +215,7 @@
     "calendarMatch": {
       "banner_one": "{{count}} gravação parece uma reunião da sua agenda.",
       "banner_other": "{{count}} gravações parecem reuniões da sua agenda.",
-      "review": "Revisar",
+      "review": "Vincular à agenda",
       "invitees_one": "{{count}} convidado",
       "invitees_other": "{{count}} convidados",
       "accept": "É essa reunião",

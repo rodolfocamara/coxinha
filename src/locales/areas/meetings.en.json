@@ -215,7 +215,7 @@
     "calendarMatch": {
       "banner_one": "{{count}} recording looks like a meeting on your calendar.",
       "banner_other": "{{count}} recordings look like meetings on your calendar.",
-      "review": "Review",
+      "review": "Link to calendar",
       "invitees_one": "{{count}} invitee",
       "invitees_other": "{{count}} invitees",
       "accept": "Same meeting",

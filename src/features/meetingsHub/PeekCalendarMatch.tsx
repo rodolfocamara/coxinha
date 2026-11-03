@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check } from 'lucide-react';
 import { Button } from '../../components/ui';
@@ -19,6 +19,7 @@ export function PeekCalendarMatch({
   events,
   proposal,
   onResolved,
+  onFocus,
 }: {
   sessionId: string;
   start: Date;
@@ -26,6 +27,8 @@ export function PeekCalendarMatch({
   events: CalendarEvent[];
   proposal: CalendarMatch | null;
   onResolved: () => void;
+  /** The event checked while the question is open, for the calendar to single out. */
+  onFocus?: (eventId: string | null) => void;
 }) {
   const { t, i18n } = useTranslation();
   const k = (key: string, options?: Record<string, unknown>) =>
@@ -35,6 +38,11 @@ export function PeekCalendarMatch({
   const [chosen, setChosen] = useState(candidates[0]?.id ?? '');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const focused = open && candidates.some((e) => e.id === chosen) ? chosen : null;
+  useEffect(() => {
+    onFocus?.(focused);
+  }, [focused, onFocus]);
+  useEffect(() => () => onFocus?.(null), [onFocus]);
   if (candidates.length === 0) return null;
   const time = new Intl.DateTimeFormat(i18n.language, { hour: '2-digit', minute: '2-digit' });
 

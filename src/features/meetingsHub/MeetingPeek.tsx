@@ -28,6 +28,7 @@ type Props = {
   events?: CalendarEvent[];
   matches?: CalendarMatch[];
   onMatchResolved?: () => void;
+  onMatchFocus?: (eventId: string | null) => void;
 };
 
 /**
@@ -46,6 +47,7 @@ export function MeetingPeek({
   events = [],
   matches = [],
   onMatchResolved = () => undefined,
+  onMatchFocus,
 }: Props) {
   const { t, i18n } = useTranslation();
   const locale = i18n.resolvedLanguage ?? i18n.language;
@@ -173,6 +175,7 @@ export function MeetingPeek({
           events={events}
           proposal={matches.find((m) => m.sessionId === session.id) ?? null}
           onResolved={onMatchResolved}
+          onFocus={onMatchFocus}
         />
       )}
       <PeekSummary meetingId={meetingId} session={session} />
