@@ -1,0 +1,12 @@
+{
+  "speakerNaming": {
+    "intro": "Ouça cada voz e digite quem é. O nome vale para todas as falas daquela voz na faixa; deixe em branco quando as vozes estiverem misturadas. A memória de voz só aprende com amostras que você escolher depois de confirmar.",
+    "who": "Quem é?",
+    "placeholder": "Digite um nome",
+    "create": "Criar pessoa “{{name}}”",
+    "newPerson": "“{{name}}” será criada como nova pessoa ao confirmar.",
+    "pickHomonym": "Mais de uma pessoa tem esse nome. Escolha uma na lista.",
+    "verification": "Como verificou",
+    "typedConsent": "Nomeado(a) por você ao revisar esta reunião"
+  }
+}

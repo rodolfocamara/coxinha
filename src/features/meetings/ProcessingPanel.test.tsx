@@ -210,7 +210,7 @@ it('refreshes a persisted name after a command follow-up fails without opting in
   render(
     <ProcessingPanel meetingId="partial" closed status={idle} onStatus={vi.fn()} onSeek={vi.fn()} />
   );
-  changeControl(await screen.findByLabelText('Person to confirm'), {
+  changeControl(await screen.findByRole('combobox', { name: 'Who is it?' }), {
     target: { value: 'person' },
   });
   changeControl(screen.getByLabelText(/How did you verify this identity\?/), {

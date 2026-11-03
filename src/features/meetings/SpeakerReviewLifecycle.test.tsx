@@ -95,7 +95,7 @@ it('R3 preserves person, human evidence and unsubmitted sample drafts across tra
   view.rerender(<ProcessingPanel {...props} view="transcript" />);
   expect(screen.queryByRole('textbox', { name: 'How did you verify this identity?' })).toBeNull();
   view.rerender(<ProcessingPanel {...props} view="people" />);
-  expect(screen.getByRole('combobox')).toHaveValue('uuid-ana-22222222');
+  expect(screen.getByRole('combobox')).toHaveValue('Ana (22222222)');
   expect(screen.getByRole('textbox', { name: 'How did you verify this identity?' })).toHaveValue(
     'Unsubmitted human evidence'
   );
@@ -148,8 +148,11 @@ it('R3 disambiguates homonyms without changing their stable person IDs', async (
   const selector = await screen.findByRole('combobox');
   fireEvent.keyDown(selector, { key: 'ArrowDown' });
   const options = screen.getAllByRole('option');
-  expect(options[1]).toHaveTextContent('Ana (11111111)');
-  expect(options[2]).toHaveTextContent('Ana (22222222)');
-  expect(options[1]).toHaveAttribute('data-value', 'uuid-ana-11111111');
-  expect(options[2]).toHaveAttribute('data-value', 'uuid-ana-22222222');
+  expect(options[0]).toHaveTextContent('Ana (11111111)');
+  expect(options[1]).toHaveTextContent('Ana (22222222)');
+  expect(options[0]).toHaveAttribute('data-value', 'uuid-ana-11111111');
+  expect(options[1]).toHaveAttribute('data-value', 'uuid-ana-22222222');
+  // Typing the shared name alone names nobody; the list decides.
+  fireEvent.change(selector, { target: { value: 'Ana' } });
+  expect(screen.getByText(i18n.t('speakerNaming.pickHomonym'))).toBeInTheDocument();
 });

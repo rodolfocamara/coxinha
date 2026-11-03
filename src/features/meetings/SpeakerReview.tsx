@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { UserPlus } from 'lucide-react';
+import { CalendarPlus, UserPlus } from 'lucide-react';
 import { Button } from '../../components/ui';
 import { useTranslation } from 'react-i18next';
 import {
@@ -13,7 +13,9 @@ import { VoiceProfilesPanel } from './VoiceProfilesPanel';
 import { VoiceComparisonPanel } from './VoiceComparisonPanel';
 import { ParticipantContext } from './ParticipantContext';
 import { PersonFormSheet } from './PersonFormSheet';
+import { ImportPeopleSheet } from '../people/ImportPeopleSheet';
 import { SpeakerCard, speakerButton as button, speakerField as field } from './SpeakerCard';
+import { mergeParticipants } from './personChoices';
 import type { ExcerptPlayback } from './useBoundedPlayback';
 function SpeakerReviewForRun({
   meetingId,
@@ -23,8 +25,11 @@ function SpeakerReviewForRun({
   onSeek,
   act,
   playback,
+  calendarInvitees = [],
 }: {
   meetingId: string;
+  /** Attendees of the calendar event the meeting page shows (spec 0110 P3). */
+  calendarInvitees?: ParticipantCandidate[];
   data: ProcessingDetail;
   report: ProcessingReport;
   disabled: boolean;
@@ -45,17 +50,22 @@ function SpeakerReviewForRun({
     }
   }
   const [adding, setAdding] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [legacyOrigin, setLegacyOrigin] = useState('');
   const [created, setCreated] = useState<ProcessingDetail['people']>([]);
   const [recognition, setRecognition] = useState<Recognition | null>(null);
   const [error, setError] = useState('');
   const [attempt, setAttempt] = useState(0);
-  const [invitees, setInvitees] = useState<ParticipantCandidate[]>([]);
+  const [stored, setStored] = useState<ParticipantCandidate[]>([]);
+  const invitees = useMemo(
+    () => mergeParticipants(calendarInvitees, stored),
+    [calendarInvitees, stored]
+  );
   useEffect(() => {
     let live = true;
     library.participantContext(meetingId).then(
-      (rows) => live && setInvitees(rows),
-      () => live && setInvitees([])
+      (rows) => live && setStored(rows),
+      () => live && setStored([])
     );
     return () => {
       live = false;
@@ -93,8 +103,8 @@ function SpeakerReviewForRun({
   );
   return (
     <div className="space-y-4 min-w-0">
-      <p className="text-xs text-muted-foreground">{t('peopleDirectory.meetingContext')}</p>
-      <p role="status" className="text-sm text-muted-foreground">
+      <p className="text-sm text-muted-foreground">{t('speakerNaming.intro')}</p>
+      <p role="status" className="text-xs text-muted-foreground">
         {w(
           error
             ? 'recognitionUnavailable'
@@ -115,9 +125,9 @@ function SpeakerReviewForRun({
       )}
       {speakers.length === 0 && <p role="status">{w('noSpeakers')}</p>}
       {report.turns.some((s) => s.speaker.toLowerCase().includes('unknown')) && (
-        <p className="text-sm text-muted-foreground">{w('overlap')}</p>
+        <p className="text-xs text-muted-foreground">{w('overlap')}</p>
       )}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
         {speakers.map(({ speaker, track }) => (
           <SpeakerCard
             key={JSON.stringify([track, speaker])}
@@ -140,7 +150,21 @@ function SpeakerReviewForRun({
       </div>
       <VoiceProfilesPanel version={curationVersion} disabled={disabled} act={curate} />
       <VoiceComparisonPanel job={report.job} version={curationVersion} disabled={disabled} />
-      <div>
+      <div className="flex flex-wrap gap-2">
+        <Button
+          icon={<CalendarPlus size={16} aria-hidden="true" />}
+          aria-haspopup="dialog"
+          disabled={disabled}
+          onClick={() => setImporting(true)}
+        >
+          {t('people.import.button')}
+        </Button>
+        <ImportPeopleSheet
+          open={importing}
+          onOpenChange={setImporting}
+          run={curate}
+          onImported={() => undefined}
+        />
         <Button
           icon={<UserPlus size={16} aria-hidden="true" />}
           aria-haspopup="dialog"

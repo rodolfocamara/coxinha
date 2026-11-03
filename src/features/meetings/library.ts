@@ -179,6 +179,12 @@ export const library = {
     invoke<CaptureStatus>('library_process', { meetingId, config }),
   createPerson: (name: string, consentOrigin: string) =>
     invoke<string>('library_create_person', { name, consentOrigin }),
+  /** Spec 0110 P4: creates only the names nobody has yet. */
+  importPeople: (names: string[], consentOrigin: string) =>
+    invoke<{ created: number; skipped: number }>('library_import_people', {
+      names,
+      consentOrigin,
+    }),
   confirmSpeaker: (
     job: string,
     speaker: string,

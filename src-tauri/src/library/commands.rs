@@ -126,6 +126,16 @@ pub async fn library_create_person(
 ) -> Result<Value, String> {
     state.ask(Action::CreatePerson(name, consent_origin)).await
 }
+/// Spec 0110 P4: people from the calendar, only the names nobody has yet.
+#[tauri::command]
+#[specta::specta]
+pub async fn library_import_people(
+    state: State<'_, Library>,
+    names: Vec<String>,
+    consent_origin: String,
+) -> Result<Value, String> {
+    state.ask(Action::ImportPeople(names, consent_origin)).await
+}
 #[tauri::command]
 #[specta::specta]
 pub async fn library_confirm_speaker(

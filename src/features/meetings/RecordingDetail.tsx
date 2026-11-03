@@ -5,7 +5,12 @@ import { useJointPlayback } from './useJointPlayback';
 import { JointPlaybackControls } from './JointPlaybackControls';
 import { RecordingInformation } from './RecordingInformation';
 import { ProcessingPanel } from './ProcessingPanel';
-import { library, type LibraryDetail, type CaptureStatus } from './library';
+import {
+  library,
+  type CaptureStatus,
+  type LibraryDetail,
+  type ParticipantCandidate,
+} from './library';
 import { Alert, Button } from '../../components/ui';
 export function RecordingDetail({
   detail,
@@ -23,8 +28,11 @@ export function RecordingDetail({
   audioPanelId,
   showRecover = true,
   seekRef,
+  invitees,
 }: {
   detail: LibraryDetail;
+  /** The calendar event's attendees, for naming speakers (spec 0110 P3). */
+  invitees?: ParticipantCandidate[];
   status: CaptureStatus;
   onStatus: (status: CaptureStatus) => void;
   onRecover: () => Promise<void>;
@@ -225,6 +233,7 @@ export function RecordingDetail({
             }}
             onTranscript={onTranscript}
             onSeek={seek}
+            invitees={invitees}
           />
         </div>
       </>

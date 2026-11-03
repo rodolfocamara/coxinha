@@ -195,3 +195,4 @@ Pending decisions that block or shape the implementation.
 - [0107 — Reuniões as the calendar](0107-reunioes-calendar-home.md) — in-progress
 - [0108 — Meeting summaries](0108-meeting-summaries.md) — in-progress
 - [0109 — Transcript reader](0109-transcript-reader.md) — in-progress
+- [0110 — Name speakers by typing, and people from the calendar](0110-name-speakers-by-typing.md) — in-progress

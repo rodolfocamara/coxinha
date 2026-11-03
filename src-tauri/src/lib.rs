@@ -278,6 +278,7 @@ pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
             library::library_process,
             library::library_processing,
             library::library_create_person,
+            library::library_import_people,
             library::library_confirm_speaker,
             library::library_revoke_assignment,
             library::library_edit_segment,

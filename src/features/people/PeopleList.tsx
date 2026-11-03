@@ -1,6 +1,6 @@
 import { useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { RefreshCw, Search, UserPlus } from 'lucide-react';
+import { CalendarPlus, RefreshCw, Search, UserPlus } from 'lucide-react';
 import { Button, Input } from '../../components/ui';
 import { PersonAvatar } from './personVisual';
 import type { PersonSummary } from './PersonDetail';
@@ -15,6 +15,8 @@ type Props = {
   search: string;
   onSearch: (value: string) => void;
   onAdd: () => void;
+  /** "Importar da agenda" (spec 0110 P4). */
+  onImport?: () => void;
   onRefresh: () => void;
   refreshing: boolean;
   /** Alerts, status lines and paging controls under the rows. */
@@ -45,6 +47,7 @@ export function PeopleList({
   search,
   onSearch,
   onAdd,
+  onImport,
   onRefresh,
   refreshing,
   footer,
@@ -88,6 +91,18 @@ export function PeopleList({
             disabled={refreshing}
             onClick={onRefresh}
           />
+          {onImport && (
+            <Button
+              size="sm"
+              variant="ghost"
+              iconOnly
+              aria-haspopup="dialog"
+              aria-label={t('people.import.button')}
+              title={t('people.import.button')}
+              icon={<CalendarPlus size={14} aria-hidden="true" />}
+              onClick={onImport}
+            />
+          )}
           <Button
             size="sm"
             variant="primary"

@@ -28,6 +28,7 @@ enum Action {
     Process(String, Value),
     Processing(String, Option<String>),
     CreatePerson(String, String),
+    ImportPeople(Vec<String>, String),
     ConfirmSpeaker {
         job: String,
         speaker: String,
@@ -236,6 +237,9 @@ impl Worker {
             Action::Processing(id, job) => self.processing_detail(&id, job.as_deref()),
             Action::CreatePerson(name, origin) => {
                 Ok(json!(self.store.create_person(&name, &[], &origin)?))
+            }
+            Action::ImportPeople(names, origin) => {
+                Ok(json!(self.store.import_people(&names, &origin)?))
             }
             Action::ConfirmSpeaker {
                 job,

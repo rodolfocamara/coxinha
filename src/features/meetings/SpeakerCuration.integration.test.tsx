@@ -205,7 +205,7 @@ it('keeps one concise recognition status and discloses technical details below t
     .closest('details')!;
   expect(details).not.toHaveAttribute('open');
   expect(within(details).getByText(i18n.t('library.processing.unknown'))).not.toBeVisible();
-  expect(screen.getByText(i18n.t('voiceCuration.confirmScope'))).toBeVisible();
+  expect(screen.getByText(i18n.t('speakerNaming.intro'))).toBeVisible();
   expect(screen.getByRole('button', { name: 'Correct identity' })).toBeVisible();
   fireEvent.click(
     within(details).getByText('Recognition and transcription details', { selector: 'summary' })

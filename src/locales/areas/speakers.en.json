@@ -1,0 +1,12 @@
+{
+  "speakerNaming": {
+    "intro": "Listen to each voice and type who it is. The name applies to every turn of that voice on its track; leave it blank when voices are mixed. Voice memory only learns from samples you choose after confirming.",
+    "who": "Who is it?",
+    "placeholder": "Type a name",
+    "create": "Create person “{{name}}”",
+    "newPerson": "“{{name}}” will be created as a new person when you confirm.",
+    "pickHomonym": "More than one person has this name. Pick one from the list.",
+    "verification": "How you verified",
+    "typedConsent": "Named by you while reviewing this meeting"
+  }
+}

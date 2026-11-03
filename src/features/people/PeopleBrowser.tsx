@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
-import { RotateCw, UserPlus } from 'lucide-react';
+import { CalendarPlus, RotateCw, UserPlus } from 'lucide-react';
 import { Alert, Button, EmptyState } from '../../components/ui';
 import { voiceCuration } from '../meetings/voiceCuration';
 import { library } from '../meetings/library';
@@ -21,6 +21,7 @@ type Props = {
   search: string;
   onSearch: (value: string) => void;
   onAdd: () => void;
+  onImport?: () => void;
   /** Just-created person, shown before its profile page is loaded. */
   created: { personId: string; name: string } | null;
   notices: React.ReactNode;
@@ -39,6 +40,7 @@ export function PeopleBrowser({
   search,
   onSearch,
   onAdd,
+  onImport,
   created,
   notices,
 }: Props) {
@@ -173,6 +175,7 @@ export function PeopleBrowser({
         search={search}
         onSearch={onSearch}
         onAdd={onAdd}
+        onImport={onImport}
         onRefresh={query.restart}
         refreshing={disabled || query.loading}
         footer={footer}
@@ -206,13 +209,24 @@ export function PeopleBrowser({
                 title={t('peopleDirectory.empty.title')}
                 description={t('peopleDirectory.empty.description')}
                 action={
-                  <Button
-                    variant="primary"
-                    icon={<UserPlus size={16} aria-hidden="true" />}
-                    onClick={onAdd}
-                  >
-                    {t('peopleDirectory.addPerson')}
-                  </Button>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {onImport && (
+                      <Button
+                        variant="primary"
+                        icon={<CalendarPlus size={16} aria-hidden="true" />}
+                        onClick={onImport}
+                      >
+                        {t('people.import.button')}
+                      </Button>
+                    )}
+                    <Button
+                      variant={onImport ? 'secondary' : 'primary'}
+                      icon={<UserPlus size={16} aria-hidden="true" />}
+                      onClick={onAdd}
+                    >
+                      {t('peopleDirectory.addPerson')}
+                    </Button>
+                  </div>
                 }
               />
             </div>

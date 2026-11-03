@@ -109,8 +109,11 @@ it('creates through the same IPC, closes the sheet and opens the new person', as
 it('offers creation from the empty registry', async () => {
   render(<PeopleDirectory />);
   expect(await screen.findByText(tr('peopleDirectory.empty.title'))).toBeVisible();
-  expect(screen.getByRole('button', { name: tr('peopleDirectory.addPerson') })).toHaveAttribute(
-    'data-variant',
-    'primary'
-  );
+  // The header's icon button and the empty state's primary action.
+  expect(
+    screen
+      .getAllByRole('button', { name: tr('people.import.button') })
+      .map((b) => b.getAttribute('data-variant'))
+  ).toEqual(['ghost', 'primary']);
+  expect(screen.getByRole('button', { name: tr('peopleDirectory.addPerson') })).toBeVisible();
 });

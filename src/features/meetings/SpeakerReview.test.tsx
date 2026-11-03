@@ -96,7 +96,7 @@ for (const locale of ['en', 'pt-BR'])
     const output = select('output', 'bruno');
     expect(mic.queryByRole('checkbox')).toBeNull();
     expect(output.queryByRole('checkbox')).toBeNull();
-    expect(mic.getByRole('combobox')).toHaveValue('ana');
+    expect(mic.getByRole('combobox')).toHaveValue('Ana');
     fireEvent.click(output.getByRole('button', { name: i18n.t('library.processing.confirm') }));
     await waitFor(() =>
       expect(library.confirmSpeaker).toHaveBeenLastCalledWith(
@@ -120,14 +120,14 @@ for (const locale of ['en', 'pt-BR'])
       )
     );
     expect(mic.queryByRole('checkbox')).toBeNull();
-    expect(mic.getByText(i18n.t('voiceCuration.identityOnly'))).toBeInTheDocument();
+    expect(screen.getByText(i18n.t('speakerNaming.intro'))).toBeInTheDocument();
   });
 it('distinguishes confirmed, proposed and unknown; selecting a suggestion never saves', async () => {
   const view = render(<SpeakerReview {...props} />);
   expect(await screen.findByText('Suggested identity: Ana')).toBeInTheDocument();
   expect(within(card('output')).getByText(i18n.t('speakers.anonymous'))).toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: 'Select person for review' }));
-  expect(within(card('mic')).getByRole('combobox')).toHaveValue('ana');
+  expect(within(card('mic')).getByRole('combobox')).toHaveValue('Ana');
   expect(library.confirmSpeaker).not.toHaveBeenCalled();
   const assigned = {
     ...report,
@@ -260,12 +260,29 @@ it("offers the meeting's invitees to every speaker card", async () => {
   render(<SpeakerReview {...props} />);
   await waitFor(() => expect(library.participantContext).toHaveBeenCalledWith(props.meetingId));
   fireEvent.click(within(card('output')).getByRole('combobox'));
-  expect(
-    await screen.findByRole('option', {
-      name: `Agenda name · ${i18n.t('speakers.invitee')}`,
-      hidden: true,
-    })
-  ).toBeInTheDocument();
+  const option = await screen.findByRole('option', { name: /Agenda name/ });
+  expect(option).toHaveTextContent(i18n.t('speakers.invitee'));
+});
+it('adds the calendar event attendees to the stored participants once', async () => {
+  render(
+    <SpeakerReview
+      {...props}
+      calendarInvitees={[
+        { name: 'Carla Dias', email: 'carla@x.com' },
+        { name: 'agenda  NAME', email: null },
+      ]}
+    />
+  );
+  await waitFor(() => expect(library.participantContext).toHaveBeenCalled());
+  fireEvent.click(within(card('output')).getByRole('combobox'));
+  await waitFor(() =>
+    expect(
+      within(card('output'))
+        .getAllByRole('option')
+        .map((o) => o.getAttribute('data-value'))
+    ).toEqual(['invitee:0', 'invitee:1', 'ana', 'bruno'])
+  );
+  expect(within(card('output')).getAllByRole('option')[0]).toHaveTextContent('Carla Dias');
 });
 it('reports unavailable suggestions and retries without changing identity', async () => {
   vi.mocked(library.recognition).mockRejectedValueOnce(new Error('suggestions offline'));

@@ -192,6 +192,26 @@
         "delete": "delete note",
         "close": "close"
       }
+    },
+    "import": {
+      "button": "Import from calendar",
+      "title": "Import people from your calendar",
+      "description": "Everyone invited to the meetings in your calendar who is not in People yet. Only the name is saved.",
+      "search": "Search participants",
+      "meetings_one": "{{count}} meeting",
+      "meetings_other": "{{count}} meetings",
+      "selectAll": "Select all",
+      "selectNone": "Select none",
+      "submit_one": "Import {{count}} person",
+      "submit_other": "Import {{count}} people",
+      "cancel": "Cancel",
+      "close": "Close",
+      "loading": "Reading your calendar…",
+      "noCalendar": "Connect Outlook in Settings to import the participants of your meetings.",
+      "empty": "Everyone in your calendar is already in People.",
+      "noMatch": "No participant matches this search.",
+      "consent": "Participant in meetings from your calendar",
+      "done": "{{created}} imported, {{skipped}} already existed."
     }
   }
 }

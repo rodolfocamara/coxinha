@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from 'react';
+import { useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Mic } from 'lucide-react';
 import { Alert, Button } from '../../components/ui';
@@ -75,6 +75,10 @@ export function MeetingDetail({
       : target.kind === 'session'
         ? (target.row?.event ?? (session ? matchEvent(session, events) : null))
         : null;
+  const invitees = useMemo(
+    () => (event ? [...(event.organizer ? [event.organizer] : []), ...event.attendees] : []),
+    [event]
+  );
   const recordingMeta =
     target.kind === 'recording' ? target.row.recording : (session?.recording ?? null);
   // A capture started here knows its recording before the session refetches.
@@ -318,6 +322,7 @@ export function MeetingDetail({
                   onRecover={async () => actions.recover()}
                   showRecover={false}
                   seekRef={seekRef}
+                  invitees={invitees}
                 />
               </div>
               <section

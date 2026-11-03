@@ -192,6 +192,26 @@
         "delete": "excluir nota",
         "close": "fechar"
       }
+    },
+    "import": {
+      "button": "Importar da agenda",
+      "title": "Importar pessoas da agenda",
+      "description": "Todos os convidados das reuniões da sua agenda que ainda não estão em Pessoas. Só o nome é salvo.",
+      "search": "Buscar participantes",
+      "meetings_one": "{{count}} reunião",
+      "meetings_other": "{{count}} reuniões",
+      "selectAll": "Marcar todos",
+      "selectNone": "Desmarcar todos",
+      "submit_one": "Importar {{count}} pessoa",
+      "submit_other": "Importar {{count}} pessoas",
+      "cancel": "Cancelar",
+      "close": "Fechar",
+      "loading": "Lendo sua agenda…",
+      "noCalendar": "Conecte o Outlook em Ajustes para importar os participantes das suas reuniões.",
+      "empty": "Todos da sua agenda já estão em Pessoas.",
+      "noMatch": "Nenhum participante corresponde à busca.",
+      "consent": "Participante de reuniões da sua agenda",
+      "done": "{{created}} importadas, {{skipped}} já existiam."
     }
   }
 }

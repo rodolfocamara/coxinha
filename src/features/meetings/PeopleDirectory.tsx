@@ -5,6 +5,7 @@ import { library } from './library';
 import { PersonFormSheet } from './PersonFormSheet';
 import { voiceCurationErrorText } from './voiceCurationError';
 import { PeopleBrowser } from '../people/PeopleBrowser';
+import { ImportPeopleSheet } from '../people/ImportPeopleSheet';
 
 /**
  * Pessoas (spec 0096 P6): the global local registry of people and voice
@@ -15,6 +16,8 @@ export function PeopleDirectory() {
   const { t } = useTranslation();
   const [version, setVersion] = useState(0);
   const [adding, setAdding] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [imported, setImported] = useState<{ created: number; skipped: number } | null>(null);
   const [busy, setBusy] = useState(false);
   const pending = useRef(false);
   const [error, setError] = useState<unknown>(null);
@@ -55,6 +58,11 @@ export function PeopleDirectory() {
           <span role="status">{t('people.created', { name: created.name })}</span>
         </Alert>
       )}
+      {imported && (
+        <Alert tone="success">
+          <span role="status">{t('people.import.done', imported)}</span>
+        </Alert>
+      )}
     </div>
   );
   return (
@@ -69,8 +77,18 @@ export function PeopleDirectory() {
         search={search}
         onSearch={setSearch}
         onAdd={() => setAdding(true)}
+        onImport={() => setImporting(true)}
         created={created}
         notices={notices}
+      />
+      <ImportPeopleSheet
+        open={importing}
+        onOpenChange={setImporting}
+        run={act}
+        onImported={(result) => {
+          setCreated(null);
+          setImported(result);
+        }}
       />
       <PersonFormSheet
         open={adding}
@@ -78,6 +96,7 @@ export function PeopleDirectory() {
         run={act}
         disabled={busy && !adding}
         onCreated={(personId, name) => {
+          setImported(null);
           setCreated({ personId, name });
           setSelected(personId);
           setSearch('');

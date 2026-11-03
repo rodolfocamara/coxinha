@@ -6,7 +6,7 @@ import { FileText, RotateCw } from 'lucide-react';
 import { useProcessing } from './useProcessing';
 import type { ExcerptPlayback } from './useBoundedPlayback';
 import { useTranslation } from 'react-i18next';
-import type { CaptureStatus } from './library';
+import type { CaptureStatus, ParticipantCandidate } from './library';
 import { ProcessingControls } from './ProcessingControls';
 import { TranscriptReader } from './TranscriptReader';
 
@@ -19,8 +19,10 @@ function ProcessingPanelForMeeting({
   view = 'legacy',
   playback,
   onTranscript,
+  invitees,
 }: {
   meetingId: string;
+  invitees?: ParticipantCandidate[];
   closed: boolean;
   status: CaptureStatus;
   onStatus: (status: CaptureStatus) => void;
@@ -114,6 +116,7 @@ function ProcessingPanelForMeeting({
             onSeek={onSeek}
             act={act}
             playback={playback}
+            calendarInvitees={invitees}
           />
         </div>
       )}

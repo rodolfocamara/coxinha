@@ -50,12 +50,8 @@ const choices = () =>
 it('lists invitees first and reuses the existing person of the same name', () => {
   render(<SpeakerCard {...props} />);
   fireEvent.click(screen.getByRole('combobox'));
-  expect(choices()).toEqual([
-    i18n.t('library.processing.choosePerson'),
-    `Bruno Lima · ${i18n.t('speakers.invitee')}`,
-    'Ana Souza',
-    'Zeca',
-  ]);
+  const invited = i18n.t('speakers.invitee');
+  expect(choices()).toEqual([`Bruno Lima${invited}`, `Ana Souza${invited}`, 'Zeca']);
 });
 
 it('creates an invitee as a person and confirms the voice with the prefilled verification', async () => {
@@ -107,4 +103,56 @@ it('leaves the verification empty for a voice that already has a name', () => {
   };
   render(<SpeakerCard {...props} report={named} />);
   expect(screen.getByRole('textbox', { name: i18n.t('speakers.decisionOrigin') })).toHaveValue('');
+});
+
+it('creates a typed name nobody has and names the voice in one step', async () => {
+  vi.mocked(library.createPerson).mockResolvedValue('p-carla');
+  render(<SpeakerCard {...props} />);
+  const field = screen.getByRole('combobox', { name: i18n.t('speakerNaming.who') });
+  fireEvent.change(field, { target: { value: '  Carla   Dias' } });
+  expect(screen.getByRole('option', { name: 'Criar pessoa “Carla Dias”' })).toBeInTheDocument();
+  expect(screen.getByText(i18n.t('speakerNaming.newPerson', { name: 'Carla Dias' }))).toBeVisible();
+  fireEvent.keyDown(field, { key: 'Escape' });
+  expect(screen.queryByRole('option')).toBeNull();
+  fireEvent.keyDown(field, { key: 'Enter' });
+  await waitFor(() => expect(library.confirmSpeaker).toHaveBeenCalled());
+  expect(library.createPerson).toHaveBeenCalledWith(
+    'Carla Dias',
+    'Nomeado(a) por você ao revisar esta reunião'
+  );
+  expect(vi.mocked(library.confirmSpeaker).mock.calls[0]).toEqual([
+    'job',
+    'speaker-2',
+    'p-carla',
+    'Ouvi o trecho e reconheci a voz',
+    false,
+    'output',
+  ]);
+  await waitFor(() => expect(field).toHaveValue(''));
+});
+
+it('autocompletes with the keyboard and types an existing name without creating anyone', async () => {
+  render(<SpeakerCard {...props} />);
+  const field = screen.getByRole('combobox', { name: i18n.t('speakerNaming.who') });
+  fireEvent.change(field, { target: { value: 'ze' } });
+  expect(screen.getAllByRole('option').map((o) => o.getAttribute('data-value'))).toEqual([
+    'p-zeca',
+    'new:ze',
+  ]);
+  fireEvent.keyDown(field, { key: 'ArrowDown' });
+  expect(field).toHaveAttribute('aria-activedescendant', screen.getAllByRole('option')[0].id);
+  fireEvent.keyDown(field, { key: 'Enter' });
+  expect(field).toHaveValue('Zeca');
+  fireEvent.change(field, { target: { value: 'ana souza' } });
+  fireEvent.click(screen.getByRole('button', { name: i18n.t('library.processing.confirm') }));
+  await waitFor(() => expect(library.confirmSpeaker).toHaveBeenCalled());
+  expect(vi.mocked(library.confirmSpeaker).mock.calls[0][2]).toBe('p-ana');
+  expect(library.createPerson).not.toHaveBeenCalled();
+});
+
+it('keeps the prefilled verification collapsed for a first naming', () => {
+  render(<SpeakerCard {...props} />);
+  const origin = screen.getByRole('textbox', { name: i18n.t('speakers.decisionOrigin') });
+  expect(origin.closest('details')).not.toHaveAttribute('open');
+  expect(screen.getByText(/Como verificou: Ouvi o trecho/)).toBeInTheDocument();
 });

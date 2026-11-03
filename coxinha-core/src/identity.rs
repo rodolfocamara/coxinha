@@ -264,3 +264,5 @@ impl Store {
 mod tests;
 
 mod enrollment;
+mod import;
+pub use import::{name_key, PeopleImport};
