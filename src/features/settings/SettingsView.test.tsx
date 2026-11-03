@@ -296,7 +296,7 @@ describe('SettingsView — section list and deep links', () => {
       .map((b) => b.textContent);
     expect(names).toEqual(
       [
-        'general',
+        'appearance',
         'calendar',
         'recording',
         'transcription',

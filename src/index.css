@@ -26,6 +26,7 @@
   --color-popover-foreground: oklch(var(--fg-primary));
   --color-primary: oklch(var(--accent));
   --color-primary-foreground: oklch(var(--fg-on-accent));
+  --color-primary-ink: oklch(var(--accent-ink));
   --color-secondary: oklch(var(--bg-surface-2));
   --color-secondary-foreground: oklch(var(--fg-primary));
   --color-muted: oklch(var(--bg-sunken));
@@ -65,12 +66,12 @@
 
   /* AppShell dimensions (spec 0057). Canvases + chrome reference
      these instead of hardcoding pixel widths. */
-  --shell-rail-width: 256px;
-  --shell-chrome-height: 48px;
-  --shell-panel-width: 380px;
+  --shell-rail-width: 16rem;
+  --shell-chrome-height: 3rem;
+  --shell-panel-width: 23.75rem;
   /* Redesigned shell (spec 0096): labelled icon rail and recorder strip. */
-  --shell-nav-width: 68px;
-  --shell-strip-height: 38px;
+  --shell-nav-width: 4.25rem;
+  --shell-strip-height: 2.375rem;
 }
 
 @layer base {
@@ -88,12 +89,16 @@
     --fg-tertiary: 0.5005 0.00797 277.04;
     --fg-quaternary: 0.55975 0.00775 277.07;
     --fg-on-accent: 0.25997 0.01184 67.27;
+    --fg-on-danger: 0.25997 0.01184 67.27;
 
-    /* Accent — warm tangerine. The only non-neutral hue in
-       chrome. Used for active rail icon, save dot, primary CTA. */
+    /* Accent — warm tangerine by default (spec 0125 swaps it). The only
+       non-neutral hue in chrome. Used for active rail icon, save dot, primary
+       CTA. `--accent-ink` is the accent as text on a surface, at 4.5:1. */
     --accent: 0.7 0.14 55;
-    --accent-hover: 0.64 0.15 55;
+    --accent-hover: 0.65 0.15 55;
     --accent-soft: 0.935 0.035 65;
+    --accent-ink: 0.5249 0.1306 55;
+    --selection: 0.86 0.06 55;
 
     --success: 0.55 0.11 158;
     --warning: 0.6 0.12 75;
@@ -146,10 +151,13 @@
     --fg-tertiary: 0.7347 0.00881 91.51;
     --fg-quaternary: 0.67629 0.00899 91.52;
     --fg-on-accent: 0.25997 0.01184 67.27;
+    --fg-on-danger: 0.25997 0.01184 67.27;
 
     --accent: 0.77 0.135 55;
     --accent-hover: 0.81 0.135 55;
     --accent-soft: 0.32 0.06 55;
+    --accent-ink: 0.77 0.135 55;
+    --selection: 0.86 0.06 55;
 
     --success: 0.8 0.11 158;
     --warning: 0.84 0.11 80;
@@ -169,7 +177,7 @@
 
     /* Keep surface edges visible without turning dividers into chrome. */
     --danger: 0.75 0.11 30;
-    --color-destructive-foreground: oklch(var(--fg-on-accent));
+    --color-destructive-foreground: oklch(var(--fg-on-danger));
     --color-border: oklch(1 0 0 / 0.08);
   }
 
@@ -191,7 +199,7 @@
   }
 
   ::selection {
-    background: oklch(0.86 0.06 55);
+    background: oklch(var(--selection));
     color: #28231e;
   }
 
@@ -268,7 +276,7 @@
 .cx-eyebrow {
   font-family: var(--font-sans);
   font-weight: 500;
-  font-size: 11px;
+  font-size: 0.6875rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: oklch(var(--fg-tertiary));
@@ -278,12 +286,12 @@
 .cx-kbd {
   display: inline-flex;
   align-items: center;
-  padding: 1px 6px;
+  padding: 1px 0.375rem;
   border-radius: 4px;
   background: oklch(var(--bg-surface-2));
   color: oklch(var(--fg-secondary));
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 500;
   border: 1px solid oklch(var(--fg-primary) / 0.08);
 }
@@ -292,7 +300,7 @@
    a lighter slash divider and an active segment in primary ink. */
 .cx-crumb {
   font-family: var(--font-sans);
-  font-size: 12px;
+  font-size: 0.75rem;
   color: oklch(var(--fg-secondary));
 }
 .cx-crumb-sep {
@@ -311,16 +319,16 @@
   background: oklch(var(--bg-surface-2));
   color: oklch(var(--fg-secondary));
   font-family: var(--font-sans);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 500;
-  padding: 5px 10px;
+  padding: 0.3125rem 0.625rem;
   border-radius: 4px;
 }
 
 /* Status / footer rail text — 11px muted. */
 .cx-status {
   font-family: var(--font-sans);
-  font-size: 11px;
+  font-size: 0.6875rem;
   color: oklch(var(--fg-secondary));
   letter-spacing: 0.01em;
 }
@@ -344,10 +352,10 @@
    viewport breakpoints: a wide viewport can still contain a narrow editor. */
 .cx-note-embedded .bn-container {
   height: auto;
-  min-height: 240px;
+  min-height: 15rem;
 }
 .cx-note-embedded .bn-editor {
-  padding-inline: clamp(20px, 4%, 40px);
+  padding-inline: clamp(1.25rem, 4%, 2.5rem);
 }
 .cx-note-embedded .bn-editor,
 .cx-note-embedded .ProseMirror {

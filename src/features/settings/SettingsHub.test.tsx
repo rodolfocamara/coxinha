@@ -6,7 +6,7 @@ import i18n from '../../lib/i18n';
 import { Shell } from '../../components/Shell/Shell';
 import { initialCaptureState, useCaptureStore } from '../capture/captureStore';
 import { useMeetingDetection } from '../detection/meetingDetection';
-import { GeneralSection } from './GeneralSection';
+import { AppearanceSection } from './AppearanceSection';
 import { RecordingSection } from './RecordingSection';
 import { SETTINGS_SECTIONS, SettingsLayout } from './SettingsLayout';
 
@@ -57,7 +57,7 @@ it('ambient toggle persists the preference and switches data-ambient on the docu
   const user = userEvent.setup();
   render(
     <Shell>
-      <GeneralSection />
+      <AppearanceSection />
     </Shell>
   );
   const toggle = screen.getByRole('checkbox', { name: tr('people.settings.ambient.title') });
@@ -74,7 +74,7 @@ it('ambient toggle persists the preference and switches data-ambient on the docu
 
 it('theme is a labelled radio group whose thumb slides to the chosen option', async () => {
   const user = userEvent.setup();
-  render(<GeneralSection />);
+  render(<AppearanceSection />);
   const group = screen.getByRole('radiogroup', { name: tr('people.settings.theme.title') });
   expect(screen.getByRole('radio', { name: 'Automático' })).toBeChecked();
   expect(group.style.getPropertyValue('--index')).toBe('0');
@@ -151,7 +151,7 @@ it('call detection is a switch row in Gravação that persists the preference', 
 it('gives every settings section a nav icon and the same icon on its heading', () => {
   render(
     <SettingsLayout ready>
-      <GeneralSection />
+      <AppearanceSection />
     </SettingsLayout>
   );
   const nav = screen.getByRole('navigation', { name: i18n.t('people.settings.sectionsLabel') });
@@ -160,7 +160,7 @@ it('gives every settings section a nav icon and the same icon on its heading', (
   for (const item of items) expect(item.querySelector('svg[aria-hidden="true"]')).not.toBeNull();
   const heading = screen.getByRole('heading', {
     level: 2,
-    name: i18n.t('people.settings.sections.general'),
+    name: i18n.t('people.settings.sections.appearance'),
   });
   expect(heading.querySelector('svg[aria-hidden="true"]')).not.toBeNull();
 });

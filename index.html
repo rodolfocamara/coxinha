@@ -41,6 +41,16 @@
         } else {
           root.style.backgroundColor = theme === 'dark' ? '#242528' : '#f6f5f1';
         }
+        // Font size, accent and contrast (spec 0125), as generated when last saved.
+        try {
+          const css = localStorage.getItem('coxinha.appearance.css');
+          if (css) {
+            const style = document.createElement('style');
+            style.id = 'cx-appearance';
+            style.textContent = css;
+            document.head.append(style);
+          }
+        } catch {}
       })();
     </script>
     <!-- System fonts keep the desktop shell fully offline. -->

@@ -15,7 +15,8 @@
     "test:watch": "vitest",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
     "screenshots": "node tools/capture-screenshots.mjs",
-    "screenshots:install": "playwright install chromium"
+    "screenshots:install": "playwright install chromium",
+    "audit:appearance": "node tools/ui-preview/audit-appearance.mjs"
   },
   "dependencies": {
     "@blocknote/core": "^0.48.1",

@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, type ReactNode } from 'react';
+import { useAppearanceLayout } from '../../lib/appearance/useAppearanceLayout';
 
 type Tab<T extends string> = { id: T; label: ReactNode };
 
@@ -21,6 +22,7 @@ export function TabBar<T extends string>({
   idPrefix: string;
   className?: string;
 }) {
+  useAppearanceLayout();
   const buttons = useRef<Partial<Record<string, HTMLButtonElement | null>>>({});
   const indicator = useRef<HTMLSpanElement>(null);
   const placed = useRef(false);

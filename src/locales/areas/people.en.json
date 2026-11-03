@@ -66,7 +66,7 @@
       "title": "Settings",
       "sectionsLabel": "Settings sections",
       "sections": {
-        "general": "General",
+        "appearance": "Appearance",
         "recording": "Recording",
         "transcription": "Local transcription",
         "integrations": "Integrations",
@@ -76,7 +76,7 @@
         "calendar": "Calendar and time zones"
       },
       "descriptions": {
-        "general": "Appearance.",
+        "appearance": "Theme, colours, text and language. Saved on this computer.",
         "recording": "Used by the record button, by meetings and by detected calls.",
         "transcription": "Runs on this computer, nothing is sent out.",
         "integrations": "Optional. Nothing leaves this computer until you connect.",
@@ -183,6 +183,55 @@
         "up": "Move {{name}} up",
         "down": "Move {{name}} down",
         "remove": "Remove {{name}}"
+      },
+      "accent": {
+        "title": "Accent colour",
+        "hint": "Buttons, the active item and focus. Outlook's categories keep their colours.",
+        "tangerine": "Tangerine",
+        "blue": "Blue",
+        "teal": "Teal",
+        "green": "Green",
+        "violet": "Violet",
+        "pink": "Pink",
+        "graphite": "Graphite",
+        "custom": "Custom colour",
+        "picker": "Choose the custom colour",
+        "hex": "Custom colour as hex, for example #e8843c",
+        "chosen": "Accent colour: {{name}}",
+        "sample": "Sample button",
+        "readable": "{{ink}} on this colour, contrast {{ratio}}:1.",
+        "darkText": "Dark text",
+        "lightText": "Light text",
+        "adjusted": "Lightness adjusted to stay visible on this theme."
+      },
+      "contrast": {
+        "title": "Contrast",
+        "hint": "How far text stands out from the page. Text never drops below a readable level.",
+        "reset": "Reset contrast",
+        "wasReset": "Contrast back to 100%"
+      },
+      "fontSize": {
+        "title": "Interface font size",
+        "hint": "Text, controls and the agenda grow together. 16 is the original size.",
+        "reset": "Reset interface font size",
+        "wasReset": "Interface font size back to 16 px"
+      },
+      "fontFamilyDefault": "System font",
+      "fontSans": {
+        "title": "Interface font",
+        "hint": "Installed font names, separated by commas."
+      },
+      "fontMono": {
+        "title": "Monospace font",
+        "hint": "For shortcuts, paths and notes in the mono font."
+      },
+      "language": {
+        "title": "Language",
+        "hint": "Automatic follows the system. The tray and notifications change at the next start.",
+        "auto": "Automatic",
+        "ptBR": "Português (Brasil)",
+        "en": "English",
+        "changed": "Language: {{language}}"
       }
     },
     "palette": {

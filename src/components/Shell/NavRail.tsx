@@ -7,6 +7,7 @@ import { toggleCapture } from '../../features/capture/captureActions';
 import { useCaptureStore } from '../../features/capture/captureStore';
 import { prepareRouteTransition, setZoomOrigin, type TransitionKind } from '../../lib/motion';
 import { openSearch } from '../AppShell/SearchBar';
+import { useAppearanceLayout } from '../../lib/appearance/useAppearanceLayout';
 
 export type NavArea = 'hoje' | 'meetings' | 'workspace' | 'people' | 'settings';
 
@@ -48,6 +49,7 @@ export function NavRail() {
   const current = areaForPath(path);
   const live = useCaptureStore((s) => !!s.status?.active);
   const busy = useCaptureStore((s) => s.busy !== null);
+  const layout = useAppearanceLayout();
   const indicator = useRef<HTMLSpanElement>(null);
   const items = useRef<Partial<Record<NavArea, HTMLButtonElement | null>>>({});
 
@@ -68,7 +70,7 @@ export function NavRail() {
       void el.offsetWidth;
       el.style.transition = '';
     }
-  }, [current]);
+  }, [current, layout]);
 
   const go = (area: NavArea) => {
     if (area === current) return;
