@@ -204,3 +204,4 @@ Pending decisions that block or shape the implementation.
 - [0116 — Multilingual live transcript](0116-multilingual-live-transcript.md) — in-progress
 - [0117 — Faces for people](0117-faces-for-people.md) — draft
 - [0118 — A recording ends with its call](0118-recording-ends-with-its-call.md) — draft
+- [0120 — Voices from confirmations, and noise kept out of naming](0120-voices-from-confirmations.md) — in-progress
