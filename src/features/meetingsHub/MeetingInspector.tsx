@@ -10,6 +10,7 @@ import { durationLabel, hueFor, initials, mediaClock, whenLabel } from './format
 import { normalize } from './meetingRows';
 import { EventCategories } from '../agenda/EventCategories';
 import { requestMeetingsSheet } from './meetingsSheets';
+import { ItemLinks } from '../items/ItemLinks';
 
 type Props = {
   start: Date | null;
@@ -18,6 +19,8 @@ type Props = {
   event: CalendarEvent | null;
   source: 'session' | 'event' | 'recording';
   meetingId: string | null;
+  /** Spec 0105: links to activities belong to the session. */
+  sessionId: string | null;
   detail: LibraryDetail | null;
   live: boolean;
   liveElapsedMs: number | null;
@@ -86,6 +89,9 @@ export function MeetingInspector(p: Props) {
           headingClassName="mh-insp-h"
           onReconnect={() => requestMeetingsSheet('outlook')}
         />
+      )}
+      {p.sessionId && (
+        <ItemLinks side="meeting" sessionId={p.sessionId} headingClassName="mh-insp-h" />
       )}
       <div>
         <h3 className="mh-insp-h">

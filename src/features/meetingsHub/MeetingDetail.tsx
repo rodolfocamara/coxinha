@@ -12,7 +12,7 @@ import { LiveBadge } from '../capture/LiveBadge';
 import type { CalendarEvent } from '../agenda/calendar';
 import { matchEvent, type MeetingRow } from './meetingRows';
 import { buildLanes } from './lanes';
-import { untilLabel, whenLabel } from './format';
+import { transcriptFact, untilLabel, whenLabel } from './format';
 import { MeetingHeading } from './MeetingHeading';
 import { FindingBanner, findingFor } from './FindingBanner';
 import { SpeakerLanes } from './SpeakerLanes';
@@ -23,13 +23,14 @@ import { useLiveStatus } from '../capture/live';
 import { MediaPlaceholder, NotesPlaceholder } from './DetailPlaceholders';
 import { useMeetingMedia } from './useMeetingMedia';
 import { useMeetingActions } from './useMeetingActions';
+import { MeetingFiles } from '../items/MeetingFiles';
 
 type Row<K extends MeetingRow['kind']> = Extract<MeetingRow, { kind: K }>;
 export type DetailTarget =
   | { kind: 'session'; sessionId: string; row: Row<'session'> | null }
   | { kind: 'event'; row: Row<'event'> }
   | { kind: 'recording'; row: Row<'recording'> };
-type Tab = 'notes' | 'transcript' | 'people';
+type Tab = 'notes' | 'transcript' | 'people' | 'files';
 
 type Props = {
   target: DetailTarget;
@@ -186,17 +187,14 @@ function LoadedDetail({
     (state) =>
       !!meetingId && state.snapshot?.meeting === meetingId && state.snapshot.state !== 'failed'
   );
-  const transcriptLabel = live
-    ? k(liveTranscribing ? 'inspector.transcriptLiveNow' : 'inspector.transcriptLive')
-    : processingHere || (latestJob && ['queued', 'running'].includes(latestJob.state))
-      ? k('inspector.transcriptRunning')
-      : report
-        ? k('inspector.transcriptReady')
-        : latestJob?.state === 'failed'
-          ? k('inspector.transcriptFailed')
-          : meetingId
-            ? k('inspector.transcriptNone')
-            : '–';
+  const transcriptLabel = transcriptFact(k, {
+    live,
+    liveTranscribing,
+    running: processingHere || (!!latestJob && ['queued', 'running'].includes(latestJob.state)),
+    ready: !!report,
+    failed: latestJob?.state === 'failed',
+    hasRecording: !!meetingId,
+  });
   const canTranscribeAgain =
     !!meetingId && captureState === 'finished' && !live && !processingHere && !!latestJob;
 
@@ -323,17 +321,29 @@ function LoadedDetail({
               </>
             ),
           },
+          { id: 'files', label: k('tabs.files') },
         ]}
       />
       <div className="mh-dbody">
         <div className="mh-pane">
           {panel('notes', notes)}
+          {panel(
+            'files',
+            <MeetingFiles
+              sessionId={session?.id ?? null}
+              title={title}
+              start={startDate}
+              kind={target.kind}
+              busy={actions.busy}
+              onPrepare={actions.prepareNotes}
+            />
+          )}
           {tab === 'transcript' && meetingId && (
             <LiveTranscriptPanel meetingId={meetingId} recording={live} />
           )}
           {meetingId && media.detail ? (
             <>
-              <div hidden={tab === 'notes'}>
+              <div hidden={tab === 'notes' || tab === 'files'}>
                 <RecordingDetail
                   detail={media.detail}
                   status={status}
@@ -344,7 +354,7 @@ function LoadedDetail({
                   audioPanelId="meeting-playback"
                   showProcessing={tab === 'transcript'}
                   people={tab === 'people'}
-                  playbackScope={tab}
+                  playbackScope={tab === 'files' ? 'notes' : tab}
                   onTranscript={() => setTab('transcript')}
                   processingPanelId="session-panel-transcript"
                   onRecover={async () => actions.recover()}
@@ -373,6 +383,7 @@ function LoadedDetail({
           event={event}
           source={target.kind === 'recording' ? 'recording' : target.kind}
           meetingId={meetingId}
+          sessionId={session?.id ?? null}
           detail={media.detail}
           live={live}
           liveElapsedMs={live ? (status.active?.elapsedMs ?? null) : null}

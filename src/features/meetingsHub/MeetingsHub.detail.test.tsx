@@ -165,9 +165,12 @@ it('shows notes, transcript and speakers tabs with keyboard navigation and lanes
   expect(tab('Transcript')).toHaveFocus();
   // The transcript is the original recording's pipeline, not the session title.
   expect(await within(detail()).findByText(/Pipeline m-rita transcript/)).toBeInTheDocument();
-  fireEvent.keyDown(tab('Transcript'), { key: 'End' });
+  fireEvent.keyDown(tab('Transcript'), { key: 'ArrowRight' });
   expect(tab(/Speakers/)).toHaveAttribute('aria-selected', 'true');
   expect(await within(detail()).findByText(/Pipeline m-rita people/)).toBeInTheDocument();
+  // Spec 0105: Files is the last tab.
+  fireEvent.keyDown(tab(/Speakers/), { key: 'End' });
+  expect(tab('Files')).toHaveAttribute('aria-selected', 'true');
   expect(within(detail()).queryByRole('tab', { name: 'Summary' })).toBeNull();
 });
 

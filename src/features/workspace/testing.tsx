@@ -94,6 +94,7 @@ export function createBackend(invoke: {
         personal_note: { id: 'n-rita', relative_path: 'notes/n-rita.md' },
       },
     ],
+    links: [] as { session: string; note: string; createdAt: string }[],
     loadError: null as string | null,
     saveError: null as string | null,
     next: 1,
@@ -139,6 +140,23 @@ export function createBackend(invoke: {
         return state.notes.filter((n) => (state.bodies[n.id] ?? '').includes(args.query));
       case 'get_backlinks':
         return [];
+      case 'list_notes':
+        return state.notes;
+      case 'links_list':
+        return state.links.filter(
+          (l) =>
+            (!args.session || l.session === args.session) && (!args.note || l.note === args.note)
+        );
+      case 'links_add':
+        state.links.push({ session: args.session, note: args.note, createdAt: 'now' });
+        return null;
+      case 'links_remove':
+        state.links = state.links.filter(
+          (l) => !(l.session === args.session && l.note === args.note)
+        );
+        return null;
+      case 'items_list':
+        return { folder: null, files: [], references: [] };
       default:
         throw `unexpected command ${cmd}`;
     }

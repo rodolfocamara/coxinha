@@ -81,3 +81,16 @@ export function hueFor(name: string) {
   return (Math.abs(hash) % 4) + 1;
 }
 const normalizeName = (name: string) => name.trim().toLowerCase();
+
+/** Transcript line of the inspector, most urgent state first. */
+export function transcriptFact(
+  k: (key: string) => string,
+  f: Record<'live' | 'liveTranscribing' | 'running' | 'ready' | 'failed' | 'hasRecording', boolean>
+) {
+  if (f.live)
+    return k(f.liveTranscribing ? 'inspector.transcriptLiveNow' : 'inspector.transcriptLive');
+  if (f.running) return k('inspector.transcriptRunning');
+  if (f.ready) return k('inspector.transcriptReady');
+  if (f.failed) return k('inspector.transcriptFailed');
+  return f.hasRecording ? k('inspector.transcriptNone') : '–';
+}

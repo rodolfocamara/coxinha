@@ -12,6 +12,8 @@ import { ChecklistActions } from './ChecklistActions';
 import { ActivityProps, NoteProps, OffBoardProps } from './ItemProps';
 import { KindSwitch } from './KindSwitch';
 import type { Workspace } from './useWorkspace';
+import { ItemFiles } from '../items/ItemFiles';
+import { ItemLinks } from '../items/ItemLinks';
 
 /** The Workspace's only editor: the note's Markdown plus its board properties. */
 export function SideEditor({ ws }: { ws: Workspace }) {
@@ -135,6 +137,15 @@ export function SideEditor({ ws }: { ws: Workspace }) {
               ) : null}
               {item && !note && <Alert tone="warning">{t('workspace.editor.missing')}</Alert>}
               {noteId && <NoteBody ws={ws} noteId={noteId} />}
+              {noteId && !meeting && (
+                <>
+                  <ItemLinks side="activity" noteId={noteId} />
+                  <ItemFiles
+                    heading
+                    item={{ kind: 'activity', id: noteId, title: note?.title ?? '', date: null }}
+                  />
+                </>
+              )}
               {item && (
                 <LayoutFields
                   item={item}

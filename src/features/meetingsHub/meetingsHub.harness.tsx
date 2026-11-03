@@ -43,6 +43,16 @@ export type Db = {
   categoryAccess: CategoryAccess;
   setCategories: { gate: Promise<void> | null; error: string | null };
   calls: { command: string; args: Record<string, unknown> }[];
+  /** Spec 0105: notes that can be linked and meeting ↔ activity links. */
+  notes: {
+    id: string;
+    title: string;
+    path: string;
+    tags: string[];
+    created_at: string;
+    updated_at: string;
+  }[];
+  links: { session: string; note: string; createdAt: string }[];
 };
 
 export function freshDb(): Db {
@@ -62,6 +72,8 @@ export function freshDb(): Db {
     categoryAccess: { read: true, write: true },
     setCategories: { gate: null, error: null },
     calls: [],
+    notes: [],
+    links: [],
   };
 }
 
@@ -207,6 +219,18 @@ export function backend(db: Db) {
         db.recordings = [...db.recordings, imported];
         return { ...detailOf(db, imported.id), audio: null };
       }
+      case 'list_notes':
+        return db.notes;
+      case 'links_list':
+        return db.links.filter(
+          (l) =>
+            (!args.session || l.session === args.session) && (!args.note || l.note === args.note)
+        );
+      case 'links_add':
+        db.links.push({ session: String(args.session), note: String(args.note), createdAt: 'now' });
+        return null;
+      case 'items_list':
+        return { folder: null, files: [], references: [] };
       default:
         throw new Error(`Unexpected command ${command}`);
     }
