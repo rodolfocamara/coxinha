@@ -144,10 +144,11 @@ it('shares processing across tabs, retains text corrections and stops audio on t
   expect(screen.queryByRole('combobox', { name: 'Person to confirm' })).toBeNull();
   expect(screen.getByText('Original words')).toBeInTheDocument();
   expect(library.processing).toHaveBeenCalledTimes(1);
-  changeControl(screen.getByLabelText('Separate human correction'), {
+  fireEvent.click(screen.getByRole('button', { name: /Correct the line at/ }));
+  changeControl(screen.getByLabelText('Corrected text'), {
     target: { value: 'Edited words' },
   });
-  fireEvent.click(screen.getByRole('button', { name: 'Save correction' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }));
   await waitFor(() =>
     expect(library.editSegment).toHaveBeenCalledWith('m', 'job:text', 'Edited words')
   );
@@ -212,7 +213,7 @@ it.each(['session', 'legacy'])(
         audioExpanded={context === 'legacy'}
       />
     );
-    const segment = await screen.findByRole('button', { name: /0:02 · speaker-1/ });
+    const segment = await screen.findByRole('button', { name: /Play from 0:02/ });
     fireEvent.click(segment);
     const output = view.container.querySelectorAll('audio')[1];
     expect(output.currentTime).toBe(2);
@@ -232,7 +233,7 @@ it('R3 legacy transcript seek preserves an already playing full track instead of
       audioExpanded
     />
   );
-  const segment = await screen.findByRole('button', { name: /0:02 · speaker-1/ });
+  const segment = await screen.findByRole('button', { name: /Play from 0:02/ });
   const output = view.container.querySelectorAll('audio')[1];
   vi.spyOn(output, 'paused', 'get').mockReturnValue(false);
   vi.mocked(HTMLMediaElement.prototype.pause).mockClear();

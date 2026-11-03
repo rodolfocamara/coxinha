@@ -108,12 +108,15 @@ describe('processing panel', () => {
     render(
       <ProcessingPanel meetingId="m1" closed status={idle} onStatus={vi.fn()} onSeek={vi.fn()} />
     );
-    expect(await screen.findByText('Original machine wording')).toBeInTheDocument();
-    expect(screen.getAllByText(/Human corrected wording/).length).toBeGreaterThan(0);
+    // The correction is what reads; the machine wording stays one click away.
+    expect(await screen.findByText('Human corrected wording')).toBeInTheDocument();
+    expect(
+      screen.getByText('Original: Original machine wording').closest('details')
+    ).not.toHaveAttribute('open');
     const versions = screen.getAllByRole('combobox')[0];
     changeControl(versions, { target: { value: 'old-job' } });
     await waitFor(() => expect(library.processing).toHaveBeenLastCalledWith('m1', 'old-job'));
-    expect(await screen.findByText('Original machine wording')).toBeInTheDocument();
+    expect(await screen.findByText('Human corrected wording')).toBeInTheDocument();
   });
   it('offers voice turn playback before confirmation and labels mapped text with a confirmed name', async () => {
     vi.mocked(library.processing).mockResolvedValue({
@@ -161,7 +164,7 @@ describe('processing panel', () => {
     expect(listen).toHaveTextContent('0:01–0:03');
     fireEvent.click(listen);
     expect(onSeek).toHaveBeenCalledWith('output', 1.25, 3.25);
-    expect(screen.getByRole('button', { name: /0:01 · Ana/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Play from 0:01, Ana' })).toBeInTheDocument();
   });
   it('keeps raw configuration and model metadata collapsed by default', () => {
     render(

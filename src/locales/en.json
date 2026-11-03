@@ -321,7 +321,25 @@
       "legacyAssignments": "Previous identities without a defined track",
       "legacyNotice": "These historical decisions are not assigned to the current voice groups. Their samples may still contribute to voice profiles until revoked.",
       "revokeLegacy": "Revoke previous identity",
-      "overlapWarning": "Text attribution overlap-v2 uses at least 70% same-track union coverage and abstains on competing or unknown speech. This is an algorithm parameter, not calibrated confidence."
+      "overlapWarning": "Text attribution overlap-v2 uses at least 70% same-track union coverage and abstains on competing or unknown speech. This is an algorithm parameter, not calibrated confidence.",
+      "reader": {
+        "label": "Transcript",
+        "speakers_one": "{{count}} speaker",
+        "speakers_other": "{{count}} speakers",
+        "find": "Search the transcript",
+        "matches": "{{current}}/{{total}}",
+        "noMatches": "No matches",
+        "previous": "Previous match",
+        "next": "Next match",
+        "seek": "Play from {{time}}, {{speaker}}",
+        "correct": "Correct the line at {{time}}",
+        "correction": "Corrected text",
+        "save": "Save",
+        "cancel": "Cancel",
+        "corrected": "corrected",
+        "original": "Original: {{text}}",
+        "processing": "Processing"
+      }
     },
     "importAudio": "Import local WAV",
     "imported": "Imported audio",

@@ -114,7 +114,25 @@
       "legacyAssignments": "Identificações antigas sem trilha definida",
       "legacyNotice": "Estas decisões históricas não estão associadas aos grupos de voz atuais. Suas amostras ainda podem contribuir para os perfis de voz até serem revogadas.",
       "revokeLegacy": "Revogar identificação antiga",
-      "overlapWarning": "A atribuição de texto overlap-v2 exige cobertura unificada de pelo menos 70% na mesma trilha e se abstém quando há fala concorrente ou desconhecida. É um parâmetro do algoritmo, não confiança calibrada."
+      "overlapWarning": "A atribuição de texto overlap-v2 exige cobertura unificada de pelo menos 70% na mesma trilha e se abstém quando há fala concorrente ou desconhecida. É um parâmetro do algoritmo, não confiança calibrada.",
+      "reader": {
+        "label": "Transcrição",
+        "speakers_one": "{{count}} falante",
+        "speakers_other": "{{count}} falantes",
+        "find": "Buscar na transcrição",
+        "matches": "{{current}}/{{total}}",
+        "noMatches": "Nenhum resultado",
+        "previous": "Resultado anterior",
+        "next": "Próximo resultado",
+        "seek": "Ouvir a partir de {{time}}, {{speaker}}",
+        "correct": "Corrigir a fala de {{time}}",
+        "correction": "Texto corrigido",
+        "save": "Salvar",
+        "cancel": "Cancelar",
+        "corrected": "corrigido",
+        "original": "Original: {{text}}",
+        "processing": "Processamento"
+      }
     },
     "importAudio": "Importar WAV local",
     "imported": "Áudio importado",
