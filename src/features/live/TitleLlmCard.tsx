@@ -106,6 +106,23 @@ export function TitleLlmCard() {
         </Field>
         {field('model', k('model'))}
       </CardBody>
+      <CardBody className="flex items-start gap-3">
+        <div className="mr-auto">
+          <p id="summaries-heading" className="text-sm font-medium">
+            {k('summaries')}
+          </p>
+          <p id="summaries-desc" className="text-xs text-muted-foreground">
+            {k('summariesPrivacy')}
+          </p>
+        </div>
+        <Switch
+          name="summaries"
+          labelledBy="summaries-heading"
+          checked={settings.summaries}
+          disabled={!settings.enabled}
+          onChange={(summaries) => save({ ...settings, summaries })}
+        />
+      </CardBody>
       <CardFooter>
         <p className="mr-auto text-xs text-muted-foreground">{k('privacy')}</p>
         <Button

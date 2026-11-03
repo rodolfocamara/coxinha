@@ -5,7 +5,6 @@ import { Mic, RotateCw } from 'lucide-react';
 import { Alert, Button } from '../../components/ui';
 import { library, type CaptureStatus } from '../meetings/library';
 import { RecordingDetail } from '../meetings/RecordingDetail';
-import { SessionNotes } from '../sessions/SessionNotes';
 import { refreshSessionList, sessions, type Session } from '../sessions/sessions';
 import { useCaptureStore, useIsLive } from '../capture/captureStore';
 import { LiveBadge } from '../capture/LiveBadge';
@@ -20,7 +19,8 @@ import { MeetingInspector } from './MeetingInspector';
 import { TabBar } from './TabBar';
 import { LiveTranscriptPanel } from '../live/LiveTranscriptPanel';
 import { useLiveStatus } from '../capture/live';
-import { MediaPlaceholder, NotesPlaceholder } from './DetailPlaceholders';
+import { MediaPlaceholder } from './DetailPlaceholders';
+import { MeetingNotes } from './MeetingNotes';
 import { useMeetingMedia } from './useMeetingMedia';
 import { useMeetingActions } from './useMeetingActions';
 import { MeetingFiles } from '../items/MeetingFiles';
@@ -211,10 +211,10 @@ function LoadedDetail({
       {tab === id && children}
     </section>
   );
-  const notes = session ? (
-    <SessionNotes sessionId={session.id} />
-  ) : (
-    <NotesPlaceholder
+  const notes = (
+    <MeetingNotes
+      session={session}
+      meetingId={meetingId}
       kind={target.kind === 'event' ? 'event' : 'recording'}
       busy={actions.busy}
       onPrepare={actions.prepareNotes}

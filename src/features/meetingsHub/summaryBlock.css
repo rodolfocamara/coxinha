@@ -1,0 +1,48 @@
+@layer theme, base, components, utilities;
+
+/* Spec 0108: generated summary above the meeting notes. */
+@layer components {
+  .mh-summary {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+  }
+  .mh-summary-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .mh-summary-head h3 {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .mh-summary-body {
+    display: grid;
+    gap: 6px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .mh-summary-body h4 {
+    margin: 4px 0 0;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-muted-foreground);
+  }
+  .mh-summary-body p,
+  .mh-summary-body ul {
+    margin: 0;
+  }
+  .mh-summary-body ul {
+    padding-left: 18px;
+    list-style: disc;
+  }
+}

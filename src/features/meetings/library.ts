@@ -134,6 +134,8 @@ function acceptAudio(detail: LibraryDetail): LibraryDetail {
   return detail;
 }
 
+/** Spec 0108: summary from the owner's LLM, kept with the transcript it came from. */
+export type MeetingSummary = { markdown: string; generatedAt: string };
 export const library = {
   available: isTauri,
   importAudio: (title: string, path: string) =>
@@ -144,6 +146,9 @@ export const library = {
   setParticipantContext: (meetingId: string, participants: ParticipantCandidate[]) =>
     invoke<ParticipantCandidate[]>('library_set_participant_context', { meetingId, participants }),
   list: () => invoke<LibraryMeeting[]>('library_list'),
+  summary: (meetingId: string) =>
+    invoke<MeetingSummary | null>('library_meeting_summary', { meetingId }),
+  summarize: (meetingId: string) => invoke<MeetingSummary>('library_summarize', { meetingId }),
   sources: () => invoke<Source[]>('library_sources'),
   status: () => invoke<CaptureStatus>('library_status'),
   start: (title: string, micSource: string, outputSource: string) =>

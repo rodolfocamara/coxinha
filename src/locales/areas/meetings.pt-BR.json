@@ -241,6 +241,16 @@
       "decline": "Não é",
       "declineLabel": "Não é: {{title}}",
       "done": "Nada mais para revisar."
+    },
+    "summary": {
+      "title": "Resumo",
+      "generated": "gerado {{when}}",
+      "generate": "Gerar resumo",
+      "regenerate": "Gerar de novo",
+      "generating": "Gerando…",
+      "none": "Ainda sem resumo. Ele é escrito depois da transcrição.",
+      "setup": "Para resumir, ligue o modelo de títulos e \"Gerar resumos\" em Ajustes › Integrações.",
+      "failed": "O resumo não funcionou: {{error}}"
     }
   }
 }

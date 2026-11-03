@@ -241,6 +241,16 @@
       "decline": "Not this one",
       "declineLabel": "Not this one: {{title}}",
       "done": "Nothing left to review."
+    },
+    "summary": {
+      "title": "Summary",
+      "generated": "generated {{when}}",
+      "generate": "Generate summary",
+      "regenerate": "Generate again",
+      "generating": "Generating…",
+      "none": "No summary yet. It is written after the transcript.",
+      "setup": "To summarize, turn on the title model and \"Generate summaries\" in Settings › Integrations.",
+      "failed": "The summary did not work: {{error}}"
     }
   }
 }
