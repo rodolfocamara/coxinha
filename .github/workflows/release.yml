@@ -25,17 +25,9 @@ jobs:
         with:
           workspaces: './ -> target'
 
-      # CUDA Toolkit for GPU builds (whisper-rs cuda feature + ort cuda)
-      - uses: Jimver/cuda-toolkit@v0.2.21
-        id: cuda-toolkit
-        with:
-          cuda: '12.6.0'
-          method: 'network'
-          sub-packages: '["nvcc", "cudart"]'
-
       - run: pnpm install --frozen-lockfile
 
-      - name: Build installers (models, transcribe.cpp libraries, release + cuda)
+      - name: Build installers (models, transcribe.cpp libraries, CPU release)
         run: python scripts/build_release.py --platform windows --features "full-release"
 
       # A manual run is a check: the installers stay a workflow artifact.
