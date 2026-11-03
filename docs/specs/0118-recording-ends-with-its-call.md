@@ -79,21 +79,21 @@ speech during the last call.
 
 ## Acceptance criteria
 
-- [ ] A manual capture started during a call stops 60 s after the call
+- [x] A manual capture started during a call stops 60 s after the call
   ends with a quiet microphone, with automatic recording off.
   (`auto_record::policy` tests)
-- [ ] Microphone speech in that minute postpones the stop, and the call
+- [x] Microphone speech in that minute postpones the stop, and the call
   coming back cancels it. (policy tests)
-- [ ] A capture with no call never stops on its own, the setting off never
+- [x] A capture with no call never stops on its own, the setting off never
   stops one, and "Continuar gravando" cancels it. (policy tests)
-- [ ] A call that starts while no followed call is active joins the follow.
+- [x] A call that starts while no followed call is active joins the follow.
   (policy tests)
-- [ ] The stop is commanded once, so the notice is raised once, and the
+- [x] The stop is commanded once, so the notice is raised once, and the
   0115 ask stays quiet when the stop is automatic.
   (policy tests, `call_detector` tests)
-- [ ] The library reports how long ago the microphone last carried speech.
+- [x] The library reports how long ago the microphone last carried speech.
   (`library` tests)
-- [ ] The strip shows the countdown for a manual recording and the
+- [x] The strip shows the countdown for a manual recording and the
   "stopped with the call" line afterwards. (`autoRecord.test.tsx`)
 - [ ] Owner: a Teams call recorded by hand stops about a minute after it
   ends, and the notice shows.

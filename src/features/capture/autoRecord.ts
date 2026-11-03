@@ -9,16 +9,29 @@ export type AutoRecordSettings = {
   micSource: string | null;
   outputSource: string | null;
 };
+/** Spec 0118: the live capture and the calls it follows, whoever started it. */
+export type AutoRecordBinding = {
+  /** Set when automatic recording started the capture. */
+  sessionId: string | null;
+  meetingId: string;
+  calls: ActiveCall[];
+  keep: boolean;
+};
 export type AutoRecordStatus = {
   settings: AutoRecordSettings;
-  binding: { sessionId: string; meetingId: string; call: ActiveCall; keep: boolean } | null;
+  binding: AutoRecordBinding | null;
   stopInMs: number | null;
+  /** The last capture that stopped with its call. */
+  ended: { meetingId: string; app: string } | null;
 };
 
 /** `stopAt` is local wall time, so the countdown ticks between backend reads. */
-export const useAutoRecord = create<{ status: AutoRecordStatus | null; stopAt: number | null }>(
-  () => ({ status: null, stopAt: null })
-);
+export const useAutoRecord = create<{
+  status: AutoRecordStatus | null;
+  stopAt: number | null;
+  /** The ended line the owner closed. */
+  dismissedEnded: string | null;
+}>(() => ({ status: null, stopAt: null, dismissedEnded: null }));
 
 function accept(status: AutoRecordStatus) {
   useAutoRecord.setState({
@@ -42,7 +55,7 @@ export async function updateAutoRecord(next: Partial<AutoRecordSettings>) {
   accept(await invoke<AutoRecordStatus>('set_auto_record', { settings: { ...current, ...next } }));
 }
 
-/** "Continuar gravando": the end of this call no longer stops the capture. */
+/** "Continuar gravando": the end of these calls no longer stops the capture. */
 export async function keepAutoRecording() {
   accept(await invoke<AutoRecordStatus>('auto_record_keep'));
 }
@@ -54,7 +67,7 @@ export function useAutoStop() {
   return binding && stopAt !== null ? { binding, stopAt } : null;
 }
 
-/** Auto-record owns the end of this call: the frontend ended prompt stays quiet. */
+/** The backend stops with this call (spec 0118): the ended prompt stays quiet. */
 export function autoStopsCall(call: ActiveCall | null) {
   const status = useAutoRecord.getState().status;
   const binding = status?.binding;
@@ -63,7 +76,17 @@ export function autoStopsCall(call: ActiveCall | null) {
     !!binding &&
     !!status?.settings.stopWhenCallEnds &&
     !binding.keep &&
-    binding.call.pid === call.pid &&
-    binding.call.process_name === call.process_name
+    binding.calls.some((c) => c.pid === call.pid && c.process_name === call.process_name)
   );
+}
+
+/** Spec 0118 P3: the recording that stopped with its call, until dismissed. */
+export function useEndedWithCall() {
+  return useAutoRecord((s) =>
+    s.status?.ended && s.status.ended.meetingId !== s.dismissedEnded ? s.status.ended : null
+  );
+}
+
+export function dismissEndedWithCall() {
+  useAutoRecord.setState((s) => ({ dismissedEnded: s.status?.ended?.meetingId ?? null }));
 }

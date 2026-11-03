@@ -110,7 +110,8 @@ export type StartRequest = { sessionId: string; title: string } | { title: strin
 export async function startCapture(request: StartRequest) {
   const current = useCaptureStore.getState();
   if (current.busy) return null;
-  if (current.status?.active || current.status?.processing) {
+  // Spec 0121: processing yields to a new capture in the backend.
+  if (current.status?.active) {
     useCaptureStore.setState({ failure: 'captureBusy' });
     return null;
   }

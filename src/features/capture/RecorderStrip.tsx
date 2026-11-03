@@ -17,16 +17,16 @@ import {
   useDirectCapture,
 } from '../detection/directCapture';
 import { dismissCaptureError, pauseCapture, stopCapture } from './captureActions';
-import { capturePhase, useCaptureStore } from './captureStore';
+import { useCaptureStore } from './captureStore';
 import '../../components/Shell/shell.css';
-import { useAutoStop } from './autoRecord';
+import { useAutoStop, useEndedWithCall } from './autoRecord';
+import { BackgroundLine, EndedWithCall, RecordButton, useBackgroundWork } from './BackgroundWork';
 import {
   AutoStopNotice,
   DetectedCall,
   LiveToggle,
   Levels,
   formatElapsed,
-  processingPhase,
   useChanged,
   type View,
 } from './recorderParts';
@@ -64,7 +64,10 @@ export function RecorderStrip() {
   const direct = useDirectCapture();
   const { title, sessionId } = useLiveTitle();
   const autoStop = useAutoStop();
-  const phase = capturePhase(status);
+  const ended = useEndedWithCall();
+  const sessions = sessionListCache((s) => s.data);
+  const work = useBackgroundWork();
+  const background = work && <BackgroundLine text={work} />;
   const active = status?.active;
 
   const openMeeting = sessionId
@@ -102,9 +105,10 @@ export function RecorderStrip() {
         )
       : undefined;
   const pendingCall: ActiveCall | undefined =
-    detecting && phase === 'idle'
+    detecting && !active
       ? detection.status?.calls.find((c) => !detection.dismissed.includes(callKey(c)))
       : undefined;
+  const endedSession = ended && sessions?.find((s) => s.meeting_id === ended.meetingId);
   const error = status?.error && status.error !== dismissedError ? status.error : null;
 
   let view: View;
@@ -152,7 +156,7 @@ export function RecorderStrip() {
       tone: 'attention',
       content: (
         <AutoStopNotice
-          app={autoStop.binding.call.app_name}
+          app={autoStop.binding.calls[0]?.app_name ?? ''}
           stopAt={autoStop.stopAt}
           busy={!!busy}
         />
@@ -209,6 +213,7 @@ export function RecorderStrip() {
           {direct.receipt?.metadataFailed && (
             <span className="text-warning">{t('recorder.metadataFailed')}</span>
           )}
+          {background}
         </>
       ),
       actions: (
@@ -233,28 +238,16 @@ export function RecorderStrip() {
         </>
       ),
     };
-  } else if (status?.processing) {
-    view = {
-      key: `processing:${status.processing.phase}`,
-      tone: 'busy',
-      content: (
-        <>
-          <b role="status">
-            {t(`recorder.processing.${processingPhase(status.processing.phase)}`)}
-          </b>
-          {titleChip}
-          <span className="cx-progress" aria-hidden="true">
-            <i />
-          </span>
-          <span className="cx-strip-muted">{t('recorder.background')}</span>
-        </>
-      ),
-    };
   } else if (pendingCall) {
     view = {
       key: `detected:${callKey(pendingCall)}`,
       tone: 'attention',
-      content: <DetectedCall call={pendingCall} />,
+      content: (
+        <>
+          <DetectedCall call={pendingCall} />
+          {background}
+        </>
+      ),
     };
   } else if (error) {
     view = {
@@ -291,16 +284,34 @@ export function RecorderStrip() {
         </>
       ),
     };
+  } else if (ended) {
+    const open = endedSession
+      ? () => void navigate({ to: '/meetings/$sessionId', params: { sessionId: endedSession.id } })
+      : undefined;
+    view = {
+      key: `ended-with-call:${ended.meetingId}`,
+      tone: 'idle',
+      content: (
+        <>
+          <EndedWithCall app={ended.app} onOpen={open} />
+          {background}
+        </>
+      ),
+      actions: <RecordButton />,
+    };
   } else {
     view = {
-      key: 'idle',
+      key: background ? 'idle:background' : 'idle',
       tone: 'idle',
       content: (
         <>
           <span className="cx-strip-muted">{t('brand.name')}</span>
+          {background}
         </>
       ),
-      actions: (
+      actions: background ? (
+        <RecordButton />
+      ) : (
         <span className="cx-strip-muted flex items-center gap-1.5">
           <Mic size={13} aria-hidden="true" />
           {t('recorder.ready')}

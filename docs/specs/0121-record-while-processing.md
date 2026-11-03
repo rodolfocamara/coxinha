@@ -64,17 +64,17 @@ A meeting that starts while the previous one is processing is lost.
 
 ## Acceptance criteria
 
-- [ ] `Start` with processing running yields the job, and the job resumes
+- [x] `Start` with processing running yields the job, and the job resumes
   with its configuration once capture and live drain are idle.
-  (`library::processing` lifecycle tests)
-- [ ] A yielded job is not published and its meeting is picked again by
+  (`library::processing::lifecycle_tests`)
+- [x] A yielded job is not published and its meeting is picked again by
   automatic speaker separation. (lifecycle and backlog tests)
-- [ ] A new capture preempts a draining meeting, which resumes afterwards
+- [x] A new capture preempts a draining meeting, which resumes afterwards
   and ends complete. (`coxinha_core::live` worker tests)
-- [ ] Automatic recording starts while processing runs.
+- [x] Automatic recording starts while processing runs.
   (`auto_record::policy` tests)
-- [ ] The strip shows processing as a secondary line with the record
-  button, and the record actions no longer refuse while processing.
-  (`RecorderStrip.test.tsx`, `captureStore.test.tsx`)
+- [x] The strip shows processing as a secondary line with the record
+  button, a detected call keeps its prompt, and recording starts at once.
+  (`RecorderStrip.test.tsx`)
 - [ ] Owner: a meeting started right after another one ends records, and
   the previous one's speakers appear later.

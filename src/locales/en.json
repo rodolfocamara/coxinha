@@ -742,7 +742,7 @@
     "devicesMissing": "Could not find both default audio devices. Choose them in Audio settings, then try again.",
     "startFailed": "Recording could not be started. Try again; a session already created here will be reused.",
     "callEnded": "This call is no longer detected. Recording was not started.",
-    "captureBusy": "Another recording or processing operation is active. Recording was not started.",
+    "captureBusy": "Another recording is active. Recording was not started.",
     "started": "Recording started: {{title}}",
     "metadataFailed": "Recording started, but the invited people could not be copied. The audio is still being recorded.",
     "viewSession": "Open meeting",
