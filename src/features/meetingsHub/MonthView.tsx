@@ -5,7 +5,7 @@ import { Button } from '../../components/ui';
 import { dayKey, monthStart, monthWeeks } from '../sessions/sessionDates';
 import { rowsByDay, type MeetingRow } from './meetingRows';
 import { clockTime } from './format';
-import { colourVar, useEventColour } from '../agenda/categories';
+import { OUTLOOK_PRESETS, colourStyle, colourVar, useEventColour } from '../agenda/categories';
 import { CategoryLabel } from '../agenda/CategoryLabel';
 
 /**
@@ -127,6 +127,8 @@ function MonthItem({
     <button
       type="button"
       className="mh-month-ev"
+      data-category={tinted ? OUTLOOK_PRESETS[colour.preset] : undefined}
+      style={tinted ? colourStyle(colour.preset) : undefined}
       onClick={() => onSelect(row)}
       title={`${clockTime(row.start!, locale)} ${row.title}`}
     >

@@ -80,6 +80,7 @@ it('marks list rows with their first coloured category and names it for screen r
   renderAt('/meetings');
   await waitFor(() => expect(row('e:e-arch')).toHaveAttribute('data-category', 'blue'));
   expect(row('e:e-arch')!.style.getPropertyValue('--cx-cat')).toBe('var(--outlook-cat-7)');
+  expect(row('e:e-arch')!.style.getPropertyValue('--cx-cat-bg')).toBe('var(--outlook-cat-7-bg)');
   expect(row('e:e-arch')).toHaveAccessibleName(/Category Architect/);
   // Uncoloured and unknown categories are skipped for the first coloured one.
   expect(row('e:e-cto')).toHaveAttribute('data-category', 'red');
@@ -98,9 +99,12 @@ it('tints month items with the category colour', async () => {
       background: 'var(--outlook-cat-7)',
     })
   );
+  expect(item).toHaveAttribute('data-category', 'blue');
+  expect(item.style.getPropertyValue('--cx-cat-bg')).toBe('var(--outlook-cat-7-bg)');
   expect(item).toHaveAccessibleName(/Category Architect/);
   const lunch = within(grid).getByRole('button', { name: /Lunch/ });
   expect(lunch.querySelector('[data-category]')).toBeNull();
+  expect(lunch).not.toHaveAttribute('data-category');
 });
 
 it('changes categories optimistically and sends them to Outlook', async () => {

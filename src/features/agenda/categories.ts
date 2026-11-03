@@ -101,14 +101,17 @@ export function useEventColour(event: CalendarEvent | null | undefined): Categor
 }
 
 export const colourVar = (preset: number) => `var(--outlook-cat-${preset})`;
+export const fillVar = (preset: number) => `var(--outlook-cat-${preset}-bg)`;
 
-/** Props for an element that draws the category bar (`.cx-cat-mark`). */
+/** Custom properties for an element painted with a category (bar and fill). */
+export function colourStyle(preset: number) {
+  return { '--cx-cat': colourVar(preset), '--cx-cat-bg': fillVar(preset) } as CSSProperties;
+}
+
+/** Props for an element painted as a category block (`.cx-cat-mark`). */
 export function markProps(colour: CategoryColour | null) {
   if (!colour) return {};
-  return {
-    'data-category': OUTLOOK_PRESETS[colour.preset],
-    style: { '--cx-cat': colourVar(colour.preset) } as CSSProperties,
-  };
+  return { 'data-category': OUTLOOK_PRESETS[colour.preset], style: colourStyle(colour.preset) };
 }
 
 let nextToken = 0;

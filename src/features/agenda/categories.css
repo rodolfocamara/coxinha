@@ -1,75 +1,146 @@
 @layer theme, base, components, utilities;
 
 @layer components {
-  /* Outlook category presets 0–24 (spec 0103). Light values are deep enough to
-     read on white; dark values are lifted so the dark presets stay visible. */
+  /* Outlook category presets 0–24 (spec 0103), as the new Outlook draws them:
+     each preset is a Fluent colour family. `-bg` is the event fill (dark values
+     taken from Outlook's dark theme); the plain value marks the bar and dots,
+     lifted to tint30 on the dark canvas so dark families stay visible. */
   :root {
-    --outlook-cat-0: #d13438;
-    --outlook-cat-1: #e8590c;
-    --outlook-cat-2: #a0612b;
-    --outlook-cat-3: #c49a00;
-    --outlook-cat-4: #3f9c35;
-    --outlook-cat-5: #0e9f8f;
-    --outlook-cat-6: #7f8c3a;
-    --outlook-cat-7: #2f6fd6;
-    --outlook-cat-8: #7a4cc2;
-    --outlook-cat-9: #c2386b;
-    --outlook-cat-10: #7d8a9a;
-    --outlook-cat-11: #4f5d75;
-    --outlook-cat-12: #8a8a8a;
-    --outlook-cat-13: #5c5c5c;
-    --outlook-cat-14: #262626;
-    --outlook-cat-15: #a4262c;
-    --outlook-cat-16: #b6470d;
-    --outlook-cat-17: #7a4a1f;
-    --outlook-cat-18: #9c8500;
-    --outlook-cat-19: #2a6e24;
-    --outlook-cat-20: #0b6e63;
-    --outlook-cat-21: #5b6630;
-    --outlook-cat-22: #1f4e99;
-    --outlook-cat-23: #523a8c;
-    --outlook-cat-24: #8a2550;
+    --outlook-cat-0: #c50f1f;
+    --outlook-cat-0-bg: #f6d1d5;
+    --outlook-cat-1: #da3b01;
+    --outlook-cat-1-bg: #f9dcd1;
+    --outlook-cat-2: #ff8c00;
+    --outlook-cat-2-bg: #ffedd6;
+    --outlook-cat-3: #eaa300;
+    --outlook-cat-3-bg: #fcefd3;
+    --outlook-cat-4: #13a10e;
+    --outlook-cat-4-bg: #cef0cd;
+    --outlook-cat-5: #00b7c3;
+    --outlook-cat-5-bg: #cef3f5;
+    --outlook-cat-6: #73aa24;
+    --outlook-cat-6-bg: #e5f1d3;
+    --outlook-cat-7: #0099bc;
+    --outlook-cat-7-bg: #cdedf4;
+    --outlook-cat-8: #7160e8;
+    --outlook-cat-8-bg: #e7e4fb;
+    --outlook-cat-9: #e43ba6;
+    --outlook-cat-9-bg: #fbddf0;
+    --outlook-cat-10: #005b70;
+    --outlook-cat-10-bg: #c3e1e8;
+    --outlook-cat-11: #859599;
+    --outlook-cat-11-bg: #eaeeef;
+    --outlook-cat-12: #7a7574;
+    --outlook-cat-12-bg: #eae8e8;
+    --outlook-cat-13: #5d5a58;
+    --outlook-cat-13-bg: #e5e4e3;
+    --outlook-cat-14: #394146;
+    --outlook-cat-14-bg: #dbdfe1;
+    --outlook-cat-15: #750b1c;
+    --outlook-cat-15-bg: #e9c7cd;
+    --outlook-cat-16: #a74109;
+    --outlook-cat-16-bg: #f1d9cc;
+    --outlook-cat-17: #4d291c;
+    --outlook-cat-17-bg: #e3d2cb;
+    --outlook-cat-18: #c19c00;
+    --outlook-cat-18-bg: #f5eece;
+    --outlook-cat-19: #0b6a0b;
+    --outlook-cat-19-bg: #c6e7c6;
+    --outlook-cat-20: #006666;
+    --outlook-cat-20-bg: #c2e7e7;
+    --outlook-cat-21: #498205;
+    --outlook-cat-21-bg: #dbebc7;
+    --outlook-cat-22: #003966;
+    --outlook-cat-22-bg: #c2d6e7;
+    --outlook-cat-23: #401b6c;
+    --outlook-cat-23-bg: #d8cce7;
+    --outlook-cat-24: #77004d;
+    --outlook-cat-24-bg: #e9c4dc;
   }
   .dark,
   [data-theme='dark'] {
-    --outlook-cat-0: #f87171;
-    --outlook-cat-1: #fb923c;
-    --outlook-cat-2: #d6a16a;
-    --outlook-cat-3: #facc15;
-    --outlook-cat-4: #6ee07a;
-    --outlook-cat-5: #4fd1c5;
-    --outlook-cat-6: #b8c77a;
-    --outlook-cat-7: #7aa7f5;
-    --outlook-cat-8: #b39df0;
-    --outlook-cat-9: #f07aa6;
-    --outlook-cat-10: #b4bfcc;
-    --outlook-cat-11: #8c9ab3;
-    --outlook-cat-12: #bdbdbd;
-    --outlook-cat-13: #9a9a9a;
-    --outlook-cat-14: #d4d4d4;
-    --outlook-cat-15: #e5676d;
-    --outlook-cat-16: #f0884a;
-    --outlook-cat-17: #c28a55;
-    --outlook-cat-18: #dcc23a;
-    --outlook-cat-19: #5dbf55;
-    --outlook-cat-20: #3db3a5;
-    --outlook-cat-21: #9daa63;
-    --outlook-cat-22: #6390e0;
-    --outlook-cat-23: #9c82db;
-    --outlook-cat-24: #d0668f;
+    --outlook-cat-0: #dc626d;
+    --outlook-cat-0-bg: #6e0811;
+    --outlook-cat-1: #e9835e;
+    --outlook-cat-1-bg: #7a2101;
+    --outlook-cat-2: #ffba66;
+    --outlook-cat-2-bg: #4d2a00;
+    --outlook-cat-3: #f2c661;
+    --outlook-cat-3-bg: #463100;
+    --outlook-cat-4: #5ec75a;
+    --outlook-cat-4-bg: #063004;
+    --outlook-cat-5: #58d3db;
+    --outlook-cat-5-bg: #00373a;
+    --outlook-cat-6: #a4cc6c;
+    --outlook-cat-6-bg: #22330b;
+    --outlook-cat-7: #56bfd7;
+    --outlook-cat-7-bg: #004659;
+    --outlook-cat-8: #a79cf1;
+    --outlook-cat-8-bg: #3f3682;
+    --outlook-cat-9: #ef85c8;
+    --outlook-cat-9-bg: #80215d;
+    --outlook-cat-10: #4496a9;
+    --outlook-cat-10-bg: #00333f;
+    --outlook-cat-11: #b3bfc2;
+    --outlook-cat-11-bg: #282d2e;
+    --outlook-cat-12: #afabaa;
+    --outlook-cat-12-bg: #444241;
+    --outlook-cat-13: #9e9b99;
+    --outlook-cat-13-bg: #343231;
+    --outlook-cat-14: #808a90;
+    --outlook-cat-14-bg: #202427;
+    --outlook-cat-15: #ac4f5e;
+    --outlook-cat-15-bg: #420610;
+    --outlook-cat-16: #ca8057;
+    --outlook-cat-16-bg: #5e2405;
+    --outlook-cat-17: #946b5c;
+    --outlook-cat-17-bg: #2b1710;
+    --outlook-cat-18: #dac157;
+    --outlook-cat-18-bg: #3a2f00;
+    --outlook-cat-19: #4da64d;
+    --outlook-cat-19-bg: #032003;
+    --outlook-cat-20: #41a3a3;
+    --outlook-cat-20-bg: #003939;
+    --outlook-cat-21: #85b44c;
+    --outlook-cat-21-bg: #162702;
+    --outlook-cat-22: #4178a3;
+    --outlook-cat-22-bg: #002039;
+    --outlook-cat-23: #7e5ca7;
+    --outlook-cat-23-bg: #240f3c;
+    --outlook-cat-24: #ad4589;
+    --outlook-cat-24-bg: #43002b;
   }
 
+  /* A categorized meeting is a filled block with a bar, as Outlook draws it. */
   .cx-cat-mark {
     position: relative;
+  }
+  .cx-cat-mark[data-category] {
+    isolation: isolate;
+  }
+  .cx-cat-mark[data-category]::after {
+    content: '';
+    position: absolute;
+    inset: var(--cx-cat-block, 2px 4px);
+    z-index: -1;
+    border-radius: 6px;
+    background: var(--cx-cat-bg);
+    transition: background-color var(--m-instant, 0ms);
+  }
+  .cx-cat-mark[data-category]:hover::after {
+    background: color-mix(in oklab, var(--cx-cat-bg) 88%, var(--color-foreground));
+  }
+  .cx-cat-mark[data-category][aria-current='true']::after {
+    box-shadow: inset 0 0 0 1.5px var(--cx-cat);
   }
   .cx-cat-mark[data-category]::before {
     content: '';
     position: absolute;
-    top: 9px;
-    bottom: 9px;
+    top: var(--cx-cat-bar-y, 2px);
+    bottom: var(--cx-cat-bar-y, 2px);
     left: var(--cx-cat-inset, 4px);
-    width: 3px;
-    border-radius: 999px;
+    width: 4px;
+    border-radius: 6px 0 0 6px;
     background: var(--cx-cat);
   }
   .cx-cat-dot {

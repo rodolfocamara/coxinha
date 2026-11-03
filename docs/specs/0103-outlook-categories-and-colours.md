@@ -19,7 +19,6 @@ correctly from Coxinha.
   list; Coxinha reads it.
 - Categories on sessions or recordings without an Outlook event. Colour comes
   from the event a session is linked to (`matchEvent`).
-- Colour fills behind text. Colour marks the data; the chrome stays neutral.
 - Changing the auth method. Same public client, loopback redirect and PKCE;
   only the requested scopes grow.
 
@@ -52,17 +51,31 @@ MailboxSettings.Read openid offline_access` (dynamic consent, no app
 
 ### P3 Colours
 
-- Presets map to Outlook's named colours (Microsoft Graph `outlookCategory`
-  table: Red, Orange, Brown, Yellow, Green, Teal, Olive, Blue, Purple,
-  Cranberry, Steel, DarkSteel, Gray, DarkGray, Black, DarkRed, DarkOrange,
-  DarkBrown, DarkYellow, DarkGreen, DarkTeal, DarkOlive, DarkBlue, DarkPurple,
-  DarkCranberry). Each has a light-theme and a dark-theme value
-  (`--outlook-cat-N` in `categories.css`) so a mark stays visible on both
-  canvases.
+- Presets keep Graph's names (Red, Orange, Brown, Yellow, Green, Teal, Olive,
+  Blue, Purple, Cranberry, Steel, DarkSteel, Gray, DarkGray, Black, DarkRed,
+  DarkOrange, DarkBrown, DarkYellow, DarkGreen, DarkTeal, DarkOlive, DarkBlue,
+  DarkPurple, DarkCranberry), but the new Outlook draws each one with a Fluent
+  colour family: cranberry, darkOrange, peach, marigold, lightGreen,
+  lightTeal, lime, cyan, lavender, pink, steel, silver, beige, mink, anchor,
+  darkRed, bronze, darkBrown, gold, darkGreen, darkTeal, forest, darkBlue,
+  darkPurple, plum. Hex values come from Fluent's global palette
+  (`@fluentui/tokens`), not from guesses.
+- Each preset has a mark (`--outlook-cat-N`) and a fill (`--outlook-cat-N-bg`)
+  per theme. Light: Fluent primary on a tint50 fill. Dark: the fill Outlook's
+  dark theme uses (shade30 or shade40 of the family) and a tint30 mark, so dark
+  families still read on Coxinha's near-black canvas.
+- Evidence (owner's Outlook screenshot, 2026-11-02): CTO events draw a bar of
+  `#06586b` on `#0e3942` (Fluent steel primary `#005b70`, shade30 `#00333f`);
+  events without a category draw Outlook blue `#0772c9` on `#104776`; the
+  selected Analysis event fills with peach shade30. Blue (preset7) is the
+  least certain family: its dark fill matches no Fluent shade exactly.
 - An event's colour is its first category that has a colour in the master
-  list. Sessions linked to an event take the event's colour.
-- Reuniões list: a 3 px bar at the row's left edge. Month grid: the item dot
-  takes the colour (live still wins). Hoje agenda: the same bar. Each mark
+  list. Sessions linked to an event take the event's colour, so a recording
+  accepted against a calendar event (spec 0100) is coloured too.
+- A categorized meeting is a filled block with a bar at its left edge, as in
+  Outlook: Reuniões list rows, Hoje agenda rows and month items. The selected
+  row outlines its block with the mark colour. Meetings without a category
+  stay unfilled, so the Gray preset never reads as "no category". Each block
   carries the category name for screen readers.
 
 ### P4 Change categories
@@ -87,9 +100,11 @@ MailboxSettings.Read openid offline_access` (dynamic consent, no app
       failures keep the last list; refresh keeps the pre-0103 scope
       (`categories` tests).
 - [x] PATCH body, event URL encoding and cache rewrite (`categories` tests).
-- [x] List rows, month items and Hoje rows show the first coloured category
-      with its name for screen readers; linked sessions use the event's
-      colour (`categories` UI tests).
+- [x] List rows, month items and Hoje rows are filled with the first coloured
+      category, with its name for screen readers; linked sessions use the
+      event's colour (`categories` UI tests).
+- [x] Every preset has a mark and a fill in both themes, from the Fluent
+      palette the new Outlook uses (`categories.palette` test).
 - [x] Picking a category updates the colour before the backend answers,
       sends the PATCH and rolls back on failure; missing scope shows the
       reconnect state (`categories` UI tests).

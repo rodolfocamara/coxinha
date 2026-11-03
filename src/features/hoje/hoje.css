@@ -126,6 +126,7 @@
     display: grid;
     grid-template-columns: 50px minmax(0, 1fr) auto;
     --cx-cat-inset: 1px;
+    --cx-cat-block: 2px 1px;
   }
   .cx-hoje-time {
     color: var(--color-muted-foreground);
