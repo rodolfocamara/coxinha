@@ -39,13 +39,33 @@ impl AsrFactory for Unavailable {
     }
 }
 
+/// Spec 0116: pairs the configured model on the worker thread, at load.
+#[cfg(feature = "stt-tagarela")]
+struct LocalFactory {
+    model_path: PathBuf,
+    n_threads: u32,
+}
+#[cfg(feature = "stt-tagarela")]
+impl AsrFactory for LocalFactory {
+    fn load(&self) -> anyhow::Result<Box<dyn coxinha_core::live::Asr>> {
+        use coxinha_core::live::{RoutedFactory, TagarelaFactory};
+        let (multilingual, portuguese) = crate::speech_models::route(&self.model_path);
+        let one = |path: PathBuf| TagarelaFactory::new(path, self.n_threads);
+        tracing::info!(model = %multilingual.display(), portuguese = ?portuguese, "live speech models");
+        match portuguese {
+            Some(pt) => RoutedFactory::new(Arc::new(one(multilingual)), Arc::new(one(pt))).load(),
+            None => one(multilingual).load(),
+        }
+    }
+}
+
 fn factory(settings: &LiveSettings) -> Arc<dyn AsrFactory> {
     #[cfg(feature = "stt-tagarela")]
     {
-        Arc::new(coxinha_core::live::TagarelaFactory::new(
-            settings.model_path.clone().into(),
-            settings.n_threads.clamp(1, 16),
-        ))
+        Arc::new(LocalFactory {
+            model_path: settings.model_path.clone().into(),
+            n_threads: settings.n_threads.clamp(1, 16),
+        })
     }
     #[cfg(not(feature = "stt-tagarela"))]
     {

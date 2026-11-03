@@ -70,6 +70,42 @@ pub fn detect(app_models: &Path) -> Option<PathBuf> {
         .or_else(|| pick(&gguf_files(app_models)))
 }
 
+/// Spec 0116 P1: the model that decodes every window and, when one is at
+/// hand, the Portuguese pass. Looks next to the configured file and in Handy's.
+pub fn route(configured: &Path) -> (PathBuf, Option<PathBuf>) {
+    let mut candidates = configured.parent().map(gguf_files).unwrap_or_default();
+    if let Some(handy) = host_data_dir().map(|d| d.join("com.pais.handy").join("models")) {
+        candidates.extend(gguf_files(&handy));
+    }
+    pair(configured, &candidates)
+}
+
+fn name(path: &Path) -> String {
+    path.file_name()
+        .and_then(|n| n.to_str())
+        .unwrap_or_default()
+        .to_ascii_lowercase()
+}
+
+fn pair(configured: &Path, candidates: &[PathBuf]) -> (PathBuf, Option<PathBuf>) {
+    let best = |accept: fn(u8) -> bool| {
+        candidates
+            .iter()
+            .filter_map(|p| Some((rank(&name(p))?, p)))
+            .filter(|(r, _)| accept(*r))
+            .min_by_key(|(r, p)| (*r, p.as_os_str().len()))
+            .map(|(_, p)| p.clone())
+    };
+    match rank(&name(configured)) {
+        Some(0 | 1) => match best(|r| r >= 2) {
+            Some(multilingual) => (multilingual, Some(configured.to_owned())),
+            None => (configured.to_owned(), None),
+        },
+        Some(_) => (configured.to_owned(), best(|r| r <= 1)),
+        None => (configured.to_owned(), None),
+    }
+}
+
 #[cfg(target_os = "windows")]
 const ORT_LIB: &str = "onnxruntime.dll";
 #[cfg(target_os = "macos")]
@@ -136,6 +172,37 @@ pub fn processing_config(dir: &Path) -> anyhow::Result<serde_json::Value> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn tagarela_pairs_with_a_multilingual_parakeet_and_a_lone_model_runs_alone() {
+        let dir = PathBuf::from("/m");
+        let tagarela = dir.join("parakeet-v3-ptbr-tagarela-matched-q8.gguf");
+        let ultra = dir.join("parakeet-ultra-Q8_0.gguf");
+        let v3 = dir.join("parakeet-tdt-0.6b-v3-Q8_0.gguf");
+        let all = [
+            tagarela.clone(),
+            ultra.clone(),
+            v3.clone(),
+            dir.join("Qwen3-ASR-1.7B-Q8_0.gguf"),
+        ];
+        assert_eq!(
+            pair(&tagarela, &all),
+            (ultra.clone(), Some(tagarela.clone()))
+        );
+        assert_eq!(pair(&ultra, &all), (ultra.clone(), Some(tagarela.clone())));
+        assert_eq!(pair(&v3, &all), (v3.clone(), Some(tagarela.clone())));
+        assert_eq!(
+            pair(&tagarela, &[tagarela.clone(), v3.clone()]),
+            (v3.clone(), Some(tagarela.clone()))
+        );
+        assert_eq!(
+            pair(&tagarela, &[tagarela.clone()]),
+            (tagarela.clone(), None)
+        );
+        assert_eq!(pair(&ultra, &[ultra.clone()]), (ultra.clone(), None));
+        let other = dir.join("whisper.gguf");
+        assert_eq!(pair(&other, &all), (other.clone(), None));
+    }
 
     #[test]
     fn finds_the_models_where_the_installer_puts_them() {

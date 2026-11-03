@@ -4,7 +4,9 @@
 //! Its only output is `raw/<meeting>/outputs/live/transcript.jsonl`; it never
 //! touches the Store, so an exit while it runs is a crash for ADR 0020.
 mod dsp;
+mod language;
 mod plan;
+mod routed;
 mod run;
 #[cfg(feature = "stt-tagarela")]
 mod tagarela;
@@ -14,6 +16,7 @@ mod worker;
 
 use serde::{Deserialize, Serialize};
 
+pub use routed::RoutedFactory;
 #[cfg(feature = "stt-tagarela")]
 pub use tagarela::TagarelaFactory;
 pub use transcript::{read_transcript, transcript_progress};
