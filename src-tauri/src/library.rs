@@ -19,6 +19,7 @@ enum Action {
     #[cfg(test)]
     ComparisonGate(curation_worker::TestGate),
     Session(sessions::SessionAction),
+    Summary(summaries::SummaryAction),
     Curation(curation::CurationAction),
     ImportAudio(String, String),
     Recognition(String),
@@ -203,6 +204,7 @@ impl Worker {
             #[cfg(test)]
             Action::ComparisonGate(_) => unreachable!("test gate is handled by dispatch"),
             Action::Session(action) => self.session_action(action),
+            Action::Summary(action) => self.summary_action(action),
             Action::Curation(action) => self.curation_action(action),
             Action::ImportAudio(title, path) => {
                 anyhow::ensure!(
@@ -305,38 +307,6 @@ impl Worker {
             | Action::Stop) => self.capture_action(action),
         }
     }
-    fn finish(&mut self, interrupted: bool) -> anyhow::Result<()> {
-        #[cfg(target_os = "linux")]
-        if let Some(a) = self.active.take() {
-            let result = a.capture.finish(&self.store, interrupted);
-            // B1: every outcome is terminal for the live worker.
-            let end = match &result {
-                Ok(m) if m.state == "interrupted" => coxinha_core::live::EndState::Interrupted,
-                Ok(_) => coxinha_core::live::EndState::Finished,
-                Err(_) => coxinha_core::live::EndState::Failed,
-            };
-            self.live.ended(&a.id, end);
-            match result {
-                Ok(m) if m.state == "interrupted" => {
-                    self.error = Some("capture interrupted; inspect recording details".into());
-                    if !interrupted {
-                        self.finalization_failed = Some(a.id);
-                        anyhow::bail!("capture interrupted; recover recording before exiting");
-                    }
-                }
-                Err(e) => {
-                    self.finalization_failed = Some(a.id);
-                    self.error =
-                        Some("capture finalization failed; explicit recovery required".into());
-                    return Err(e);
-                }
-                _ => {}
-            }
-        }
-        #[cfg(not(target_os = "linux"))]
-        let _ = interrupted;
-        Ok(())
-    }
     fn pump(&mut self) {
         self.pump_comparison();
         self.pump_processing();
@@ -391,9 +361,11 @@ mod commands;
 mod note_deletion;
 mod processing;
 mod sessions;
+mod summaries;
 mod watch;
 pub use commands::*;
 pub use sessions::*;
+pub use summaries::{MeetingSummary, StoredSummaryInput, SummarySource};
 pub use watch::Notifier;
 
 #[cfg(test)]

@@ -104,6 +104,15 @@ impl Library {
             .flatten()
     }
 
+    /// Spec 0108: the generated summary, if the app wrote one.
+    fn generated_summary(&self, session: &Session) -> Option<Value> {
+        let meeting = session.meeting_id.as_deref()?;
+        coxinha_core::store::read_summary(&self.db, meeting)
+            .ok()
+            .flatten()
+            .map(|s| json!({ "markdown": s.markdown, "generatedAt": s.generated_at }))
+    }
+
     fn summaries(&self, paths: &Paths) -> Vec<(Summary, &Session)> {
         let matched = meetings::match_events(&self.sessions, &self.events);
         self.sessions
@@ -195,6 +204,7 @@ fn meeting(paths: &Paths, args: &Args) -> Result<Value, String> {
     Ok(json!({
         "meeting": summary,
         "notes": meetings::note_text(paths, session),
+        "summary": library.generated_summary(session),
         "hasTranscript": meetings::has_report(&report),
         "transcript": transcript,
         "files": files,
@@ -216,6 +226,13 @@ fn search(paths: &Paths, args: &Args) -> Result<Value, String> {
             .and_then(|notes| meetings::snippet(&notes, query, 160))
         {
             matches.push(json!({ "field": "notes", "snippet": s }));
+        }
+        if let Some(s) = library
+            .generated_summary(session)
+            .and_then(|v| v["markdown"].as_str().map(str::to_string))
+            .and_then(|summary| meetings::snippet(&summary, query, 160))
+        {
+            matches.push(json!({ "field": "summary", "snippet": s }));
         }
         if let Some(s) = library
             .report(session)

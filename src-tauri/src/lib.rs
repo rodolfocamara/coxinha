@@ -32,6 +32,7 @@ mod obsidian;
 mod recorder;
 mod shortcuts;
 mod storage;
+mod summaries;
 mod summarizer;
 // Spec 0097 P4: the meeting actor wires this in; nothing calls it yet.
 mod settings_file;
@@ -175,6 +176,7 @@ pub fn run() {
             });
 
             calendar::spawn_refresh(app.handle().clone());
+            summaries::spawn(app.handle().clone());
             info!("Coxinha ready");
             Ok(())
         })
@@ -312,6 +314,8 @@ pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
             titles::watch::title_llm_test,
             titles::watch::library_title_suggestion,
             titles::watch::library_dismiss_title_suggestion,
+            summaries::library_meeting_summary,
+            summaries::library_summarize,
             commands::save_attachment,
             commands::get_config,
             commands::update_config,

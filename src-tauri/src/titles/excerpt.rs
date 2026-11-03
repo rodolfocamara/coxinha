@@ -42,6 +42,35 @@ pub fn build_excerpt(lines: &[TranscriptLine], mode: ExcerptMode, max_tokens: us
     join_capped(&selected, max_chars)
 }
 
+/// The whole transcript as consecutive chunks of whole lines, each within
+/// `max_tokens`, so every request stays under the per-request cap (spec
+/// 0108). A single line longer than the cap is cut, never dropped.
+pub fn chunk_lines(lines: &[TranscriptLine], max_tokens: usize) -> Vec<String> {
+    let max_chars = max_tokens.max(1).saturating_mul(3);
+    let mut chunks = Vec::new();
+    let mut current = String::new();
+    let mut used = 0;
+    for line in lines.iter().filter_map(render) {
+        let line: String = line.chars().take(max_chars).collect();
+        let len = line.chars().count();
+        let sep = usize::from(!current.is_empty());
+        if used + sep + len > max_chars && !current.is_empty() {
+            chunks.push(std::mem::take(&mut current));
+            used = 0;
+        }
+        if !current.is_empty() {
+            current.push('\n');
+            used += 1;
+        }
+        current.push_str(&line);
+        used += len;
+    }
+    if !current.is_empty() {
+        chunks.push(current);
+    }
+    chunks
+}
+
 /// `[mm:ss] Speaker: text` on a single line; `None` for silent lines.
 fn render(line: &TranscriptLine) -> Option<String> {
     let text = collapse(&line.text);

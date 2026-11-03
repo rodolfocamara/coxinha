@@ -316,3 +316,24 @@ fn unknown_commands_and_missing_arguments_fail() {
         .unwrap()
         .contains("add-ref"));
 }
+
+#[test]
+fn shows_and_searches_the_generated_summary() {
+    let f = fixture();
+    assert!(f.run(&["meeting", "s1"]).unwrap()["summary"].is_null());
+    let db = Connection::open(std::path::Path::new(&f.data).join("meeting-library/meetings.db"))
+        .unwrap();
+    db.execute(
+        "INSERT INTO meeting_summary(meeting_id,job_id,markdown,model,generated_at,source_sha256)
+         VALUES('m1','j1','## Resumo\nAna assume o orçamento.','qwen','2026-11-03T15:00:00Z','h')",
+        [],
+    )
+    .unwrap();
+    let detail = f.run(&["meeting", "s1", "--no-transcript"]).unwrap();
+    assert_eq!(
+        detail["summary"],
+        json!({ "markdown": "## Resumo\nAna assume o orçamento.", "generatedAt": "2026-11-03T15:00:00Z" })
+    );
+    let found = f.run(&["search", "orcamento"]).unwrap();
+    assert_eq!(found["results"][0]["matches"][0]["field"], "summary");
+}
