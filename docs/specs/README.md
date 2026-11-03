@@ -167,9 +167,9 @@ Pending decisions that block or shape the implementation.
 
 - [0087 — Meeting boundaries and reversible sessions](0087-meeting-boundaries-and-reversible-sessions.md) — in-progress
 
-- [0088 — Visible local processing lifecycle](0088-visible-local-processing.md) — in-progress
+- [0088 — Visible local processing lifecycle](0088-visible-local-processing.md) — in-progress (partial)
 
-- [0089 — Local incremental transcription](0089-local-incremental-transcription.md) — in-progress
+- [0089 — Local incremental transcription](0089-local-incremental-transcription.md) — in-progress (partial)
 
 - [0090 — Recoverable processing publication](0090-recoverable-processing-publication.md) — in-progress
 
@@ -177,9 +177,9 @@ Pending decisions that block or shape the implementation.
 
 - [0092 — Global people and visible recording controls](0092-global-people-and-recording-controls.md) — in-progress
 
-- [0093 — Sidebar live recording pill and unified status](0093-sidebar-recording-status.md) — in-progress
+- [0093 — Sidebar live recording pill and unified status](0093-sidebar-recording-status.md) — superseded by 0096
 
-- [0094 — Meeting end/boundary prompt, focus bring-up and UI simplification](0094-meeting-end-prompt-and-simplification.md) — in-progress
+- [0094 — Meeting end/boundary prompt, focus bring-up and UI simplification](0094-meeting-end-prompt-and-simplification.md) — superseded by 0096
 
 - [0096 — Frontend redesign (Hoje, Reuniões, Workspace, one recorder)](0096-frontend-redesign.md) — in-progress
 - [0097 — Automatic call recording, live transcript and meeting titles](0097-automatic-call-recording.md) — in-progress

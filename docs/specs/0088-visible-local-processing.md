@@ -1,6 +1,6 @@
 # 0088 — Visible local processing lifecycle
 
-Status: in-progress
+Status: in-progress (partial: live-slot states, backlog yield and orphan recovery shipped via 0096–0098; durable queue, attempt tokens, processing modes, device/ETA and runtime acceptance pending)
 Phase: F1
 Date: 2026-10-26
 

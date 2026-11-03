@@ -1,6 +1,6 @@
 # 0093 — Sidebar live recording pill and unified status
 
-Status: in-progress
+Status: superseded by 0096 (recording UI moved to RecorderStrip and LiveBadge)
 Phase: Desktop usability
 Date: 2026-10-29
 
