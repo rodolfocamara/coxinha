@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert } from '../../components/ui';
 import { library } from './library';
@@ -6,6 +6,7 @@ import { PersonFormSheet } from './PersonFormSheet';
 import { voiceCurationErrorText } from './voiceCurationError';
 import { PeopleBrowser } from '../people/PeopleBrowser';
 import { ImportPeopleSheet } from '../people/ImportPeopleSheet';
+import { useCaptureStore } from '../capture/captureStore';
 
 /**
  * Pessoas (spec 0096 P6): the global local registry of people and voice
@@ -24,6 +25,14 @@ export function PeopleDirectory() {
   const [created, setCreated] = useState<{ personId: string; name: string } | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  // Voices remembered later from confirmations (spec 0120) reload every page.
+  const voices = useCaptureStore((state) => state.status?.voices?.generation);
+  const seenVoices = useRef(voices);
+  useEffect(() => {
+    if (voices === seenVoices.current) return;
+    seenVoices.current = voices;
+    if (!pending.current) setVersion((value) => value + 1);
+  }, [voices]);
   async function act(action: () => Promise<unknown>) {
     if (pending.current) return;
     pending.current = true;

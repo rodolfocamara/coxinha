@@ -31,7 +31,16 @@ export function useProcessing(meetingId: string, status: CaptureStatus) {
       live = false;
       ++revision.current;
     };
-  }, [meetingId, processing?.meetingId, processing?.phase, processing?.job, job, attempt]);
+  }, [
+    meetingId,
+    processing?.meetingId,
+    processing?.phase,
+    processing?.job,
+    job,
+    attempt,
+    // A deferred voice batch (spec 0120) changes the assignments' voice state.
+    status.voices?.generation,
+  ]);
 
   async function act(action: () => Promise<unknown>) {
     if (pending.current) return;

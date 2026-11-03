@@ -45,8 +45,9 @@ device and the confirmation that produced it, stays local in the private
 database, and can be forgotten one by one or as a whole voice (P4).
 
 - `library_confirm_speaker` only records the decision. It never fails
-  because processing or a capture is running; the `enroll` argument is kept
-  for compatibility and ignored.
+  because processing or a capture is running, and the review stays usable
+  during a capture; the `enroll` argument is kept for compatibility and
+  ignored. Hand-picked samples (spec 0077) still wait for an idle library.
 - A confirmed assignment whose revision has no enrollment record is pending.
   The library worker remembers pending voices once it is idle (no capture,
   no local processing), one meeting at a time. The queue is that query, so a
@@ -133,9 +134,11 @@ named speaker clusters, 19 confirmed by the owner), read-only:
 
 ## Acceptance
 
-- [x] Confirming records the decision during a capture or processing and
-      enrolls nothing synchronously (`library::voices` tests
-      `confirmation_never_waits_for_an_idle_library`).
+- [x] Confirming records the decision and enrolls nothing synchronously;
+      an idle pump remembers it and raises the status generation
+      (`library::voices` tests `confirmation_never_waits_for_an_idle_library`);
+      confirmations from before a restart are remembered once
+      (`confirmations_from_before_a_restart_are_remembered_once`).
 - [x] An idle library remembers pending voices once, longest eligible turns
       first, capped, with provenance of the confirmation; a second pass adds
       nothing (`curation::tests::remembered`
@@ -149,13 +152,14 @@ named speaker clusters, 19 confirmed by the owner), read-only:
 - [x] "Não é participante" rejects without a person, is never remembered and
       is reversible (`remembered` tests `a_rejected_speaker_is_never_remembered`).
 - [x] Microphone levels are the median of the turns' centre windows
-      (`curation::levels` tests).
+      (`processing::levels` tests).
 - [x] Brief and bleed thresholds, confirmed speakers never folded
       (`speakerNoise.test.ts`).
 - [x] The review folds noise, marks and restores non-participants, shows the
       voice state and retries a failure (`SpeakerReview.noise.test.tsx`).
-- [x] Confirmation no longer asks to enroll and works during a capture
-      (`SpeakerCard.confirmation.test.tsx`).
+- [x] Confirmation no longer passes an enroll flag
+      (`SpeakerCard.confirmation.test.tsx`) and works while another call is
+      recorded (`SpeakerReview.noise.test.tsx`).
 - [x] Pessoas forgets and restores a voice and reloads after a deferred
       batch (`VoiceMemory.test.tsx`).
 - [ ] Owner: the 19 confirmed speakers show samples in Pessoas after the

@@ -35,6 +35,8 @@ export type CaptureStatus = {
   };
   error: string | null;
   processing?: { meetingId: string; job: string | null; phase: string } | null;
+  /** Grows after each batch of voices remembered from confirmations (spec 0120). */
+  voices?: { generation: number };
 };
 export type LibraryDetail = {
   storage?: RecordingStorage | null;
@@ -84,8 +86,22 @@ export type ProcessingReport = {
     person_id: string | null;
     state: string;
     name: string | null;
+    /** Spec 0120: voice memory of a confirmed assignment. */
+    voice?: VoiceState | null;
   }[];
 };
+export type VoiceState = {
+  state: 'pending' | 'enrolled' | 'failed' | 'off';
+  samples: number;
+  error?: string | null;
+};
+export type VoiceMemory = {
+  personId: string;
+  off: boolean;
+  pending: number;
+  failed: { assignmentId: string; meetingId: string; error: string | null }[];
+};
+export type SpeakerLevel = { track: string; speaker: string; levelDb: number };
 export type ProcessingDetail = {
   jobs: { id: string; state: string; attempts: number; error: string | null }[];
   report: ProcessingReport | null;
@@ -185,17 +201,25 @@ export const library = {
       names,
       consentOrigin,
     }),
+  /** Spec 0120: the voice is remembered afterwards, when the library is idle. */
   confirmSpeaker: (
     job: string,
     speaker: string,
     personId: string,
     humanOrigin: string,
-    enroll = false,
     track?: string
-  ) =>
-    invoke<void>('library_confirm_speaker', { job, speaker, personId, humanOrigin, enroll, track }),
+  ) => invoke<void>('library_confirm_speaker', { job, speaker, personId, humanOrigin, track }),
+  /** Spec 0120 P6: "not a participant"; revoking the assignment undoes it. */
+  rejectSpeaker: (job: string, speaker: string, humanOrigin: string, track?: string) =>
+    invoke<void>('library_reject_speaker', { job, speaker, humanOrigin, track }),
   revokeAssignment: (assignmentId: string, humanOrigin: string) =>
     invoke<void>('library_revoke_assignment', { assignmentId, humanOrigin }),
+  retryVoice: (assignmentId: string) => invoke<void>('library_retry_voice', { assignmentId }),
+  forgetVoice: (personId: string, humanOrigin: string) =>
+    invoke<{ revoked: number }>('library_forget_voice', { personId, humanOrigin }),
+  rememberVoice: (personId: string) => invoke<void>('library_remember_voice', { personId }),
+  voiceMemory: (personId: string) => invoke<VoiceMemory>('library_voice_memory', { personId }),
+  speakerLevels: (job: string) => invoke<SpeakerLevel[]>('library_speaker_levels', { job }),
   editSegment: (meetingId: string, target: string, body: string) =>
     invoke<void>('library_edit_segment', { meetingId, target, body }),
   audioUrl: (value: string) => {

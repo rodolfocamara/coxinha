@@ -25,7 +25,7 @@ const report: ProcessingReport = {
     track,
     speaker: 'speaker-1',
     start_ms: 1000,
-    end_ms: 4000,
+    end_ms: 31_000,
   })),
 };
 const recognition: Recognition = {
@@ -107,7 +107,6 @@ for (const locale of ['en', 'pt-BR'])
         'speaker-1',
         'bruno',
         i18n.t('speakers.defaultOrigin'),
-        false,
         'output'
       )
     );
@@ -118,7 +117,6 @@ for (const locale of ['en', 'pt-BR'])
         'speaker-1',
         'ana',
         i18n.t('speakers.defaultOrigin'),
-        false,
         'mic'
       )
     );
@@ -189,7 +187,6 @@ it('agenda names only prefill explicit creation with separate consent; the creat
       'speaker-1',
       'created-id',
       i18n.t('speakers.defaultOrigin'),
-      false,
       'mic'
     )
   );
@@ -225,7 +222,6 @@ it('corrects and revokes track identities and separately revokes legacy assignme
       'speaker-1',
       'bruno',
       'Corrected after listening',
-      false,
       'mic'
     )
   );
@@ -330,7 +326,7 @@ it('keeps identity unknown when a proposed name has no compatible policy', async
 });
 
 it('R3 does not refetch recognition for an unchanged job report object and keeps toggle accessible names stable', async () => {
-  const excerpt = JSON.stringify(['mic', 1, 4]);
+  const excerpt = JSON.stringify(['mic', 1, 13]);
   const playback = {
     current: null as string | null,
     play: vi.fn(),
