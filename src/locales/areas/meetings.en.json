@@ -205,7 +205,7 @@
       "review": "Review",
       "title": "Recordings and calendar",
       "description": "Confirm which earlier recordings are these calendar meetings. A confirmed one takes the event's title, time and invitees.",
-      "recording": "Recording “{{title}}” · {{when}}",
+      "recorded": "Recording “{{title}}”",
       "invitees_one": "{{count}} invitee",
       "invitees_other": "{{count}} invitees",
       "accept": "Same meeting",

@@ -205,7 +205,7 @@
       "review": "Revisar",
       "title": "Gravações e agenda",
       "description": "Confirme quais gravações anteriores são estas reuniões da agenda. A confirmada passa a ter o título, o horário e os convidados do evento.",
-      "recording": "Gravação “{{title}}” · {{when}}",
+      "recorded": "Gravação “{{title}}”",
       "invitees_one": "{{count}} convidado",
       "invitees_other": "{{count}} convidados",
       "accept": "É essa reunião",
