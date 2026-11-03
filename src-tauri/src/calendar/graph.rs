@@ -1,4 +1,17 @@
 use super::*;
+/// Spec 0124 P1: far enough ahead that later weeks stop looking empty.
+const DAYS_BACK: i64 = 30;
+const DAYS_AHEAD: i64 = 180;
+const PAGE_SIZE: usize = 100;
+const MAX_PAGES: usize = 50;
+const MAX_EVENTS: usize = 5000;
+const SELECT: &str = "id,subject,start,end,isCancelled,isAllDay,attendees,organizer,seriesMasterId,type,originalStart,categories,responseStatus,location,onlineMeeting,bodyPreview,showAs,isOrganizer,webLink";
+fn window(now: chrono::DateTime<Utc>) -> (chrono::DateTime<Utc>, chrono::DateTime<Utc>) {
+    (
+        now - Duration::days(DAYS_BACK),
+        now + Duration::days(DAYS_AHEAD),
+    )
+}
 pub(super) fn graph_url(raw: &str) -> Result<reqwest::Url, String> {
     let url = reqwest::Url::parse(raw).map_err(|_| SAFE_ERROR)?;
     if url.scheme() != "https"
@@ -32,21 +45,18 @@ pub(super) async fn fetch(access: &str, attempt: Option<&str>) -> Result<Snapsho
         .filter(|s| !s.is_empty())
         .ok_or(SAFE_ERROR)?
         .to_string();
-    let now = Utc::now();
+    let (from, to) = window(Utc::now());
     let mut url = graph_url("https://graph.microsoft.com/v1.0/me/calendarView")?;
     url.query_pairs_mut().extend_pairs([
         // Spec 0100: a month back, so earlier recordings can be matched.
-        ("startDateTime", (now - Duration::days(30)).to_rfc3339()),
-        ("endDateTime", (now + Duration::days(30)).to_rfc3339()),
-        ("$top", "100".into()),
-        (
-            "$select",
-            "id,subject,start,end,isCancelled,isAllDay,attendees,organizer,seriesMasterId,type,originalStart,categories".into(),
-        ),
+        ("startDateTime", from.to_rfc3339()),
+        ("endDateTime", to.to_rfc3339()),
+        ("$top", PAGE_SIZE.to_string()),
+        ("$select", SELECT.into()),
     ]);
     let mut events = Vec::new();
     let mut visited = std::collections::HashSet::new();
-    for _ in 0..50 {
+    for _ in 0..MAX_PAGES {
         if attempt.is_some_and(|id| !active(id)) {
             return Err("calendar.cancelled".into());
         }
@@ -67,7 +77,7 @@ pub(super) async fn fetch(access: &str, attempt: Option<&str>) -> Result<Snapsho
             .map_err(|_| SAFE_ERROR)?;
         for item in page["value"].as_array().ok_or(SAFE_ERROR)? {
             events.push(parse_event(item)?);
-            if events.len() > 5000 {
+            if events.len() > MAX_EVENTS {
                 return Err("calendar.eventLimit".into());
             }
         }
@@ -143,5 +153,17 @@ pub(super) fn parse_event(item: &serde_json::Value) -> Result<Event, String> {
         event_type: item["type"].as_str().map(str::to_string),
         original_start: item["originalStart"].as_str().map(str::to_string),
         categories: event_categories(item),
+        response: details::response_of(item),
+        attendee_responses: details::attendee_responses(item),
+        location: details::location(item),
+        join_url: details::join_url(item["onlineMeeting"]["joinUrl"].as_str()),
+        body_preview: details::body_preview(item),
+        show_as: details::show_as_of(item),
+        is_organizer: item["isOrganizer"].as_bool().unwrap_or(false),
+        web_link: details::web_link(item["webLink"].as_str()),
     })
 }
+
+#[cfg(test)]
+#[path = "graph_tests.rs"]
+mod tests;

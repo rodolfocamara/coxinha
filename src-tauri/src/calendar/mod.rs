@@ -16,12 +16,14 @@ mod auth;
 mod background;
 pub(crate) mod categories;
 pub(crate) mod create;
+pub(crate) mod details;
 mod graph;
 mod store;
 use auth::*;
 pub use background::{fresh, spawn as spawn_refresh};
 use categories::*;
 pub use categories::{Category, CategoryAccess};
+pub use details::{AttendeeResponse, Response, ShowAs};
 use graph::*;
 use store::*;
 
@@ -62,6 +64,23 @@ pub struct Event {
     pub original_start: Option<String>,
     #[serde(default)]
     pub categories: Vec<String>,
+    /// The owner's own answer (spec 0124 P1).
+    #[serde(default)]
+    pub response: Option<Response>,
+    #[serde(default)]
+    pub attendee_responses: Vec<AttendeeResponse>,
+    #[serde(default)]
+    pub location: Option<String>,
+    #[serde(default)]
+    pub join_url: Option<String>,
+    #[serde(default)]
+    pub body_preview: Option<String>,
+    #[serde(default)]
+    pub show_as: Option<ShowAs>,
+    #[serde(default)]
+    pub is_organizer: bool,
+    #[serde(default)]
+    pub web_link: Option<String>,
 }
 #[derive(Clone, Serialize, Deserialize, specta::Type)]
 pub struct Candidate {
