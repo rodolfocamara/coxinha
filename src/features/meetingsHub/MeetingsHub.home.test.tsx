@@ -324,7 +324,7 @@ it('speaks Portuguese', async () => {
   expect(await screen.findByRole('button', { name: /A revisar/ })).toBeInTheDocument();
 });
 
-it('asks whether earlier recordings are calendar meetings and sends both answers', async () => {
+function chromeRecording() {
   const committee = event({
     id: 'e-committee',
     title: 'IT committee',
@@ -332,47 +332,73 @@ it('asks whether earlier recordings are calendar meetings and sends both answers
     endsAt: at(-2, 11),
     attendees: [{ name: 'Ana', email: 'ana@example.com' }],
   });
+  const standup = event({
+    id: 'e-standup',
+    title: 'Standup',
+    startsAt: at(-2, 9, 15),
+    endsAt: at(-2, 9, 30),
+  });
   const lunch = event({ id: 'e-lunch', title: 'Lunch', startsAt: at(-2, 12), endsAt: at(-2, 13) });
+  db.events = [...db.events, committee, standup, lunch];
+  db.sessions = [
+    ...db.sessions,
+    session({
+      id: 's-chrome',
+      title: 'Meeting in Google Chrome',
+      status: 'completed',
+      meeting_id: 'm-chrome',
+      recording: recording('m-chrome', 'Meeting in Google Chrome', 'finished', at(-2, 9, 19)),
+    }),
+  ];
   db.calendarMatches = [
     {
       sessionId: 's-chrome',
       meetingId: 'm-chrome',
       title: 'Meeting in Google Chrome',
       startsAt: at(-2, 9, 19),
-      endsAt: at(-2, 11, 8),
+      endsAt: at(-2, 9, 29),
       event: committee,
     },
-    {
-      sessionId: 's-other',
-      meetingId: 'm-other',
-      title: 'Meeting in Google Chrome',
-      startsAt: at(-2, 12),
-      endsAt: at(-2, 12, 40),
-      event: lunch,
-    },
   ];
+}
+
+it('asks in the peek which calendar meeting a recording is, and links the one picked', async () => {
+  chromeRecording();
   renderAt('/meetings');
   expect(
-    await screen.findByText('2 recordings look like meetings on your calendar.')
+    await screen.findByText('1 recording looks like a meeting on your calendar.')
   ).toBeInTheDocument();
   fireEvent.click(within(rail()).getByRole('button', { name: 'Review' }));
-  const sheet = await screen.findByRole('dialog');
-  expect(within(sheet).getByText('IT committee')).toBeInTheDocument();
-  expect(within(sheet).getByText(/1 invitee/)).toBeInTheDocument();
-  fireEvent.click(within(sheet).getByRole('button', { name: 'Same meeting: IT committee' }));
+  const peek = await screen.findByRole('complementary', { name: 'Meeting in Google Chrome' });
+  const question = within(peek).getByRole('radiogroup', { name: 'Is this the meeting?' });
+  const options = within(question).getAllByRole('radio');
+  expect(options.map((o) => o.closest('label')!.textContent)).toEqual([
+    expect.stringMatching(/IT committee.*1 invitee · likely/),
+    expect.stringMatching(/Standup/),
+  ]);
+  expect(options[0]).toBeChecked();
+  fireEvent.click(options[1]);
+  fireEvent.click(within(peek).getByRole('button', { name: 'Same meeting' }));
   await waitFor(() =>
     expect(calledWith(db, 'library_resolve_calendar_match')).toEqual([
-      { sessionId: 's-chrome', eventId: 'e-committee', accept: true },
+      { sessionId: 's-chrome', eventId: 'e-standup', accept: true },
     ])
   );
-  fireEvent.click(await within(sheet).findByRole('button', { name: 'Not this one: Lunch' }));
+  await waitFor(() => expect(screen.queryByText(/looks like a meeting/)).toBeNull());
+});
+
+it('remembers "none of these" for the proposed event', async () => {
+  chromeRecording();
+  renderAt('/meetings');
+  fireEvent.click(within(await findRail()).getByRole('button', { name: 'Review' }));
+  const peek = await screen.findByRole('complementary', { name: 'Meeting in Google Chrome' });
+  fireEvent.click(within(peek).getByRole('button', { name: 'None of these' }));
   await waitFor(() =>
-    expect(calledWith(db, 'library_resolve_calendar_match')[1]).toEqual({
-      sessionId: 's-other',
-      eventId: 'e-lunch',
-      accept: false,
-    })
+    expect(calledWith(db, 'library_resolve_calendar_match')).toEqual([
+      { sessionId: 's-chrome', eventId: 'e-committee', accept: false },
+    ])
   );
-  expect(await within(sheet).findByText('Nothing left to review.')).toBeInTheDocument();
-  expect(screen.queryByText(/look like meetings on your calendar/)).toBeNull();
+  expect(
+    await within(peek).findByRole('button', { name: 'Link to a calendar meeting' })
+  ).toBeInTheDocument();
 });

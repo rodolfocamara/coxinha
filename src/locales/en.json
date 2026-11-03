@@ -611,7 +611,7 @@
     "intro": "Listen, choose a person and save each voice separately. Suggestions need your confirmation.",
     "confirmed": "Confirmed identity",
     "proposed": "Suggested identity",
-    "anonymous": "Anonymous speaker",
+    "anonymous": "No name yet",
     "unknown": "Voice identity unknown",
     "listen": "Play excerpt / replay",
     "pause": "Pause excerpt",

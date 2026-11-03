@@ -57,9 +57,6 @@ it('lists invitees first and reuses the existing person of the same name', () =>
 it('creates an invitee as a person and confirms the voice with the prefilled verification', async () => {
   vi.mocked(library.createPerson).mockResolvedValue('p-bruno');
   render(<SpeakerCard {...props} />);
-  expect(screen.getByRole('textbox', { name: i18n.t('speakers.decisionOrigin') })).toHaveValue(
-    'Ouvi o trecho e reconheci a voz'
-  );
   changeControl(screen.getByRole('combobox'), { target: { value: 'invitee:0' } });
   fireEvent.click(screen.getByRole('button', { name: i18n.t('library.processing.confirm') }));
   await waitFor(() =>
@@ -102,7 +99,14 @@ it('leaves the verification empty for a voice that already has a name', () => {
     ],
   };
   render(<SpeakerCard {...props} report={named} />);
+  expect(screen.queryByRole('combobox')).toBeNull();
+  fireEvent.click(screen.getByRole('button', { name: i18n.t('speakerNaming.change') }));
   expect(screen.getByRole('textbox', { name: i18n.t('speakers.decisionOrigin') })).toHaveValue('');
+  expect(
+    screen.getByRole('button', { name: i18n.t('library.processing.correctIdentity') })
+  ).toBeDisabled();
+  fireEvent.click(screen.getByRole('button', { name: i18n.t('speakerNaming.cancel') }));
+  expect(screen.queryByRole('combobox')).toBeNull();
 });
 
 it('creates a typed name nobody has and names the voice in one step', async () => {
@@ -150,9 +154,8 @@ it('autocompletes with the keyboard and types an existing name without creating 
   expect(library.createPerson).not.toHaveBeenCalled();
 });
 
-it('keeps the prefilled verification collapsed for a first naming', () => {
+it('asks nothing but the name for a first naming', () => {
   render(<SpeakerCard {...props} />);
-  const origin = screen.getByRole('textbox', { name: i18n.t('speakers.decisionOrigin') });
-  expect(origin.closest('details')).not.toHaveAttribute('open');
-  expect(screen.getByText(/Como verificou: Ouvi o trecho/)).toBeInTheDocument();
+  expect(screen.queryByRole('textbox')).toBeNull();
+  expect(screen.getByRole('combobox', { name: i18n.t('speakerNaming.who') })).toBeVisible();
 });

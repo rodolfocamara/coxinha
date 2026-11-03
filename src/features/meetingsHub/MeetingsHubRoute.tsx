@@ -14,7 +14,7 @@ import { readCalendarPrefs, writeCalendarPrefs, type CalendarView } from './cale
 import { NewMeetingSheet } from './NewMeetingSheet';
 import { ImportAudioSheet } from './ImportAudioSheet';
 import { ParticipantsSheet } from './ParticipantsSheet';
-import { CalendarMatchBanner, CalendarMatchSheet, useCalendarMatches } from './CalendarMatches';
+import { useCalendarMatches } from './CalendarMatches';
 import { useMeetingsData, useRowLiveness } from './useMeetingsData';
 import {
   IMPORT_AUDIO_EVENT,
@@ -30,7 +30,6 @@ type SheetState =
   | { kind: 'meeting'; slot?: { start: Date; end: Date } }
   | { kind: 'import'; title: string; forMeeting: boolean }
   | { kind: 'outlook' }
-  | { kind: 'calendar' }
   | { kind: 'review' }
   | { kind: 'participants'; meetingId: string; event: CalendarEvent | null }
   | null;
@@ -224,12 +223,9 @@ export function MeetingsHubRoute() {
             void sessions.refetch();
             void recordings.refetch();
           }}
-          banner={
-            <CalendarMatchBanner
-              count={calendarMatches.matches.length}
-              onReview={() => setSheet({ kind: 'calendar' })}
-            />
-          }
+          events={outlook.snapshot.events}
+          matches={calendarMatches.matches}
+          onMatchResolved={calendarMatches.reload}
         />
       )}
       {sheet?.kind === 'review' && (
@@ -279,14 +275,6 @@ export function MeetingsHubRoute() {
           onOpenChange={closeSheet}
           meetingId={sheet.meetingId}
           event={sheet.event}
-        />
-      )}
-      {sheet?.kind === 'calendar' && (
-        <CalendarMatchSheet
-          open
-          onOpenChange={closeSheet}
-          matches={calendarMatches.matches}
-          onResolved={calendarMatches.reload}
         />
       )}
       {sheet?.kind === 'outlook' && (

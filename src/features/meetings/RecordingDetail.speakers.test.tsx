@@ -190,7 +190,6 @@ it('reports playback failures and reconciles a persisted confirmation after a co
   });
   const output = row('output');
   changeControl(output.getByRole('combobox'), { target: { value: 'ana' } });
-  changeControl(output.getByRole('textbox'), { target: { value: 'Human evidence' } });
   fireEvent.click(output.getByRole('button', { name: 'Confirm identity' }));
   expect(await screen.findByText('Confirmed identity: Ana')).toBeInTheDocument();
   expect(row('output').queryByRole('checkbox')).toBeNull();

@@ -1,12 +1,14 @@
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { RotateCw } from 'lucide-react';
 import { Alert, Button } from '../../components/ui';
-import { library } from '../meetings/library';
+import { library, type CalendarMatch } from '../meetings/library';
+import type { CalendarEvent } from '../agenda/calendar';
 import { useOutlookCategories } from '../agenda/categories';
 import type { OutlookConnection } from '../agenda/useOutlookConnection';
-import type { MeetingRow } from './meetingRows';
+import { rowKey, type MeetingRow } from './meetingRows';
+import { CalendarMatchBanner } from './CalendarMatches';
 import { stepAnchor, viewRange, type CalendarView } from './calendarViews';
 import { CalendarGrid, rangeLabel } from './CalendarPage';
 import { CalendarToolbar } from './CalendarToolbar';
@@ -37,7 +39,10 @@ type Props = {
   desktop: boolean;
   loadFailed: boolean;
   onRetry: () => void;
-  banner?: ReactNode;
+  events: CalendarEvent[];
+  /** Recordings that look like calendar meetings (spec 0100), answered in the peek. */
+  matches: CalendarMatch[];
+  onMatchResolved: () => void;
 };
 
 /**
@@ -145,7 +150,18 @@ export function CalendarHome(p: Props) {
           onReview={p.onReview}
           outlook={p.outlook}
           onOutlook={p.onOutlook}
-          banner={p.banner}
+          banner={
+            <CalendarMatchBanner
+              count={p.matches.length}
+              onReview={() => {
+                const first = p.matches[0];
+                if (!first) return;
+                if (searching) changeQuery('');
+                setAnchor(new Date(first.startsAt));
+                setSelectedKey(rowKey.session(first.sessionId));
+              }}
+            />
+          }
         />
         <div className="ch-main">
           {searching ? (
@@ -186,6 +202,9 @@ export function CalendarHome(p: Props) {
             onClose={close}
             onOpen={p.onOpen}
             onOpenSession={p.onOpenSession}
+            events={p.events}
+            matches={p.matches}
+            onMatchResolved={p.onMatchResolved}
           />
         )}
       </div>

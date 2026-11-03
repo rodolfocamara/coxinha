@@ -239,3 +239,49 @@
     outline-offset: -1px;
   }
 }
+
+/* "É esta reunião?" (spec 0111): pick the calendar event a recording belongs to. */
+@layer components {
+  .ch-match-list {
+    display: grid;
+    gap: 2px;
+  }
+  .ch-match-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .ch-match-row:hover,
+  .ch-match-row[data-checked] {
+    background: var(--color-secondary);
+  }
+  .ch-match-row input {
+    accent-color: var(--color-primary);
+  }
+  .ch-match-bar {
+    align-self: stretch;
+    width: 3px;
+    border-radius: 2px;
+    background: var(--color-info);
+  }
+  .ch-match-text {
+    display: grid;
+    min-width: 0;
+    font-size: 12.5px;
+    line-height: 1.35;
+  }
+  .ch-match-text b {
+    overflow: hidden;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ch-match-text span {
+    color: var(--color-muted-foreground);
+    font-size: 11.5px;
+    font-variant-numeric: tabular-nums;
+  }
+}

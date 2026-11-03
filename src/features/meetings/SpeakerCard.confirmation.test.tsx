@@ -74,10 +74,11 @@ beforeEach(async () => {
   });
 });
 function choose(person: string) {
+  const change = screen.queryByRole('button', { name: i18n.t('speakerNaming.change') });
+  if (change) fireEvent.click(change);
   changeControl(screen.getByRole('combobox'), { target: { value: person } });
-  changeControl(screen.getByRole('textbox', { name: i18n.t('speakers.decisionOrigin') }), {
-    target: { value: 'Human identity review' },
-  });
+  const reason = screen.queryByRole('textbox', { name: i18n.t('speakers.decisionOrigin') });
+  if (reason) changeControl(reason, { target: { value: 'Human identity review' } });
 }
 for (const locale of ['en', 'pt-BR'])
   it(`R4 unchanged confirmed UUID never sends confirmation IPC in ${locale}`, async () => {
@@ -119,7 +120,7 @@ it('R4 preserves initial explicit confirmation when no confirmed assignment exis
       'job',
       'speaker-1',
       'ana-11111111',
-      'Human identity review',
+      'I listened to the excerpt and recognized the voice',
       false,
       'mic'
     )

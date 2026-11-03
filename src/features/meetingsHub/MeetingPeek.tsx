@@ -3,7 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { ClipboardList, Mic, X } from 'lucide-react';
 import { Button } from '../../components/ui';
-import { library } from '../meetings/library';
+import { library, type CalendarMatch } from '../meetings/library';
+import type { CalendarEvent } from '../agenda/calendar';
 import { useCaptureStore } from '../capture/captureStore';
 import { colourVar, useEventColour } from '../agenda/categories';
 import { dayKey, localDay, nextDay } from '../sessions/sessionDates';
@@ -12,6 +13,7 @@ import { durationLabel, whenLabel } from './format';
 import type { DetailPanel } from './meetingsSearch';
 import { useMeetingActions } from './useMeetingActions';
 import { PeekFilesAndLinks, PeekSummary, PeekTranscript } from './PeekSections';
+import { PeekCalendarMatch } from './PeekCalendarMatch';
 import './calendarPeek.css';
 
 type Props = {
@@ -22,6 +24,10 @@ type Props = {
   onClose: () => void;
   onOpen: (row: MeetingRow, panel?: DetailPanel) => void;
   onOpenSession: (sessionId: string) => void;
+  /** The Outlook cache and the open proposals, to ask which event a recording is (spec 0111). */
+  events?: CalendarEvent[];
+  matches?: CalendarMatch[];
+  onMatchResolved?: () => void;
 };
 
 /**
@@ -29,7 +35,18 @@ type Props = {
  * summary or notes, a transcript excerpt, files and activities — and the next
  * action for its time. Escape closes it.
  */
-export function MeetingPeek({ row, now, query, live, onClose, onOpen, onOpenSession }: Props) {
+export function MeetingPeek({
+  row,
+  now,
+  query,
+  live,
+  onClose,
+  onOpen,
+  onOpenSession,
+  events = [],
+  matches = [],
+  onMatchResolved = () => undefined,
+}: Props) {
   const { t, i18n } = useTranslation();
   const locale = i18n.resolvedLanguage ?? i18n.language;
   const k = (key: string, options?: Record<string, unknown>) =>
@@ -146,6 +163,17 @@ export function MeetingPeek({ row, now, query, live, onClose, onOpen, onOpenSess
             {people.length > 6 ? ` +${people.length - 6}` : ''}
           </p>
         </section>
+      )}
+      {session && meetingId && !event && row.start && past && (
+        <PeekCalendarMatch
+          key={session.id}
+          sessionId={session.id}
+          start={row.start}
+          durationMs={durationMs}
+          events={events}
+          proposal={matches.find((m) => m.sessionId === session.id) ?? null}
+          onResolved={onMatchResolved}
+        />
       )}
       <PeekSummary meetingId={meetingId} session={session} />
       <PeekTranscript

@@ -43,15 +43,23 @@ autocomplete, and import the meetings' participants as people.
 - Typing the exact name of one person picks that person; two people with the
   same name must be picked from the list, where they show a short id.
 
-### P2 Compact cards
+### P2 One list, nothing else in the way
 
-- A card is a header (track and speaker, status, excerpt button) and one row
-  with the field and "Confirmar".
-- For a first naming, the verification starts as "Ouvi o trecho e reconheci a
-  voz" behind "Como verificou", collapsed. A named voice shows the field open
-  and empty, because a correction or revocation needs its own reason.
-- The help that was repeated on every card (verification, scope, voice
-  memory) is said once above the cards.
+The owner's second review (2026-11-03) still found too much text under the
+voices. Following the app-screen rules of the design skill (one question
+per screen, the largest block answers it, everything else recedes):
+
+- The tab answers "who is each voice?". Its header is the count ("4 vozes ·
+  2 sem nome") with "Importar da agenda" on the right; no intro paragraph.
+- The voices are one divided list, one row each: play button, name or "Sem
+  nome", track and time as a grey subline, and "Quem é?" with "Confirmar".
+- A first naming records "Ouvi o trecho e reconheci a voz" as the
+  verification without asking. A named row shows only "Trocar"; it opens the
+  field, a reason (required to correct or revoke), "Revogar" and voice
+  memory.
+- "Adicionar pessoa", the recognition status, voice profiles, the
+  comparison and the processing details sit under one collapsed "Mais
+  opções". Overlapping speech keeps its one grey line under the list.
 
 ### P3 The meeting's invitees from the calendar
 
@@ -79,8 +87,8 @@ autocomplete, and import the meetings' participants as people.
       (`personChoices` and `SpeakerCard.invitees` tests).
 - [x] An exact single name resolves to that person; homonyms need a pick
       (`SpeakerCard` tests).
-- [x] First naming keeps the prefilled verification collapsed; a named voice
-      shows it empty (`SpeakerCard` tests).
+- [x] A first naming asks only the name; a named voice opens correction behind
+      "Trocar" with an empty reason (`SpeakerCard` and `SpeakerReview` tests).
 - [x] The calendar event's attendees reach the review (`SpeakerReview`
       tests).
 - [x] Import lists calendar participants once, without existing people or

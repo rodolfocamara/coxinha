@@ -84,8 +84,11 @@ const card = (track: string) =>
   screen.getByRole('group', { name: new RegExp(`${i18n.t(`library.${track}`)} · speaker-1`) });
 function select(track: string, person: string, origin = 'Reviewed this recording with the person') {
   const row = within(card(track));
+  const change = row.queryByRole('button', { name: i18n.t('speakerNaming.change') });
+  if (change) fireEvent.click(change);
   changeControl(row.getByRole('combobox'), { target: { value: person } });
-  changeControl(row.getByRole('textbox'), { target: { value: origin } });
+  const reason = row.queryByRole('textbox');
+  if (reason) changeControl(reason, { target: { value: origin } });
   return row;
 }
 for (const locale of ['en', 'pt-BR'])
@@ -103,7 +106,7 @@ for (const locale of ['en', 'pt-BR'])
         'job',
         'speaker-1',
         'bruno',
-        'Reviewed this recording with the person',
+        i18n.t('speakers.defaultOrigin'),
         false,
         'output'
       )
@@ -114,13 +117,16 @@ for (const locale of ['en', 'pt-BR'])
         'job',
         'speaker-1',
         'ana',
-        'Reviewed this recording with the person',
+        i18n.t('speakers.defaultOrigin'),
         false,
         'mic'
       )
     );
     expect(mic.queryByRole('checkbox')).toBeNull();
-    expect(screen.getByText(i18n.t('speakerNaming.intro'))).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: i18n.t('speakerNaming.heading', { count: 2 }) })
+    ).toBeInTheDocument();
+    expect(screen.getByText(i18n.t('speakerNaming.unnamed', { count: 2 }))).toBeInTheDocument();
   });
 it('distinguishes confirmed, proposed and unknown; selecting a suggestion never saves', async () => {
   const view = render(<SpeakerReview {...props} />);
@@ -182,7 +188,7 @@ it('agenda names only prefill explicit creation with separate consent; the creat
       'job',
       'speaker-1',
       'created-id',
-      'Human review',
+      i18n.t('speakers.defaultOrigin'),
       false,
       'mic'
     )
@@ -223,9 +229,11 @@ it('corrects and revokes track identities and separately revokes legacy assignme
       'mic'
     )
   );
+  fireEvent.click(await mic.findByRole('button', { name: 'Change' }));
+  changeControl(mic.getByRole('textbox'), { target: { value: 'Not this person' } });
   fireEvent.click(mic.getByRole('button', { name: 'Revoke identity and voice contributions' }));
   await waitFor(() =>
-    expect(library.revokeAssignment).toHaveBeenCalledWith('a', 'Corrected after listening')
+    expect(library.revokeAssignment).toHaveBeenCalledWith('a', 'Not this person')
   );
   changeControl(screen.getByLabelText('Reason for revoking a previous identity'), {
     target: { value: 'Legacy correction' },
@@ -250,7 +258,7 @@ it('resets row state and ignores recognition from an old meeting or job', async 
     <SpeakerReview {...props} meetingId="new" report={{ ...report, job: 'new-job' }} />
   );
   expect(within(card('mic')).getByRole('combobox')).toHaveValue('');
-  expect(within(card('mic')).getByRole('textbox')).toHaveValue(i18n.t('speakers.defaultOrigin'));
+  expect(within(card('mic')).queryByRole('textbox')).toBeNull();
   expect(within(card('mic')).queryByRole('checkbox')).toBeNull();
   await act(async () => finish({ ...recognition, calibrationStatus: 'calibrated' }));
   expect(screen.queryByText('Suggested identity: Ana')).toBeNull();

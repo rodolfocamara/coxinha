@@ -140,6 +140,7 @@ it('enrolls selected samples without reconfirmation, refreshes private evidence 
     />
   );
   await screen.findByText('Confirmed identity: Ana');
+  fireEvent.click(screen.getByRole('button', { name: 'Change' }));
   const selector = screen.getByRole('combobox');
   expect(selector).toHaveValue('');
   fireEvent.click(
@@ -205,8 +206,8 @@ it('keeps one concise recognition status and discloses technical details below t
     .closest('details')!;
   expect(details).not.toHaveAttribute('open');
   expect(within(details).getByText(i18n.t('library.processing.unknown'))).not.toBeVisible();
-  expect(screen.getByText(i18n.t('speakerNaming.intro'))).toBeVisible();
-  expect(screen.getByRole('button', { name: 'Correct identity' })).toBeVisible();
+  expect(screen.getByRole('button', { name: 'Change' })).toBeVisible();
+  fireEvent.click(screen.getByText('More options', { selector: 'summary' }));
   fireEvent.click(
     within(details).getByText('Recognition and transcription details', { selector: 'summary' })
   );

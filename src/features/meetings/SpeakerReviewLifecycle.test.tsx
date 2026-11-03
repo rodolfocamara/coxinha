@@ -81,6 +81,7 @@ beforeEach(async () => {
 it('R3 preserves person, human evidence and unsubmitted sample drafts across transcript hops and resets on job/meeting changes', async () => {
   const view = render(<ProcessingPanel {...props} view="people" />);
   await screen.findByText('Confirmed identity: Ana');
+  fireEvent.click(screen.getByRole('button', { name: 'Change' }));
   changeControl(screen.getByRole('combobox'), { target: { value: 'uuid-ana-22222222' } });
   changeControl(screen.getByRole('textbox', { name: 'How did you verify this identity?' }), {
     target: { value: 'Unsubmitted human evidence' },
@@ -115,14 +116,17 @@ it('R3 preserves person, human evidence and unsubmitted sample drafts across tra
       status={{ ...props.status, processing: { meetingId: 'm', job: 'new-job', phase: 'done' } }}
     />
   );
-  await waitFor(() => expect(screen.getByRole('combobox')).toHaveValue(''));
+  // A new job starts the row closed again: no draft name, reason or samples.
+  await waitFor(() => expect(screen.queryByRole('combobox')).toBeNull());
+  expect(screen.queryByRole('checkbox')).toBeNull();
+  fireEvent.click(screen.getByRole('button', { name: 'Change' }));
+  expect(screen.getByRole('combobox')).toHaveValue('');
   expect(screen.getByRole('textbox', { name: 'How did you verify this identity?' })).toHaveValue(
     ''
   );
-  expect(screen.queryByRole('checkbox')).toBeNull();
   changeControl(screen.getByRole('combobox'), { target: { value: 'uuid-ana-22222222' } });
   view.rerender(<ProcessingPanel {...props} meetingId="new-meeting" view="people" />);
-  await waitFor(() => expect(screen.getByRole('combobox')).toHaveValue(''));
+  await waitFor(() => expect(screen.queryByRole('combobox')).toBeNull());
 });
 it('R3 does not stop a fresh initial-report gesture and stops only when the actual report job changes', async () => {
   const view = render(<ProcessingPanel {...props} view="people" />);
@@ -145,7 +149,8 @@ it('R3 does not stop a fresh initial-report gesture and stops only when the actu
 });
 it('R3 disambiguates homonyms without changing their stable person IDs', async () => {
   render(<ProcessingPanel {...props} view="people" />);
-  const selector = await screen.findByRole('combobox');
+  fireEvent.click(await screen.findByRole('button', { name: 'Change' }));
+  const selector = screen.getByRole('combobox');
   fireEvent.keyDown(selector, { key: 'ArrowDown' });
   const options = screen.getAllByRole('option');
   expect(options[0]).toHaveTextContent('Ana (11111111)');

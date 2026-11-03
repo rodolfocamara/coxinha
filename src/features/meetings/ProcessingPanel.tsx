@@ -117,19 +117,21 @@ function ProcessingPanelForMeeting({
             act={act}
             playback={playback}
             calendarInvitees={invitees}
+            more={
+              peopleView && (
+                <details className="space-y-3 text-sm text-muted-foreground">
+                  <summary className="cursor-pointer">{t('speakers.processingDetails')}</summary>
+                  <p>{k('unknown')}</p>
+                  <p>{t('speakers.noCalibrationDetails')}</p>
+                  {versionSelector}
+                  <Button onClick={onTranscript} icon={<FileText size={14} aria-hidden="true" />}>
+                    {t('speakers.openTranscript')}
+                  </Button>
+                </details>
+              )
+            }
           />
         </div>
-      )}
-      {peopleView && report && (
-        <details className="space-y-3 text-sm text-muted-foreground">
-          <summary className="cursor-pointer">{t('speakers.processingDetails')}</summary>
-          <p>{k('unknown')}</p>
-          <p>{t('speakers.noCalibrationDetails')}</p>
-          {versionSelector}
-          <Button onClick={onTranscript} icon={<FileText size={14} aria-hidden="true" />}>
-            {t('speakers.openTranscript')}
-          </Button>
-        </details>
       )}
       {!peopleView && report && (
         <TranscriptReader

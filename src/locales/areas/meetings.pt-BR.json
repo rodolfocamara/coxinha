@@ -216,16 +216,15 @@
       "banner_one": "{{count}} gravação parece uma reunião da sua agenda.",
       "banner_other": "{{count}} gravações parecem reuniões da sua agenda.",
       "review": "Revisar",
-      "title": "Gravações e agenda",
-      "description": "Confirme quais gravações anteriores são estas reuniões da agenda. A confirmada passa a ter o título, o horário e os convidados do evento.",
-      "recorded": "Gravação “{{title}}”",
       "invitees_one": "{{count}} convidado",
       "invitees_other": "{{count}} convidados",
       "accept": "É essa reunião",
-      "acceptLabel": "É essa reunião: {{title}}",
-      "decline": "Não é",
-      "declineLabel": "Não é: {{title}}",
-      "done": "Nada mais para revisar."
+      "question": "É esta reunião?",
+      "pick": "Qual reunião da agenda é esta?",
+      "link": "Vincular a uma reunião da agenda",
+      "likely": "provável",
+      "none": "Nenhuma destas",
+      "cancel": "Cancelar"
     },
     "home": {
       "newMeeting": "Nova reunião",

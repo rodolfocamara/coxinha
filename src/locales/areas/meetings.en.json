@@ -216,16 +216,15 @@
       "banner_one": "{{count}} recording looks like a meeting on your calendar.",
       "banner_other": "{{count}} recordings look like meetings on your calendar.",
       "review": "Review",
-      "title": "Recordings and calendar",
-      "description": "Confirm which earlier recordings are these calendar meetings. A confirmed one takes the event's title, time and invitees.",
-      "recorded": "Recording “{{title}}”",
       "invitees_one": "{{count}} invitee",
       "invitees_other": "{{count}} invitees",
       "accept": "Same meeting",
-      "acceptLabel": "Same meeting: {{title}}",
-      "decline": "Not this one",
-      "declineLabel": "Not this one: {{title}}",
-      "done": "Nothing left to review."
+      "question": "Is this the meeting?",
+      "pick": "Which calendar meeting is this?",
+      "link": "Link to a calendar meeting",
+      "likely": "likely",
+      "none": "None of these",
+      "cancel": "Cancel"
     },
     "home": {
       "newMeeting": "New meeting",

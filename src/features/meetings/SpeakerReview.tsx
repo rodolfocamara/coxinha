@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { CalendarPlus, UserPlus } from 'lucide-react';
 import { Button } from '../../components/ui';
 import { useTranslation } from 'react-i18next';
@@ -26,7 +26,10 @@ function SpeakerReviewForRun({
   act,
   playback,
   calendarInvitees = [],
+  more,
 }: {
+  /** Processing details shown under "Mais opções". */
+  more?: ReactNode;
   meetingId: string;
   /** Attendees of the calendar event the meeting page shows (spec 0110 P3). */
   calendarInvitees?: ParticipantCandidate[];
@@ -101,58 +104,30 @@ function SpeakerReviewForRun({
         .map((s) => [JSON.stringify([s.track, s.speaker]), { speaker: s.speaker, track: s.track! }])
     ).values()
   );
+  const named = speakers.filter(({ speaker, track }) =>
+    report.assignments.some(
+      (a) => a.track === track && a.speaker === speaker && a.state === 'confirmed'
+    )
+  ).length;
+  const calibrated = recognition?.calibrationStatus === 'calibrated';
   return (
-    <div className="space-y-4 min-w-0">
-      <p className="text-sm text-muted-foreground">{t('speakerNaming.intro')}</p>
-      <p role="status" className="text-xs text-muted-foreground">
-        {w(
-          error
-            ? 'recognitionUnavailable'
-            : !recognition
-              ? 'recognitionPending'
-              : recognition.calibrationStatus === 'calibrated'
-                ? 'calibrationReported'
-                : 'noCalibration'
+    <div className="min-w-0 space-y-3">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <h3 className="text-sm font-medium">
+          {t('speakerNaming.heading', { count: speakers.length })}
+        </h3>
+        {speakers.length > 0 && (
+          <span className="text-xs text-muted-foreground tabular-nums">
+            {named === speakers.length
+              ? t('speakerNaming.allNamed')
+              : t('speakerNaming.unnamed', { count: speakers.length - named })}
+          </span>
         )}
-      </p>
-      {error && (
-        <div role="alert" className="text-sm">
-          <p>{error}</p>
-          <button className={button} onClick={() => setAttempt((n) => n + 1)}>
-            {t('session.retry')}
-          </button>
-        </div>
-      )}
-      {speakers.length === 0 && <p role="status">{w('noSpeakers')}</p>}
-      {report.turns.some((s) => s.speaker.toLowerCase().includes('unknown')) && (
-        <p className="text-xs text-muted-foreground">{w('overlap')}</p>
-      )}
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-        {speakers.map(({ speaker, track }) => (
-          <SpeakerCard
-            key={JSON.stringify([track, speaker])}
-            {...{
-              meetingId,
-              curationVersion,
-              speaker,
-              track,
-              report,
-              people,
-              invitees,
-              recognition,
-              disabled,
-              playback,
-              onSeek,
-            }}
-            act={curate}
-          />
-        ))}
-      </div>
-      <VoiceProfilesPanel version={curationVersion} disabled={disabled} act={curate} />
-      <VoiceComparisonPanel job={report.job} version={curationVersion} disabled={disabled} />
-      <div className="flex flex-wrap gap-2">
         <Button
-          icon={<CalendarPlus size={16} aria-hidden="true" />}
+          size="sm"
+          variant="ghost"
+          className="ml-auto"
+          icon={<CalendarPlus size={14} aria-hidden="true" />}
           aria-haspopup="dialog"
           disabled={disabled}
           onClick={() => setImporting(true)}
@@ -165,25 +140,91 @@ function SpeakerReviewForRun({
           run={curate}
           onImported={() => undefined}
         />
-        <Button
-          icon={<UserPlus size={16} aria-hidden="true" />}
-          aria-haspopup="dialog"
-          disabled={disabled}
-          onClick={() => setAdding(true)}
-        >
-          {w('addPerson')}
-        </Button>
-        <PersonFormSheet
-          open={adding}
-          onOpenChange={setAdding}
-          run={curate}
-          disabled={disabled}
-          onCreated={(id, name) => setCreated((rows) => [...rows, { id, name }])}
-          suggestions={(setName) => (
-            <ParticipantContext meetingId={meetingId} disabled={disabled} onSelect={setName} />
-          )}
-        />
       </div>
+      {calibrated && (
+        <p role="status" className="text-xs text-muted-foreground">
+          {w('calibrationReported')}
+        </p>
+      )}
+      {error && (
+        <div role="alert" className="flex flex-wrap items-center gap-2 text-sm">
+          <p>{w('recognitionUnavailable')}</p>
+          <button className={button} onClick={() => setAttempt((n) => n + 1)}>
+            {t('session.retry')}
+          </button>
+          <p className="basis-full text-xs text-muted-foreground">{error}</p>
+        </div>
+      )}
+      {speakers.length === 0 ? (
+        <p role="status">{w('noSpeakers')}</p>
+      ) : (
+        <ul className="divide-y divide-border rounded-lg border border-border bg-card">
+          {speakers.map(({ speaker, track }) => (
+            <SpeakerCard
+              key={JSON.stringify([track, speaker])}
+              {...{
+                meetingId,
+                curationVersion,
+                speaker,
+                track,
+                report,
+                people,
+                invitees,
+                recognition,
+                disabled,
+                playback,
+                onSeek,
+              }}
+              act={curate}
+            />
+          ))}
+        </ul>
+      )}
+      {report.turns.some((s) => s.speaker.toLowerCase().includes('unknown')) && (
+        <p className="text-xs text-muted-foreground">{w('overlap')}</p>
+      )}
+      <details className="group text-sm">
+        <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+          {t('speakerNaming.more')}
+        </summary>
+        <div className="mt-3 space-y-3">
+          {!calibrated && (
+            <p role="status" className="text-xs text-muted-foreground">
+              {w(
+                error
+                  ? 'recognitionUnavailable'
+                  : !recognition
+                    ? 'recognitionPending'
+                    : 'noCalibration'
+              )}
+            </p>
+          )}
+          <div>
+            <Button
+              size="sm"
+              icon={<UserPlus size={14} aria-hidden="true" />}
+              aria-haspopup="dialog"
+              disabled={disabled}
+              onClick={() => setAdding(true)}
+            >
+              {w('addPerson')}
+            </Button>
+            <PersonFormSheet
+              open={adding}
+              onOpenChange={setAdding}
+              run={curate}
+              disabled={disabled}
+              onCreated={(id, name) => setCreated((rows) => [...rows, { id, name }])}
+              suggestions={(setName) => (
+                <ParticipantContext meetingId={meetingId} disabled={disabled} onSelect={setName} />
+              )}
+            />
+          </div>
+          <VoiceProfilesPanel version={curationVersion} disabled={disabled} act={curate} />
+          <VoiceComparisonPanel job={report.job} version={curationVersion} disabled={disabled} />
+          {more}
+        </div>
+      </details>
       {report.assignments.some((a) => a.track == null) && (
         <section
           className="space-y-3 rounded-lg border border-border p-4"

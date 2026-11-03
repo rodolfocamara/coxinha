@@ -213,9 +213,6 @@ it('refreshes a persisted name after a command follow-up fails without opting in
   changeControl(await screen.findByRole('combobox', { name: 'Who is it?' }), {
     target: { value: 'person' },
   });
-  changeControl(screen.getByLabelText(/How did you verify this identity\?/), {
-    target: { value: 'review' },
-  });
   fireEvent.click(screen.getByRole('button', { name: 'Confirm identity' }));
   expect(await screen.findByRole('alert')).toHaveTextContent(
     'confirmation saved; command follow-up failed'
