@@ -24,6 +24,7 @@ beforeEach(async () => {
   resetPersonPhotos();
   localStorage.clear();
   localStorage.setItem('outlook.clientId', CLIENT);
+  localStorage.setItem('outlook.tenant', 'organizations');
   status = OFF;
   account = 'subject-a';
   vi.mocked(invoke).mockReset();

@@ -220,6 +220,8 @@ fn invitees_skip_cancelled_events_and_people_without_mail() {
         show_as: None,
         is_organizer: false,
         web_link: None,
+        allow_new_time_proposals: None,
+        response_requested: None,
     };
     let snapshot = Snapshot {
         events: vec![
