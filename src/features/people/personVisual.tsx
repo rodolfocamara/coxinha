@@ -1,3 +1,7 @@
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { usePersonPhoto } from './personPhotos';
+
 /** Stable person hue (1..4) from the person id, so a person keeps their colour everywhere. */
 export function personHue(personId: string): 1 | 2 | 3 | 4 {
   let hash = 0;
@@ -13,7 +17,7 @@ export function initials(name: string) {
   return (first + last).toLocaleUpperCase();
 }
 
-/** Initials on the person hue; decorative, the name is always rendered next to it. */
+/** The directory photo (spec 0117), else initials on the person hue, which are decorative. */
 export function PersonAvatar({
   personId,
   name,
@@ -23,10 +27,14 @@ export function PersonAvatar({
   name: string;
   size?: 22 | 40;
 }) {
+  const { t } = useTranslation();
+  const photo = usePersonPhoto({ personId });
+  const [failed, setFailed] = useState<string | null>(null);
+  const shown = photo && photo !== failed ? photo : null;
   const hue = personHue(personId);
   return (
     <span
-      aria-hidden="true"
+      aria-hidden={shown ? undefined : 'true'}
       data-hue={hue}
       className={
         'grid shrink-0 place-items-center rounded-full font-bold ' +
@@ -34,7 +42,16 @@ export function PersonAvatar({
       }
       style={{ background: `oklch(var(--p${hue}-bg))`, color: `oklch(var(--p${hue}))` }}
     >
-      {initials(name)}
+      {shown ? (
+        <img
+          className="size-full rounded-full object-cover"
+          src={shown}
+          alt={t('people.photoAlt', { name })}
+          onError={() => setFailed(shown)}
+        />
+      ) : (
+        initials(name)
+      )}
     </span>
   );
 }

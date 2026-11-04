@@ -45,7 +45,7 @@ fn real_hot_journal_on_profiles_v3_recovers_committed_content() -> Result<()> {
     assert_eq!(
         s.profiles
             .pragma_query_value(None, "user_version", |r| r.get::<_, u32>(0))?,
-        5
+        6
     );
     assert_eq!(snapshot(&path, false)?, committed);
     assert_committed_probe(&path)?;
@@ -97,7 +97,7 @@ fn recovery_writes_are_allowed_but_other_future_database_blocks_schema_upgrade()
     seed_probe(&path)?;
     let committed = snapshot(&path, false)?;
     let private = d.path().join("private/profiles.db");
-    Connection::open(&private)?.pragma_update(None, "user_version", 6)?;
+    Connection::open(&private)?.pragma_update(None, "user_version", 7)?;
     let private_bytes = std::fs::read(&private)?;
     crash_writer(d.path(), "meetings.db")?;
     let crashed_bytes = std::fs::read(&path)?;
@@ -172,7 +172,7 @@ fn future_profiles_refusal_does_not_create_missing_meetings_database() -> Result
     let d = library(false)?;
     std::fs::create_dir(d.path().join("private"))?;
     let path = d.path().join("private/profiles.db");
-    Connection::open(&path)?.pragma_update(None, "user_version", 6)?;
+    Connection::open(&path)?.pragma_update(None, "user_version", 7)?;
     let bytes = std::fs::read(&path)?;
     assert!(Store::open(d.path()).is_err());
     assert!(!d.path().join("meetings.db").exists());

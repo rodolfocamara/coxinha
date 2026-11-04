@@ -59,6 +59,7 @@ export const SETTINGS_ROWS: readonly SettingsRowEntry[] = [
   row('transcription', 'diarizer', `${P}.transcription.diarizer`),
   row('calendar', 'local-zone', `${P}.zones.localTitle`, `${P}.zones.localHint`),
   row('calendar', 'time-zones', `${P}.zones.title`, `${P}.zones.hint`),
+  row('calendar', 'directory-photos', `${P}.directoryPhotos.title`, `${P}.directoryPhotos.hint`),
   row('integrations', 'outlook', 'outlook.title', undefined, 'integrations-outlook-heading'),
   row('titles', 'titles-target', `${P}.titles.target`),
   row('titles', 'titles-port', `${P}.titles.port`),

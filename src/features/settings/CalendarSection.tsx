@@ -5,8 +5,9 @@ import { Button, Input } from '../../components/ui';
 import { MAX_LABEL, MAX_ZONES, useTimeZones } from '../meetingsHub/timeZones';
 import { searchZones, type ZoneOption } from '../meetingsHub/zoneCatalog';
 import { SettingsCard, SettingsRow, SettingsSection } from './controls';
+import { DirectoryPhotosRow } from './DirectoryPhotosRow';
 
-/** Agenda: extra time zones in the week gutter, like Outlook's (spec 0119 P4). */
+/** Agenda: extra time zones in the week gutter (spec 0119 P4), and invitees' photos (spec 0117). */
 export function CalendarSection() {
   const { t, i18n } = useTranslation();
   const locale = i18n?.resolvedLanguage ?? 'en';
@@ -157,6 +158,7 @@ export function CalendarSection() {
             </>
           }
         />
+        <DirectoryPhotosRow />
       </SettingsCard>
     </SettingsSection>
   );

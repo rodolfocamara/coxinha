@@ -85,8 +85,8 @@ export const calendar = {
     isTauri()
       ? published(invoke<CalendarSnapshot>('calendar_status'))
       : Promise.resolve(emptyCalendar),
-  begin: (clientId: string, tenant: string) =>
-    invoke<{ id: string; url: string }>('calendar_begin', { clientId, tenant }),
+  begin: (clientId: string, tenant: string, directoryPhotos = false) =>
+    invoke<{ id: string; url: string }>('calendar_begin', { clientId, tenant, directoryPhotos }),
   complete: (id: string) => published(invoke<CalendarSnapshot>('calendar_complete', { id })),
   cancel: (id?: string) => invoke<void>('calendar_cancel', { id: id ?? null }),
   /** Spec 0124 P2: the backend opens it, and checks the URL again first. */

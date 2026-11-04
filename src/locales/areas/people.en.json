@@ -84,7 +84,7 @@
         "shortcuts": "Change the chords that work anywhere on the computer, and see all the others.",
         "storage": "Your notes are plain Markdown files in this folder.",
         "diagnostics": "Text to paste when reporting a problem.",
-        "calendar": "How the week grid shows time zones. Saved on this computer.",
+        "calendar": "Time zones in the week grid and photos of invitees. Kept on this computer.",
         "titles": "With your own server over SSH. Sends transcript text, never audio."
       },
       "theme": {
@@ -283,7 +283,21 @@
         "summaries": "ai llm ssh",
         "vault": "obsidian markdown path",
         "rebuild": "index reindex",
-        "diagnostics": "log version build"
+        "diagnostics": "log version build",
+        "directory-photos": "faces avatars pictures Microsoft 365"
+      },
+      "directoryPhotos": {
+        "title": "Photos of invitees",
+        "hint": "Shows the Microsoft 365 profile photo of people you imported from your meetings' invitees.",
+        "privacy": "Turning this on opens a new Microsoft sign-in that asks for one more permission, User.ReadBasic.All: read the basic profile (name, email and photo) of people in your organization. Coxinha uses it only to fetch the photo of people imported from invitees whose address is in your organization, at most once a week. Photos stay on this computer, in the library's private folder, never in the notes. Turning this off stops the requests and deletes every photo. The permission itself stays in your Microsoft account until you remove it in My Apps.",
+        "connectFirst": "Connect Outlook in Integrations first.",
+        "stored_one": "On. {{count}} photo kept on this computer.",
+        "stored_other": "On. {{count}} photos kept on this computer.",
+        "waiting": "Waiting for your answer in the Microsoft page.",
+        "cancel": "Cancel",
+        "reconnect": "Sign in again",
+        "statusError": "Could not read the state of the photos.",
+        "disableError": "Could not delete the photos. Try again."
       }
     },
     "palette": {
@@ -345,6 +359,7 @@
       "pending_other": "{{count}} confirmations waiting to be remembered when Coxinha is free",
       "failed": "Could not remember a confirmation in {{meeting}}: {{reason}}",
       "retry": "Try again"
-    }
+    },
+    "photoAlt": "Photo of {{name}}"
   }
 }

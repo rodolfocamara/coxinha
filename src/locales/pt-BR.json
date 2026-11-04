@@ -326,12 +326,14 @@
     "eventMissing": "Este evento não está mais na agenda do Outlook. Sincronize e tente de novo.",
     "respondOffline": "Sem conexão com o Outlook. Nada foi enviado.",
     "respondUncertain": "A conexão caiu durante o envio, então pode ter chegado. Confira no Outlook antes de tentar de novo.",
-    "respondReconnect": "O Outlook não permitiu responder. Reconecte o Outlook em Ajustes › Calendário.",
+    "respondReconnect": "O Outlook não permitiu responder. Reconecte o Outlook em Ajustes › Agenda.",
     "respondRejected": "O Outlook recusou esta resposta. O evento pode não aceitá-la mais.",
     "respondFailed": "O Outlook não aceitou a resposta. Nada mudou.",
     "respondUnavailable": "Este evento não pode mais ser respondido aqui. Sincronize e confira.",
     "respondInvalid": "Confira a resposta e tente de novo.",
-    "respondNoProposals": "O organizador não permite propor novo horário."
+    "respondNoProposals": "O organizador não permite propor novo horário.",
+    "photosConsent": "A Microsoft não concedeu a permissão das fotos. Sua organização pode exigir a aprovação de um administrador.",
+    "photosForbidden": "A Microsoft recusou o pedido de fotos. Sua organização pode restringi-lo. As fotos não serão pedidas de novo até você entrar novamente."
   },
   "sidebar": {
     "untitled": "Sem título"

@@ -97,6 +97,7 @@ fn installation_and_account_isolation() {
 fn cancel_old_attempt_does_not_cancel_new_attempt() {
     let listener = TcpListener::bind("127.0.0.1:0").unwrap();
     *pending().lock().unwrap() = Some(Pending {
+        directory_photos: false,
         id: "new".into(),
         client_id: String::new(),
         tenant: String::new(),

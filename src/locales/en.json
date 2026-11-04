@@ -446,12 +446,14 @@
     "eventMissing": "This event is no longer in the Outlook calendar. Sync and try again.",
     "respondOffline": "No connection to Outlook. Nothing was sent.",
     "respondUncertain": "The connection dropped while sending, so it may have arrived. Check Outlook before trying again.",
-    "respondReconnect": "Outlook did not allow responding. Reconnect Outlook in Settings › Calendar.",
+    "respondReconnect": "Outlook did not allow responding. Reconnect Outlook in Settings › Agenda.",
     "respondRejected": "Outlook refused this response. The event may no longer accept it.",
     "respondFailed": "Outlook did not take the response. Nothing changed.",
     "respondUnavailable": "This event can no longer be answered here. Sync and check it.",
     "respondInvalid": "Check the response and try again.",
-    "respondNoProposals": "The organizer does not allow proposing a new time."
+    "respondNoProposals": "The organizer does not allow proposing a new time.",
+    "photosConsent": "Microsoft did not grant the photos permission. Your organization may require an administrator's approval.",
+    "photosForbidden": "Microsoft refused the photos request. Your organization may restrict it. Photos will not be asked again until you sign in again."
   },
   "noteRecovery": {
     "diagnosticDetail": "Diagnostic details",

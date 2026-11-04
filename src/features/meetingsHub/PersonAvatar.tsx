@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { usePersonPhoto } from '../people/personPhotos';
 import { hueFor, initials } from './format';
 
 /**
- * Initials on a hue stable per name. `photo` is for spec 0117; a photo that
- * fails to load falls back to the initials. Decorative: the name is beside it.
+ * The person's directory photo (spec 0117), found by name, else initials on a
+ * hue stable per name, also when the photo fails to load. Initials are decorative.
  */
 export function PersonAvatar({
   name,
@@ -14,16 +16,25 @@ export function PersonAvatar({
   hue?: number;
   photo?: string | null;
 }) {
-  const [failed, setFailed] = useState(false);
+  const { t } = useTranslation();
+  const known = usePersonPhoto({ name });
+  const source = photo ?? known;
+  const [failed, setFailed] = useState<string | null>(null);
+  const shown = source && source !== failed ? source : null;
   const tint = hue ?? hueFor(name);
   return (
     <span
       className="mh-av"
-      aria-hidden="true"
+      aria-hidden={shown ? undefined : 'true'}
       style={{ background: `oklch(var(--p${tint}-bg))`, color: `oklch(var(--p${tint}))` }}
     >
-      {photo && !failed ? (
-        <img className="mh-av-photo" src={photo} alt="" onError={() => setFailed(true)} />
+      {shown ? (
+        <img
+          className="mh-av-photo"
+          src={shown}
+          alt={t('people.photoAlt', { name })}
+          onError={() => setFailed(shown)}
+        />
       ) : (
         initials(name)
       )}
