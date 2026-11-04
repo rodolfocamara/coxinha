@@ -40,6 +40,22 @@ SCREENS = {
     "settings-storage": "/settings/storage",
     "settings-diagnostics": "/settings/diagnostics",
     "workspace": "/workspace",
+    "respond": "/meetings?view=week",
+}
+
+# A screen behind a click: the fixtures it needs, and how to reach it (spec 0130).
+SETUP = {
+    "respond": {
+        "state": {"detail": 1},
+        "steps": [
+            """[...document.querySelectorAll('.ch-main button')]
+                .find((b) => /Weekly invite/.test(b.getAttribute('aria-label') || b.textContent))
+                .click(); 'ok'""",
+            "document.querySelector('.ch-peek .ch-prop-action').click(); 'ok'",
+            """const radios = document.querySelectorAll('[role=dialog] input[type=radio]');
+                radios[3].click(); 'ok'""",
+        ],
+    },
 }
 
 # What the appearance feature relies on from the engine.
@@ -92,7 +108,7 @@ class Page:
             GLib.usleep(2000)
         return done()
 
-    def prepare(self, width, height, theme, size):
+    def prepare(self, width, height, theme, size, state=None):
         self.window.set_default_size(width, height)
         self.window.resize(width, height)
         self.view.set_size_request(width, height)
@@ -101,7 +117,7 @@ class Page:
         seed += "localStorage.setItem('coxinha.appearance', %s);" % json.dumps(
             json.dumps({"fontSize": size, "language": "pt-BR"})
         )
-        seed += "window.__cxState = {};"
+        seed += "window.__cxState = %s;" % json.dumps(state or {})
         audit = (HERE / "audit-text.js").read_text()
         for source in [seed, *fixtures(), audit]:
             self.manager.add_script(
@@ -170,7 +186,8 @@ def main():
             for win in args.windows.split(","):
                 width, height = map(int, win.split("x"))
                 for screen in args.screens.split(","):
-                    page.prepare(width, height, theme, size)
+                    setup = SETUP.get(screen, {})
+                    page.prepare(width, height, theme, size, setup.get("state"))
                     page.load(base)
                     for _ in range(60):
                         if page.eval("String(!!window.__coxinha?.router)") == "true":
@@ -181,6 +198,9 @@ def main():
                         % json.dumps(SCREENS[screen])
                     )
                     page.wait(900)
+                    for step in setup.get("steps", []):
+                        page.eval(step)
+                        page.wait(500)
                     result = json.loads(page.eval("JSON.stringify(window.__cxAuditText())"))
                     actual = page.eval("getComputedStyle(document.documentElement).fontSize")
                     if actual != f"{size}px":

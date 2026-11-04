@@ -43,6 +43,7 @@ const STATES = {
   declined: { block: /Vendor pitch/ },
   prepared: { block: /Prepared one/, future: true },
   match: { block: /Meeting in Google Chrome/ },
+  invite: { block: /Budget invite/, future: true },
 };
 const picked = flag('states', '') ? String(flag('states')).split(',') : Object.keys(STATES);
 
