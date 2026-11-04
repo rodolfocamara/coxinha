@@ -15,6 +15,7 @@
     "test:watch": "vitest",
     "test:shortcuts": "node tools/ui-preview/shortcuts.mjs",
     "test:settings-pages": "node tools/ui-preview/settings-pages.mjs",
+    "test:person-photos": "node tools/ui-preview/person-photos.mjs",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
     "screenshots": "node tools/capture-screenshots.mjs",
     "screenshots:install": "playwright install chromium",
