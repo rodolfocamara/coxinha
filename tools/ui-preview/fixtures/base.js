@@ -139,14 +139,14 @@
   f.library_live_status = () => ({ meeting: state.live === 'running' ? 'm-weekly' : null, state: state.live === 'running' ? 'running' : 'idle', error: null, behindMs: 0, queued: [] });
   f.library_title_suggestion = () =>
     state.suggested ? { title: 'Weekly de TI', placeholder: 'Reunião no Microsoft Teams', sessionId: 's-weekly', source: 'llm', model: 'qwen3.5-4b', endpointHost: '192.168.15.66', at: at(0, 10, 5), inputTokens: 320, stage: 'first', applied: true, dismissed: false } : null;
-  f.live_settings = () => ({ enabled: true, modelPath: '/home/rodolfo/.local/share/com.pais.handy/models/parakeet-v3-ptbr-tagarela-matched-q8.gguf', nThreads: 4 });
-  f.title_llm_settings = () => ({ enabled: true, sshTarget: 'macserver@192.168.15.66', remotePort: 8000, model: 'qwen3.5-4b' });
+  f.live_settings = () => ({ enabled: true, modelPath: '/home/owner/.local/share/com.pais.handy/models/parakeet-v3-ptbr-tagarela-matched-q8.gguf', nThreads: 4 });
+  f.title_llm_settings = () => ({ enabled: true, sshTarget: 'owner@server.example', remotePort: 8000, model: 'fixture-model' });
   f.auto_record_keep = () => {
     state.auto = 'on';
     return f.auto_record_status();
   };
   f.calendar_status = () => ({
-    account: 'rodolfo@example.com',
+    account: 'owner@example.com',
     syncedAt: at(0, 8),
     events: [
       { id: 'e1', title: 'Weekly de TI', startsAt: at(0, 10), endsAt: at(0, 10, 45), cancelled: false, allDay: false, attendees: [{ name: 'Rita Souza', email: 'rita@example.com' }, { name: 'Marcos Lima', email: 'marcos@example.com' }], organizer: { name: 'Rodolfo Camara', email: 'rodolfo@example.com' } },
@@ -209,7 +209,7 @@
   });
   f.board_save = ({ board }) => ({ ...board, revision: board.revision + 1 });
   f.get_config = () => ({
-    vault_path: '/home/rodolfo/coxinha',
+    vault_path: '/home/owner/coxinha',
     locale: 'pt-BR',
     transcriber: { engine: 'none' },
     diarizer: { engine: 'none' },

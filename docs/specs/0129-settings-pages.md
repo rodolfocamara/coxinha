@@ -36,6 +36,7 @@ description. An unknown section goes to the first page.
 Moving between pages goes through the router, so back and forward follow the section, and the
 window title reads "Aparência · Ajustes · Coxinha" (`document.title` and, in the app, the native
 title, since Tauri does not sync the two: `core:window:allow-set-title` is new in the capabilities).
+The native call is not exercised outside the app; `document.title` is what the tests read.
 
 Every page stays mounted and the others are `hidden`:
 
@@ -52,12 +53,12 @@ study for exactly this).
 
 ### P2 Sidebar in named groups
 
-| Group | Pages |
-| --- | --- |
-| App | Aparência, Atalhos |
-| Reuniões | Gravação, Transcrição, Agenda |
+| Group    | Pages                          |
+| -------- | ------------------------------ |
+| App      | Aparência, Atalhos             |
+| Reuniões | Gravação, Transcrição, Agenda  |
 | Conexões | Integrações, Títulos e resumos |
-| Sistema | Armazenamento, Diagnóstico |
+| Sistema  | Armazenamento, Diagnóstico     |
 
 The owner's starting point, with one change, taught by the code: **Títulos e resumos** is its own
 page under Conexões. It was a card inside Integrações, and it is the only other thing that sends
@@ -69,14 +70,14 @@ direct link from the meeting panel.
 
 Moves and non-moves, after reading each section:
 
-| Option | From | To | Why |
-| --- | --- | --- | --- |
-| Suggested title, SSH target, port, model, test | Integrações | Títulos e resumos | See above. One page, because the switches are disabled until the server is filled in; splitting them would hide the reason on another page. |
-| Generate summaries | Integrações | Títulos e resumos | Same server and same gate. |
-| Call detection, automatic recording, stop when the call ends | Gravação | Stays, own group "Chamadas" | Automatic recording needs detection (ADR 0023), and stop applies to every recording. Together they are what happens to a call; devices are a different question. |
-| Live transcription, backlog, model, threads | Transcrição | Stays, group "Automática", first | The only controls on the page. The read-only engine rows follow. |
-| Contrast | Appearance flat list | Group "Texto" | Its own hint says it is about text. |
-| Gradient background | Last in Appearance | Group "Tema e cor" | It belongs with the look of the window. |
+| Option                                                       | From                 | To                               | Why                                                                                                                                                              |
+| ------------------------------------------------------------ | -------------------- | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Suggested title, SSH target, port, model, test               | Integrações          | Títulos e resumos                | See above. One page, because the switches are disabled until the server is filled in; splitting them would hide the reason on another page.                      |
+| Generate summaries                                           | Integrações          | Títulos e resumos                | Same server and same gate.                                                                                                                                       |
+| Call detection, automatic recording, stop when the call ends | Gravação             | Stays, own group "Chamadas"      | Automatic recording needs detection (ADR 0023), and stop applies to every recording. Together they are what happens to a call; devices are a different question. |
+| Live transcription, backlog, model, threads                  | Transcrição          | Stays, group "Automática", first | The only controls on the page. The read-only engine rows follow.                                                                                                 |
+| Contrast                                                     | Appearance flat list | Group "Texto"                    | Its own hint says it is about text.                                                                                                                              |
+| Gradient background                                          | Last in Appearance   | Group "Tema e cor"               | It belongs with the look of the window.                                                                                                                          |
 
 "Agenda e fusos horários" and "Transcrição local" shorten to "Agenda" and "Transcrição" in the
 sidebar. Their descriptions keep the rest.
@@ -135,9 +136,9 @@ the owner has moved on.
 ### P6 Small window
 
 The break is on available text, in rem, as in spec 0125 P2: below 44 rem the sidebar folds into a
-bar over the page, holding the filter and a native selector with the groups as `optgroup`s.
-Native, so the keyboard and screen readers work for free, and it cannot clip in any language.
-A list-then-page flow would add a step and a back button to every change, for a window that still
+bar over the page, holding the filter and the app's `Select` with the groups as `optgroup`s (Radix
+gives it the keyboard and typeahead, and it now renders those groups). After a pick, focus goes to
+the new page's title, not back to the selector. A list-then-page flow would add a step and a back button to every change, for a window that still
 fits one page's content.
 
 The sidebar and the page column are in rem, so they grow with the text. The page column is centred
@@ -184,15 +185,15 @@ Granola is not on Mobbin; a search for it returned other products.
       opens the page and focuses the row. `settingsIndex.test.ts` "match",
       `SettingsPages.test.tsx` "filter", `settings-pages.mjs`.
 - [x] Ctrl+K lists settings only after typing, and picking one opens the row.
-      `CommandPalette.test.tsx` "settings".
+      `CommandPalette.test.tsx` "settings", `settings-pages.mjs`.
 - [x] Every old hash form lands on the right page and row. `settingsIndex.test.ts` "every old hash
       form", `settingsRoute.test.tsx` "old links", `settings-pages.mjs`.
 - [x] Callers go to the new route. `HojeRoute.test.tsx`, `MeetingsHub.week.test.tsx`,
       `MeetingsHub.signals.test.tsx`, `NoteRecovery.*.test.tsx`, `NoteDetailError.test.tsx`.
 - [x] Below 44 rem the sidebar is a bar with a selector that changes page.
-      `settings-pages.mjs`, `SettingsPages.test.tsx` "selector".
+      `settings-pages.mjs`, `SettingsPages.test.tsx` "selector", `Select.test.tsx` "groups".
 - [x] No clipped, overflowing or overlapping text on any page, at 12, 16 and 20, dark and light,
       pt-BR and English, 1200 x 800 and 800 x 600. `pnpm audit:appearance --screens <the nine>
-      --locales pt-BR,en`.
+  --locales pt-BR,en`.
 - [x] Before and after on one sheet. `tools/ui-preview/settings-contact-sheet.mjs`,
       `docs/design/settings/pages.png`.
