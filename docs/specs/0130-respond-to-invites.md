@@ -50,7 +50,7 @@ Checked on 2026-11-04 against Microsoft's docs:
 - **Scope.** `Calendars.ReadWrite` is the least privileged scope for all three and it
   is enough. `AUTHORIZE_SCOPE` already asks for it, so no new consent is needed. A
   connection from before spec 0103 lacks it: the token's `scope` tells us before any
-  request, and a `403` tells us otherwise. Both end in "reconnect", as for categories.
+  request, and a `401` or `403` tells us otherwise. Both end in "reconnect", as for categories.
 - **Where Graph limits it.** `proposedNewTime` returns `400` when `sendResponse` is
   `false` or the event's `allowNewTimeProposals` is `false`. So a proposal always
   notifies the organizer, and an event that forbids it does not offer it.
@@ -133,7 +133,7 @@ saves the cache and returns the snapshot. Open views re-read it at once.
 | --- | --- | --- | --- |
 | No connection reached Graph | `calendar.respondOffline` | yes | Nothing was sent |
 | Timeout or a broken connection after sending | `calendar.respondUncertain` | yes | It may have arrived: check first |
-| `403`, or the token lacks the scope | `calendar.respondReconnect` | yes | Reconnect in Settings |
+| `401`, `403`, or the token lacks the scope | `calendar.respondReconnect` | yes | Reconnect in Settings |
 | `404` | `calendar.eventMissing` | yes | Gone from the calendar |
 | `400` | `calendar.respondRejected` | yes | Outlook refused it |
 | Any other status (`429`, `5xx`) | `calendar.respondFailed` | yes | Not accepted |
@@ -170,7 +170,7 @@ after success is a `role="status"` in the row. All strings exist in en and pt-BR
       forbidden; long comment; bad, past or overlong slot (`respond_tests.rs`).
 - [x] The POST on the wire, against a local server only: method, path, bearer, `Prefer`,
       content type and body (`respond_tests.rs`).
-- [x] `202` succeeds; `400`, `403`, `404`, `429`, `500` and a refused connection map
+- [x] `202` succeeds; `400`, `401`, `403`, `404`, `429`, `500` and a refused connection map
       to the codes of P6 (`respond_tests.rs`).
 - [x] The cache changes for the event or the whole series, `showAs` follows, and an
       older cache still loads (`respond_tests.rs`, `graph_tests.rs`).

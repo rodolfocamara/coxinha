@@ -16,7 +16,7 @@ const MAX_PREVIEW: usize = 500;
 const MAX_LOCATION: usize = 200;
 const MAX_URL: usize = 4096;
 
-#[derive(Clone, Copy, PartialEq, Eq, Serialize, Deserialize, specta::Type)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
 pub enum Response {
     None,

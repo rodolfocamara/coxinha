@@ -1,6 +1,6 @@
 //! Explicit Outlook synchronization. The writes are an event's categories
-//! (spec 0103) and creating a bare event (spec 0104 P5). Errors never include
-//! provider bodies or tokens.
+//! (spec 0103), creating a bare event (spec 0104 P5) and answering an invite
+//! (spec 0130). Errors never include provider bodies or tokens.
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
 use chrono::{Duration, Utc};
 use serde::{Deserialize, Serialize};
@@ -18,6 +18,7 @@ pub(crate) mod categories;
 pub(crate) mod create;
 pub(crate) mod details;
 mod graph;
+pub(crate) mod respond;
 mod store;
 use auth::*;
 pub use background::{fresh, spawn as spawn_refresh};
@@ -81,6 +82,11 @@ pub struct Event {
     pub is_organizer: bool,
     #[serde(default)]
     pub web_link: Option<String>,
+    /// Spec 0130 P2; `None` in a cache from before it, which Graph's default reads as true.
+    #[serde(default)]
+    pub allow_new_time_proposals: Option<bool>,
+    #[serde(default)]
+    pub response_requested: Option<bool>,
 }
 #[derive(Clone, Serialize, Deserialize, specta::Type)]
 pub struct Candidate {

@@ -233,6 +233,7 @@ pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
             calendar::categories::calendar_set_categories,
             calendar::create::calendar_create_event,
             calendar::details::calendar_open_link,
+            calendar::respond::calendar_respond,
             board::board_load,
             board::board_save,
             board::board_export_recovery,
