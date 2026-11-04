@@ -191,3 +191,13 @@ after success is a `role="status"` in the row. All strings exist in en and pt-BR
       treats an exception, whether a read right after `202` shows the answer, whether a
       declined event leaves the calendar, and what `responseRequested: false` does with
       `sendResponse: true`.
+
+## Evidence
+
+Run on 2026-11-04 against the mocked IPC, with no request to Microsoft Graph:
+`tools/ui-preview/respond-invite.mjs` over 24 combinations of language, theme, font size
+and window, plus keyboard, Escape, failure and availability, ended with 0 findings;
+`tools/ui-preview/meeting-detail.mjs`, with the new `invite` state, 13 states and 0
+findings; `tools/ui-preview/webkitgtk-audit.py --screens respond` on WebKitGTK 2.54.2, 12
+screens and 0 issues. Its offscreen snapshot draws the week grid's scrollbar over the
+sheet, and the line goes when the grid is hidden; the sheet's own layout has no overflow.
