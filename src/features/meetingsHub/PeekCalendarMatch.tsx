@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Check } from 'lucide-react';
+import { CalendarDays, Check } from 'lucide-react';
 import { Button } from '../../components/ui';
 import type { CalendarEvent } from '../agenda/calendar';
 import { colourVar, useEventColour } from '../agenda/categories';
 import { library, type CalendarMatch } from '../meetings/library';
 import { refreshSessionList } from '../sessions/sessions';
 import { matchCandidates } from './peekMatch';
+import { PropAction, PropGroup, PropRow } from './PropertySheet';
 
 /**
  * "É esta reunião?" in the peek of a recording that is not on the calendar
@@ -66,12 +67,23 @@ export function PeekCalendarMatch({
 
   if (!open)
     return (
-      <button type="button" className="ch-peek-link" onClick={() => setOpen(true)}>
-        {k('link')}
-      </button>
+      <PropGroup>
+        <PropRow
+          icon={CalendarDays}
+          label={t('meetingDetail.rows.calendar')}
+          quiet
+          action={
+            <PropAction name={k('link')} onClick={() => setOpen(true)}>
+              {t('meetingDetail.actions.link')}
+            </PropAction>
+          }
+        >
+          {t('meetingDetail.values.notLinked')}
+        </PropRow>
+      </PropGroup>
     );
   return (
-    <section className="ch-peek-sec ch-match" aria-labelledby="ch-match-h">
+    <section className="ch-peek-sec ch-match" aria-labelledby="ch-match-h" data-titled="">
       <h3 id="ch-match-h" className="ch-peek-h">
         {k(proposal ? 'question' : 'pick')}
       </h3>

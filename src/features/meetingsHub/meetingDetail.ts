@@ -1,3 +1,5 @@
+import type { TFunction } from 'i18next';
+import type { MeetingSignals } from '../meetings/library';
 import type { MeetingRow } from './meetingRows';
 import type { AttendeeGroupId } from './eventDetails';
 
@@ -41,4 +43,25 @@ export function groupStartsOpen(
 ) {
   if (total <= OPEN_WHEN_AT_MOST) return true;
   return !past && group === 'accepted' && size <= OPEN_WHEN_AT_MOST;
+}
+
+/** "6 · none named": the number first, then whether naming is left to do. */
+export function speakersValue(speakers: MeetingSignals['speakers'], t: TFunction) {
+  const total = speakers.named + speakers.unnamed;
+  const k = (key: string) => `meetingDetail.values.${key}`;
+  if (!speakers.named) return t(k('speakersNone'), { total });
+  if (!speakers.unnamed) return t(k('speakersAll'), { count: total });
+  return t(k('speakersSome'), { total, count: speakers.named });
+}
+
+export type MemoryState = 'memoryKept' | 'memoryOff' | 'memoryPending' | 'memoryNoTranscript';
+
+/** Spec 0124 P6: only the summary is ever in memory, and only when it exists. */
+export function memoryState(
+  signals: Pick<MeetingSignals, 'summary' | 'transcript'>,
+  summariesOn: boolean
+): MemoryState {
+  if (signals.summary) return 'memoryKept';
+  if (!summariesOn) return 'memoryOff';
+  return signals.transcript ? 'memoryPending' : 'memoryNoTranscript';
 }

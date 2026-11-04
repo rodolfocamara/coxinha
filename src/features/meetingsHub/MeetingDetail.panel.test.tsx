@@ -1,17 +1,23 @@
-import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, waitFor, within } from '@testing-library/react';
 import { Outlet } from '@tanstack/react-router';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { invoke } from '@tauri-apps/api/core';
 import i18n from '../../lib/i18n';
-import type { AttendeeResponse, CalendarEvent } from '../agenda/calendar';
-import type { MeetingSignals } from '../meetings/library';
+import {
+  before,
+  invited,
+  openPeek as open,
+  primaries,
+  signals,
+  team,
+} from './meetingDetail.harness';
 import {
   at,
   backend,
   event,
   freshDb,
-  recording,
-  renderAt,
+  propRow,
+  propValue,
   resetState,
   session,
   type Db,
@@ -42,76 +48,6 @@ const TEAMS = [
   '_'.repeat(32),
 ].join('\n');
 
-const person = (
-  name: string,
-  response: AttendeeResponse['response'],
-  kind: AttendeeResponse['kind'] = 'required'
-): AttendeeResponse => ({ name, email: `${name.split(' ')[0]}@example.test`, response, kind });
-
-const invited = (
-  people: AttendeeResponse[],
-  o: Partial<CalendarEvent> & { id: string; title: string }
-) =>
-  event({
-    attendees: people.map(({ name, email }) => ({ name, email })),
-    attendeeResponses: people,
-    ...o,
-  });
-
-const team = [
-  person('Ana Lima', 'organizer'),
-  person('Bruno Dias', 'accepted'),
-  person('Carla Reis', 'tentativelyAccepted', 'optional'),
-  person('Diego Melo', 'notResponded'),
-];
-
-const signals = (sessionId: string, o: Partial<MeetingSignals> = {}): MeetingSignals => ({
-  sessionId,
-  transcript: false,
-  speakers: { named: 0, unnamed: 0 },
-  note: false,
-  preparation: false,
-  diagram: false,
-  summary: false,
-  followUps: { linked: 0, actions: 0 },
-  generatedContent: false,
-  mark: null,
-  ...o,
-});
-
-const recorded = () =>
-  session({
-    id: 'rec',
-    title: 'Recorded sync',
-    starts_at: at(-1, 9),
-    ends_at: at(-1, 10),
-    status: 'completed',
-    meeting_id: 'm-rec',
-    recording: recording('m-rec', 'Recorded sync'),
-    transcript_status: 'available',
-    processing_state: 'succeeded',
-  });
-
-const speakers = (names: string[]) => ({
-  jobs: [],
-  people: [],
-  report: {
-    job: 'j',
-    turns: [],
-    warnings: [],
-    corrections: {},
-    segments: [{ id: 'a', track: 'mic', start_ms: 0, end_ms: 1, text: 'hello', speaker: 's0' }],
-    assignments: names.map((name, i) => ({
-      id: `a${i}`,
-      speaker: `s${i}`,
-      track: 'mic',
-      person_id: `p${i}`,
-      state: 'confirmed',
-      name,
-    })),
-  },
-});
-
 let db: Db;
 beforeEach(async () => {
   vi.useFakeTimers({ toFake: ['Date'] });
@@ -127,36 +63,28 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-const open = async (title: RegExp, name: string) => {
-  renderAt('/meetings?view=week');
-  await screen.findByRole('heading', { name: /October/ });
-  const grid = document.querySelector<HTMLElement>('.ch-main')!;
-  fireEvent.click(await within(grid).findByRole('button', { name: title }));
-  return screen.findByRole('complementary', { name });
-};
-const primaries = (panel: HTMLElement) =>
-  [...panel.querySelectorAll('[data-variant="primary"]')].map((b) => b.textContent);
-const before = (a: Element, b: Element) =>
-  expect(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-
-it('shows what a person wrote in the invitation and never the Teams block', async () => {
+it('keeps what a person wrote behind the Invitation row, and never the Teams block', async () => {
   db.events = [
     invited(team, { id: 'e', title: 'Sync', bodyPreview: `Bring the numbers.\n${TEAMS}` }),
   ];
   const panel = await open(/Sync/, 'Sync');
-  expect(within(panel).getByRole('heading', { name: 'Invitation' })).toBeInTheDocument();
-  expect(within(panel).getByText('Bring the numbers.')).toBeInTheDocument();
+  const toggle = within(panel).getByRole('button', { name: /Invitation/ });
+  expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  expect(within(panel).getByText('Bring the numbers.')).not.toBeVisible();
+  fireEvent.click(toggle);
+  expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  expect(within(panel).getByText('Bring the numbers.')).toBeVisible();
   expect(panel.textContent).not.toMatch(/FAKE|000 000|teams\.microsoft|____/);
 });
 
-it('shows no preview when only the Teams block was there', async () => {
+it('has no Invitation row when only the Teams block was there', async () => {
   db.events = [invited(team, { id: 'e', title: 'Sync', bodyPreview: TEAMS })];
   const panel = await open(/Sync/, 'Sync');
-  expect(within(panel).queryByRole('heading', { name: 'Invitation' })).toBeNull();
+  expect(within(panel).queryByRole('button', { name: /Invitation/ })).toBeNull();
   expect(panel.querySelector('.ch-event-preview')).toBeNull();
 });
 
-it('leads an upcoming meeting with join, then who is coming and preparation', async () => {
+it('leads an upcoming meeting with join, then its rows, people and the invitation', async () => {
   db.events = [
     invited(team, {
       id: 'e',
@@ -175,16 +103,13 @@ it('leads an upcoming meeting with join, then who is coming and preparation', as
   expect(within(head as HTMLElement).getByText('tomorrow')).toBeInTheDocument();
   // The placeholder says nothing next to the button that joins.
   expect(within(panel).queryByText(/Reuniões do Microsoft Teams/)).toBeNull();
-  expect(within(panel).getByText('Organized by Ana Lima')).toBeInTheDocument();
+  expect(propValue(panel, 'Organizer')).toHaveTextContent('Ana Lima');
+  expect(propValue(panel, 'Response')).toHaveTextContent('Accepted');
 
-  const response = within(panel).getByText('Your response: accepted');
-  const coming = within(panel).getByRole('heading', { name: 'Who is coming' });
-  const preparation = within(panel).getByRole('heading', { name: 'Preparation' });
-  const invitation = within(panel).getByRole('heading', { name: 'Invitation' });
-  before(response, coming);
-  before(coming, preparation);
-  before(preparation, invitation);
-  expect(within(panel).getByText('No preparation')).toBeInTheDocument();
+  before(propRow(panel, 'Response'), propRow(panel, 'Preparation'));
+  before(propRow(panel, 'Preparation'), propRow(panel, 'Invited'));
+  before(propRow(panel, 'Invited'), propRow(panel, 'Invitation'));
+  expect(propValue(panel, 'Preparation')).toHaveTextContent('None');
   // Prepare is there, without competing with join.
   expect(within(panel).getByRole('button', { name: 'Prepare' })).toHaveAttribute(
     'data-variant',
@@ -196,10 +121,10 @@ it('leads with preparing when there is nothing to join', async () => {
   db.events = [invited(team, { id: 'e', title: 'Sync' })];
   const panel = await open(/Sync/, 'Sync');
   expect(primaries(panel)).toEqual(['Prepare']);
-  expect(within(panel).queryByRole('heading', { name: 'Preparation' })).not.toBeNull();
+  expect(propValue(panel, 'Preparation')).toHaveTextContent('None');
 });
 
-it('shows the notes of a prepared meeting that has no recording yet', async () => {
+it('counts what a prepared meeting has, and opens the note and the files from there', async () => {
   db.sessions = [
     session({
       id: 'p',
@@ -210,96 +135,43 @@ it('shows the notes of a prepared meeting that has no recording yet', async () =
     }),
   ];
   db.signals = { summariesOn: false, sessions: [signals('p', { note: true, preparation: true })] };
+  db.itemFiles = {
+    folder: '/tmp/p',
+    files: [{ name: 'plan.pdf', kind: 'pdf', bytes: 1, modified: 'now' }],
+    references: [
+      {
+        target: 'https://example.test',
+        label: 'Deck',
+        addedAt: 'now',
+        isUrl: true,
+        missing: false,
+      },
+    ],
+  };
   const panel = await open(/Prepared/, 'Prepared');
-  expect(await within(panel).findByText('Agenda text')).toBeInTheDocument();
-  expect(await within(panel).findByText('Prepared beforehand')).toBeInTheDocument();
+  const text = await within(panel).findByText('Agenda text');
+  await waitFor(() =>
+    expect(propValue(panel, 'Preparation')).toHaveTextContent('Note · 1 file · 1 link')
+  );
+  expect(text).not.toBeVisible();
+  fireEvent.click(
+    within(propRow(panel, 'Preparation')).getByRole('button', { name: /Preparation/ })
+  );
+  expect(text).toBeVisible();
+  expect(within(panel).getByRole('button', { name: 'plan.pdf' })).toBeVisible();
+  expect(within(panel).getByRole('button', { name: 'Deck' })).toBeVisible();
 });
 
 it('says a block with no invitees is only on the calendar', async () => {
   db.events = [event({ id: 'e', title: 'Focus' })];
   const panel = await open(/Focus/, 'Focus');
-  expect(within(panel).getByText(/No invitees/)).toBeInTheDocument();
-  expect(within(panel).queryByRole('heading', { name: 'Who is coming' })).toBeNull();
-  expect(within(panel).queryByText('No preparation')).toBeNull();
-});
-
-it('leads a past meeting with what came out, then people, the mark and memory', async () => {
-  db.sessions = [recorded()];
-  db.events = [
-    invited(team, {
-      id: 'e',
-      title: 'Recorded sync',
-      startsAt: at(-1, 9),
-      endsAt: at(-1, 10),
-      joinUrl: 'https://teams.microsoft.com/l/x',
-      location: 'Room 4',
-      bodyPreview: 'Bring the numbers.',
-    }),
-  ];
-  db.summaries['m-rec'] = { markdown: '- Ship it', generatedAt: 'now' };
-  db.processing['m-rec'] = speakers(['Bruno Dias', 'Outside Guest']) as never;
-  db.signals = {
-    summariesOn: false,
-    sessions: [signals('rec', { summary: true, transcript: true })],
-  };
-  const panel = await open(/Recorded sync/, 'Recorded sync');
-  expect(primaries(panel)).toEqual(['Open meeting']);
-  expect(within(panel).queryByRole('button', { name: 'Join in Teams' })).toBeNull();
-
-  const summary = await within(panel).findByRole('heading', { name: 'Summary' });
-  const came = await within(panel).findByRole('heading', { name: 'Confirmed on the recording' });
-  const invitedHeading = within(panel).getByRole('heading', { name: 'Who was invited' });
-  const mark = await within(panel).findByRole('heading', { name: 'Was this meeting worth it?' });
-  const memory = within(panel).getByRole('heading', { name: 'Memory' });
-  before(summary, came);
-  before(came, invitedHeading);
-  before(invitedHeading, mark);
-  before(mark, memory);
-  before(memory, within(panel).getByText('Room 4'));
-  expect(panel.querySelector('[data-outcome]')).toContainElement(summary);
-
-  // Who came and who was invited stay apart; a confirmed invitee is marked.
-  const rows = [...panel.querySelectorAll<HTMLElement>('.ch-person')];
-  const bruno = rows.filter((row) => row.textContent?.includes('Bruno Dias'));
-  expect(bruno).toHaveLength(2);
-  expect(within(bruno[1]).getByText('Confirmed on the recording')).toBeInTheDocument();
-  const ana = rows.find((row) => row.textContent?.includes('Ana Lima'))!;
-  expect(within(ana).queryByText('Confirmed on the recording')).toBeNull();
-  expect(rows.filter((row) => row.textContent?.includes('Outside Guest'))).toHaveLength(1);
-
-  // The invitation is out of the way, and its control says so.
-  const toggle = within(panel).getByRole('button', { name: 'Invitation' });
-  expect(toggle).toHaveAttribute('aria-expanded', 'false');
-  expect(within(panel).getByText('Bring the numbers.')).not.toBeVisible();
-  fireEvent.click(toggle);
-  expect(toggle).toHaveAttribute('aria-expanded', 'true');
-  expect(within(panel).getByText('Bring the numbers.')).toBeVisible();
-});
-
-it('says out loud when a past meeting produced nothing', async () => {
-  db.sessions = [
-    session({ id: 'x', title: 'Empty one', starts_at: at(-1, 9), ends_at: at(-1, 10) }),
-  ];
-  db.signals = { summariesOn: false, sessions: [signals('x')] };
-  const panel = await open(/Empty one/, 'Empty one');
-  expect(await within(panel).findByText(/Nothing came out of this meeting/)).toBeInTheDocument();
-  expect(panel.querySelector('[data-outcome]')).not.toBeNull();
-});
-
-it('does not claim nothing came out when the meeting has files', async () => {
-  db.sessions = [
-    session({ id: 'x', title: 'With a file', starts_at: at(-1, 9), ends_at: at(-1, 10) }),
-  ];
-  db.signals = { summariesOn: false, sessions: [signals('x')] };
-  db.itemFiles = {
-    folder: '/tmp/x',
-    files: [{ name: 'plan.pdf', kind: 'pdf', bytes: 1, modified: 'now' }],
-    references: [],
-  };
-  const panel = await open(/With a file/, 'With a file');
-  expect(await within(panel).findByRole('button', { name: 'plan.pdf' })).toBeInTheDocument();
-  expect(within(panel).getByText('1 file')).toBeInTheDocument();
-  expect(within(panel).queryByText(/Nothing came out/)).toBeNull();
+  expect(propValue(panel, 'Invited')).toHaveTextContent('None · only on your calendar');
+  expect(within(panel).queryByText('Preparation')).toBeNull();
+  expect(
+    within(panel)
+      .queryByRole('button', { name: /Prepare/ })
+      ?.getAttribute('data-variant')
+  ).toBe('primary');
 });
 
 it.each([
@@ -321,7 +193,7 @@ it('strikes the title of a declined event', async () => {
   db.events = [invited(team, { id: 'e', title: 'Sync', response: 'declined' })];
   const panel = await open(/Sync/, 'Sync');
   expect(within(panel).getByRole('heading', { level: 2 })).toHaveAttribute('data-look', 'declined');
-  expect(within(panel).getByText('Your response: declined')).toBeInTheDocument();
+  expect(propValue(panel, 'Response')).toHaveTextContent('Declined');
 });
 
 it('moves focus to the title on open and reads on to the close button and the action', async () => {

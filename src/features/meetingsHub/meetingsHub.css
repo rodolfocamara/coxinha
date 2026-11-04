@@ -333,19 +333,6 @@
     font-weight: 600;
     color: var(--color-muted-foreground);
   }
-  .mh-kv {
-    display: grid;
-    grid-template-columns: 5.125rem minmax(0, 1fr);
-    gap: 0.4375rem 0.5rem;
-    margin: 0;
-  }
-  .mh-kv dt {
-    color: var(--color-muted-foreground);
-  }
-  .mh-kv dd {
-    margin: 0;
-    min-width: 0;
-  }
   .mh-person {
     display: flex;
     align-items: center;

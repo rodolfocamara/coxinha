@@ -81,9 +81,9 @@ export function invitationText(preview: string | null | undefined): string | nul
 const TEAMS_LOCATION =
   /^(?:microsoft teams(?: meeting)?|reuni[oõ]es do microsoft teams|reuni[aã]o do microsoft teams|reuni[oó]n de microsoft teams|reuniones de microsoft teams)$/iu;
 
-/** Teams' placeholder says nothing next to a join button; elsewhere it says "online". */
-export function shownLocation(location: string | null | undefined, joinable: boolean) {
+/** Teams' placeholder says nothing when `hidePlaceholder`; elsewhere it says "online". */
+export function shownLocation(location: string | null | undefined, hidePlaceholder: boolean) {
   const text = location?.trim();
   if (!text) return null;
-  return joinable && TEAMS_LOCATION.test(text) ? null : text;
+  return hidePlaceholder && TEAMS_LOCATION.test(text) ? null : text;
 }

@@ -6,7 +6,16 @@ import i18n from '../../lib/i18n';
 import type { AttendeeResponse, CalendarEvent } from '../agenda/calendar';
 import { hueFor } from './format';
 import { PersonAvatar } from './PersonAvatar';
-import { at, backend, event, freshDb, renderAt, resetState, type Db } from './meetingsHub.harness';
+import {
+  at,
+  backend,
+  event,
+  freshDb,
+  propValue,
+  renderAt,
+  resetState,
+  type Db,
+} from './meetingsHub.harness';
 
 vi.mock('../../routes/__root', () => ({ RootLayout: () => <Outlet /> }));
 vi.mock('@tauri-apps/api/core', () => ({
@@ -83,23 +92,48 @@ it('keeps the flat list and claims no group for a cache without responses', asyn
   expect(panel.querySelector('.ch-disclosure-toggle')).toBeNull();
 });
 
-it('lists invitees by response with organizer, required or optional', async () => {
+const invitedToggle = (panel: HTMLElement) =>
+  within(panel).getByRole('button', { name: /Invited/ });
+
+it('sums invitees up by response, with the list collapsed even when short', async () => {
+  db.events = [invited(team, { id: 'e', title: 'Sync' })];
+  const panel = await open(/Sync/, 'Sync');
+  const toggle = invitedToggle(panel);
+  expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  expect(toggle.getAttribute('aria-controls')).toBeTruthy();
+  expect(toggle).toHaveAccessibleName(/Invited.*2 yes.*1 maybe.*1 no answer/);
+  expect(within(panel).getByText('Ana Lima')).not.toBeVisible();
+  expect(panel.querySelector('.ch-tally')).toHaveAttribute('aria-hidden', 'true');
+  fireEvent.click(toggle);
+  expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  expect(within(panel).getByText('Ana Lima')).toBeVisible();
+});
+
+it('marks only the exception on a person: organizer and optional, never required', async () => {
   db.events = [invited(team, { id: 'e', title: 'Sync' })];
   const panel = await open(/Sync/, 'Sync');
   const role = (name: string) =>
-    within(within(panel).getByText(name).closest('li')!).getByText(/Organizer|Required|Optional/);
+    within(within(panel).getByText(name).closest('li')!).queryByText(/Organizer|Required|Optional/);
   expect(role('Ana Lima')).toHaveTextContent('Organizer');
-  expect(role('Bruno Dias')).toHaveTextContent('Required');
+  expect(role('Bruno Dias')).toBeNull();
   expect(role('Carla Reis')).toHaveTextContent('Optional');
-  expect(within(panel).getByText('4 invited: 3 required, 1 optional')).toBeInTheDocument();
-  for (const toggle of panel.querySelectorAll('.ch-disclosure-toggle'))
-    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  expect(panel.textContent).not.toMatch(/Required/);
+});
+
+it('shows up to four faces and how many more', async () => {
+  db.events = [invited(forty, { id: 'e', title: 'All hands' })];
+  const panel = await open(/All hands/, 'All hands');
+  const stack = propValue(panel, 'Invited').querySelector('.ch-av-stack')!;
+  expect(stack).toHaveAttribute('aria-hidden', 'true');
+  expect(stack.querySelectorAll('.mh-av')).toHaveLength(4);
+  expect(stack).toHaveTextContent('+36');
 });
 
 it('keeps a long list collapsed, with counts, and opens a group by its control', async () => {
   db.events = [invited(forty, { id: 'e', title: 'All hands' })];
   const panel = await open(/All hands/, 'All hands');
-  expect(within(panel).getByText('40 invited: 40 required, 0 optional')).toBeInTheDocument();
+  expect(invitedToggle(panel)).toHaveAccessibleName(/14 yes.*4 no.*22 no answer/);
+  fireEvent.click(invitedToggle(panel));
   const accepted = within(panel).getByRole('button', { name: /Accepted \(14\)/ });
   const declined = within(panel).getByRole('button', { name: /Declined \(4\)/ });
   const none = within(panel).getByRole('button', { name: /No answer \(22\)/ });
@@ -123,6 +157,7 @@ it('keeps who accepted open on a longer upcoming list, not on a past one', async
   ];
   db.events = [invited(twelve, { id: 'e', title: 'Sync' })];
   let panel = await open(/Sync/, 'Sync');
+  fireEvent.click(invitedToggle(panel));
   expect(within(panel).getByRole('button', { name: /Accepted \(2\)/ })).toHaveAttribute(
     'aria-expanded',
     'true'
@@ -136,6 +171,7 @@ it('keeps who accepted open on a longer upcoming list, not on a past one', async
     invited(twelve, { id: 'e', title: 'Over', startsAt: at(-1, 9), endsAt: at(-1, 10) }),
   ];
   panel = await open(/Over/, 'Over');
+  fireEvent.click(invitedToggle(panel));
   expect(within(panel).getByRole('button', { name: /Accepted \(2\)/ })).toHaveAttribute(
     'aria-expanded',
     'false'

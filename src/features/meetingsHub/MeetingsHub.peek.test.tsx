@@ -162,9 +162,7 @@ it('peeks on click, closes on Escape, and opens the page on double click or Ente
   expect(rita).toHaveAttribute('aria-expanded', 'true');
   expect(await within(card).findByText('• Ship the beta')).toBeInTheDocument();
   expect(within(card).getByRole('heading', { name: 'Summary' })).toBeInTheDocument();
-  expect(
-    (await within(card).findByText(/we ship the beta on Friday/)).closest('p')
-  ).toHaveTextContent('Rita 01:05 we ship the beta on Friday');
+  expect(card.textContent).not.toMatch(/we ship the beta on Friday/);
   expect(document.activeElement).toBe(within(card).getByRole('heading', { level: 2 }));
 
   fireEvent.keyDown(window, { key: 'Escape' });

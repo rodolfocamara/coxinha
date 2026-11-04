@@ -8,16 +8,18 @@ import type { CalendarEvent } from '../agenda/calendar';
 import { useCaptureStore } from '../capture/captureStore';
 import { useEventColour } from '../agenda/categories';
 import type { MeetingRow } from './meetingRows';
-import { EventFacts, EventInvitation, EventLinks, isJoinable } from './EventDetails';
+import { EventLinks, EventRows, InvitationRow, isJoinable } from './EventDetails';
 import { eventLook } from './eventDetails';
-import { InviteeList } from './InviteeList';
+import { InviteesRow } from './InviteeList';
 import { panelState } from './meetingDetail';
-import { PeekMeetingState } from './PeekMeetingState';
+import { MarkRow } from './PeekMeetingState';
 import { sessionIdOf, signalItems, useSessionSignals } from './meetingSignals';
 import type { DetailPanel } from './meetingsSearch';
 import { useMeetingActions } from './useMeetingActions';
 import { useMeetingOutcome } from './useMeetingOutcome';
-import { PeekOutcome, PeekPreparation, WhoCame } from './PeekSections';
+import { PreparationRow, PresentRow } from './PeekSections';
+import { OutcomeText, ResultRows } from './PeekResult';
+import { PropGroup } from './PropertySheet';
 import { PeekCalendarMatch } from './PeekCalendarMatch';
 import { PeekHead } from './PeekHead';
 import './calendarPeek.css';
@@ -38,8 +40,8 @@ type Props = {
 };
 
 /**
- * A meeting as a reading panel (spec 0126): before it, how to join and who is
- * coming; after it, what came out. Escape closes it.
+ * A meeting as a property sheet (spec 0126 P9): before it, how to join and who
+ * is coming; after it, what came out. Escape closes it.
  */
 export function MeetingPeek({
   row,
@@ -55,6 +57,7 @@ export function MeetingPeek({
 }: Props) {
   const { t } = useTranslation();
   const k = (key: string) => t(`meetingsHub.home.${key}`);
+  const r = (key: string) => t(`meetingDetail.rows.${key}`);
   const heading = useRef<HTMLHeadingElement>(null);
   const session = row.kind === 'session' ? row.session : null;
   const event = row.kind === 'recording' ? null : row.event;
@@ -118,7 +121,7 @@ export function MeetingPeek({
     past || row.kind !== 'event' ? (
       <Button
         variant={leads === 'main' ? 'primary' : 'secondary'}
-        size={mainInHead ? 'md' : 'sm'}
+        size={mainInHead ? 'md' : 'xs'}
         onClick={() => onOpen(row)}
       >
         {k(past ? 'openMeeting' : 'prepare')}
@@ -126,7 +129,7 @@ export function MeetingPeek({
     ) : (
       <Button
         variant={leads === 'main' ? 'primary' : 'secondary'}
-        size={mainInHead ? 'md' : 'sm'}
+        size={mainInHead ? 'md' : 'xs'}
         icon={<ClipboardList size={14} aria-hidden="true" />}
         disabled={actions.busy}
         onClick={actions.prepareNotes}
@@ -170,11 +173,6 @@ export function MeetingPeek({
       <div className="ch-peek-body">
         {past ? (
           <>
-            <PeekOutcome
-              outcome={outcome}
-              signals={signals}
-              onFull={() => onOpen(row, 'transcript')}
-            />
             {session && meetingId && !event && row.start && (
               <PeekCalendarMatch
                 key={session.id}
@@ -187,25 +185,48 @@ export function MeetingPeek({
                 onFocus={onMatchFocus}
               />
             )}
-            <WhoCame meetingId={meetingId} />
-            {event && <InviteeList event={event} past confirmed={outcome.confirmed} />}
-            {session && <PeekMeetingState sessionId={session.id} />}
-            {event && <EventFacts event={event} joinable={joinable} />}
-            {event && <EventInvitation event={event} collapsed />}
+            <PropGroup title={r('result')} data-outcome="">
+              <ResultRows
+                outcome={outcome}
+                sessionId={session?.id ?? null}
+                durationMs={durationMs}
+                onTranscript={() => onOpen(row, 'transcript')}
+                onSpeakers={meetingId ? () => onOpen(row, 'people') : null}
+              />
+            </PropGroup>
+            <OutcomeText outcome={outcome} />
+            <PropGroup title={r('people')}>
+              <PresentRow meetingId={meetingId} />
+              {event && <InviteesRow event={event} past confirmed={outcome.confirmed} />}
+            </PropGroup>
+            {(session || event) && (
+              <PropGroup>
+                {session && <MarkRow sessionId={session.id} />}
+                {event && <EventRows event={event} hidePlaceholder />}
+                {event && <InvitationRow event={event} />}
+              </PropGroup>
+            )}
           </>
         ) : (
           <>
-            {event && <EventFacts event={event} joinable={joinable} />}
-            {event && <InviteeList event={event} past={false} />}
-            {event && !event.attendees.length && (
-              <p className="ch-peek-note">{t('meetingDetail.noInvitees')}</p>
+            <PropGroup title={r('meeting')}>
+              {event && <EventRows event={event} hidePlaceholder={joinable} />}
+              <PreparationRow
+                outcome={outcome}
+                signals={signals}
+                prepare={mainInHead ? undefined : main}
+              />
+            </PropGroup>
+            {event && (
+              <PropGroup title={r('people')}>
+                <InviteesRow event={event} past={false} />
+              </PropGroup>
             )}
-            <PeekPreparation
-              outcome={outcome}
-              signals={signals}
-              prepare={mainInHead ? undefined : main}
-            />
-            {event && <EventInvitation event={event} />}
+            {event && (
+              <PropGroup>
+                <InvitationRow event={event} />
+              </PropGroup>
+            )}
           </>
         )}
       </div>

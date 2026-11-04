@@ -1,6 +1,11 @@
 import { expect, it } from 'vitest';
-import { groupStartsOpen, panelState, relativeLabel } from './meetingDetail';
-import { signalShortLabel } from './SignalIcons';
+import {
+  groupStartsOpen,
+  memoryState,
+  panelState,
+  relativeLabel,
+  speakersValue,
+} from './meetingDetail';
 import i18n from '../../lib/i18n';
 import type { MeetingRow } from './meetingRows';
 
@@ -50,12 +55,25 @@ it('opens short lists, and only those who accepted of a long upcoming one', () =
   expect(groupStartsOpen('accepted', 3, 9, true)).toBe(false);
 });
 
-it('shortens the labels of the panel and keeps counting honestly', async () => {
-  await i18n.changeLanguage('en');
+it('says how many speakers there are and whether naming is left to do', async () => {
   const t = i18n.t.bind(i18n);
-  expect(signalShortLabel({ id: 'speakers', named: 0, unnamed: 6 }, t)).toBe('6 speakers, 0 named');
-  expect(signalShortLabel({ id: 'speakers', named: 1, unnamed: 0 }, t)).toBe('1 speaker, 1 named');
-  expect(signalShortLabel({ id: 'followUps', linked: 1, actions: 3 }, t)).toBe('4 follow-ups');
-  expect(signalShortLabel({ id: 'files', count: 1 }, t)).toBe('1 file');
-  expect(signalShortLabel({ id: 'transcript' }, t)).toBe('Transcribed');
+  await i18n.changeLanguage('en');
+  expect(speakersValue({ named: 0, unnamed: 6 }, t)).toBe('6 · none named');
+  expect(speakersValue({ named: 1, unnamed: 3 }, t)).toBe('4 · 1 named');
+  expect(speakersValue({ named: 3, unnamed: 1 }, t)).toBe('4 · 3 named');
+  expect(speakersValue({ named: 2, unnamed: 0 }, t)).toBe('2 · all named');
+  expect(speakersValue({ named: 1, unnamed: 0 }, t)).toBe('1 · named');
+  await i18n.changeLanguage('pt-BR');
+  expect(speakersValue({ named: 0, unnamed: 6 }, t)).toBe('6 · nenhum nomeado');
+  await i18n.changeLanguage('en');
+});
+
+it.each([
+  [{ summary: true, transcript: true }, true, 'memoryKept'],
+  [{ summary: true, transcript: false }, false, 'memoryKept'],
+  [{ summary: false, transcript: true }, false, 'memoryOff'],
+  [{ summary: false, transcript: true }, true, 'memoryPending'],
+  [{ summary: false, transcript: false }, true, 'memoryNoTranscript'],
+] as const)('tells what memory holds of a meeting %#', (signals, summariesOn, state) => {
+  expect(memoryState(signals, summariesOn)).toBe(state);
 });

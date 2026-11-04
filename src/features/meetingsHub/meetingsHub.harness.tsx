@@ -3,7 +3,7 @@
  * Tauri, the root layout, the note editor and the processing panel itself
  * (vi.mock is hoisted per file) and installs `backend.invoke`.
  */
-import { render } from '@testing-library/react';
+import { render, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider } from '@tanstack/react-router';
 import { createAppRouter } from '../../router';
@@ -306,3 +306,9 @@ export function renderAt(path: string) {
 
 export const calledWith = (db: Db, command: string) =>
   db.calls.filter((c) => c.command === command).map((c) => c.args);
+
+/** A row of the meeting detail's property sheet, by its label. */
+export const propRow = (panel: HTMLElement, label: string) =>
+  within(panel).getByText(label, { selector: 'dt span' }).closest<HTMLElement>('.ch-prop')!;
+export const propValue = (panel: HTMLElement, label: string) =>
+  propRow(panel, label).querySelector('dd')!;

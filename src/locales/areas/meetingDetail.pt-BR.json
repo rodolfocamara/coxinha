@@ -1,34 +1,89 @@
 {
   "meetingDetail": {
     "underWay": "Em andamento, faltam {{left}}",
-    "noOutcome": "Esta reunião ainda não gerou nada: sem resumo, notas, transcrição ou arquivos.",
-    "noInvitees": "Sem convidados: este bloco está só na sua agenda.",
-    "preparation": "Preparação",
-    "invitation": "Convite",
-    "memory": "Memória",
-    "facts": {
-      "location": "Local:",
-      "organizer": "Organizada por {{name}}"
-    },
     "people": {
-      "coming": "Quem vem",
-      "invited": "Quem foi convidado",
-      "counts_one": "{{count}} convidado: {{required}} obrigatório, {{optional}} opcional",
-      "counts_other": "{{count}} convidados: {{required}} obrigatórios, {{optional}} opcionais",
       "organizer": "Organizador",
-      "required": "Obrigatório",
       "optional": "Opcional",
       "spoke": "Confirmado na gravação",
       "more_one": "e mais {{count}}",
-      "more_other": "e mais {{count}}"
+      "more_other": "e mais {{count}}",
+      "stackMore": "+{{count}}",
+      "response": {
+        "accepted": "{{count}} sim",
+        "tentative": "{{count}} talvez",
+        "declined": "{{count}} não",
+        "noAnswer": "{{count}} sem resposta"
+      }
     },
     "signals": {
-      "speakers_one": "{{count}} falante, {{named}} com nome",
-      "speakers_other": "{{count}} falantes, {{named}} com nome",
-      "followUps_one": "{{count}} follow-up",
-      "followUps_other": "{{count}} follow-ups",
       "files_one": "{{count}} arquivo",
       "files_other": "{{count}} arquivos"
+    },
+    "rows": {
+      "result": "Resultado",
+      "people": "Pessoas",
+      "transcript": "Transcrição",
+      "speakers": "Falantes",
+      "note": "Nota",
+      "summary": "Resumo",
+      "followUps": "Follow-ups",
+      "files": "Arquivos",
+      "diagram": "Diagrama",
+      "memory": "Memória",
+      "present": "Presentes",
+      "invited": "Convidados",
+      "mark": "Avaliação",
+      "response": "Sua resposta",
+      "location": "Local",
+      "organizer": "Organizador",
+      "preparation": "Preparação",
+      "invitation": "Convite",
+      "calendar": "Agenda",
+      "meeting": "Reunião"
+    },
+    "values": {
+      "yes": "Sim",
+      "no": "Não",
+      "none": "Nada",
+      "transcriptYes": "Sim · {{duration}}",
+      "running": "Em andamento",
+      "failed": "Falhou",
+      "off": "Desligado",
+      "notYet": "Ainda não",
+      "memoryKept": "Sim · só o resumo",
+      "unknown": "Desconhecido",
+      "confirmed_one": "{{count}} confirmado",
+      "confirmed_other": "{{count}} confirmados",
+      "nobodyInvited": "Nenhum · só na sua agenda",
+      "notLinked": "Sem vínculo",
+      "showMessage": "Ver mensagem",
+      "prepNone": "Nenhuma",
+      "prepNote": "Nota",
+      "prepLinks_one": "{{count}} link",
+      "prepLinks_other": "{{count}} links",
+      "prepActivities_one": "{{count}} atividade",
+      "prepActivities_other": "{{count}} atividades",
+      "speakersNone": "{{total}} · nenhum nomeado",
+      "speakersAll_one": "{{count}} · nomeado",
+      "speakersAll_other": "{{count}} · todos nomeados",
+      "speakersSome_one": "{{total}} · {{count}} nomeado",
+      "speakersSome_other": "{{total}} · {{count}} nomeados",
+      "response": {
+        "organizer": "Você organiza",
+        "accepted": "Aceita",
+        "tentative": "Talvez",
+        "declined": "Recusada",
+        "none": "Sem resposta"
+      }
+    },
+    "actions": {
+      "open": "Abrir",
+      "openTranscript": "Abrir a transcrição completa",
+      "name": "Nomear",
+      "nameSpeakers": "Nomear os falantes",
+      "setUp": "Configurar",
+      "setUpSummaries": "Configurar os resumos em Ajustes › Integrações",
+      "link": "Vincular"
     }
   }
 }

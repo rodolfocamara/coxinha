@@ -4,7 +4,7 @@ import { commands } from '../../lib/bindings';
 import { items as itemStore, links, civilDate, type ItemRef } from '../items/items';
 import { library } from '../meetings/library';
 import type { Session } from '../sessions/sessions';
-import { excerpt, noteLines, transcriptLines } from './peekData';
+import { noteLines } from './peekData';
 
 /** One query for the page and the peek, whichever renders first. */
 export function useProcessing(meetingId: string | null) {
@@ -74,6 +74,7 @@ export function useMeetingOutcome(
     retry: false,
   });
   const report = processing.data?.report ?? null;
+  const jobState = processing.data?.jobs[0]?.state;
   return {
     item,
     source: summary.data ? ('summary' as const) : note.data ? ('notes' as const) : null,
@@ -82,7 +83,13 @@ export function useMeetingOutcome(
       : note.data
         ? noteLines(note.data, 5)
         : [],
-    transcript: excerpt(transcriptLines(report), ''),
+    hasTranscript: !!report?.segments.length,
+    transcriptJob:
+      jobState === 'failed'
+        ? ('failed' as const)
+        : jobState === 'queued' || jobState === 'running'
+          ? ('running' as const)
+          : null,
     files: files.data?.files ?? [],
     references: files.data?.references ?? [],
     activities: linked.data ?? [],

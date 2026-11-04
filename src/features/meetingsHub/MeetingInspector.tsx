@@ -1,7 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
-import { Plus, RefreshCw, Upload } from 'lucide-react';
+import {
+  AudioLines,
+  CalendarDays,
+  Clock,
+  FileText,
+  Folder,
+  Plus,
+  RefreshCw,
+  Upload,
+} from 'lucide-react';
 import { Button } from '../../components/ui';
 import { library, type LibraryDetail, type ParticipantCandidate } from '../meetings/library';
 import type { CalendarEvent } from '../agenda/calendar';
@@ -11,12 +20,13 @@ import { normalize } from './meetingRows';
 import { EventCategories } from '../agenda/EventCategories';
 import { requestMeetingsSheet } from './meetingsSheets';
 import { ItemLinks } from '../items/ItemLinks';
-import { EventFacts, EventInvitation, EventLinks, isJoinable } from './EventDetails';
-import { InviteeList } from './InviteeList';
+import { EventLinks, EventRows, InvitationRow, isJoinable } from './EventDetails';
+import { InviteesRow } from './InviteeList';
 import { PersonAvatar } from './PersonAvatar';
-import { WhoCame } from './PeekSections';
+import { PresentRow } from './PeekSections';
+import { PropGroup, PropRow } from './PropertySheet';
 import { presentSignals, useSessionSignals } from './meetingSignals';
-import { SignalIcons } from './SignalIcons';
+import { SignalRows } from './SignalIcons';
 
 type Props = {
   start: Date | null;
@@ -69,32 +79,37 @@ export function MeetingInspector(p: Props) {
   return (
     <aside className="mh-insp" aria-label={k('label')}>
       {p.event && <EventLinks key={p.event.id} event={p.event} ended={ended} primary={false} />}
-      <div>
-        <h3 className="mh-insp-h">{k('meeting')}</h3>
-        <dl className="mh-kv">
-          <dt>{k('when')}</dt>
-          <dd>{whenLabel(p.start, p.end, p.now, locale, t)}</dd>
-          <dt>{k('event')}</dt>
-          <dd>
-            {p.event?.title ?? (p.source === 'recording' ? k('localRecording') : k('noEvent'))}
-          </dd>
-          <dt>{k('audio')}</dt>
-          <dd>{audio}</dd>
-          <dt>{k('transcript')}</dt>
-          <dd>{p.transcript}</dd>
-          {p.detail?.storage?.directory && (
-            <>
-              <dt>{k('folder')}</dt>
-              <dd className="truncate" title={p.detail.storage.directory}>
-                {p.detail.storage.directory}
-              </dd>
-            </>
-          )}
-        </dl>
-      </div>
-      <SignalIcons items={presentSignals(signals)} labelled />
-      {p.event && <EventFacts event={p.event} joinable={isJoinable(p.event, ended)} />}
-      <WhoCame meetingId={p.meetingId} headingClassName="mh-insp-h" />
+      <PropGroup title={k('meeting')} headingClassName="mh-insp-h">
+        <PropRow icon={Clock} label={k('when')}>
+          {whenLabel(p.start, p.end, p.now, locale, t)}
+        </PropRow>
+        <PropRow icon={CalendarDays} label={k('event')}>
+          {p.event?.title ?? (p.source === 'recording' ? k('localRecording') : k('noEvent'))}
+        </PropRow>
+        <PropRow icon={AudioLines} label={k('audio')}>
+          {audio}
+        </PropRow>
+        <PropRow icon={FileText} label={k('transcript')}>
+          {p.transcript}
+        </PropRow>
+        {p.detail?.storage?.directory && (
+          <PropRow icon={Folder} label={k('folder')} title={p.detail.storage.directory}>
+            {p.detail.storage.directory}
+          </PropRow>
+        )}
+        {/* The transcript has its row above, with the state of the job. */}
+        <SignalRows items={presentSignals(signals).filter((s) => s.id !== 'transcript')} />
+        {p.event && (
+          <EventRows event={p.event} hidePlaceholder={ended || isJoinable(p.event, ended)} />
+        )}
+        {p.event && <InvitationRow event={p.event} />}
+      </PropGroup>
+      {(ended || p.event) && (
+        <PropGroup title={t('meetingDetail.rows.people')} headingClassName="mh-insp-h">
+          {ended && <PresentRow meetingId={p.meetingId} />}
+          {p.event && <InviteesRow key={p.event.id} event={p.event} past={ended} />}
+        </PropGroup>
+      )}
       {p.event && (
         <EventCategories
           event={p.event}
@@ -144,10 +159,6 @@ export function MeetingInspector(p: Props) {
           </ul>
         )}
       </div>
-      {p.event && (
-        <InviteeList key={p.event.id} event={p.event} past={ended} headingClassName="mh-insp-h" />
-      )}
-      {p.event && <EventInvitation event={p.event} headingClassName="mh-insp-h" />}
       <div>
         <h3 className="mh-insp-h">{k('actions')}</h3>
         <div className="flex flex-col items-start gap-1">

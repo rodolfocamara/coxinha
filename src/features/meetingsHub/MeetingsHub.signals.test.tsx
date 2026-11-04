@@ -10,6 +10,8 @@ import {
   calledWith,
   event,
   freshDb,
+  propRow,
+  propValue,
   recording,
   renderAt,
   resetState,
@@ -100,9 +102,9 @@ it('shows the event details Outlook has, and opens links by event id only', asyn
   fireEvent.click(await block(/Roadmap sync/));
   const peek = await screen.findByRole('complementary', { name: 'Roadmap sync' });
   const details = within(peek);
-  expect(details.getByText('Your response: tentative')).toBeInTheDocument();
-  expect(details.getByRole('list', { name: 'From Outlook' })).toHaveTextContent('Location: Room 4');
-  expect(details.getByText('3 invited: 2 required, 1 optional')).toBeInTheDocument();
+  expect(propValue(peek, 'Response')).toHaveTextContent('Tentative');
+  expect(propValue(peek, 'Location')).toHaveTextContent('Room 4');
+  expect(propValue(peek, 'Invited')).toHaveTextContent(/1 yes.*1 no.*1 no answer/);
   expect(details.getByText('Accepted (1)')).toBeInTheDocument();
   expect(details.getByText('Declined (1)')).toBeInTheDocument();
   expect(details.getByText('No answer (1)')).toBeInTheDocument();
@@ -156,7 +158,7 @@ it('keeps the flat list for a cache without responses and claims no group', asyn
   await week();
   fireEvent.click(await block(/Older cache/));
   const peek = await screen.findByRole('complementary', { name: 'Older cache' });
-  expect(within(peek).getByRole('heading', { name: 'Invitees' })).toBeInTheDocument();
+  expect(propValue(peek, 'Invited')).toHaveTextContent('1 invitee');
   expect(within(peek).getByText('Ana')).toBeInTheDocument();
   expect(within(peek).queryByText(/No answer/)).toBeNull();
 });
@@ -211,23 +213,25 @@ it('lists confirmed speakers apart from invitees and claims nothing without them
   await week();
   fireEvent.click(await block(/Recorded sync/));
   const peek = await screen.findByRole('complementary', { name: 'Recorded sync' });
-  const heading = await within(peek).findByRole('heading', { name: 'Confirmed on the recording' });
-  const section = within(heading.parentElement!);
-  expect(section.getByText('Ana')).toBeInTheDocument();
-  expect(section.queryByText(/Bruno/)).toBeNull();
-  expect(section.queryByText(/Invited only/)).toBeNull();
+  await within(peek).findByRole('button', { name: /Present/ });
+  expect(propValue(peek, 'Present')).toHaveTextContent('1 confirmed');
+  const row = within(propRow(peek, 'Present'));
+  expect(row.getByText('Ana')).toBeInTheDocument();
+  expect(row.queryByText(/Bruno/)).toBeNull();
+  expect(row.queryByText(/Invited only/)).toBeNull();
   cleanup();
 
   db.processing['m-rec'] = report([{ state: 'suggested', name: 'Bruno' }]) as never;
   await week();
   fireEvent.click(await block(/Recorded sync/));
   const again = await screen.findByRole('complementary', { name: 'Recorded sync' });
+  expect(propValue(again, 'Present')).toHaveTextContent('Unknown');
   expect(
-    await within(again).findByText('No speaker confirmed yet, so who came is unknown.')
+    await within(again).findByTitle('No speaker confirmed yet, so who came is unknown.')
   ).toBeInTheDocument();
   cleanup();
 
-  // An event with no recording has no such section at all.
+  // A meeting still to come has no such row at all.
   db.sessions = [];
   db.events = [
     event({ id: 'plain', title: 'Unrecorded', attendees: [{ name: 'Ana', email: null }] }),
@@ -235,7 +239,7 @@ it('lists confirmed speakers apart from invitees and claims nothing without them
   await week();
   fireEvent.click(await block(/Unrecorded/));
   const none = await screen.findByRole('complementary', { name: 'Unrecorded' });
-  expect(within(none).queryByRole('heading', { name: 'Confirmed on the recording' })).toBeNull();
+  expect(within(none).queryByText('Present')).toBeNull();
 });
 
 it('styles blocks as Outlook does and names the state', async () => {
@@ -310,14 +314,15 @@ it('marks a future meeting without preparation, and not a personal block', async
   expect((await block(/Lunch/)).getAttribute('aria-label')).not.toContain('No preparation');
 });
 
-it('shows the signals as a labelled list in the peek', async () => {
+it('shows the signals as rows in the peek', async () => {
   withSignals();
   await week();
   fireEvent.click(await block(/Hour long.*Transcribed/));
   const peek = await screen.findByRole('complementary', { name: 'Hour long' });
-  const list = within(peek).getByRole('list', { name: 'What this meeting has' });
-  expect(within(list).getByText('Transcribed')).toBeInTheDocument();
-  expect(within(list).getByText('Has a note')).toBeInTheDocument();
+  expect(propValue(peek, 'Transcript')).toHaveTextContent('Yes');
+  expect(propValue(peek, 'Speakers')).toHaveTextContent('3 · 2 named');
+  expect(propValue(peek, 'Note')).toHaveTextContent('Yes');
+  expect(propValue(peek, 'Memory')).toHaveTextContent('Yes · summary only');
 });
 
 it('lets the owner mark a past meeting, and take it back', async () => {
@@ -328,7 +333,6 @@ it('lets the owner mark a past meeting, and take it back', async () => {
   const useful = await within(peek).findByRole('button', { name: 'Useful' });
   expect(useful).toHaveAttribute('aria-pressed', 'false');
   // Generated content does not press anything by itself.
-  expect(within(peek).getByText(/It generated content/)).toBeInTheDocument();
   expect(within(peek).getByRole('button', { name: 'Not useful' })).toHaveAttribute(
     'aria-pressed',
     'false'
@@ -339,12 +343,12 @@ it('lets the owner mark a past meeting, and take it back', async () => {
   expect(calledWith(db, 'library_set_meeting_mark')).toEqual([
     { sessionId: 'tall', mark: 'useful' },
   ]);
-  expect(await within(peek).findByText('Marked useful')).toBeInTheDocument();
+  expect(await within(propRow(peek, 'Rating')).findByText('Useful')).toBeInTheDocument();
 
   fireEvent.click(useful);
   await waitFor(() => expect(useful).toHaveAttribute('aria-pressed', 'false'));
   expect(calledWith(db, 'library_set_meeting_mark')[1]).toEqual({ sessionId: 'tall', mark: null });
-  expect(within(peek).queryByText('Marked useful')).toBeNull();
+  expect(within(propRow(peek, 'Rating')).queryByText('Useful')).toBeNull();
 });
 
 it('offers no mark on a future meeting', async () => {
@@ -353,7 +357,7 @@ it('offers no mark on a future meeting', async () => {
   await week();
   fireEvent.click(await block(/Later/));
   const peek = await screen.findByRole('complementary', { name: 'Later' });
-  await within(peek).findByRole('list', { name: 'What this meeting has' });
+  await within(peek).findByText('Preparation');
   expect(within(peek).queryByRole('button', { name: 'Useful' })).toBeNull();
 });
 
@@ -363,26 +367,32 @@ it('says summaries are off and links to the setting, without implying memory', a
   const router = await week();
   fireEvent.click(await block(/Hour long/));
   const peek = await screen.findByRole('complementary', { name: 'Hour long' });
-  expect(await within(peek).findByText('Not in memory: summaries are off.')).toBeInTheDocument();
-  expect(within(peek).getByText('It generated no content yet.')).toBeInTheDocument();
-  fireEvent.click(within(peek).getByRole('button', { name: 'Open Settings › Integrations' }));
+  expect(await within(peek).findByTitle('Not in memory: summaries are off.')).toHaveTextContent(
+    'No'
+  );
+  expect(propValue(peek, 'Summary')).toHaveTextContent('Off');
+  expect(peek.textContent).not.toMatch(/generated/i);
+  fireEvent.click(
+    within(peek).getByRole('button', { name: 'Set up summaries in Settings › Integrations' })
+  );
   await waitFor(() => expect(router.state.location.pathname).toBe('/settings'));
   expect(router.state.location.hash).toBe('integrations');
 });
 
 it.each([
-  [{ summary: true, transcript: true }, true, 'In memory: only its generated summary.'],
-  [{ summary: true }, false, 'In memory: only its generated summary.'],
-  [{ transcript: true }, true, 'Not in memory yet: its summary is still to be written.'],
-  [{}, true, 'Not in memory: there is no transcript to summarize.'],
-])('states the memory of a past meeting honestly %#', async (o, summariesOn, text) => {
+  [{ summary: true, transcript: true }, true, 'In memory: only its generated summary.', 'Yes'],
+  [{ summary: true }, false, 'In memory: only its generated summary.', 'Yes'],
+  [{ transcript: true }, true, 'Not in memory yet: its summary is still to be written.', 'Not yet'],
+  [{}, true, 'Not in memory: there is no transcript to summarize.', 'No'],
+])('states the memory of a past meeting honestly %#', async (o, summariesOn, text, value) => {
   withSignals();
   db.signals = { summariesOn, sessions: [signals('tall', o)] };
   await week();
   fireEvent.click(await block(/Hour long/));
   const peek = await screen.findByRole('complementary', { name: 'Hour long' });
-  expect(await within(peek).findByText(text)).toBeInTheDocument();
-  expect(within(peek).queryByRole('button', { name: 'Open Settings › Integrations' })).toBeNull();
+  expect(await within(peek).findByTitle(text)).toBe(propValue(peek, 'Memory'));
+  expect(propValue(peek, 'Memory')).toHaveTextContent(value);
+  expect(within(peek).queryByRole('button', { name: /Set up summaries/ })).toBeNull();
 });
 
 it('shows the details and signals on the meeting page too', async () => {
@@ -393,9 +403,9 @@ it('shows the details and signals on the meeting page too', async () => {
   db.signals = { summariesOn: false, sessions: [signals('page', { note: true })] };
   renderAt('/meetings/page');
   const inspector = await screen.findByRole('complementary', { name: 'Meeting details' });
-  expect(await within(inspector).findByText('Your response: tentative')).toBeInTheDocument();
+  expect(propValue(inspector, 'Response')).toHaveTextContent('Tentative');
   expect(within(inspector).getByText('Accepted (1)')).toBeInTheDocument();
-  expect(await within(inspector).findByText('Has a note')).toBeInTheDocument();
+  await waitFor(() => expect(propValue(inspector, 'Note')).toHaveTextContent('Yes'));
   // Join leads the column; the page's own header holds the primary action.
   const join = within(inspector).getByRole('button', { name: 'Join in Teams' });
   expect(join).toHaveAttribute('data-variant', 'secondary');

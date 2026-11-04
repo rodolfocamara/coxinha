@@ -253,12 +253,8 @@
       "openNamed": "Abrir {{title}}",
       "closePeek": "Fechar prévia",
       "recorded": "{{duration}} gravados",
-      "invitees": "Convidados",
       "summary": "Resumo",
       "notesStart": "Notas",
-      "transcript": "Transcrição",
-      "fullTranscript": "Ver transcrição completa →",
-      "filesAndActivities": "Arquivos e atividades",
       "openMeeting": "Abrir reunião",
       "pageNav": "Navegação da reunião",
       "period": {
@@ -293,24 +289,15 @@
       "failed": "O resumo não funcionou: {{error}}"
     },
     "eventDetails": {
-      "label": "Do Outlook",
-      "mine": {
-        "organizer": "Você organiza esta reunião",
-        "accepted": "Sua resposta: aceita",
-        "tentative": "Sua resposta: provisória",
-        "declined": "Sua resposta: recusada",
-        "none": "Sua resposta: sem resposta"
-      },
       "group": {
         "accepted": "Aceitaram ({{count}})",
-        "tentative": "Provisório ({{count}})",
+        "tentative": "Talvez ({{count}})",
         "declined": "Recusaram ({{count}})",
         "noAnswer": "Sem resposta ({{count}})"
       },
       "join": "Entrar no Teams",
       "openInOutlook": "Abrir no Outlook",
       "openFailed": "Não foi possível abrir o link.",
-      "whoCame": "Confirmados na gravação",
       "whoCameHint": "Falantes que você confirmou. Quem ficou em silêncio ou ainda não tem nome não aparece.",
       "nobodyConfirmed": "Nenhum falante confirmado ainda, então não se sabe quem veio.",
       "look": {
@@ -320,7 +307,6 @@
       }
     },
     "signals": {
-      "label": "O que esta reunião tem",
       "useful": "Marcada como útil",
       "notUseful": "Marcada como não útil",
       "transcript": "Transcrita",
@@ -332,16 +318,12 @@
       "memory": "Na memória: o resumo",
       "followUps": "Follow-ups: {{linked}} vinculados, {{actions}} sugeridos pelo resumo",
       "state": {
-        "label": "Esta reunião valeu a pena?",
         "markLabel": "Sua marca",
         "useful": "Útil",
         "notUseful": "Não foi útil",
         "markFailed": "Não foi possível salvar sua marca.",
-        "generated": "Gerou conteúdo: resumo, follow-ups, diagrama ou nota.",
-        "notGenerated": "Ainda não gerou conteúdo.",
         "memoryKept": "Na memória: só o resumo gerado.",
         "memoryOff": "Fora da memória: os resumos estão desligados.",
-        "openSetting": "Abrir Ajustes › Integrações",
         "memoryPending": "Ainda fora da memória: falta escrever o resumo.",
         "memoryNoTranscript": "Fora da memória: não há transcrição para resumir."
       }

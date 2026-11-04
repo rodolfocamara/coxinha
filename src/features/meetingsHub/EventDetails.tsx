@@ -6,24 +6,26 @@ import {
   CircleHelp,
   CircleX,
   ExternalLink,
+  Mail,
   MapPin,
   UserRound,
   Video,
+  type LucideIcon,
 } from 'lucide-react';
 import { Button } from '../../components/ui';
 import { calendar, type CalendarEvent } from '../agenda/calendar';
 import { myResponse, type MyResponse } from './eventDetails';
-import { Disclosure } from './Disclosure';
 import { invitationText, shownLocation } from './invitationText';
+import { PropDisclosure, PropRow } from './PropertySheet';
 import './signals.css';
 import './meetingDetail.css';
 
-const RESPONSE_ICONS: Record<MyResponse, ReactNode> = {
-  organizer: <UserRound size={14} aria-hidden="true" />,
-  accepted: <CircleCheck size={14} aria-hidden="true" />,
-  tentative: <CircleHelp size={14} aria-hidden="true" />,
-  declined: <CircleX size={14} aria-hidden="true" />,
-  none: <Circle size={14} aria-hidden="true" />,
+const RESPONSE_ICONS: Record<MyResponse, LucideIcon> = {
+  organizer: UserRound,
+  accepted: CircleCheck,
+  tentative: CircleHelp,
+  declined: CircleX,
+  none: Circle,
 };
 
 export const isJoinable = (event: CalendarEvent | null, ended: boolean) =>
@@ -97,66 +99,53 @@ export function EventLinks({
   );
 }
 
-/** My response, the place and who organizes it. Everything here is other people's text. */
-export function EventFacts({ event, joinable }: { event: CalendarEvent; joinable: boolean }) {
+/** My response, the place and who organizes it, as rows. Everything here is other people's text. */
+export function EventRows({
+  event,
+  hidePlaceholder,
+}: {
+  event: CalendarEvent;
+  /** Beside a join button, or once it is over, Teams' placeholder says nothing. */
+  hidePlaceholder: boolean;
+}) {
   const { t } = useTranslation();
-  const k = (key: string, options?: Record<string, unknown>) =>
-    t(`meetingsHub.eventDetails.${key}`, options);
+  const r = (key: string) => t(`meetingDetail.rows.${key}`);
   const response = myResponse(event);
-  const location = shownLocation(event.location, joinable);
+  const location = shownLocation(event.location, hidePlaceholder);
   const organizer = response !== 'organizer' ? event.organizer?.name : null;
-  if (!response && !location && !organizer) return null;
   return (
-    <ul className="ch-facts" aria-label={k('label')}>
+    <>
       {response && (
-        <li data-response={response}>
-          {RESPONSE_ICONS[response]}
-          <span>{k(`mine.${response}`)}</span>
-        </li>
+        <PropRow icon={RESPONSE_ICONS[response]} label={r('response')} tone={response}>
+          {t(`meetingDetail.values.response.${response}`)}
+        </PropRow>
       )}
       {location && (
-        <li>
-          <MapPin size={14} aria-hidden="true" />
-          <span>
-            <span className="sr-only">{t('meetingDetail.facts.location')} </span>
-            {location}
-          </span>
-        </li>
+        <PropRow icon={MapPin} label={r('location')}>
+          {location}
+        </PropRow>
       )}
       {organizer && (
-        <li>
-          <UserRound size={14} aria-hidden="true" />
-          <span>{t('meetingDetail.facts.organizer', { name: organizer })}</span>
-        </li>
+        <PropRow icon={UserRound} label={r('organizer')}>
+          {organizer}
+        </PropRow>
       )}
-    </ul>
+    </>
   );
 }
 
 /** What a person wrote in the invitation, never Teams' block (spec 0126 P4). */
-export function EventInvitation({
-  event,
-  collapsed = false,
-  headingClassName = 'ch-peek-h',
-}: {
-  event: CalendarEvent;
-  collapsed?: boolean;
-  headingClassName?: string;
-}) {
+export function InvitationRow({ event }: { event: CalendarEvent }) {
   const { t } = useTranslation();
   const text = invitationText(event.bodyPreview);
   if (!text) return null;
-  const preview = <p className="ch-event-preview">{text}</p>;
-  if (collapsed)
-    return (
-      <Disclosure label={t('meetingDetail.invitation')} defaultOpen={false}>
-        {preview}
-      </Disclosure>
-    );
   return (
-    <section className="ch-peek-sec">
-      <h3 className={headingClassName}>{t('meetingDetail.invitation')}</h3>
-      {preview}
-    </section>
+    <PropDisclosure
+      icon={Mail}
+      label={t('meetingDetail.rows.invitation')}
+      summary={t('meetingDetail.values.showMessage')}
+    >
+      <p className="ch-event-preview">{text}</p>
+    </PropDisclosure>
   );
 }

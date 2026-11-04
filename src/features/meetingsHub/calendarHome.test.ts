@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { buildRows, type MeetingRow } from './meetingRows';
 import { event, recording, session } from './meetingsHub.fixtures';
 import { NO_CATEGORY, categoryKey, nowAndNext, visibleRows } from './calendarHome';
-import { excerpt, noteLines, transcriptLines } from './peekData';
+import { noteLines } from './peekData';
 
 // Thursday 15 October 2026, 12:00 local; the week runs Monday 12 to Sunday 18.
 const now = new Date(2026, 9, 15, 12);
@@ -64,45 +64,6 @@ describe('calendar home', () => {
 });
 
 describe('peek text', () => {
-  it('formats transcript lines with confirmed names and corrections', () => {
-    const lines = transcriptLines({
-      job: 'j',
-      turns: [],
-      warnings: [],
-      corrections: { b: 'fecha o headcount' },
-      assignments: [
-        {
-          id: 'a',
-          speaker: 'S1',
-          track: 'output',
-          person_id: 'p',
-          state: 'confirmed',
-          name: 'Ana',
-        },
-        {
-          id: 'c',
-          speaker: 'S2',
-          track: 'output',
-          person_id: 'q',
-          state: 'suggested',
-          name: 'Bia',
-        },
-      ],
-      segments: [
-        { id: 'b', track: 'output', start_ms: 65_000, end_ms: 1, text: 'x', speaker: 'S1' },
-        { id: 'a', track: 'mic', start_ms: 1000, end_ms: 1, text: 'oi', speaker: null },
-        { id: 'c', track: 'output', start_ms: 70_000, end_ms: 1, text: 'tchau', speaker: 'S2' },
-      ],
-    });
-    expect(lines).toEqual([
-      '[00:01] mic: oi',
-      '[01:05] Ana: fecha o headcount',
-      '[01:10] S2: tchau',
-    ]);
-    expect(excerpt(lines, 'HEADCOUNT')).toEqual(['[01:05] Ana: fecha o headcount']);
-    expect(excerpt(lines, 'nothing', 2)).toEqual(lines.slice(0, 2));
-  });
-
   it('reads the opening lines of a note without frontmatter or markup', () => {
     expect(
       noteLines('---\nid: x\n---\n# Pauta\n\n- [ ] **Decidir** o backend\n`código`\n', 5)

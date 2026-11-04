@@ -29,16 +29,6 @@
   .mh-week-ev[data-signals] {
     padding-block: 2px;
   }
-  .ch-signals[data-labelled] {
-    gap: 0.25rem 0.75rem;
-    font-size: 0.75rem;
-    line-height: 1.35;
-    color: var(--color-muted-foreground);
-  }
-  .ch-signals[data-labelled] .ch-signal svg {
-    flex: none;
-  }
-
   .ch-event-preview {
     margin: 0;
     font-size: 0.75rem;

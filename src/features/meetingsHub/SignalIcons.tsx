@@ -14,7 +14,9 @@ import {
   Users,
   type LucideIcon,
 } from 'lucide-react';
+import { speakersValue } from './meetingDetail';
 import type { SignalItem } from './meetingSignals';
+import { PropRow } from './PropertySheet';
 import './signals.css';
 
 const ICONS: Record<SignalItem['id'], LucideIcon> = {
@@ -45,64 +47,79 @@ export function signalLabel(item: SignalItem, t: TFunction) {
   }
 }
 
-/** The panel's narrow list; the full wording of spec 0124 stays as its tooltip. */
-export function signalShortLabel(item: SignalItem, t: TFunction) {
-  switch (item.id) {
-    case 'speakers':
-      return t('meetingDetail.signals.speakers', {
-        count: item.named + item.unnamed,
-        named: item.named,
-      });
-    case 'followUps':
-      return t('meetingDetail.signals.followUps', { count: item.linked + item.actions });
-    default:
-      return signalLabel(item, t);
-  }
-}
-
 /**
  * What a meeting has, as icons with a tooltip and an accessible name. Inside a
- * block or row they are phrasing content of its button; the peek's `labelled`
- * list spells each one out, and doubles as the legend.
+ * block or row they are phrasing content of its button.
  */
-export function SignalIcons({
-  items,
-  labelled = false,
-}: {
-  items: SignalItem[];
-  labelled?: boolean;
-}) {
+export function SignalIcons({ items }: { items: SignalItem[] }) {
   const { t } = useTranslation();
   if (!items.length) return null;
-  const size = labelled ? 13 : 11;
-  const parts = items.map((item) => {
-    const Icon = ICONS[item.id];
-    return { id: item.id, Icon, label: signalLabel(item, t), short: signalShortLabel(item, t) };
-  });
-  if (labelled)
-    return (
-      <ul className="ch-signals" data-labelled="" aria-label={t('meetingsHub.signals.label')}>
-        {parts.map(({ id, Icon, label, short }) => (
-          <li
-            key={id}
-            className="ch-signal"
-            data-signal={id}
-            title={label === short ? undefined : label}
-          >
-            <Icon size={size} aria-hidden="true" />
-            {short}
-          </li>
-        ))}
-      </ul>
-    );
   return (
     <span className="ch-signals">
-      {parts.map(({ id, Icon, label }) => (
-        <span key={id} className="ch-signal" data-signal={id} title={label}>
-          <Icon size={size} aria-hidden="true" />
-          <span className="sr-only">{label}</span>
-        </span>
-      ))}
+      {items.map((item) => {
+        const Icon = ICONS[item.id];
+        const label = signalLabel(item, t);
+        return (
+          <span key={item.id} className="ch-signal" data-signal={item.id} title={label}>
+            <Icon size={11} aria-hidden="true" />
+            <span className="sr-only">{label}</span>
+          </span>
+        );
+      })}
     </span>
   );
+}
+
+/** The rows of the meeting page's inspector: what the meeting has, and only that. */
+export function SignalRows({ items }: { items: SignalItem[] }) {
+  const { t } = useTranslation();
+  const v = (key: string) => t(`meetingDetail.values.${key}`);
+  return items.map((item) => {
+    const value = signalValue(item, t, v);
+    if (value === null) return null;
+    return (
+      <PropRow
+        key={item.id}
+        icon={ICONS[item.id]}
+        label={t(`meetingDetail.rows.${ROW_LABELS[item.id]}`)}
+        title={signalLabel(item, t)}
+      >
+        {value}
+      </PropRow>
+    );
+  });
+}
+
+const ROW_LABELS: Record<SignalItem['id'], string> = {
+  useful: 'mark',
+  notUseful: 'mark',
+  transcript: 'transcript',
+  speakers: 'speakers',
+  note: 'note',
+  preparation: 'preparation',
+  noPreparation: 'preparation',
+  diagram: 'diagram',
+  memory: 'memory',
+  followUps: 'followUps',
+  files: 'files',
+};
+
+function signalValue(item: SignalItem, t: TFunction, v: (key: string) => string) {
+  switch (item.id) {
+    case 'useful':
+    case 'notUseful':
+      return t(`meetingsHub.signals.state.${item.id}`);
+    case 'speakers':
+      return speakersValue(item, t);
+    case 'followUps':
+      return item.linked + item.actions;
+    case 'files':
+      return item.count;
+    case 'memory':
+      return v('memoryKept');
+    case 'noPreparation':
+      return v('prepNone');
+    default:
+      return v('yes');
+  }
 }

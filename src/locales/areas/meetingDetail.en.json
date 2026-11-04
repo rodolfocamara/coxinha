@@ -1,34 +1,89 @@
 {
   "meetingDetail": {
     "underWay": "Under way, {{left}} left",
-    "noOutcome": "Nothing came out of this meeting yet: no summary, notes, transcript or files.",
-    "noInvitees": "No invitees: this block is only on your calendar.",
-    "preparation": "Preparation",
-    "invitation": "Invitation",
-    "memory": "Memory",
-    "facts": {
-      "location": "Location:",
-      "organizer": "Organized by {{name}}"
-    },
     "people": {
-      "coming": "Who is coming",
-      "invited": "Who was invited",
-      "counts_one": "{{count}} invited: {{required}} required, {{optional}} optional",
-      "counts_other": "{{count}} invited: {{required}} required, {{optional}} optional",
       "organizer": "Organizer",
-      "required": "Required",
       "optional": "Optional",
       "spoke": "Confirmed on the recording",
       "more_one": "and {{count}} more",
-      "more_other": "and {{count}} more"
+      "more_other": "and {{count}} more",
+      "stackMore": "+{{count}}",
+      "response": {
+        "accepted": "{{count}} yes",
+        "tentative": "{{count}} maybe",
+        "declined": "{{count}} no",
+        "noAnswer": "{{count}} no answer"
+      }
     },
     "signals": {
-      "speakers_one": "{{count}} speaker, {{named}} named",
-      "speakers_other": "{{count}} speakers, {{named}} named",
-      "followUps_one": "{{count}} follow-up",
-      "followUps_other": "{{count}} follow-ups",
       "files_one": "{{count}} file",
       "files_other": "{{count}} files"
+    },
+    "rows": {
+      "result": "Result",
+      "people": "People",
+      "transcript": "Transcript",
+      "speakers": "Speakers",
+      "note": "Note",
+      "summary": "Summary",
+      "followUps": "Follow-ups",
+      "files": "Files",
+      "diagram": "Diagram",
+      "memory": "Memory",
+      "present": "Present",
+      "invited": "Invited",
+      "mark": "Rating",
+      "response": "Response",
+      "location": "Location",
+      "organizer": "Organizer",
+      "preparation": "Preparation",
+      "invitation": "Invitation",
+      "calendar": "Calendar",
+      "meeting": "Meeting"
+    },
+    "values": {
+      "yes": "Yes",
+      "no": "No",
+      "none": "None",
+      "transcriptYes": "Yes · {{duration}}",
+      "running": "In progress",
+      "failed": "Failed",
+      "off": "Off",
+      "notYet": "Not yet",
+      "memoryKept": "Yes · summary only",
+      "unknown": "Unknown",
+      "confirmed_one": "{{count}} confirmed",
+      "confirmed_other": "{{count}} confirmed",
+      "nobodyInvited": "None · only on your calendar",
+      "notLinked": "Not linked",
+      "showMessage": "Show message",
+      "prepNone": "None",
+      "prepNote": "Note",
+      "prepLinks_one": "{{count}} link",
+      "prepLinks_other": "{{count}} links",
+      "prepActivities_one": "{{count}} activity",
+      "prepActivities_other": "{{count}} activities",
+      "speakersNone": "{{total}} · none named",
+      "speakersAll_one": "{{count}} · named",
+      "speakersAll_other": "{{count}} · all named",
+      "speakersSome_one": "{{total}} · {{count}} named",
+      "speakersSome_other": "{{total}} · {{count}} named",
+      "response": {
+        "organizer": "You organize",
+        "accepted": "Accepted",
+        "tentative": "Tentative",
+        "declined": "Declined",
+        "none": "Not answered"
+      }
+    },
+    "actions": {
+      "open": "Open",
+      "openTranscript": "Open the full transcript",
+      "name": "Name",
+      "nameSpeakers": "Name the speakers",
+      "setUp": "Set up",
+      "setUpSummaries": "Set up summaries in Settings › Integrations",
+      "link": "Link"
     }
   }
 }
