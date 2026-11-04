@@ -84,7 +84,7 @@
         "shortcuts": "Os atalhos globais funcionam mesmo com a janela escondida.",
         "storage": "Suas notas são arquivos Markdown nesta pasta.",
         "diagnostics": "Texto para colar ao relatar um problema.",
-        "calendar": "Como a grade da semana mostra os fusos horários. Salvo neste computador.",
+        "calendar": "Fusos na grade da semana e fotos dos convidados. Ficam neste computador.",
         "titles": "Com o seu próprio servidor via SSH. Envia texto da transcrição, nunca áudio."
       },
       "theme": {
@@ -283,7 +283,21 @@
         "summaries": "ia llm ssh",
         "vault": "obsidian markdown caminho",
         "rebuild": "índice reindexar",
-        "diagnostics": "log versão build"
+        "diagnostics": "log versão build",
+        "directory-photos": "rostos avatares imagens Microsoft 365"
+      },
+      "directoryPhotos": {
+        "title": "Fotos dos convidados",
+        "hint": "Mostra a foto de perfil do Microsoft 365 das pessoas que você importou dos convidados das suas reuniões.",
+        "privacy": "Ligar abre um novo login da Microsoft que pede mais uma permissão, User.ReadBasic.All: ler o perfil básico (nome, e-mail e foto) das pessoas da sua organização. O Coxinha só a usa para buscar a foto de pessoas importadas de convidados com endereço na sua organização, no máximo uma vez por semana. As fotos ficam neste computador, na pasta privada da biblioteca, nunca nas notas. Desligar interrompe os pedidos e apaga todas as fotos. A permissão em si continua na sua conta Microsoft até você removê-la em Meus Aplicativos.",
+        "connectFirst": "Conecte o Outlook em Integrações primeiro.",
+        "stored_one": "Ligado. {{count}} foto guardada neste computador.",
+        "stored_other": "Ligado. {{count}} fotos guardadas neste computador.",
+        "waiting": "Aguardando sua resposta na página da Microsoft.",
+        "cancel": "Cancelar",
+        "reconnect": "Entrar de novo",
+        "statusError": "Não foi possível ler o estado das fotos.",
+        "disableError": "Não foi possível apagar as fotos. Tente de novo."
       }
     },
     "palette": {
@@ -345,6 +359,7 @@
       "pending_other": "{{count}} confirmações aguardando para memorizar quando o Coxinha estiver livre",
       "failed": "Não consegui memorizar uma confirmação em {{meeting}}: {{reason}}",
       "retry": "Tentar de novo"
-    }
+    },
+    "photoAlt": "Foto de {{name}}"
   }
 }

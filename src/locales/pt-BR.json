@@ -327,7 +327,9 @@
     "candidateLimit": "A reunião aceita até 100 candidatos. Revise os candidatos existentes e escolha uma lista menor antes de adicionar convidados.",
     "categoriesReconnect": "O Outlook não permitiu mudar as categorias. Reconecte o Outlook para autorizar.",
     "categoriesInvalid": "Escolha no máximo 25 categorias.",
-    "eventMissing": "Este evento não está mais na agenda do Outlook. Sincronize e tente de novo."
+    "eventMissing": "Este evento não está mais na agenda do Outlook. Sincronize e tente de novo.",
+    "photosConsent": "A Microsoft não concedeu a permissão das fotos. Sua organização pode exigir a aprovação de um administrador.",
+    "photosForbidden": "A Microsoft recusou o pedido de fotos. Sua organização pode restringi-lo. As fotos não serão pedidas de novo até você entrar novamente."
   },
   "sidebar": {
     "untitled": "Sem título"

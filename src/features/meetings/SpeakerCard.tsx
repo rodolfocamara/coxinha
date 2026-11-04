@@ -8,6 +8,7 @@ import {
   type ProcessingReport,
   type Recognition,
 } from './library';
+import { PersonAvatar } from '../people/personVisual';
 import { PersonCombobox } from './PersonCombobox';
 import { personChoices, resolveTyped, type Pick } from './personChoices';
 import { SelectedVoiceEnrollment } from './SelectedVoiceEnrollment';
@@ -163,6 +164,9 @@ export function SpeakerCard({
           <div className="min-w-0 flex-1 basis-32">
             {name ? (
               <p className="flex items-center gap-1.5 text-sm font-medium">
+                {assignment?.person_id && (
+                  <PersonAvatar personId={assignment.person_id} name={name} />
+                )}
                 <Check size={14} aria-hidden="true" className="shrink-0 text-success" />
                 <span className="truncate" aria-hidden="true">
                   {name}

@@ -76,11 +76,13 @@ export function useOutlookConnection({ onReset }: Options = {}) {
     }
   }
 
-  function connect() {
+  function authorize(directoryPhotos: boolean) {
     void run(async () => {
       localStorage.setItem('outlook.clientId', clientId.trim());
       localStorage.setItem('outlook.tenant', tenant.trim());
-      const auth = await calendar.begin(clientId.trim(), tenant.trim());
+      const auth = directoryPhotos
+        ? await calendar.begin(clientId.trim(), tenant.trim(), true)
+        : await calendar.begin(clientId.trim(), tenant.trim());
       if (!mounted.current) {
         await calendar.cancel(auth.id);
         return;
@@ -102,6 +104,10 @@ export function useOutlookConnection({ onReset }: Options = {}) {
       }
     });
   }
+
+  const connect = () => authorize(false);
+  /** Spec 0117 P1: the only sign-in that asks for the directory photos permission. */
+  const connectDirectoryPhotos = () => authorize(true);
 
   const sync = () => void run(async () => setSnapshot(await calendar.sync()));
 
@@ -133,6 +139,7 @@ export function useOutlookConnection({ onReset }: Options = {}) {
     setTenant,
     run,
     connect,
+    connectDirectoryPhotos,
     sync,
     disconnect,
     cancel,

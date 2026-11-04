@@ -449,7 +449,9 @@
     "candidateLimit": "A meeting supports up to 100 candidates. Review existing candidates and choose a smaller list before adding invitees.",
     "categoriesReconnect": "Outlook did not allow changing categories. Reconnect Outlook to grant it.",
     "categoriesInvalid": "Choose at most 25 categories.",
-    "eventMissing": "This event is no longer in the Outlook calendar. Sync and try again."
+    "eventMissing": "This event is no longer in the Outlook calendar. Sync and try again.",
+    "photosConsent": "Microsoft did not grant the photos permission. Your organization may require an administrator's approval.",
+    "photosForbidden": "Microsoft refused the photos request. Your organization may restrict it. Photos will not be asked again until you sign in again."
   },
   "noteRecovery": {
     "diagnosticDetail": "Diagnostic details",
