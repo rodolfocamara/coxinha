@@ -13,13 +13,21 @@ type Props = Omit<
   /** Fill the container width, as text inputs do inside a Field. */
   block?: boolean;
   size?: 'sm' | 'md';
+  /** Runs when the popup closes, before focus returns to the trigger; can prevent it. */
+  onCloseAutoFocus?: (event: Event) => void;
 };
 // Prefix every value so the empty option and arbitrary IDs remain collision-free.
 const encode = (value: string) => `value:${value}`;
-function options(children: ReactNode): { value: string; label: ReactNode; disabled: boolean }[] {
+type Option = { value: string; label: ReactNode; disabled: boolean };
+type OptionProps = {
+  value?: string;
+  children?: ReactNode;
+  disabled?: boolean;
+  label?: string;
+};
+function options(children: ReactNode): Option[] {
   return Children.toArray(children).flatMap((child) => {
-    if (!isValidElement<{ value?: string; children?: ReactNode; disabled?: boolean }>(child))
-      return [];
+    if (!isValidElement<OptionProps>(child)) return [];
     if (child.type !== 'option') return options(child.props.children);
     return [
       {
@@ -29,6 +37,33 @@ function options(children: ReactNode): { value: string; label: ReactNode; disabl
       },
     ];
   });
+}
+/** Direct `optgroup` children keep their label; everything else is one unnamed group. */
+function groups(children: ReactNode): { label?: string; options: Option[] }[] {
+  const all = Children.toArray(children);
+  const named = all.filter(
+    (child) => isValidElement<OptionProps>(child) && child.type === 'optgroup'
+  );
+  if (named.length === 0) return [{ options: options(children) }];
+  return (named as React.ReactElement<OptionProps>[]).map((group) => ({
+    label: group.props.label,
+    options: options(group.props.children),
+  }));
+}
+function OptionItem({ option }: { option: Option }) {
+  return (
+    <Primitive.Item
+      value={encode(option.value)}
+      data-value={option.value}
+      disabled={option.disabled}
+      className="cx-select-option"
+    >
+      <Primitive.ItemText>{option.label}</Primitive.ItemText>
+      <Primitive.ItemIndicator className="cx-select-check">
+        <Check size={14} aria-hidden="true" />
+      </Primitive.ItemIndicator>
+    </Primitive.Item>
+  );
 }
 /** Theme-owned popup, with Radix keyboard, typeahead and focus management. */
 export function Select({
@@ -42,6 +77,7 @@ export function Select({
   required,
   block = false,
   size = 'md',
+  onCloseAutoFocus,
   ...aria
 }: Props) {
   const field = useFieldControl();
@@ -79,6 +115,7 @@ export function Select({
           sideOffset={5}
           collisionPadding={12}
           onCloseAutoFocus={(event) => {
+            onCloseAutoFocus?.(event);
             if (!document.getElementById(id ?? '') && id) event.preventDefault();
           }}
         >
@@ -86,20 +123,18 @@ export function Select({
             <ChevronUp size={14} />
           </Primitive.ScrollUpButton>
           <Primitive.Viewport className="cx-select-options">
-            {options(children).map((option) => (
-              <Primitive.Item
-                key={option.value}
-                value={encode(option.value)}
-                data-value={option.value}
-                disabled={option.disabled}
-                className="cx-select-option"
-              >
-                <Primitive.ItemText>{option.label}</Primitive.ItemText>
-                <Primitive.ItemIndicator className="cx-select-check">
-                  <Check size={14} aria-hidden="true" />
-                </Primitive.ItemIndicator>
-              </Primitive.Item>
-            ))}
+            {groups(children).map((group, index) =>
+              group.label ? (
+                <Primitive.Group key={index}>
+                  <Primitive.Label className="cx-select-group">{group.label}</Primitive.Label>
+                  {group.options.map((option) => (
+                    <OptionItem key={option.value} option={option} />
+                  ))}
+                </Primitive.Group>
+              ) : (
+                group.options.map((option) => <OptionItem key={option.value} option={option} />)
+              )
+            )}
           </Primitive.Viewport>
           <Primitive.ScrollDownButton className="cx-select-scroll">
             <ChevronDown size={14} />

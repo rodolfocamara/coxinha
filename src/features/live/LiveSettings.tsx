@@ -10,11 +10,11 @@ import {
   MODEL_PROGRESS_EVENT,
   type LiveSettings as Settings,
 } from '../capture/live';
-import { SettingsCard, SettingsRow, Switch } from '../settings/controls';
+import { SettingsGroup, SettingsRow, Switch } from '../settings/controls';
 
 const THREADS = [2, 4, 6, 8];
 
-/** Ajustes > Transcrição local rows for spec 0097 P3 (off by default). */
+/** Ajustes > Transcrição rows for spec 0097 P3 (off by default). */
 export function LiveSettings() {
   const { t } = useTranslation();
   const k = (key: string) => t(`people.settings.live.${key}`);
@@ -64,7 +64,7 @@ export function LiveSettings() {
     }
   };
   return (
-    <SettingsCard>
+    <SettingsGroup title={t('people.settings.groups.automatic')}>
       <SettingsRow
         name="live"
         icon={Radio}
@@ -157,6 +157,6 @@ export function LiveSettings() {
           </Select>
         }
       />
-    </SettingsCard>
+    </SettingsGroup>
   );
 }

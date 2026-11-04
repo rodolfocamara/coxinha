@@ -7,9 +7,17 @@ import en from '../../locales/en.json';
 import ptBR from '../../locales/pt-BR.json';
 import { NoteRecovery } from './NoteRecovery';
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, to, hash }: { children: ReactNode; to: string; hash?: string }) => (
-    <a href={`${to}${hash ? `#${hash}` : ''}`}>{children}</a>
-  ),
+  Link: ({
+    children,
+    to,
+    params,
+    hash,
+  }: {
+    children: ReactNode;
+    to: string;
+    params?: { section?: string };
+    hash?: string;
+  }) => <a href={`${to.replace('$section', params?.section ?? '')}#${hash}`}>{children}</a>,
 }));
 import { isMissingNoteFile } from '../../lib/noteFileErrors';
 
@@ -53,7 +61,7 @@ it.each([
     expect(retry).not.toHaveBeenCalled();
     expect(
       screen.getByRole('link', { name: i18n.t('noteRecovery.openRebuildSettings') })
-    ).toHaveAttribute('href', '/settings#rebuild-heading');
+    ).toHaveAttribute('href', '/settings/storage#rebuild-heading');
   }
 );
 
@@ -110,6 +118,6 @@ it.each([
     expect(retry).not.toHaveBeenCalled();
     expect(
       screen.getByRole('link', { name: i18n.t('noteRecovery.openRebuildSettings') })
-    ).toHaveAttribute('href', '/settings#rebuild-heading');
+    ).toHaveAttribute('href', '/settings/storage#rebuild-heading');
   }
 );

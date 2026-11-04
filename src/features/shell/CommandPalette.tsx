@@ -7,7 +7,9 @@ import { useAppStore } from '../../lib/store';
 import { noteDeletionErrorKey } from '../../lib/noteFileErrors';
 import { buildGroups, type Target } from '../search/universalSearch';
 import { useUniversalSearch } from '../search/useUniversalSearch';
-import { usePaletteActions } from './usePaletteActions';
+import { SECTION_ICONS } from '../settings/icons';
+import { matchSettings, settingsLocation, type SettingsRowEntry } from '../settings/settingsIndex';
+import { usePaletteActions, type PaletteAction } from './usePaletteActions';
 import {
   LISTBOX_ID,
   optionId,
@@ -89,6 +91,17 @@ export function CommandPalette({ open, onClose }: Props) {
     onDeleteCurrent: (note) => void confirmAndDelete(note),
   });
 
+  const settingAction = (entry: SettingsRowEntry): PaletteAction => {
+    const Icon = SECTION_ICONS[entry.section];
+    return {
+      kind: 'action',
+      id: `setting-${entry.id}`,
+      label: `${t(entry.title)} · ${t(`people.settings.sections.${entry.section}`)}`,
+      icon: <Icon size={15} aria-hidden="true" />,
+      run: () => void navigate(settingsLocation(entry.id)),
+    };
+  };
+
   const groups = useMemo<PaletteGroup[]>(() => {
     const q = query.trim().toLowerCase();
     const match = (label: string) => !q || label.toLowerCase().includes(q);
@@ -96,6 +109,14 @@ export function CommandPalette({ open, onClose }: Props) {
     const commands: PaletteGroup[] = [
       { id: 'actions', label: g('actions'), items: actions.filter((a) => match(a.label)) },
       { id: 'go', label: g('goTo'), items: destinations.filter((a) => match(a.label)) },
+      {
+        id: 'settings',
+        label: g('settings'),
+        items: matchSettings(
+          (key, options) => t(key, options as never) as unknown as string,
+          query
+        ).map(settingAction),
+      },
     ];
     if (!q)
       commands.push({

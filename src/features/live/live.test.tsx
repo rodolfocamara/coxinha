@@ -6,7 +6,7 @@ import { useLiveStatus, type LiveTranscript, type TitleSuggestion } from '../cap
 import { LiveToggle } from '../capture/recorderParts';
 import { LiveTranscriptPanel } from './LiveTranscriptPanel';
 import { LiveSettings } from './LiveSettings';
-import { TitleLlmCard } from './TitleLlmCard';
+import { TitleLlmSettings } from './TitleLlmSettings';
 import { TitleSuggestionNote } from './TitleSuggestionNote';
 
 vi.mock('@tauri-apps/api/core', () => ({ invoke: vi.fn(), isTauri: () => true }));
@@ -194,7 +194,7 @@ it('tests the title server with a synthetic excerpt and shows the result', async
     title_llm_settings: () => settings,
     title_llm_test: () => 'Orçamento de infraestrutura',
   });
-  render(<TitleLlmCard />);
+  render(<TitleLlmSettings />);
   fireEvent.click(await screen.findByRole('button', { name: 'Testar' }));
   expect(await screen.findByText('Funcionou: Orçamento de infraestrutura')).toBeVisible();
   expect(invoke).toHaveBeenCalledWith('title_llm_test', { settings });

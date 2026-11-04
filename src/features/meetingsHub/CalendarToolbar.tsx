@@ -5,6 +5,7 @@ import { Button } from '../../components/ui';
 import { openSearch } from '../../components/AppShell/SearchBar';
 import type { CalendarView } from './calendarViews';
 import { ViewSwitcher } from './ViewSwitcher';
+import { settingsLocation } from '../settings/settingsIndex';
 
 type Props = {
   view: CalendarView;
@@ -87,7 +88,7 @@ export function CalendarToolbar(p: Props) {
         icon={<Globe2 size={15} aria-hidden="true" />}
         aria-label={k('timeZones')}
         title={k('timeZones')}
-        onClick={() => void navigate({ to: '/settings', hash: 'calendar' })}
+        onClick={() => void navigate(settingsLocation('time-zones'))}
       />
       <ViewSwitcher view={p.view} days={p.days} onChange={p.onView} />
     </header>

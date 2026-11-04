@@ -10,9 +10,17 @@ const invalidate = vi.fn().mockResolvedValue(undefined);
 vi.mock('@tanstack/react-router', () => ({
   useRouter: () => ({ invalidate }),
   useNavigate: () => vi.fn(),
-  Link: ({ children, to, hash }: { children: ReactNode; to: string; hash?: string }) => (
-    <a href={`${to}${hash ? `#${hash}` : ''}`}>{children}</a>
-  ),
+  Link: ({
+    children,
+    to,
+    params,
+    hash,
+  }: {
+    children: ReactNode;
+    to: string;
+    params?: { section?: string };
+    hash?: string;
+  }) => <a href={`${to.replace('$section', params?.section ?? '')}#${hash}`}>{children}</a>,
 }));
 vi.mock('../features/notes/NoteEditor', () => ({
   NoteEditor: () => null,
@@ -47,7 +55,7 @@ it.each([
   expect(invalidate).not.toHaveBeenCalled();
   expect(
     screen.getByRole('link', { name: i18n.t('noteRecovery.openRebuildSettings') })
-  ).toHaveAttribute('href', '/settings#rebuild-heading');
+  ).toHaveAttribute('href', '/settings/storage#rebuild-heading');
 });
 
 it.each(['en', 'pt-BR'])(
@@ -75,7 +83,7 @@ it.each(['en', 'pt-BR'])(
     expect(screen.queryByText(/note_file_invalid_metadata/)).toBeNull();
     expect(
       screen.getByRole('link', { name: i18n.t('noteRecovery.openRebuildSettings') })
-    ).toHaveAttribute('href', '/settings#rebuild-heading');
+    ).toHaveAttribute('href', '/settings/storage#rebuild-heading');
     expect(invalidate).not.toHaveBeenCalled();
   }
 );

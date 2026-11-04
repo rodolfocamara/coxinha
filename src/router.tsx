@@ -18,6 +18,7 @@ import { validateMeetingsSearch } from './features/meetingsHub/meetingsSearch';
 import { WorkspaceRoute } from './features/workspace/WorkspaceRoute';
 import { PeopleRoute, validatePeopleSearch } from './routes/PeopleRoute';
 import { SettingsRoute } from './routes/SettingsRoute';
+import { settingsIndexRedirect, settingsPageRedirect } from './features/settings/settingsIndex';
 
 export interface RouterContext {
   queryClient: QueryClient;
@@ -146,6 +147,21 @@ const sessionRoute = createRoute({
 const settingsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'settings',
+});
+const settingsIndexRoute = createRoute({
+  getParentRoute: () => settingsRoute,
+  path: '/',
+  beforeLoad: ({ location }) => {
+    throw redirect(settingsIndexRedirect(location.hash));
+  },
+});
+const settingsPageRoute = createRoute({
+  getParentRoute: () => settingsRoute,
+  path: '$section',
+  beforeLoad: ({ params, location }) => {
+    const moved = settingsPageRedirect(params.section, location.hash);
+    if (moved) throw redirect(moved);
+  },
   component: SettingsRoute,
 });
 
@@ -159,7 +175,7 @@ const baseChildren = [
   calendarRoute,
   peopleRoute,
   meetingsRoute.addChildren([meetingsIndexRoute, meetingDetailRoute]),
-  settingsRoute,
+  settingsRoute.addChildren([settingsIndexRoute, settingsPageRoute]),
 ];
 const routeTree = rootRoute.addChildren(baseChildren);
 

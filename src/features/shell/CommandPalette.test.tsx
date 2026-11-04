@@ -153,6 +153,22 @@ describe('CommandPalette', () => {
     expect(navigate).toHaveBeenCalledWith(expect.objectContaining({ to }));
   });
 
+  it('lists settings only after typing, and opens the page and row', async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    render(<CommandPalette open onClose={onClose} />);
+    expect(screen.queryByText('people.palette.groups.settings')).toBeNull();
+    await user.type(screen.getByRole('combobox'), 'people.settings.mic.title');
+    expect(await screen.findByText('people.palette.groups.settings')).toBeInTheDocument();
+    await user.click(screen.getByText(/people\.settings\.mic\.title · /));
+    expect(onClose).toHaveBeenCalled();
+    expect(navigate).toHaveBeenCalledWith({
+      to: '/settings/$section',
+      params: { section: 'recording' },
+      hash: 'mic-title',
+    });
+  });
+
   it('Gravar agora toggles capture with a quick title and shows the bound global shortcut', async () => {
     const user = userEvent.setup();
     const onClose = vi.fn();

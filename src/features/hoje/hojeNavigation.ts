@@ -1,6 +1,7 @@
 import { useNavigate } from '@tanstack/react-router';
 import { prepareRouteTransition, setZoomOrigin } from '../../lib/motion';
 import { meetingTransition } from '../meetingsHub/meetingsSheets';
+import { settingsLocation } from '../settings/settingsIndex';
 
 /**
  * Opens a meeting from Hoje. With a session the source title is named
@@ -46,8 +47,7 @@ export function useGo() {
     workspace: () => zoom(preview()),
     integrations: () =>
       void navigate({
-        to: '/settings',
-        hash: 'integrations-heading',
+        ...settingsLocation('outlook'),
         viewTransition: prepareRouteTransition('nav'),
       }),
   };

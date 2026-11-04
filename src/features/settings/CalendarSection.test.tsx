@@ -21,9 +21,7 @@ const search = () => screen.getByRole('textbox', { name: 'Country or city' });
 it('adds a zone by country with its code, then reorders, relabels and removes it', async () => {
   const user = userEvent.setup();
   render(<CalendarSection />);
-  expect(
-    screen.getByRole('heading', { level: 2, name: 'Calendar and time zones' })
-  ).toBeInTheDocument();
+  expect(screen.getByRole('heading', { level: 1, name: 'Calendar' })).toBeInTheDocument();
   expect(screen.queryByRole('list', { name: 'Extra time zones' })).toBeNull();
 
   await user.type(search(), 'Israel');

@@ -4,7 +4,7 @@ import { setDetectionEnabled, useMeetingDetection } from './meetingDetection';
 import { Alert } from '../../components/ui';
 import { SettingsRow, Switch } from '../settings/controls';
 
-/** Call detection switch, rendered as a row of the Ajustes > Gravação card. */
+/** Call detection switch, rendered as a row of the Ajustes > Gravação page. */
 export function DetectionSettings() {
   const { t } = useTranslation();
   const { enabled, status, failed } = useMeetingDetection();

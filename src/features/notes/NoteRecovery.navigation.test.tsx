@@ -94,10 +94,10 @@ it.each(['en', 'pt-BR'])(
     });
     const settings = createRoute({
       getParentRoute: () => root,
-      path: '/settings',
+      path: '/settings/$section',
       component: () => (
         <>
-          <SettingsView />
+          <SettingsView section="storage" target="rebuild-heading" />
           <Link to="/notes/$noteId" params={{ noteId: id }}>
             return-to-note
           </Link>
@@ -120,10 +120,10 @@ it.each(['en', 'pt-BR'])(
       );
       const attempts = save.mock.calls.length;
       const link = screen.getByRole('link', { name: i18n.t('noteRecovery.openRebuildSettings') });
-      expect(link).toHaveAttribute('href', '/settings#rebuild-heading');
+      expect(link).toHaveAttribute('href', '/settings/storage#rebuild-heading');
       await userEvent.click(link);
       await screen.findByRole('heading', { name: i18n.t('settings.vault.rebuildHeading') });
-      expect(router.state.location.pathname).toBe('/settings');
+      expect(router.state.location.pathname).toBe('/settings/storage');
       expect(router.state.location.hash).toBe('rebuild-heading');
       expect(document.getElementById('rebuild-heading')).toBeInTheDocument();
       expect(mocks.rebuild).not.toHaveBeenCalled();

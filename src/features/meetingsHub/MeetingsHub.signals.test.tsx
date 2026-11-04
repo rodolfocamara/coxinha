@@ -373,10 +373,12 @@ it('says summaries are off and links to the setting, without implying memory', a
   expect(propValue(peek, 'Summary')).toHaveTextContent('Off');
   expect(peek.textContent).not.toMatch(/generated/i);
   fireEvent.click(
-    within(peek).getByRole('button', { name: 'Set up summaries in Settings › Integrations' })
+    within(peek).getByRole('button', {
+      name: 'Set up summaries in Settings › Titles and summaries',
+    })
   );
-  await waitFor(() => expect(router.state.location.pathname).toBe('/settings'));
-  expect(router.state.location.hash).toBe('integrations');
+  await waitFor(() => expect(router.state.location.pathname).toBe('/settings/titles'));
+  expect(router.state.location.hash).toBe('summaries-heading');
 });
 
 it.each([

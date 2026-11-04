@@ -17,6 +17,7 @@ import { ItemList, TextLines } from './PeekSections';
 import { PropAction, PropDash, PropDisclosure, PropRow } from './PropertySheet';
 import { useSignalsReport } from './meetingSignals';
 import type { MeetingOutcome } from './useMeetingOutcome';
+import { settingsLocation } from '../settings/settingsIndex';
 
 /**
  * What a past meeting produced, one row per thing and always the same rows, so
@@ -106,7 +107,7 @@ export function ResultRows({
           !hasSummary && report && signals && !report.summariesOn ? (
             <PropAction
               name={a('setUpSummaries')}
-              onClick={() => void navigate({ to: '/settings', hash: 'integrations' })}
+              onClick={() => void navigate(settingsLocation('summaries'))}
             >
               {a('setUp')}
             </PropAction>

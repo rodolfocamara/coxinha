@@ -285,7 +285,7 @@
       "regenerate": "Generate again",
       "generating": "Generating…",
       "none": "No summary yet. It is written after the transcript.",
-      "setup": "To summarize, turn on the title model and \"Generate summaries\" in Settings › Integrations.",
+      "setup": "To summarize, turn on the title model and \"Generate summaries\" in Settings › Titles and summaries.",
       "failed": "The summary did not work: {{error}}"
     },
     "eventDetails": {

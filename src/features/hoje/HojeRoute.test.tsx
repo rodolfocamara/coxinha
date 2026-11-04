@@ -141,8 +141,9 @@ describe('Hoje agenda', () => {
     const connect = await screen.findByRole('button', { name: 'Conectar Outlook' });
     fireEvent.click(connect);
     expect(navigate).toHaveBeenCalledWith({
-      to: '/settings',
-      hash: 'integrations-heading',
+      to: '/settings/$section',
+      params: { section: 'integrations' },
+      hash: 'integrations-outlook-heading',
       viewTransition: 'vt:nav',
     });
   });

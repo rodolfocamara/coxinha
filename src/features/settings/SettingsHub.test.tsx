@@ -8,7 +8,8 @@ import { initialCaptureState, useCaptureStore } from '../capture/captureStore';
 import { useMeetingDetection } from '../detection/meetingDetection';
 import { AppearanceSection } from './AppearanceSection';
 import { RecordingSection } from './RecordingSection';
-import { SETTINGS_SECTIONS, SettingsLayout } from './SettingsLayout';
+import { SettingsLayout } from './SettingsLayout';
+import { SETTINGS_SECTIONS } from './settingsIndex';
 
 vi.mock('@tauri-apps/api/core', () => ({
   invoke: vi.fn(),
@@ -148,19 +149,14 @@ it('call detection is a switch row in Gravação that persists the preference', 
   expect(useMeetingDetection.getState().enabled).toBe(false);
 });
 
-it('gives every settings section a nav icon and the same icon on its heading', () => {
+it('gives every settings page a nav icon', () => {
   render(
     <SettingsLayout ready>
       <AppearanceSection />
     </SettingsLayout>
   );
   const nav = screen.getByRole('navigation', { name: i18n.t('people.settings.sectionsLabel') });
-  const items = within(nav).getAllByRole('button');
+  const items = within(nav).getAllByRole('link');
   expect(items).toHaveLength(SETTINGS_SECTIONS.length);
   for (const item of items) expect(item.querySelector('svg[aria-hidden="true"]')).not.toBeNull();
-  const heading = screen.getByRole('heading', {
-    level: 2,
-    name: i18n.t('people.settings.sections.appearance'),
-  });
-  expect(heading.querySelector('svg[aria-hidden="true"]')).not.toBeNull();
 });

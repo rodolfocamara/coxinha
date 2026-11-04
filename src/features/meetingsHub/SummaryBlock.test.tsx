@@ -3,7 +3,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { invoke } from '@tauri-apps/api/core';
 import i18n from '../../lib/i18n';
 import { SummaryBlock } from './SummaryBlock';
-import { TitleLlmCard } from '../live/TitleLlmCard';
+import { TitleLlmSettings } from '../live/TitleLlmSettings';
 
 vi.mock('@tauri-apps/api/core', () => ({ invoke: vi.fn(), isTauri: () => true }));
 
@@ -102,14 +102,14 @@ it('keeps summaries off until the title model is on and saves the toggle', async
       return current;
     },
   });
-  const { unmount } = render(<TitleLlmCard />);
+  const { unmount } = render(<TitleLlmSettings />);
   const toggle = await screen.findByRole('checkbox', { name: 'Gerar resumos' });
   expect(toggle).toBeDisabled();
   expect(screen.getByText(/envia o texto inteiro da transcrição/)).toBeVisible();
   unmount();
 
   current = settings({ summaries: false });
-  render(<TitleLlmCard />);
+  render(<TitleLlmSettings />);
   const enabled = await screen.findByRole('checkbox', { name: 'Gerar resumos' });
   expect(enabled).not.toBeDisabled();
   fireEvent.click(enabled);

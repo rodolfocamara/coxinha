@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { FileAudio, Users, type LucideIcon } from 'lucide-react';
 import { Badge } from '../../components/ui';
 import type { AppConfig } from '../../lib/bindings';
-import { SettingsCard, SettingsRow, SettingsSection } from './controls';
+import { SettingsGroup, SettingsRow, SettingsSection } from './controls';
 import { LiveSettings } from '../live/LiveSettings';
 
 const NONE = { engine: 'none' } as const;
@@ -23,7 +23,7 @@ function describe(engine: AppConfig['transcriber'] | AppConfig['diarizer']) {
   }
 }
 
-/** Transcrição local: what the app config holds today (read-only; models are picked per meeting). */
+/** Transcrição: what the app config holds today (read-only; models are picked per meeting). */
 export function TranscriptionSection({ config }: { config: AppConfig }) {
   const { t } = useTranslation();
   const s = (key: string) => t(`people.settings.${key}`);
@@ -55,14 +55,11 @@ export function TranscriptionSection({ config }: { config: AppConfig }) {
       title={s('sections.transcription')}
       description={s('descriptions.transcription')}
     >
-      <SettingsCard>
+      <LiveSettings />
+      <SettingsGroup title={s('groups.meetingModels')} note={s('transcription.perMeeting')}>
         {row('transcriber', s('transcription.engine'), config.transcriber ?? NONE, FileAudio)}
         {row('diarizer', s('transcription.diarizer'), config.diarizer ?? NONE, Users)}
-      </SettingsCard>
-      <p className="mt-2 text-xs text-muted-foreground">{s('transcription.perMeeting')}</p>
-      <div className="mt-4">
-        <LiveSettings />
-      </div>
+      </SettingsGroup>
     </SettingsSection>
   );
 }

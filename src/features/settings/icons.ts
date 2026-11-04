@@ -7,17 +7,20 @@ import {
   Mic,
   Palette,
   Plug,
+  Sparkles,
   type LucideIcon,
 } from 'lucide-react';
+import type { SettingsSectionId } from './settingsIndex';
 
-/** One icon per settings section: the nav item and the section heading share it. */
-export const SECTION_ICONS: Record<string, LucideIcon> = {
+/** One icon per settings page, in the sidebar and in Ctrl+K. */
+export const SECTION_ICONS: Record<SettingsSectionId, LucideIcon> = {
   appearance: Palette,
-  calendar: CalendarClock,
+  shortcuts: Keyboard,
   recording: Mic,
   transcription: AudioLines,
+  calendar: CalendarClock,
   integrations: Plug,
-  shortcuts: Keyboard,
+  titles: Sparkles,
   storage: HardDrive,
   diagnostics: Activity,
 };

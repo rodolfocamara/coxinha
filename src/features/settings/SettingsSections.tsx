@@ -1,19 +1,27 @@
 import { useTranslation } from 'react-i18next';
-import { Stethoscope } from 'lucide-react';
+import {
+  AppWindow,
+  CalendarDays,
+  CircleDot,
+  FilePlus,
+  ListVideo,
+  Stethoscope,
+  type LucideIcon,
+} from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';
 import { useState } from 'react';
 import type { AppConfig } from '../../lib/bindings';
 import { Button } from '../../components/ui';
-import { SettingsCard, SettingsRow, SettingsSection } from './controls';
+import { SettingsGroup, SettingsRow, SettingsSection } from './controls';
 
 // Display order matches the user's mental model (create → navigate
 // → record), not the struct field order.
-const SHORTCUT_KEYS: ReadonlyArray<keyof AppConfig['shortcuts']> = [
-  'new_note',
-  'open_app',
-  'agenda',
-  'meetings',
-  'toggle_recording',
+const SHORTCUTS: ReadonlyArray<[keyof AppConfig['shortcuts'], LucideIcon]> = [
+  ['new_note', FilePlus],
+  ['open_app', AppWindow],
+  ['agenda', CalendarDays],
+  ['meetings', ListVideo],
+  ['toggle_recording', CircleDot],
 ];
 
 /** Atalhos: the global shortcuts from the config, read-only until rebinding ships. */
@@ -26,11 +34,12 @@ export function ShortcutsSection({ shortcuts }: { shortcuts: AppConfig['shortcut
       title={t('people.settings.sections.shortcuts')}
       description={t('people.settings.descriptions.shortcuts')}
     >
-      <SettingsCard>
-        {SHORTCUT_KEYS.map((key) => (
+      <SettingsGroup note={t('settings.shortcuts.rebindComingSoon')}>
+        {SHORTCUTS.map(([key, icon]) => (
           <SettingsRow
             key={key}
             name={`shortcut-${key}`}
+            icon={icon}
             title={
               key === 'toggle_recording'
                 ? t('people.settings.shortcuts.toggleRecording')
@@ -39,10 +48,7 @@ export function ShortcutsSection({ shortcuts }: { shortcuts: AppConfig['shortcut
             control={<kbd className="cx-kbd">{shortcuts[key]}</kbd>}
           />
         ))}
-      </SettingsCard>
-      <p className="mt-2 text-xs text-muted-foreground">
-        {t('settings.shortcuts.rebindComingSoon')}
-      </p>
+      </SettingsGroup>
     </SettingsSection>
   );
 }
@@ -81,7 +87,7 @@ export function DiagnosticsSection() {
       title={t('people.settings.sections.diagnostics')}
       description={t('people.settings.descriptions.diagnostics')}
     >
-      <SettingsCard>
+      <SettingsGroup>
         <SettingsRow
           name="diagnostics"
           icon={Stethoscope}
@@ -97,7 +103,7 @@ export function DiagnosticsSection() {
           }
           below={diagnostics.text && <DiagnosticsText text={diagnostics.text} />}
         />
-      </SettingsCard>
+      </SettingsGroup>
     </SettingsSection>
   );
 }

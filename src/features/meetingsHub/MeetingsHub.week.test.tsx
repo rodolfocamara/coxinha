@@ -148,6 +148,6 @@ it('leads from the agenda to the time zone setting (spec 0123)', async () => {
   const router = renderAt('/meetings?view=week');
   await heading(/October 12.*18, 2026/);
   screen.getByRole('button', { name: 'Time zones' }).click();
-  await waitFor(() => expect(router.state.location.pathname).toBe('/settings'));
-  expect(router.state.location.hash).toBe('calendar');
+  await waitFor(() => expect(router.state.location.pathname).toBe('/settings/calendar'));
+  expect(router.state.location.hash).toBe('time-zones-title');
 });

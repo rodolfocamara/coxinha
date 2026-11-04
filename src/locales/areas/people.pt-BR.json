@@ -68,12 +68,13 @@
       "sections": {
         "appearance": "Aparência",
         "recording": "Gravação",
-        "transcription": "Transcrição local",
+        "transcription": "Transcrição",
         "integrations": "Integrações",
         "shortcuts": "Atalhos",
         "storage": "Armazenamento",
         "diagnostics": "Diagnóstico",
-        "calendar": "Agenda e fusos horários"
+        "calendar": "Agenda",
+        "titles": "Títulos e resumos"
       },
       "descriptions": {
         "appearance": "Tema, cores, texto e idioma. Salvo neste computador.",
@@ -83,7 +84,8 @@
         "shortcuts": "Os atalhos globais funcionam mesmo com a janela escondida.",
         "storage": "Suas notas são arquivos Markdown nesta pasta.",
         "diagnostics": "Texto para colar ao relatar um problema.",
-        "calendar": "Como a grade da semana mostra as horas. Salvo neste computador."
+        "calendar": "Como a grade da semana mostra os fusos horários. Salvo neste computador.",
+        "titles": "Com o seu próprio servidor via SSH. Envia texto da transcrição, nunca áudio."
       },
       "theme": {
         "title": "Tema",
@@ -166,7 +168,10 @@
         "testOk": "Funcionou: {{title}}",
         "testFailed": "Não funcionou: {{error}}",
         "summaries": "Gerar resumos",
-        "summariesPrivacy": "Depois de cada transcrição, envia o texto inteiro da transcrição, em partes, para este mesmo servidor escrever um resumo com decisões e ações. Desligado por padrão; nunca áudio."
+        "summariesPrivacy": "Depois de cada transcrição, envia o texto inteiro da transcrição, em partes, para este mesmo servidor escrever um resumo com decisões e ações. Desligado por padrão; nunca áudio.",
+        "server": "Seu servidor",
+        "whatItDoes": "O que ele faz",
+        "testTitle": "Testar o servidor"
       },
       "zones": {
         "title": "Fusos horários extras",
@@ -232,6 +237,53 @@
         "ptBR": "Português (Brasil)",
         "en": "English",
         "changed": "Idioma: {{language}}"
+      },
+      "groups": {
+        "app": "App",
+        "meetings": "Reuniões",
+        "connections": "Conexões",
+        "system": "Sistema",
+        "themeAndColour": "Tema e cor",
+        "text": "Texto",
+        "devices": "Dispositivos",
+        "calls": "Chamadas",
+        "automatic": "Automática",
+        "meetingModels": "Modelos das reuniões"
+      },
+      "filter": {
+        "label": "Buscar um ajuste",
+        "placeholder": "Buscar um ajuste",
+        "results": "Ajustes encontrados",
+        "none": "Nenhum ajuste encontrado.",
+        "found_one": "{{count}} ajuste encontrado",
+        "found_other": "{{count}} ajustes encontrados"
+      },
+      "keywords": {
+        "theme": "modo escuro claro dark light",
+        "accent": "cor botão",
+        "fontSize": "zoom letra maior menor texto",
+        "contrast": "legibilidade",
+        "fontSans": "tipografia letra",
+        "fontMono": "código tipografia",
+        "language": "português inglês locale",
+        "mic": "entrada voz áudio dispositivo",
+        "output": "saída alto-falante som dispositivo",
+        "detection": "teams meet zoom notificação",
+        "auto-record": "gravar automático sozinho",
+        "live": "tagarela parakeet tempo real",
+        "live-model": "parakeet gguf handy",
+        "live-threads": "cpu desempenho",
+        "transcriber": "whisper parakeet modelo",
+        "diarizer": "pyannote speakrs quem falou",
+        "time-zones": "fuso timezone relógio",
+        "local-zone": "fuso timezone",
+        "outlook": "microsoft calendário conta",
+        "titles-target": "ssh host",
+        "suggest-titles": "ia llm ssh",
+        "summaries": "ia llm ssh",
+        "vault": "obsidian markdown caminho",
+        "rebuild": "índice reindexar",
+        "diagnostics": "log versão build"
       }
     },
     "palette": {
@@ -240,7 +292,8 @@
       "groups": {
         "actions": "Ações",
         "goTo": "Ir para",
-        "notes": "Notas"
+        "notes": "Notas",
+        "settings": "Ajustes"
       },
       "actions": {
         "record": "Gravar agora",

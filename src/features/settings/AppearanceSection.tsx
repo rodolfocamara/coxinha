@@ -26,7 +26,7 @@ import {
 import { commands } from '../../lib/bindings';
 import { getThemePreference, setThemePreference, type ThemePreference } from '../../lib/theme';
 import { AccentPicker, AccentDetails, SliderControl } from './AppearanceControls';
-import { Segmented, SettingsCard, SettingsRow, SettingsSection, Switch } from './controls';
+import { Segmented, SettingsGroup, SettingsRow, SettingsSection, Switch } from './controls';
 
 /** The backend's locale: tray and notifications take it at the next start. */
 async function saveNativeLocale(locale: string) {
@@ -72,7 +72,7 @@ export function AppearanceSection({ onLocale }: { onLocale?: (locale: string) =>
       <p role="status" className="sr-only">
         {announcement}
       </p>
-      <SettingsCard>
+      <SettingsGroup title={s('groups.themeAndColour')}>
         <SettingsRow
           name="theme"
           icon={SunMoon}
@@ -102,23 +102,23 @@ export function AppearanceSection({ onLocale }: { onLocale?: (locale: string) =>
           below={<AccentDetails look={look} onChange={change} />}
         />
         <SettingsRow
-          name="contrast"
-          icon={Contrast}
-          title={s('contrast.title')}
-          description={s('contrast.hint')}
+          name="ambient"
+          icon={Sparkles}
+          title={s('ambient.title')}
+          description={s('ambient.hint')}
           control={
-            <SliderControl
-              name="contrast"
-              {...CONTRAST}
-              value={look.contrast}
-              fallback={DEFAULT_APPEARANCE.contrast}
-              format={(value) => `${value}%`}
-              resetLabel={s('contrast.reset')}
-              onChange={(contrast) => change({ contrast })}
-              onReset={() => setAnnouncement(s('contrast.wasReset'))}
+            <Switch
+              name="ambient"
+              checked={ambient}
+              onChange={(next) => {
+                setAmbient(next);
+                setAmbientEnabled(next);
+              }}
             />
           }
         />
+      </SettingsGroup>
+      <SettingsGroup title={s('groups.text')}>
         <SettingsRow
           name="fontSize"
           icon={ALargeSmall}
@@ -136,6 +136,24 @@ export function AppearanceSection({ onLocale }: { onLocale?: (locale: string) =>
               resetLabel={s('fontSize.reset')}
               onChange={(fontSize) => change({ fontSize })}
               onReset={() => setAnnouncement(s('fontSize.wasReset'))}
+            />
+          }
+        />
+        <SettingsRow
+          name="contrast"
+          icon={Contrast}
+          title={s('contrast.title')}
+          description={s('contrast.hint')}
+          control={
+            <SliderControl
+              name="contrast"
+              {...CONTRAST}
+              value={look.contrast}
+              fallback={DEFAULT_APPEARANCE.contrast}
+              format={(value) => `${value}%`}
+              resetLabel={s('contrast.reset')}
+              onChange={(contrast) => change({ contrast })}
+              onReset={() => setAnnouncement(s('contrast.wasReset'))}
             />
           }
         />
@@ -175,6 +193,8 @@ export function AppearanceSection({ onLocale }: { onLocale?: (locale: string) =>
             />
           }
         />
+      </SettingsGroup>
+      <SettingsGroup>
         <SettingsRow
           name="language"
           icon={Languages}
@@ -197,23 +217,7 @@ export function AppearanceSection({ onLocale }: { onLocale?: (locale: string) =>
             </Select>
           }
         />
-        <SettingsRow
-          name="ambient"
-          icon={Sparkles}
-          title={s('ambient.title')}
-          description={s('ambient.hint')}
-          control={
-            <Switch
-              name="ambient"
-              checked={ambient}
-              onChange={(next) => {
-                setAmbient(next);
-                setAmbientEnabled(next);
-              }}
-            />
-          }
-        />
-      </SettingsCard>
+      </SettingsGroup>
     </SettingsSection>
   );
 }

@@ -66,6 +66,11 @@
   .cx-select-options {
     padding: 0.25rem;
   }
+  .cx-select-group {
+    padding: 0.375rem 0.5rem 0.125rem;
+    font-size: 0.75rem;
+    color: var(--color-muted-foreground);
+  }
   .cx-select-option {
     position: relative;
     display: flex;

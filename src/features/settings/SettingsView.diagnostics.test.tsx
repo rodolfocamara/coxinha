@@ -65,7 +65,7 @@ it.each([
     mocks.rebuild.mockResolvedValue({ status: 'error', error: `${code}\n${detail}` });
     render(
       <I18nextProvider i18n={i18n}>
-        <SettingsView />
+        <SettingsView section="storage" />
       </I18nextProvider>
     );
     const button = await screen.findByRole('button', { name: i18n.t('settings.vault.rebuild') });
@@ -100,7 +100,7 @@ it.each(['en', 'pt-BR'])(
     });
     render(
       <I18nextProvider i18n={i18n}>
-        <SettingsView />
+        <SettingsView section="storage" />
       </I18nextProvider>
     );
     await userEvent.click(
@@ -129,7 +129,7 @@ it.each(['en', 'pt-BR'])(
     mocks.rebuild.mockResolvedValue({ status: 'error', error });
     render(
       <I18nextProvider i18n={i18n}>
-        <SettingsView />
+        <SettingsView section="storage" />
       </I18nextProvider>
     );
     await userEvent.click(

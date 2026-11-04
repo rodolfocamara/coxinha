@@ -4,11 +4,13 @@ import { useTranslation } from 'react-i18next';
 import { commands, type AppConfig, type ObsidianVault } from '../../lib/bindings';
 import { Alert, Button } from '../../components/ui';
 import { SettingsLayout } from './SettingsLayout';
+import { SettingsSection } from './controls';
+import { sectionHeadingId, type SettingsSectionId } from './settingsIndex';
 import { AppearanceSection } from './AppearanceSection';
 import { CalendarSection } from './CalendarSection';
 import { RecordingSection } from './RecordingSection';
 import { TranscriptionSection } from './TranscriptionSection';
-import { IntegrationsSection } from './IntegrationsSection';
+import { IntegrationsSection, TitlesSection } from './IntegrationsSection';
 import { StorageSection } from './StorageSection';
 import {
   DiagnosticsSection,
@@ -25,15 +27,33 @@ type LoadState =
 type Props = {
   /** Opens the agenda from the Outlook integration; the route supplies navigation. */
   onOpenAgenda?: () => void;
-  /** Section (`recording`) or legacy heading id (`integrations-heading`) to land on. */
-  initialSection?: string;
+  /** The page on screen; the route supplies it. */
+  section?: SettingsSectionId;
+  /** Hash of the row to land on. */
+  target?: string;
+  onNavigate?: (section: SettingsSectionId, target?: string) => void;
 };
+
+/** Pages that wait for the config; until then they show its state under their title. */
+const CONFIG_PAGES: readonly SettingsSectionId[] = [
+  'transcription',
+  'integrations',
+  'titles',
+  'shortcuts',
+  'storage',
+  'diagnostics',
+];
 
 /**
  * Ajustes (spec 0096 P6). Aparência and Gravação work without the config;
  * the rest waits for `get_config` + `list_obsidian_vaults`.
  */
-export function SettingsView({ onOpenAgenda, initialSection }: Props = {}) {
+export function SettingsView({
+  onOpenAgenda,
+  section = 'appearance',
+  target,
+  onNavigate,
+}: Props = {}) {
   const { t } = useTranslation();
   const [retry, setRetry] = useState(0);
   const [state, setState] = useState<LoadState>({ kind: 'loading' });
@@ -65,7 +85,7 @@ export function SettingsView({ onOpenAgenda, initialSection }: Props = {}) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [retry]);
 
-  const configSections =
+  const configState =
     state.kind === 'loading' ? (
       <p role="status" aria-live="polite" className="text-ui text-muted-foreground">
         {t('settings.loading')}
@@ -87,10 +107,14 @@ export function SettingsView({ onOpenAgenda, initialSection }: Props = {}) {
         </div>
         <DiagnosticsText text={diagnostics.text} />
       </div>
-    ) : (
+    ) : null;
+
+  const configSections =
+    state.kind === 'ready' ? (
       <>
         <TranscriptionSection config={state.config} />
         <IntegrationsSection onOpenAgenda={onOpenAgenda} />
+        <TitlesSection />
         <ShortcutsSection shortcuts={state.config.shortcuts} />
         <StorageSection
           config={state.config}
@@ -99,10 +123,27 @@ export function SettingsView({ onOpenAgenda, initialSection }: Props = {}) {
         />
         <DiagnosticsSection />
       </>
+    ) : (
+      CONFIG_PAGES.map((id) => (
+        <SettingsSection
+          key={id}
+          id={id}
+          headingId={sectionHeadingId(id)}
+          title={t(`people.settings.sections.${id}`)}
+          description={t(`people.settings.descriptions.${id}`)}
+        >
+          {id === section && configState}
+        </SettingsSection>
+      ))
     );
 
   return (
-    <SettingsLayout ready={state.kind === 'ready'} initialSection={initialSection}>
+    <SettingsLayout
+      ready={state.kind === 'ready'}
+      section={section}
+      target={target}
+      onNavigate={onNavigate}
+    >
       <AppearanceSection
         onLocale={(locale) =>
           setState((now) =>

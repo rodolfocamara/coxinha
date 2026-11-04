@@ -28,6 +28,7 @@ vi.mock('../../lib/store', () => ({
   useAppStore: <T,>(selector: (s: { loadNotes: typeof loadNotes }) => T) => selector({ loadNotes }),
 }));
 
+import { SETTINGS_SECTIONS } from './settingsIndex';
 import { SettingsView } from './SettingsView';
 import { THEME_STORAGE_KEY } from '../../lib/theme';
 
@@ -60,7 +61,7 @@ describe('SettingsView — vault panel', () => {
     getConfig.mockResolvedValue({ status: 'ok', data: BASE_CONFIG });
     listObsidianVaults.mockResolvedValue({ status: 'ok', data: [] });
 
-    render(<SettingsView />);
+    render(<SettingsView section="storage" />);
 
     await waitFor(() => expect(screen.getByText('settings.vault.noObsidian')).toBeInTheDocument());
     expect(screen.getByText('C:/Users/me/coxinha')).toBeInTheDocument();
@@ -81,7 +82,7 @@ describe('SettingsView — vault panel', () => {
       ],
     });
 
-    render(<SettingsView />);
+    render(<SettingsView section="storage" />);
 
     await userEvent.click(await screen.findByText('settings.vault.otherFolders'));
     const radio = await screen.findByRole('radio', { name: /Work/ });
@@ -112,7 +113,7 @@ describe('SettingsView — vault panel', () => {
     });
     updateConfig.mockResolvedValue({ status: 'ok', data: null });
 
-    render(<SettingsView />);
+    render(<SettingsView section="storage" />);
 
     await userEvent.click(await screen.findByText('settings.vault.otherFolders'));
     const radio = await screen.findByRole('radio', { name: /Ideas/ });
@@ -127,7 +128,7 @@ describe('SettingsView — vault panel', () => {
     getConfig.mockResolvedValue({ status: 'error', error: 'boom' });
     listObsidianVaults.mockResolvedValue({ status: 'ok', data: [] });
 
-    render(<SettingsView />);
+    render(<SettingsView section="storage" />);
 
     const alert = await screen.findByRole('alert');
     expect(alert.textContent).toContain('boom');
@@ -141,7 +142,7 @@ describe('SettingsView — vault panel', () => {
       data: { notes_indexed: 42, links_indexed: 7, notes_skipped: 0 },
     });
 
-    render(<SettingsView />);
+    render(<SettingsView section="storage" />);
 
     const button = await screen.findByRole('button', { name: /settings\.vault\.rebuild/ });
     await userEvent.click(button);
@@ -158,7 +159,7 @@ describe('SettingsView — vault panel', () => {
     listObsidianVaults.mockResolvedValue({ status: 'ok', data: [] });
     rebuildFromVault.mockResolvedValue({ status: 'error', error: 'disk full' });
 
-    render(<SettingsView />);
+    render(<SettingsView section="storage" />);
 
     await userEvent.click(await screen.findByRole('button', { name: /settings\.vault\.rebuild/ }));
 
@@ -217,7 +218,7 @@ describe('SettingsView — shortcuts panel', () => {
   it('lists all five global shortcuts from the config', async () => {
     getConfig.mockResolvedValue({ status: 'ok', data: BASE_CONFIG });
 
-    render(<SettingsView />);
+    render(<SettingsView section="shortcuts" />);
 
     const { shortcuts } = BASE_CONFIG;
     expect(await screen.findByText(shortcuts.new_note)).toBeInTheDocument();
@@ -239,7 +240,7 @@ describe('SettingsView — shortcuts panel', () => {
       },
     });
 
-    render(<SettingsView />);
+    render(<SettingsView section="shortcuts" />);
 
     expect(await screen.findByText('Ctrl+Shift+Space')).toBeInTheDocument();
     expect(screen.queryByText('Ctrl+Alt+Y')).not.toBeInTheDocument();
@@ -248,7 +249,7 @@ describe('SettingsView — shortcuts panel', () => {
   it('surfaces the "rebind coming soon" hint', async () => {
     getConfig.mockResolvedValue({ status: 'ok', data: BASE_CONFIG });
 
-    render(<SettingsView />);
+    render(<SettingsView section="shortcuts" />);
 
     expect(await screen.findByText('settings.shortcuts.rebindComingSoon')).toBeInTheDocument();
   });
@@ -259,7 +260,7 @@ it('recovers from rejected IPC promises with explicit retry', async () => {
     .mockRejectedValueOnce(new Error('IPC transport unavailable'))
     .mockResolvedValueOnce({ status: 'ok', data: BASE_CONFIG });
   listObsidianVaults.mockResolvedValue({ status: 'ok', data: [] });
-  render(<SettingsView />);
+  render(<SettingsView section="storage" />);
   expect(await screen.findByRole('alert')).toHaveTextContent('settings.recovery.loadError');
   await userEvent.click(screen.getByRole('button', { name: 'settings.recovery.retry' }));
   expect(await screen.findByText(BASE_CONFIG.vault_path)).toBeVisible();
@@ -273,7 +274,7 @@ it.each([
   getConfig.mockResolvedValue({ status: 'ok', data: BASE_CONFIG });
   listObsidianVaults.mockResolvedValue({ status: 'ok', data: [] });
   rebuildFromVault.mockResolvedValue({ status: 'error', error: code });
-  render(<SettingsView />);
+  render(<SettingsView section="storage" />);
   const button = await screen.findByRole('button', { name: 'settings.vault.rebuild' });
   expect(rebuildFromVault).not.toHaveBeenCalled();
   await userEvent.click(button);
@@ -282,30 +283,19 @@ it.each([
   expect(loadNotes).not.toHaveBeenCalled();
 });
 
-describe('SettingsView — section list and deep links', () => {
+describe('SettingsView — section list and landing', () => {
   beforeEach(() => {
     getConfig.mockResolvedValue({ status: 'ok', data: BASE_CONFIG });
     listObsidianVaults.mockResolvedValue({ status: 'ok', data: [] });
   });
 
-  it('lists every section as a button and keeps the legacy heading anchors', async () => {
+  it('lists every page as a link in its group and keeps the legacy heading anchors', async () => {
     render(<SettingsView />);
     const nav = screen.getByRole('navigation', { name: 'people.settings.sectionsLabel' });
     const names = within(nav)
-      .getAllByRole('button')
-      .map((b) => b.textContent);
-    expect(names).toEqual(
-      [
-        'appearance',
-        'calendar',
-        'recording',
-        'transcription',
-        'integrations',
-        'shortcuts',
-        'storage',
-        'diagnostics',
-      ].map((id) => `people.settings.sections.${id}`)
-    );
+      .getAllByRole('link')
+      .map((link) => link.textContent);
+    expect(names).toEqual(SETTINGS_SECTIONS.map((id) => `people.settings.sections.${id}`));
     await screen.findByText(BASE_CONFIG.vault_path);
     for (const id of [
       'appearance-heading',
@@ -320,39 +310,25 @@ describe('SettingsView — section list and deep links', () => {
   });
 
   it.each([
-    ['integrations-heading', 'integrations', 'people.settings.sections.integrations'],
-    ['recording', 'recording', 'people.settings.sections.recording'],
-    ['#storage', 'storage', 'people.settings.sections.storage'],
-  ])(
-    'lands on %s: focuses the heading and marks the section current',
-    async (hash, section, label) => {
-      render(<SettingsView initialSection={hash} />);
-      const heading = await screen.findByRole('heading', { level: 2, name: label });
-      await waitFor(() => expect(heading).toHaveFocus());
-      expect(heading.closest('section')).toHaveAttribute('id', section);
-      expect(screen.getByRole('button', { name: label })).toHaveAttribute('aria-current', 'true');
-    }
-  );
-
-  it('focuses the rebuild row for the note-recovery link', async () => {
-    render(<SettingsView initialSection="rebuild-heading" />);
-    const heading = await screen.findByRole('heading', { name: 'settings.vault.rebuildHeading' });
+    ['integrations', 'people.settings.sections.integrations'],
+    ['recording', 'people.settings.sections.recording'],
+    ['storage', 'people.settings.sections.storage'],
+  ] as const)('opens on %s: focuses the title and marks it current', async (section, label) => {
+    render(<SettingsView section={section} />);
+    await screen.findByText(BASE_CONFIG.vault_path);
+    const heading = screen.getByRole('heading', { level: 1, name: label });
     await waitFor(() => expect(heading).toHaveFocus());
-    expect(
-      screen.getByRole('button', { name: 'people.settings.sections.storage' })
-    ).toHaveAttribute('aria-current', 'true');
+    expect(heading.closest('section')).toHaveAttribute('id', section);
+    expect(screen.getByRole('link', { name: label })).toHaveAttribute('aria-current', 'page');
   });
 
-  it('moves focus to a section heading when chosen in the list', async () => {
-    const user = userEvent.setup();
-    render(<SettingsView />);
-    await screen.findByText(BASE_CONFIG.vault_path);
-    await user.click(screen.getByRole('button', { name: 'people.settings.sections.shortcuts' }));
-    expect(
-      screen.getByRole('heading', { level: 2, name: 'people.settings.sections.shortcuts' })
-    ).toHaveFocus();
-    expect(
-      screen.getByRole('button', { name: 'people.settings.sections.shortcuts' })
-    ).toHaveAttribute('aria-current', 'true');
+  it('focuses the rebuild row for the note-recovery link', async () => {
+    render(<SettingsView section="storage" target="rebuild-heading" />);
+    const heading = await screen.findByRole('heading', { name: 'settings.vault.rebuildHeading' });
+    await waitFor(() => expect(heading).toHaveFocus());
+    expect(screen.getByRole('link', { name: 'people.settings.sections.storage' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
   });
 });

@@ -1,9 +1,12 @@
-import type { ReactNode } from 'react';
+import { createContext, useContext, type ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { SECTION_ICONS } from './icons';
+import type { SettingsSectionId } from './settingsIndex';
 import './settings.css';
 
-/** A titled group of setting cards; `id` is the deep-link target (`/settings#<id>`). */
+/** The page on screen; null outside the layout, where a section always shows. */
+export const ActiveSettingsPage = createContext<SettingsSectionId | null>(null);
+
+/** One settings page: title, one line of description, and its own scroll (spec 0129 P1). */
 export function SettingsSection({
   id,
   headingId,
@@ -11,26 +14,50 @@ export function SettingsSection({
   description,
   children,
 }: {
-  id: string;
-  /** Kept equal to the pre-0096 heading ids so old deep links still land here. */
+  id: SettingsSectionId;
   headingId: string;
   title: string;
   description?: ReactNode;
   children: ReactNode;
 }) {
-  const Icon = SECTION_ICONS[id];
+  const active = useContext(ActiveSettingsPage);
   return (
-    <section id={id} data-settings-section aria-labelledby={headingId} className="mb-[1.375rem]">
-      <h2
-        id={headingId}
-        className="flex items-center gap-2 text-[0.9375rem] font-semibold outline-none"
-      >
-        {Icon && <Icon size={16} aria-hidden="true" className="text-primary-ink" />}
-        {title}
-      </h2>
-      {description && <p className="mt-0.5 mb-2.5 text-muted-foreground">{description}</p>}
-      {children}
+    <section
+      id={id}
+      data-settings-section
+      aria-labelledby={headingId}
+      hidden={active !== null && active !== id}
+      className="cx-settings-page"
+    >
+      <div className="@container cx-settings-page-body">
+        <header>
+          <h1 id={headingId} tabIndex={-1} className="cx-settings-page-title">
+            {title}
+          </h1>
+          {description && <p className="mt-0.5 text-muted-foreground">{description}</p>}
+        </header>
+        {children}
+      </div>
     </section>
+  );
+}
+
+/** A card of rows, under a title where one helps, with a note under it where one is needed. */
+export function SettingsGroup({
+  title,
+  note,
+  children,
+}: {
+  title?: string;
+  note?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <div>
+      {title && <h2 className="cx-settings-group-title">{title}</h2>}
+      <SettingsCard>{children}</SettingsCard>
+      {note && <p className="mt-2 text-xs text-muted-foreground">{note}</p>}
+    </div>
   );
 }
 
@@ -65,10 +92,10 @@ export function SettingsRow({
   /** Leading glyph that names the setting at a glance. */
   icon?: LucideIcon;
 }) {
-  const Title = heading ? 'h3' : 'p';
+  const Title = heading ? 'h2' : 'p';
   return (
     <div className="cx-settings-row">
-      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,16.875rem)] items-center gap-4 px-4 py-[0.8125rem] @max-[38rem]:grid-cols-1 @max-[38rem]:gap-2">
+      <div className="cx-settings-row-grid items-center gap-4 px-4 py-[0.8125rem]">
         <div className="flex min-w-0 items-start gap-3">
           {Icon && (
             <span className="cx-settings-row-icon" aria-hidden="true">
@@ -86,11 +113,11 @@ export function SettingsRow({
             )}
           </div>
         </div>
-        <div className="flex min-w-0 items-center justify-end gap-2 @max-[38rem]:justify-start">
+        <div data-settings-control className="flex min-w-0 items-center gap-2">
           {control}
         </div>
       </div>
-      {below && <div className="space-y-2 px-4 pb-[0.8125rem]">{below}</div>}
+      {below && <div className="cx-settings-row-below space-y-2">{below}</div>}
     </div>
   );
 }

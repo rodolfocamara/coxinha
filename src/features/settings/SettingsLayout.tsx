@@ -1,62 +1,74 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { isTauri } from '@tauri-apps/api/core';
+import { getCurrentWindow } from '@tauri-apps/api/window';
+import { Select } from '../../components/ui';
+import { ActiveSettingsPage } from './controls';
 import { SECTION_ICONS } from './icons';
-import './settings.css';
+import { SettingsFilter } from './SettingsFilter';
+import {
+  FIRST_SETTINGS_SECTION,
+  resolveSettingsHash,
+  SETTINGS_GROUPS,
+  type SettingsSectionId,
+} from './settingsIndex';
+import './settingsPages.css';
 
-export const SETTINGS_SECTIONS = [
-  'appearance',
-  'calendar',
-  'recording',
-  'transcription',
-  'integrations',
-  'shortcuts',
-  'storage',
-  'diagnostics',
-] as const;
-export type SettingsSectionId = (typeof SETTINGS_SECTIONS)[number];
-
-/** Resolves `#<section>` or a legacy `#<x>-heading` to the element to focus and its section. */
-export function resolveSettingsTarget(hash: string, root: ParentNode = document) {
-  const id = hash.replace(/^#/, '');
-  if (!id) return null;
-  const target = root.querySelector<HTMLElement>(`[id="${CSS.escape(id)}"]`);
-  if (!target) return null;
-  const section = target.closest<HTMLElement>('[data-settings-section]');
-  if (!section) return null;
-  const focus = target === section ? (section.querySelector<HTMLElement>('h2') ?? section) : target;
-  return { focus, section: section.id as SettingsSectionId };
+/** Tauri does not sync the native title with document.title. */
+function setWindowTitle(title: string) {
+  document.title = title;
+  try {
+    if (isTauri())
+      void getCurrentWindow()
+        .setTitle(title)
+        .catch(() => {});
+  } catch {
+    /* Outside the app there is only the document title. */
+  }
 }
 
-/** Scrolls only the settings column (scrollIntoView would also scroll the shell). */
-function focusTarget(element: HTMLElement, box: HTMLElement | null) {
+/** Scrolls only its own page (scrollIntoView would also scroll the shell). */
+function focusRow(element: HTMLElement, page: HTMLElement) {
   element.tabIndex = -1;
   element.focus({ preventScroll: true });
-  if (!box) return;
-  const top = element.getBoundingClientRect().top - box.getBoundingClientRect().top;
-  box.scrollTop = Math.max(0, box.scrollTop + top - 16);
+  const top = element.getBoundingClientRect().top - page.getBoundingClientRect().top;
+  page.scrollTop = Math.max(0, page.scrollTop + top - 16);
 }
 
 /**
- * Ajustes frame: section list (220px) beside one scrolling content column.
- * The list follows the scroll; choosing a section scrolls to it and moves
- * focus to its heading.
+ * Ajustes frame (spec 0129): the sidebar beside one page. Every page stays
+ * mounted, so a half-typed field or a running download survives going away;
+ * `SettingsSection` hides those not on screen.
  */
 export function SettingsLayout({
   children,
   ready,
-  initialSection,
+  section = FIRST_SETTINGS_SECTION,
+  target,
+  onNavigate,
 }: {
   children: ReactNode;
-  /** Sections are rendered; deep links can resolve. */
+  /** Sections that wait for the config are rendered. */
   ready: boolean;
-  initialSection?: string;
+  section?: SettingsSectionId;
+  /** Hash of the row to land on. */
+  target?: string;
+  onNavigate?: (section: SettingsSectionId, target?: string) => void;
 }) {
   const { t } = useTranslation();
   const root = useRef<HTMLDivElement>(null);
-  const content = useRef<HTMLDivElement>(null);
-  const [active, setActive] = useState<SettingsSectionId>('appearance');
-  // Programmatic jumps scroll too; the chosen section wins until the scroll settles.
-  const jumpedAt = useRef(0);
+  const pages = useRef<HTMLDivElement>(null);
+  const scrolls = useRef<Partial<Record<SettingsSectionId, number>>>({});
+  const picked = useRef(false);
+  const brand = t('brand.name');
+  const pageTitle = t(`people.settings.sections.${section}`);
+  const settingsTitle = t('people.settings.title');
+  const rowAnchor = target ? resolveSettingsHash(target)?.target : undefined;
+
+  useEffect(() => {
+    setWindowTitle(`${pageTitle} · ${settingsTitle} · ${brand}`);
+  }, [pageTitle, settingsTitle, brand]);
+  useEffect(() => () => setWindowTitle(brand), [brand]);
 
   // TanStack's hash scroll (and the browser's) call scrollIntoView, which
   // also scrolls the clipped shell containers. Ancestors of this view never
@@ -65,89 +77,147 @@ export function SettingsLayout({
     const ancestors = new Set<Element>();
     for (let el = root.current?.parentElement; el; el = el.parentElement) ancestors.add(el);
     const pin = (event: Event) => {
-      const target = event.target;
-      if (target instanceof Element && ancestors.has(target)) target.scrollTo(0, 0);
+      const scrolled = event.target;
+      if (scrolled instanceof Element && ancestors.has(scrolled)) scrolled.scrollTo(0, 0);
     };
     document.addEventListener('scroll', pin, true);
     return () => document.removeEventListener('scroll', pin, true);
   }, []);
 
-  useEffect(() => {
-    if (!ready || !initialSection || !content.current) return;
-    const target = resolveSettingsTarget(initialSection, content.current);
-    if (!target) return;
-    jumpedAt.current = Date.now();
-    setActive(target.section);
-    focusTarget(target.focus, content.current);
-  }, [ready, initialSection]);
+  const currentPage = () => pages.current?.querySelector<HTMLElement>(`[id="${section}"]`) ?? null;
+  const focusTitle = () =>
+    currentPage()?.querySelector<HTMLElement>('h1')?.focus({ preventScroll: true });
+  const landOnRow = (anchor: string) => {
+    const page = currentPage();
+    const element = document.getElementById(anchor);
+    if (!page || !element || !page.contains(element)) return false;
+    focusRow(element, page);
+    return true;
+  };
 
-  function onScroll() {
-    const box = content.current;
+  // Layout effect: the field losing focus saves on blur before anything repaints.
+  useLayoutEffect(() => {
+    const page = currentPage();
+    if (page) page.scrollTop = scrolls.current[section] ?? 0;
+    if (!rowAnchor) {
+      focusTitle();
+      return;
+    }
+    if (landOnRow(rowAnchor)) return;
+    focusTitle();
+    // The row waits for the backend's answer; it takes focus unless the owner moved on.
+    const box = pages.current;
     if (!box) return;
-    if (Date.now() - jumpedAt.current < 400) return;
-    const sections = [...box.querySelectorAll<HTMLElement>('[data-settings-section]')];
-    if (!sections.length) return;
-    const atEnd = box.scrollTop + box.clientHeight >= box.scrollHeight - 4;
-    const top = box.getBoundingClientRect().top + 32;
-    const current = atEnd
-      ? sections[sections.length - 1]
-      : (sections.filter((s) => s.getBoundingClientRect().top <= top).pop() ?? sections[0]);
-    setActive(current.id as SettingsSectionId);
-  }
+    const waiting = new MutationObserver(() => {
+      const moved = document.activeElement?.closest('input, select, button, a, textarea');
+      if (moved) waiting.disconnect();
+      else if (landOnRow(rowAnchor)) waiting.disconnect();
+    });
+    waiting.observe(box, { childList: true, subtree: true });
+    return () => waiting.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [section, rowAnchor]);
 
-  function go(id: SettingsSectionId) {
-    const section = content.current?.querySelector<HTMLElement>(`#${id}`);
-    setActive(id);
-    if (!section) return;
-    jumpedAt.current = Date.now();
-    focusTarget(section.querySelector<HTMLElement>('h2') ?? section, content.current);
-  }
+  // A page waiting for the config is replaced when it arrives, and its title with it.
+  useLayoutEffect(() => {
+    if (ready && document.activeElement === document.body) focusTitle();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready]);
+
+  const go = (next: SettingsSectionId, anchor?: string) => {
+    if (next !== section || anchor !== rowAnchor) onNavigate?.(next, anchor);
+    else if (anchor) landOnRow(anchor);
+    else focusTitle();
+  };
 
   return (
-    <div
-      ref={root}
-      className="flex h-full min-h-0 text-ui"
-      aria-labelledby="settings-heading"
-      role="region"
-    >
-      <div className="flex w-[220px] shrink-0 flex-col border-r border-border">
-        <div className="px-3.5 pt-3.5 pb-2">
-          <h1 id="settings-heading" className="text-base font-semibold">
-            {t('people.settings.title')}
-          </h1>
-        </div>
-        <nav
-          aria-label={t('people.settings.sectionsLabel')}
-          className="min-h-0 flex-1 overflow-auto"
-        >
-          <ul>
-            {SETTINGS_SECTIONS.map((id) => {
-              const Icon = SECTION_ICONS[id];
-              return (
-                <li key={id}>
-                  <button
-                    type="button"
-                    className="cx-settings-nav-item"
-                    aria-current={active === id ? 'true' : undefined}
-                    onClick={() => go(id)}
-                  >
-                    <Icon size={15} aria-hidden="true" className="cx-settings-nav-icon" />
-                    {t(`people.settings.sections.${id}`)}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
-      </div>
+    <ActiveSettingsPage.Provider value={section}>
       <div
-        ref={content}
-        data-testid="settings-scroll"
-        className="@container h-full min-w-0 flex-1 overflow-auto"
-        onScroll={onScroll}
+        ref={root}
+        className="cx-settings text-ui"
+        aria-labelledby="settings-heading"
+        role="region"
       >
-        <div className="max-w-[51.25rem] px-6 py-4">{children}</div>
+        <div className="cx-settings-frame">
+          <div className="cx-settings-side">
+            <p id="settings-heading" className="cx-settings-title">
+              {settingsTitle}
+            </p>
+            <SettingsFilter onPick={(entry) => go(entry.section, entry.anchor)}>
+              <div className="cx-settings-picker">
+                <Select
+                  size="sm"
+                  block
+                  aria-label={t('people.settings.sectionsLabel')}
+                  value={section}
+                  onChange={(event) => {
+                    picked.current = true;
+                    go(event.target.value as SettingsSectionId);
+                  }}
+                  onCloseAutoFocus={(event) => {
+                    // The popup hands focus back as it closes; a new page keeps it instead.
+                    if (!picked.current) return;
+                    picked.current = false;
+                    event.preventDefault();
+                    focusTitle();
+                  }}
+                >
+                  {SETTINGS_GROUPS.map((group) => (
+                    <optgroup key={group.id} label={t(`people.settings.groups.${group.id}`)}>
+                      {group.sections.map((id) => (
+                        <option key={id} value={id}>
+                          {t(`people.settings.sections.${id}`)}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </Select>
+              </div>
+              <nav aria-label={t('people.settings.sectionsLabel')} className="cx-settings-nav">
+                {SETTINGS_GROUPS.map((group) => (
+                  <div key={group.id} className="cx-settings-nav-group">
+                    <p id={`settings-group-${group.id}`} className="cx-settings-nav-label">
+                      {t(`people.settings.groups.${group.id}`)}
+                    </p>
+                    <ul aria-labelledby={`settings-group-${group.id}`}>
+                      {group.sections.map((id) => {
+                        const Icon = SECTION_ICONS[id];
+                        return (
+                          <li key={id}>
+                            <a
+                              href={`/settings/${id}`}
+                              className="cx-settings-nav-item"
+                              aria-current={section === id ? 'page' : undefined}
+                              onClick={(event) => {
+                                event.preventDefault();
+                                go(id);
+                              }}
+                            >
+                              <Icon size={15} aria-hidden="true" className="cx-settings-nav-icon" />
+                              {t(`people.settings.sections.${id}`)}
+                            </a>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                ))}
+              </nav>
+            </SettingsFilter>
+          </div>
+          <div
+            ref={pages}
+            data-testid="settings-pages"
+            className="cx-settings-pages"
+            onScrollCapture={(event) => {
+              const page = event.target as HTMLElement;
+              if (page.id === section) scrolls.current[section] = page.scrollTop;
+            }}
+          >
+            {children}
+          </div>
+        </div>
       </div>
-    </div>
+    </ActiveSettingsPage.Provider>
   );
 }

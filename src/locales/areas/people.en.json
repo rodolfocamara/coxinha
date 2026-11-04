@@ -68,12 +68,13 @@
       "sections": {
         "appearance": "Appearance",
         "recording": "Recording",
-        "transcription": "Local transcription",
+        "transcription": "Transcription",
         "integrations": "Integrations",
         "shortcuts": "Shortcuts",
         "storage": "Storage",
         "diagnostics": "Diagnostics",
-        "calendar": "Calendar and time zones"
+        "calendar": "Calendar",
+        "titles": "Titles and summaries"
       },
       "descriptions": {
         "appearance": "Theme, colours, text and language. Saved on this computer.",
@@ -83,7 +84,8 @@
         "shortcuts": "Global shortcuts work even when the window is hidden.",
         "storage": "Your notes are plain Markdown files in this folder.",
         "diagnostics": "Text to paste when reporting a problem.",
-        "calendar": "How the week grid shows time. Saved on this computer."
+        "calendar": "How the week grid shows time zones. Saved on this computer.",
+        "titles": "With your own server over SSH. Sends transcript text, never audio."
       },
       "theme": {
         "title": "Theme",
@@ -166,7 +168,10 @@
         "testOk": "It worked: {{title}}",
         "testFailed": "It did not work: {{error}}",
         "summaries": "Generate summaries",
-        "summariesPrivacy": "After each transcript, sends the whole transcript text, in parts, to this same server to write a summary with decisions and actions. Off by default; never audio."
+        "summariesPrivacy": "After each transcript, sends the whole transcript text, in parts, to this same server to write a summary with decisions and actions. Off by default; never audio.",
+        "server": "Your server",
+        "whatItDoes": "What it does",
+        "testTitle": "Test the server"
       },
       "zones": {
         "title": "Extra time zones",
@@ -232,6 +237,53 @@
         "ptBR": "Português (Brasil)",
         "en": "English",
         "changed": "Language: {{language}}"
+      },
+      "groups": {
+        "app": "App",
+        "meetings": "Meetings",
+        "connections": "Connections",
+        "system": "System",
+        "themeAndColour": "Theme and colour",
+        "text": "Text",
+        "devices": "Devices",
+        "calls": "Calls",
+        "automatic": "Automatic",
+        "meetingModels": "Meeting models"
+      },
+      "filter": {
+        "label": "Find a setting",
+        "placeholder": "Find a setting",
+        "results": "Settings found",
+        "none": "No setting matches.",
+        "found_one": "{{count}} setting found",
+        "found_other": "{{count}} settings found"
+      },
+      "keywords": {
+        "theme": "dark light mode",
+        "accent": "colour color button",
+        "fontSize": "zoom bigger smaller text",
+        "contrast": "readability",
+        "fontSans": "typeface",
+        "fontMono": "code typeface",
+        "language": "portuguese english locale",
+        "mic": "input voice audio device",
+        "output": "speaker sound device",
+        "detection": "teams meet zoom notification",
+        "auto-record": "record automatic",
+        "live": "tagarela parakeet real time",
+        "live-model": "parakeet gguf handy",
+        "live-threads": "cpu performance",
+        "transcriber": "whisper parakeet model",
+        "diarizer": "pyannote speakrs who spoke",
+        "time-zones": "timezone clock",
+        "local-zone": "timezone",
+        "outlook": "microsoft calendar account",
+        "titles-target": "ssh host",
+        "suggest-titles": "ai llm ssh",
+        "summaries": "ai llm ssh",
+        "vault": "obsidian markdown path",
+        "rebuild": "index reindex",
+        "diagnostics": "log version build"
       }
     },
     "palette": {
@@ -240,7 +292,8 @@
       "groups": {
         "actions": "Actions",
         "goTo": "Go to",
-        "notes": "Notes"
+        "notes": "Notes",
+        "settings": "Settings"
       },
       "actions": {
         "record": "Record now",

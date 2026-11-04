@@ -31,7 +31,7 @@ export function OutlookConnectionCard({ connection, onOpenAgenda, titleId }: Pro
     <Card aria-labelledby={titleId} aria-label={titleId ? undefined : t('outlook.connection')}>
       <CardHeader
         titleId={titleId}
-        level={titleId ? 3 : 2}
+        level={2}
         title={
           <span className="inline-flex items-center gap-2">
             <CalendarDays size={16} aria-hidden="true" />

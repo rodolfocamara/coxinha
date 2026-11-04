@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
-import { expect, it } from 'vitest';
+import { expect, it, vi } from 'vitest';
 import { Select } from './Select';
 
 function Field() {
@@ -45,4 +45,41 @@ it('allows an empty value and arbitrary IDs through the same themed popup', asyn
   await user.click(trigger);
   await user.click(screen.getByRole('option', { name: 'All dates' }));
   expect(trigger).toHaveValue('');
+});
+
+it('names the groups of direct optgroup children', async () => {
+  const user = userEvent.setup();
+  render(
+    <Select aria-label="Page" value="b" onChange={() => {}}>
+      <optgroup label="One">
+        <option value="a">Alpha</option>
+      </optgroup>
+      <optgroup label="Two">
+        <option value="b">Beta</option>
+      </optgroup>
+    </Select>
+  );
+  await user.click(screen.getByRole('combobox', { name: 'Page' }));
+  const groups = await screen.findAllByRole('group');
+  expect(groups).toHaveLength(2);
+  expect(groups[0]).toHaveTextContent('One');
+  expect(groups[1]).toHaveTextContent('TwoBeta');
+});
+
+it('lets the caller take the focus when the popup closes', async () => {
+  const user = userEvent.setup();
+  const onClose = vi.fn((event: Event) => event.preventDefault());
+  render(
+    <>
+      <Select aria-label="Page" value="a" onChange={() => {}} onCloseAutoFocus={onClose}>
+        <option value="a">Alpha</option>
+        <option value="b">Beta</option>
+      </Select>
+    </>
+  );
+  const trigger = screen.getByRole('combobox', { name: 'Page' });
+  await user.click(trigger);
+  await user.click(await screen.findByRole('option', { name: 'Beta' }));
+  await waitFor(() => expect(onClose).toHaveBeenCalledOnce());
+  expect(trigger).not.toHaveFocus();
 });

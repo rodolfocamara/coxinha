@@ -7,7 +7,7 @@ import { useCaptureStore } from '../capture/captureStore';
 import { DetectionSettings } from '../detection/DetectionSettings';
 import { AutoRecordSettings } from '../detection/AutoRecordSettings';
 import { library, type Source } from '../meetings/library';
-import { SettingsCard, SettingsRow, SettingsSection } from './controls';
+import { SettingsGroup, SettingsRow, SettingsSection } from './controls';
 
 function DeviceSelect({
   name,
@@ -100,7 +100,7 @@ export function RecordingSection() {
       title={s('sections.recording')}
       description={s('descriptions.recording')}
     >
-      <SettingsCard>
+      <SettingsGroup title={s('groups.devices')}>
         <SettingsRow
           name="mic"
           icon={Mic}
@@ -134,9 +134,11 @@ export function RecordingSection() {
           }
           below={status}
         />
+      </SettingsGroup>
+      <SettingsGroup title={s('groups.calls')}>
         <DetectionSettings />
         <AutoRecordSettings />
-      </SettingsCard>
+      </SettingsGroup>
     </SettingsSection>
   );
 }

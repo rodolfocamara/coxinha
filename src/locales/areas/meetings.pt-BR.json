@@ -285,7 +285,7 @@
       "regenerate": "Gerar de novo",
       "generating": "Gerando…",
       "none": "Ainda sem resumo. Ele é escrito depois da transcrição.",
-      "setup": "Para resumir, ligue o modelo de títulos e \"Gerar resumos\" em Ajustes › Integrações.",
+      "setup": "Para resumir, ligue o modelo de títulos e \"Gerar resumos\" em Ajustes › Títulos e resumos.",
       "failed": "O resumo não funcionou: {{error}}"
     },
     "eventDetails": {
