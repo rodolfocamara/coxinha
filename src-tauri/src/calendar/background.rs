@@ -24,6 +24,7 @@ pub(super) fn stale(synced_at: Option<&str>, now: DateTime<Utc>) -> bool {
 /// (spec 0119 P1).
 pub fn spawn(app: tauri::AppHandle) {
     tauri::async_runtime::spawn(async move {
+        super::photos::sweep(&app).await;
         let cached = calendar_status(app.clone()).unwrap_or_default();
         crate::library::reconcile_agenda(&app, &cached.events).await;
         tokio::time::sleep(FIRST).await;
@@ -33,6 +34,7 @@ pub fn spawn(app: tauri::AppHandle) {
                     Ok(snapshot) => {
                         tracing::debug!("calendar refreshed");
                         crate::library::reconcile_agenda(&app, &snapshot.events).await;
+                        tauri::async_runtime::spawn(super::photos::pass(app.clone()));
                     }
                     Err(code) => tracing::info!(code, "calendar refresh failed"),
                 }

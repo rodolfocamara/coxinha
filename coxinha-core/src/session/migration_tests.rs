@@ -16,7 +16,7 @@ pub(super) struct OldSnapshot {
 }
 pub(super) fn old_snapshot(path: &Path) -> Result<OldSnapshot> {
     let db = Connection::open(path)?;
-    let mut q = db.prepare("SELECT type,name,tbl_name,sql FROM sqlite_master WHERE tbl_name NOT IN ('session','personal_note_intent','processing_publication','meeting_summary','voice_enrollment','voice_memory_off') ORDER BY type,name")?;
+    let mut q = db.prepare("SELECT type,name,tbl_name,sql FROM sqlite_master WHERE tbl_name NOT IN ('session','personal_note_intent','processing_publication','meeting_summary','voice_enrollment','voice_memory_off','person_photo','directory_photo_state') ORDER BY type,name")?;
     let schema: Vec<(String, String, String, Option<String>)> = q
         .query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?)))?
         .collect::<rusqlite::Result<Vec<_>>>()?;
@@ -115,7 +115,7 @@ fn captured_v3_upgrade_preserves_all_old_rows_schemas_and_raw_files() -> Result<
         assert_eq!(s.list_sessions()?, sessions);
     }
     assert_eq!(version(&root.join("meetings.db"))?, 6);
-    assert_eq!(version(&root.join("private/profiles.db"))?, 5);
+    assert_eq!(version(&root.join("private/profiles.db"))?, 6);
     assert_eq!(old_snapshot(&root.join("meetings.db"))?, public);
     assert_eq!(old_snapshot(&root.join("private/profiles.db"))?, private);
     assert_eq!(file_bytes(&root.join("raw"))?, raw);
@@ -222,7 +222,7 @@ fn partial_schema_fails_closed_then_clean_retry_migrates_once() -> Result<()> {
 
 #[test]
 fn future_versions_in_either_database_refuse_before_other_database_migrates() -> Result<()> {
-    for (file, future) in [("meetings.db", 7), ("private/profiles.db", 6)] {
+    for (file, future) in [("meetings.db", 7), ("private/profiles.db", 7)] {
         let d = tempfile::tempdir()?;
         fixture(d.path())?;
         let db = Connection::open(d.path().join(file))?;
@@ -264,7 +264,7 @@ fn database_kind_controls_versions_independently_of_filename() -> Result<()> {
     );
     assert_eq!(
         profiles.pragma_query_value(None, "user_version", |r| r.get::<_, u32>(0))?,
-        5
+        6
     );
     assert!(db.prepare("SELECT * FROM processing_run").is_ok());
     assert!(profiles

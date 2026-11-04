@@ -220,7 +220,7 @@ fn private_migration_failure_preserves_v3_and_retries_cleanly() -> Result<()> {
         store
             .profiles
             .pragma_query_value(None, "user_version", |r| r.get::<_, u32>(0))?,
-        5
+        6
     );
     assert_eq!(pending(&store)?, 0);
     Ok(())

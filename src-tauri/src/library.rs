@@ -37,6 +37,7 @@ enum Action {
         track: Option<String>,
     },
     Voice(voices::VoiceAction),
+    Photo(photos::PhotoAction),
     RevokeAssignment(String, String),
     Edit(String, String, String),
     List,
@@ -252,6 +253,7 @@ impl Worker {
                 Ok(Value::Null)
             }
             Action::Voice(action) => self.voice_action(action),
+            Action::Photo(action) => self.photo_action(action),
             Action::RevokeAssignment(id, origin) => {
                 self.store
                     .decide_assignment(&id, None, "revoked", &origin)?;
@@ -324,12 +326,14 @@ mod live;
 pub use live::*;
 mod commands;
 mod note_deletion;
+pub(crate) mod photos;
 mod processing;
 mod sessions;
 mod summaries;
 mod voices;
 mod watch;
 pub use commands::*;
+pub use photos::*;
 pub use sessions::*;
 pub use summaries::{MeetingSummary, StoredSummaryInput, SummarySource};
 pub use voices::*;

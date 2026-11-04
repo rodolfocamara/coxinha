@@ -226,6 +226,7 @@ pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
         .commands(tauri_specta::collect_commands![
             calendar::calendar_status,
             calendar::calendar_begin,
+            calendar::photos::directory_photos_disable,
             calendar::calendar_complete,
             calendar::calendar_cancel,
             calendar::calendar_sync,
@@ -287,6 +288,9 @@ pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
             library::library_processing,
             library::library_create_person,
             library::library_import_people,
+            library::person_photo_index,
+            library::person_photo,
+            library::directory_photos_status,
             library::library_confirm_speaker,
             library::library_revoke_assignment,
             library::library_edit_segment,

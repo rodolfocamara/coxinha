@@ -18,6 +18,8 @@ pub(crate) mod categories;
 pub(crate) mod create;
 pub(crate) mod details;
 mod graph;
+mod photo_graph;
+pub(crate) mod photos;
 mod store;
 use auth::*;
 pub use background::{fresh, spawn as spawn_refresh};
@@ -96,6 +98,8 @@ struct Credentials {
 }
 struct Pending {
     id: String,
+    /// The explicit opt-in (spec 0117 P1): the only sign-in that asks for photos.
+    directory_photos: bool,
     client_id: String,
     tenant: String,
     verifier: String,
@@ -128,6 +132,7 @@ pub async fn calendar_begin(
     app: tauri::AppHandle,
     client_id: String,
     tenant: String,
+    directory_photos: bool,
 ) -> Result<Authorization, String> {
     uuid::Uuid::parse_str(&client_id).map_err(|_| "calendar.clientInvalid".to_string())?;
     if !matches!(tenant.as_str(), "common" | "organizations" | "consumers")
@@ -165,7 +170,7 @@ pub async fn calendar_begin(
         ("client_id", client_id.as_str()),
         ("response_type", "code"),
         ("redirect_uri", redirect.as_str()),
-        ("scope", AUTHORIZE_SCOPE),
+        ("scope", photos::authorize_scope(directory_photos).as_str()),
         ("state", id.as_str()),
         ("code_challenge", challenge.as_str()),
         ("code_challenge_method", "S256"),
@@ -173,6 +178,7 @@ pub async fn calendar_begin(
     ]);
     *pending().lock().map_err(|_| SAFE_ERROR)? = Some(Pending {
         id: id.clone(),
+        directory_photos,
         client_id,
         tenant,
         verifier,
@@ -207,7 +213,7 @@ fn active(id: &str) -> bool {
 #[specta::specta]
 pub async fn calendar_complete(app: tauri::AppHandle, id: String) -> Result<Snapshot, String> {
     let _operation = OPERATION.lock().await;
-    let (listener, client_id, tenant, verifier, redirect) = {
+    let (listener, directory_photos, client_id, tenant, verifier, redirect) = {
         let guard = pending().lock().map_err(|_| SAFE_ERROR)?;
         let p = guard
             .as_ref()
@@ -215,6 +221,7 @@ pub async fn calendar_complete(app: tauri::AppHandle, id: String) -> Result<Snap
             .ok_or("calendar.cancelled")?;
         (
             p.listener.try_clone().map_err(|_| SAFE_ERROR)?,
+            p.directory_photos,
             p.client_id.clone(),
             p.tenant.clone(),
             p.verifier.clone(),
@@ -259,6 +266,9 @@ pub async fn calendar_complete(app: tauri::AppHandle, id: String) -> Result<Snap
         None,
     )
     .await;
+    let granted_scope = tokens.scope.clone();
+    let previous_account = calendar_status(app.clone()).ok().and_then(|s| s.account);
+    let account_changed = previous_account.is_some() && previous_account != snapshot.account;
     let credentials = Credentials {
         client_id,
         tenant,
@@ -266,6 +276,7 @@ pub async fn calendar_complete(app: tauri::AppHandle, id: String) -> Result<Snap
         account: snapshot.account.clone().ok_or(SAFE_ERROR)?,
     };
     let cached = snapshot.clone();
+    let photos_app = app.clone();
     blocking(move || {
         if !active(&id) {
             return Err("calendar.cancelled".into());
@@ -282,6 +293,13 @@ pub async fn calendar_complete(app: tauri::AppHandle, id: String) -> Result<Snap
         Ok(())
     })
     .await?;
+    photos::after_sign_in(
+        &photos_app,
+        directory_photos,
+        granted_scope.as_deref(),
+        account_changed,
+    )
+    .await;
     Ok(snapshot)
 }
 #[tauri::command]
@@ -312,6 +330,7 @@ pub async fn calendar_sync(app: tauri::AppHandle) -> Result<Snapshot, String> {
 pub async fn calendar_disconnect(app: tauri::AppHandle) -> Result<(), String> {
     calendar_cancel(None)?;
     let _operation = OPERATION.lock().await;
+    photos::disable(&app).await?;
     blocking(move || {
         match entry(&app)?.delete_credential() {
             Ok(()) | Err(keyring::Error::NoEntry) => (),
