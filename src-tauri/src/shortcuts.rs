@@ -1,59 +1,165 @@
-//! Global shortcuts. Registered at startup, live for the app's lifetime.
+//! Global shortcuts. Registered at startup, live for the app's lifetime,
+//! and rebindable from Settings (spec 0128 P6).
 //!
 //! Each shortcut reveals the window and navigates to a specific route.
 //!
-//! The same `ShortcutsConfig` used for registration is stored inside a
-//! `ShortcutRoutes` map that the handler looks up at press time — no
-//! fragile Debug-string matching, and no runtime coupling to `AppState`.
+//! The registry remembers, per action, the chord in force, why registration
+//! failed and when a press last arrived. "Registered" only means the plugin
+//! accepted the chord: on Wayland the compositor can still keep the key, so
+//! the last press received is the only proof a chord reaches the app.
 
-use std::collections::HashMap;
 use std::sync::{Mutex, OnceLock};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use anyhow::Result;
+use serde::{Deserialize, Serialize};
 use shared::ShortcutsConfig;
+use specta::Type;
 use tauri::AppHandle;
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
 use tauri_specta::Event;
 
 use crate::events::{Navigate, Route};
 use crate::window::show_main;
+use conflicts::{chord_owner, desktop_chords};
+use registry::{rebind, ChordBackend, Registry};
 
-/// Shortcut → Route, populated at `register_all`. Used by
-/// `handle_shortcut` to resolve a press without string-matching the
-/// `Shortcut`'s Debug output.
-static ROUTES: OnceLock<Mutex<HashMap<Shortcut, Route>>> = OnceLock::new();
+mod conflicts;
+mod registry;
+#[cfg(test)]
+mod tests;
 
-pub fn register_all(app: &AppHandle, cfg: &ShortcutsConfig) -> Result<()> {
-    let gs = app.global_shortcut();
-    let mut routes = routes_lock().lock().unwrap();
-    routes.clear();
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Type)]
+#[serde(rename_all = "snake_case")]
+pub enum ShortcutAction {
+    NewNote,
+    OpenApp,
+    Agenda,
+    Meetings,
+    ToggleRecording,
+}
 
-    let mut ok = 0u8;
-    let mut fail = 0u8;
-    for (raw, route) in [
-        (&cfg.new_note, Route::NotesNew),
-        (&cfg.open_app, Route::Home),
-        (&cfg.agenda, Route::Agenda),
-        (&cfg.meetings, Route::Meetings),
-        (&cfg.toggle_recording, Route::ToggleRecording),
-    ] {
-        match raw.parse::<Shortcut>() {
-            Ok(shortcut) => {
-                if let Err(e) = gs.register(shortcut) {
-                    tracing::warn!("failed to register {}: {:?}", raw, e);
-                    fail += 1;
-                    continue;
-                }
-                tracing::info!("registered shortcut {} -> {:?}", raw, route);
-                routes.insert(shortcut, route);
-                ok += 1;
-            }
-            Err(e) => {
-                tracing::warn!("invalid shortcut '{}': {:?}", raw, e);
-                fail += 1;
-            }
+const ACTIONS: [ShortcutAction; 5] = [
+    ShortcutAction::NewNote,
+    ShortcutAction::OpenApp,
+    ShortcutAction::Agenda,
+    ShortcutAction::Meetings,
+    ShortcutAction::ToggleRecording,
+];
+
+impl ShortcutAction {
+    pub(crate) fn route(self) -> Route {
+        match self {
+            Self::NewNote => Route::NotesNew,
+            Self::OpenApp => Route::Home,
+            Self::Agenda => Route::Agenda,
+            Self::Meetings => Route::Meetings,
+            Self::ToggleRecording => Route::ToggleRecording,
         }
     }
+
+    pub(crate) fn chord(self, cfg: &ShortcutsConfig) -> &str {
+        match self {
+            Self::NewNote => &cfg.new_note,
+            Self::OpenApp => &cfg.open_app,
+            Self::Agenda => &cfg.agenda,
+            Self::Meetings => &cfg.meetings,
+            Self::ToggleRecording => &cfg.toggle_recording,
+        }
+    }
+
+    pub(crate) fn set_chord(self, cfg: &mut ShortcutsConfig, chord: String) {
+        match self {
+            Self::NewNote => cfg.new_note = chord,
+            Self::OpenApp => cfg.open_app = chord,
+            Self::Agenda => cfg.agenda = chord,
+            Self::Meetings => cfg.meetings = chord,
+            Self::ToggleRecording => cfg.toggle_recording = chord,
+        }
+    }
+}
+
+/// `Taken` means the OS said another registration holds the chord.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Type)]
+#[serde(rename_all = "snake_case")]
+pub enum ShortcutFailure {
+    Invalid,
+    Taken,
+    Duplicate,
+    Failed,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct ShortcutStatus {
+    pub action: ShortcutAction,
+    pub chord: String,
+    pub registered: bool,
+    pub failure: Option<ShortcutFailure>,
+    pub detail: Option<String>,
+    /// The desktop gives this chord to another app, where that can be read.
+    pub conflict: Option<String>,
+    pub last_fired_ms: Option<f64>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct ShortcutReport {
+    pub statuses: Vec<ShortcutStatus>,
+    pub wayland: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct ShortcutChange {
+    pub ok: bool,
+    pub failure: Option<ShortcutFailure>,
+    pub detail: Option<String>,
+    pub report: ShortcutReport,
+}
+
+struct PluginBackend<'a>(&'a AppHandle);
+
+impl ChordBackend for PluginBackend<'_> {
+    fn register(&self, shortcut: Shortcut) -> std::result::Result<(), String> {
+        self.0
+            .global_shortcut()
+            .register(shortcut)
+            .map_err(|e| e.to_string())
+    }
+    fn unregister(&self, shortcut: Shortcut) -> std::result::Result<(), String> {
+        self.0
+            .global_shortcut()
+            .unregister(shortcut)
+            .map_err(|e| e.to_string())
+    }
+}
+
+static REGISTRY: OnceLock<Mutex<Registry>> = OnceLock::new();
+
+fn registry() -> &'static Mutex<Registry> {
+    REGISTRY.get_or_init(|| Mutex::new(Registry::default()))
+}
+
+fn wayland_session() -> bool {
+    cfg!(target_os = "linux")
+        && (std::env::var("XDG_SESSION_TYPE").is_ok_and(|session| session == "wayland")
+            || std::env::var_os("WAYLAND_DISPLAY").is_some())
+}
+
+fn current_report(cfg: &ShortcutsConfig) -> ShortcutReport {
+    let chords = desktop_chords();
+    registry()
+        .lock()
+        .unwrap()
+        .report(cfg, &|chord| chord_owner(chord, &chords), wayland_session())
+}
+
+pub fn register_all(app: &AppHandle, cfg: &ShortcutsConfig) -> Result<()> {
+    let (ok, fail) = registry()
+        .lock()
+        .unwrap()
+        .register_config(&PluginBackend(app), cfg);
     // One-line summary — shortcut_smoke asserts on this exact shape
     // ("shortcut registration summary: N ok, M failed") so keep the
     // format stable.
@@ -71,8 +177,16 @@ pub fn handle_shortcut(
     }
 
     let route = {
-        let routes = routes_lock().lock().unwrap();
-        routes.get(shortcut).copied().unwrap_or(Route::Home)
+        let mut registry = registry().lock().unwrap();
+        let action = registry.routes.get(shortcut).copied();
+        if let Some(action) = action {
+            let now = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .map(|elapsed| elapsed.as_millis() as f64)
+                .unwrap_or_default();
+            registry.fired.insert(action, now);
+        }
+        action.map(ShortcutAction::route).unwrap_or(Route::Home)
     };
     tracing::info!("shortcut {} -> {:?}", shortcut, route);
 
@@ -80,54 +194,60 @@ pub fn handle_shortcut(
     let _ = Navigate { route }.emit(app);
 }
 
-fn routes_lock() -> &'static Mutex<HashMap<Shortcut, Route>> {
-    ROUTES.get_or_init(|| Mutex::new(HashMap::new()))
+/// Serializes rebinds; a press only needs the registry.
+static REBINDING: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
+
+#[tauri::command]
+#[specta::specta]
+pub async fn shortcut_status(
+    state: tauri::State<'_, std::sync::Arc<tokio::sync::Mutex<crate::config::AppState>>>,
+) -> std::result::Result<ShortcutReport, String> {
+    let cfg = state.lock().await.config.shortcuts.clone();
+    Ok(current_report(&cfg))
 }
 
-#[cfg(test)]
-mod tests {
-    use shared::ShortcutsConfig;
-    use tauri_plugin_global_shortcut::Shortcut;
-
-    #[test]
-    fn default_shortcuts_parse() {
-        // Guards spec 0042: the Ctrl+Alt+Shift+* defaults must
-        // parse into valid Shortcut values so the app doesn't
-        // boot with a broken global-shortcut registration.
-        let cfg = ShortcutsConfig::default();
-        for raw in [
-            &cfg.new_note,
-            &cfg.open_app,
-            &cfg.agenda,
-            &cfg.meetings,
-            &cfg.toggle_recording,
-        ] {
-            raw.parse::<Shortcut>()
-                .unwrap_or_else(|e| panic!("failed to parse default shortcut {raw:?}: {e:?}"));
-        }
+#[tauri::command]
+#[specta::specta]
+pub async fn set_shortcut(
+    app: AppHandle,
+    state: tauri::State<'_, std::sync::Arc<tokio::sync::Mutex<crate::config::AppState>>>,
+    action: ShortcutAction,
+    chord: String,
+) -> std::result::Result<ShortcutChange, String> {
+    let _rebinding = REBINDING.lock().await;
+    let chord = chord.trim().to_string();
+    let before = state.lock().await.config.shortcuts.clone();
+    let backend = PluginBackend(&app);
+    if let Err((failure, detail)) = rebind(registry(), &backend, &before, action, &chord) {
+        tracing::warn!("rebinding {:?} to {} failed: {}", action, chord, detail);
+        return Ok(ShortcutChange {
+            ok: false,
+            failure: Some(failure),
+            detail: Some(detail),
+            report: current_report(&before),
+        });
     }
-
-    #[test]
-    fn default_shortcuts_avoid_known_conflicts() {
-        // Regression guard for spec 0042. Every chord documented as
-        // intercepted on Windows at the OS or Office level goes
-        // here. See docs/research/shortcut-map.md for sources.
-        let cfg = ShortcutsConfig::default();
-        let forbidden = [
-            "Ctrl+Alt+N",       // OneNote in-app, caused the original bug
-            "Ctrl+Alt+Shift+N", // intermediate attempt that also failed in dev
-            "Super+Shift+N",    // interim PR #22 default, never field-validated
-            "Super+Y", // registered on most machines, but siblings (Super+Shift+*) collided
-            "Win+N",
-            "Super+N", // Windows 11 notification center
-            "Win+Alt+N",
-            "Super+Alt+N", // OneNote Quick Note (global)
-        ];
-        for chord in forbidden {
-            assert_ne!(
-                cfg.new_note, chord,
-                "default new_note chord {chord:?} is known to collide on Windows"
-            );
-        }
+    let saved = {
+        let mut state = state.lock().await;
+        let mut config = state.config.clone();
+        action.set_chord(&mut config.shortcuts, chord);
+        state.update_config(config).await
+    };
+    if let Err(error) = saved {
+        // Keeps the config and the live chord equal: the next start reads the config.
+        let _ = rebind(registry(), &backend, &before, action, action.chord(&before));
+        return Ok(ShortcutChange {
+            ok: false,
+            failure: Some(ShortcutFailure::Failed),
+            detail: Some(error.to_string()),
+            report: current_report(&before),
+        });
     }
+    let cfg = state.lock().await.config.shortcuts.clone();
+    Ok(ShortcutChange {
+        ok: true,
+        failure: None,
+        detail: None,
+        report: current_report(&cfg),
+    })
 }

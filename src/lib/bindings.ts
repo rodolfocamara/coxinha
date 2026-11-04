@@ -149,6 +149,22 @@ async updateConfig(config: AppConfig) : Promise<Result<null, string>> {
     else return { status: "error", error: e  as any };
 }
 },
+async shortcutStatus() : Promise<Result<ShortcutReport, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("shortcut_status") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async setShortcut(action: ShortcutAction, chord: string) : Promise<Result<ShortcutChange, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("set_shortcut", { action, chord }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 /**
  * Settings (spec 0037) calls this to populate the "Adopt an
  * Obsidian vault" picker. Returns `[]` when Obsidian isn't
@@ -321,6 +337,18 @@ export type Route =
  * Session rows changed outside an IPC mutation (a suggested title was applied).
  */
 export type SessionsChanged = { at_ms: number }
+export type ShortcutAction = "new_note" | "open_app" | "agenda" | "meetings" | "toggle_recording"
+export type ShortcutChange = { ok: boolean; failure: ShortcutFailure | null; detail: string | null; report: ShortcutReport }
+/**
+ * `Taken` means the OS said another registration holds the chord.
+ */
+export type ShortcutFailure = "invalid" | "taken" | "duplicate" | "failed"
+export type ShortcutReport = { statuses: ShortcutStatus[]; wayland: boolean }
+export type ShortcutStatus = { action: ShortcutAction; chord: string; registered: boolean; failure: ShortcutFailure | null; detail: string | null; 
+/**
+ * The desktop gives this chord to another app, where that can be read.
+ */
+conflict: string | null; lastFiredMs: number | null }
 export type ShortcutsConfig = { new_note: string; open_app: string; agenda: string; meetings: string; toggle_recording: string }
 export type TagCount = { tag: string; count: number }
 export type TranscriberConfig = 

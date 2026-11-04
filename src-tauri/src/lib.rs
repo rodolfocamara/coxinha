@@ -332,6 +332,8 @@ pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
             commands::save_attachment,
             commands::get_config,
             commands::update_config,
+            shortcuts::shortcut_status,
+            shortcuts::set_shortcut,
             commands::list_obsidian_vaults,
             commands::get_or_create_daily_note,
             commands::get_backlinks,
@@ -586,9 +588,11 @@ mod commands {
     #[specta::specta]
     pub async fn update_config(
         state: tauri::State<'_, Arc<Mutex<AppState>>>,
-        config: AppConfig,
+        mut config: AppConfig,
     ) -> Result<(), String> {
         let mut state = state.lock().await;
+        // A page's copy of the config is older than a rebind: `set_shortcut` owns these.
+        config.shortcuts = state.config.shortcuts.clone();
         state.update_config(config).await.map_err(|e| e.to_string())
     }
 
