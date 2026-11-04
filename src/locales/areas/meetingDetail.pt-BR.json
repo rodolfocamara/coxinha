@@ -84,6 +84,74 @@
       "setUp": "Configurar",
       "setUpSummaries": "Configurar os resumos em Ajustes › Títulos e resumos",
       "link": "Vincular"
+    },
+    "respond": {
+      "action": {
+        "respond": "Responder",
+        "change": "Alterar",
+        "respondName": "Responder a este convite",
+        "changeName": "Alterar sua resposta"
+      },
+      "note": {
+        "sent": "Enviada a {{name}}",
+        "silent": "Salva, organizador não avisado"
+      },
+      "title": "Responder ao convite",
+      "reviewTitle": "Revise antes de enviar",
+      "current": "Sua resposta agora: {{response}}",
+      "choiceLegend": "Sua resposta",
+      "choice": {
+        "accept": "Aceitar",
+        "tentative": "Talvez",
+        "decline": "Recusar",
+        "propose": "Propor novo horário"
+      },
+      "noProposals": "O organizador não permite propor novo horário.",
+      "proposeAsLegend": "Enviar como",
+      "date": "Data",
+      "from": "De",
+      "to": "Até",
+      "zoneHint": "Horários em {{zone}}.",
+      "problem": {
+        "noChoice": "Escolha uma resposta.",
+        "range": "O novo horário precisa terminar depois de começar.",
+        "past": "O novo horário já passou.",
+        "same": "O novo horário é o atual da reunião. Escolha outro."
+      },
+      "scopeLegend": "Vale para",
+      "scope": {
+        "occurrence": "Esta ocorrência, {{when}}",
+        "series": "A série inteira",
+        "single": "Esta reunião"
+      },
+      "oneOccurrence": "O novo horário é proposto só para esta ocorrência.",
+      "comment": "Comentário (opcional)",
+      "commentHint": "Vai para o organizador junto com a resposta.",
+      "notify": "Avisar {{name}}",
+      "notifyProposal": "Uma proposta sempre vai para o organizador.",
+      "notifyNotAsked": "O organizador não pediu respostas.",
+      "noWrite": "O Outlook não autorizou responder nesta conexão. Reconecte em Ajustes › Calendário.",
+      "review": {
+        "to": "Para",
+        "nobody": "Ninguém, o organizador não é avisado",
+        "event": "Evento",
+        "response": "Resposta",
+        "comment": "Comentário",
+        "proposed": "Novo horário",
+        "appliesTo": "Vale para",
+        "willSend": "Isto vai para {{name}} e não pode ser desfeito.",
+        "silent": "Nada vai para o organizador. Só a sua agenda muda.",
+        "tentativeNewTime": "Talvez, com novo horário",
+        "declineNewTime": "Recusar, com novo horário"
+      },
+      "buttons": {
+        "review": "Revisar",
+        "back": "Voltar",
+        "send": "Enviar a {{name}}",
+        "save": "Salvar sem avisar",
+        "sending": "Enviando…",
+        "retry": "Tentar de novo"
+      }
     }
   }
 }

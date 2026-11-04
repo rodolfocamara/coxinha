@@ -36,6 +36,17 @@ export type CalendarEvent = {
   showAs?: 'free' | 'tentative' | 'busy' | 'oof' | 'workingElsewhere' | 'unknown' | null;
   isOrganizer?: boolean;
   webLink?: string | null;
+  /** Spec 0130 P2; absent in a cache from before it, which Graph's default reads as true. */
+  allowNewTimeProposals?: boolean | null;
+  responseRequested?: boolean | null;
+};
+/** Spec 0130: an answer to an invitation. Slots are UTC instants. */
+export type ResponseRequest = {
+  kind: 'accept' | 'tentative' | 'decline';
+  scope: 'occurrence' | 'series';
+  comment: string | null;
+  notify: boolean;
+  proposed: { startsAt: string; endsAt: string } | null;
 };
 /** A master-list category; `preset` is Outlook's colour 0–24, null for none. */
 export type OutlookCategory = { name: string; preset: number | null };
@@ -50,11 +61,17 @@ export type CalendarSnapshot = {
 /** Emitted whenever the backend rewrites or clears the Outlook cache. */
 export const CALENDAR_CHANGED = 'calendar-changed';
 
+const inPage = new Set<() => void>();
+
 /** Subscribe to cache changes; returns the unsubscribe function. */
 export function onCalendarChanged(handler: () => void): () => void {
   if (!isTauri()) return () => {};
+  inPage.add(handler);
   const pending = listen(CALENDAR_CHANGED, handler).catch(() => null);
-  return () => void pending.then((stop) => stop?.());
+  return () => {
+    inPage.delete(handler);
+    void pending.then((stop) => stop?.());
+  };
 }
 export const emptyCalendar: CalendarSnapshot = { account: null, syncedAt: null, events: [] };
 /** Every snapshot read passes through here so category colours stay current. */
@@ -89,5 +106,13 @@ export const calendar = {
         endsAt,
         transactionId,
       })
+    ),
+  /** Spec 0130 P6: open views show the answer at once, before the backend's event arrives. */
+  respond: (eventId: string, request: ResponseRequest) =>
+    published(invoke<CalendarSnapshot>('calendar_respond', { eventId, request })).then(
+      (snapshot) => {
+        for (const handler of [...inPage]) handler();
+        return snapshot;
+      }
     ),
 };

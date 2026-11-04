@@ -1,32 +1,14 @@
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Circle,
-  CircleCheck,
-  CircleHelp,
-  CircleX,
-  ExternalLink,
-  Mail,
-  MapPin,
-  UserRound,
-  Video,
-  type LucideIcon,
-} from 'lucide-react';
+import { ExternalLink, Mail, MapPin, UserRound, Video } from 'lucide-react';
 import { Button } from '../../components/ui';
 import { calendar, type CalendarEvent } from '../agenda/calendar';
-import { myResponse, type MyResponse } from './eventDetailsModel';
+import { myResponse } from './eventDetailsModel';
 import { invitationText, shownLocation } from './invitationText';
 import { PropDisclosure, PropRow } from './PropertySheet';
+import { ResponseRow } from './ResponseRow';
 import './signals.css';
 import './meetingDetail.css';
-
-const RESPONSE_ICONS: Record<MyResponse, LucideIcon> = {
-  organizer: UserRound,
-  accepted: CircleCheck,
-  tentative: CircleHelp,
-  declined: CircleX,
-  none: Circle,
-};
 
 export const isJoinable = (event: CalendarEvent | null, ended: boolean) =>
   !!event?.joinUrl && !ended;
@@ -115,11 +97,7 @@ export function EventRows({
   const organizer = response !== 'organizer' ? event.organizer?.name : null;
   return (
     <>
-      {response && (
-        <PropRow icon={RESPONSE_ICONS[response]} label={r('response')} tone={response}>
-          {t(`meetingDetail.values.response.${response}`)}
-        </PropRow>
-      )}
+      <ResponseRow event={event} />
       {location && (
         <PropRow icon={MapPin} label={r('location')}>
           {location}

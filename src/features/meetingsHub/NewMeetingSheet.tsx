@@ -8,7 +8,7 @@ import { calendar, type CalendarEvent } from '../agenda/calendar';
 import { OutlookOption, useOutlookWrite } from './OutlookOption';
 
 const pad = (n: number) => String(n).padStart(2, '0');
-const hhmm = (d: Date) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+export const hhmm = (d: Date) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
 
 /** Local civil date + time to the UTC instant the session store expects. */
 export function localInstant(date: string, time: string) {

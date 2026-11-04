@@ -327,7 +327,15 @@
     "candidateLimit": "A reunião aceita até 100 candidatos. Revise os candidatos existentes e escolha uma lista menor antes de adicionar convidados.",
     "categoriesReconnect": "O Outlook não permitiu mudar as categorias. Reconecte o Outlook para autorizar.",
     "categoriesInvalid": "Escolha no máximo 25 categorias.",
-    "eventMissing": "Este evento não está mais na agenda do Outlook. Sincronize e tente de novo."
+    "eventMissing": "Este evento não está mais na agenda do Outlook. Sincronize e tente de novo.",
+    "respondOffline": "Sem conexão com o Outlook. Nada foi enviado.",
+    "respondUncertain": "A conexão caiu durante o envio, então pode ter chegado. Confira no Outlook antes de tentar de novo.",
+    "respondReconnect": "O Outlook não permitiu responder. Reconecte o Outlook em Ajustes › Calendário.",
+    "respondRejected": "O Outlook recusou esta resposta. O evento pode não aceitá-la mais.",
+    "respondFailed": "O Outlook não aceitou a resposta. Nada mudou.",
+    "respondUnavailable": "Este evento não pode mais ser respondido aqui. Sincronize e confira.",
+    "respondInvalid": "Confira a resposta e tente de novo.",
+    "respondNoProposals": "O organizador não permite propor novo horário."
   },
   "sidebar": {
     "untitled": "Sem título"

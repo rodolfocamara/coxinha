@@ -84,6 +84,74 @@
       "setUp": "Set up",
       "setUpSummaries": "Set up summaries in Settings › Titles and summaries",
       "link": "Link"
+    },
+    "respond": {
+      "action": {
+        "respond": "Respond",
+        "change": "Change",
+        "respondName": "Respond to this invitation",
+        "changeName": "Change your response"
+      },
+      "note": {
+        "sent": "Sent to {{name}}",
+        "silent": "Saved, organizer not notified"
+      },
+      "title": "Respond to the invitation",
+      "reviewTitle": "Review before sending",
+      "current": "Your response now: {{response}}",
+      "choiceLegend": "Your response",
+      "choice": {
+        "accept": "Accept",
+        "tentative": "Tentative",
+        "decline": "Decline",
+        "propose": "Propose a new time"
+      },
+      "noProposals": "The organizer does not allow proposing a new time.",
+      "proposeAsLegend": "Send it as",
+      "date": "Date",
+      "from": "From",
+      "to": "To",
+      "zoneHint": "Times in {{zone}}.",
+      "problem": {
+        "noChoice": "Choose a response.",
+        "range": "The new time must end after it starts.",
+        "past": "The new time is already in the past.",
+        "same": "The new time is the meeting's current time. Pick another one."
+      },
+      "scopeLegend": "Applies to",
+      "scope": {
+        "occurrence": "This occurrence, {{when}}",
+        "series": "The whole series",
+        "single": "This meeting"
+      },
+      "oneOccurrence": "A new time is proposed for this occurrence only.",
+      "comment": "Comment (optional)",
+      "commentHint": "Goes to the organizer with your response.",
+      "notify": "Notify {{name}}",
+      "notifyProposal": "A proposal always goes to the organizer.",
+      "notifyNotAsked": "The organizer did not ask for responses.",
+      "noWrite": "Outlook has not allowed responding on this connection. Reconnect it in Settings › Calendar.",
+      "review": {
+        "to": "To",
+        "nobody": "Nobody, the organizer is not notified",
+        "event": "Event",
+        "response": "Response",
+        "comment": "Comment",
+        "proposed": "New time",
+        "appliesTo": "Applies to",
+        "willSend": "This goes to {{name}} and cannot be recalled.",
+        "silent": "Nothing goes to the organizer. Only your calendar changes.",
+        "tentativeNewTime": "Tentative, with a new time",
+        "declineNewTime": "Decline, with a new time"
+      },
+      "buttons": {
+        "review": "Review",
+        "back": "Back",
+        "send": "Send to {{name}}",
+        "save": "Save without notifying",
+        "sending": "Sending…",
+        "retry": "Try again"
+      }
     }
   }
 }

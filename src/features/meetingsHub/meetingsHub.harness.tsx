@@ -9,7 +9,12 @@ import { RouterProvider } from '@tanstack/react-router';
 import { createAppRouter } from '../../router';
 import type { ItemFilesData } from '../items/items';
 import type { Session } from '../sessions/sessions';
-import type { CalendarEvent, CategoryAccess, OutlookCategory } from '../agenda/calendar';
+import type {
+  CalendarEvent,
+  CategoryAccess,
+  OutlookCategory,
+  ResponseRequest,
+} from '../agenda/calendar';
 import { resetOutlookCategories } from '../agenda/categories';
 import type {
   CalendarMatch,
@@ -52,6 +57,8 @@ export type Db = {
   setCategories: { gate: Promise<void> | null; error: string | null };
   /** Spec 0104 P5: the Outlook event a new meeting may also create. */
   createEvent: { error: string | null };
+  /** Spec 0130: the outcome of the next responses; each error is used once. */
+  respond: { gate: Promise<void> | null; errors: string[] };
   calls: { command: string; args: Record<string, unknown> }[];
   /** Spec 0105: notes that can be linked and meeting ↔ activity links. */
   notes: {
@@ -86,6 +93,7 @@ export function freshDb(): Db {
     categoryAccess: { read: true, write: true },
     setCategories: { gate: null, error: null },
     createEvent: { error: null },
+    respond: { gate: null, errors: [] },
     calls: [],
     notes: [],
     links: [],
@@ -172,6 +180,22 @@ export function backend(db: Db) {
             endsAt: args.endsAt as string,
           }),
         ];
+        return calendarSnapshot(db);
+      }
+      case 'calendar_respond': {
+        await db.respond.gate;
+        const error = db.respond.errors.shift();
+        if (error) throw new Error(error);
+        const { kind, scope } = args.request as ResponseRequest;
+        const answer =
+          kind === 'accept' ? 'accepted' : kind === 'decline' ? 'declined' : 'tentativelyAccepted';
+        const target = db.events.find((e) => e.id === args.eventId);
+        db.events = db.events.map((e) =>
+          e.id === args.eventId ||
+          (scope === 'series' && e.seriesMasterId && e.seriesMasterId === target?.seriesMasterId)
+            ? { ...e, response: answer }
+            : e
+        );
         return calendarSnapshot(db);
       }
       case 'library_detail':
