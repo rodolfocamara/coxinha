@@ -4,7 +4,10 @@
  * state of the meeting detail panel in a real browser and fails on any finding.
  *
  *   COXINHA_URL=http://localhost:14260 node tools/ui-preview/meeting-detail.mjs \
- *     [--out /tmp/cx-0126] [--shots-only] [--states upcoming,past]
+ *     [--out /tmp/cx-0126] [--shots-only] [--states upcoming,past] [--matrix]
+ *
+ * --matrix also shoots each panel at font sizes 12, 16 and 20, in both languages;
+ * --panel-width 300 shoots that matrix at a narrower panel.
  */
 import { chromium } from 'playwright';
 import { readdir, readFile, mkdir, writeFile } from 'node:fs/promises';
@@ -12,6 +15,7 @@ import { existsSync, readdirSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { FIT, LABELS, MEASURE } from './meeting-detail-measure.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const flag = (name, fallback) => {
@@ -20,6 +24,8 @@ const flag = (name, fallback) => {
 };
 const out = flag('out', '/tmp/cx-0126');
 const shotsOnly = !!flag('shots-only', false);
+const matrix = !!flag('matrix', false);
+const panelWidth = Number(flag('panel-width', 0));
 const base = process.env.COXINHA_URL ?? 'http://localhost:1420';
 
 // Tuesday noon: every fixture hangs off this, so the week always holds them all.
@@ -28,6 +34,7 @@ const STATES = {
   upcoming: { block: /Platform alignment/, future: true },
   now: { block: /Standup under way/, future: true },
   past: { block: /Roadmap review/, outcome: true },
+  past8: { block: /Ledger depreciation/, outcome: true },
   transcript: { block: /Only a transcript/, outcome: true },
   empty: { block: /Nothing came out/, outcome: true },
   invitees40: { block: /All hands/, future: true },
@@ -67,7 +74,14 @@ const findings = [];
 const notes = [];
 const report = (state, check, detail) => findings.push({ state, check, detail });
 
-async function openPanel({ state, theme = 'dark', locale = 'en', width = 1280, height = 800 }) {
+async function openPanel({
+  state,
+  theme = 'dark',
+  locale = 'en',
+  width = 1280,
+  height = 800,
+  fontSize = null,
+}) {
   const context = await browser.newContext({
     viewport: { width, height },
     colorScheme: theme === 'light' ? 'light' : 'dark',
@@ -76,7 +90,13 @@ async function openPanel({ state, theme = 'dark', locale = 'en', width = 1280, h
   const page = await context.newPage();
   page.on('pageerror', (e) => report(state, 'pageerror', e.message));
   for (const script of scripts) await page.addInitScript(script);
-  await page.addInitScript((t) => localStorage.setItem('coxinha.themePref', t), theme);
+  await page.addInitScript(
+    ([t, size]) => {
+      localStorage.setItem('coxinha.themePref', t);
+      if (size) localStorage.setItem('coxinha.appearance', JSON.stringify({ fontSize: size }));
+    },
+    [theme, fontSize]
+  );
   await page.clock.setFixedTime(new Date(NOW));
   await page.goto(base, { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => window.__coxinha?.router, null, { timeout: 30000 });
@@ -90,46 +110,6 @@ async function openPanel({ state, theme = 'dark', locale = 'en', width = 1280, h
   await page.waitForTimeout(350);
   return { page, context, block };
 }
-
-// Everything in the panel stays inside it and clear of its edge. Elements that
-// truncate on purpose say so with the `truncate` class and are listed, not failed.
-const MEASURE = (selector) => {
-  const panel = document.querySelector(selector);
-  const box = panel.getBoundingClientRect();
-  const bad = [];
-  const describe = (el) =>
-    `${el.tagName.toLowerCase()}.${String(el.className.baseVal ?? el.className).split(' ').slice(0, 2).join('.')} "${(el.textContent ?? '').trim().slice(0, 40)}"`;
-  for (const el of panel.querySelectorAll('*')) {
-    const style = getComputedStyle(el);
-    if (style.display === 'none' || style.visibility === 'hidden') continue;
-    if (el.closest('.sr-only')) continue;
-    const r = el.getBoundingClientRect();
-    if (!r.width || !r.height) continue;
-    // The head and body span the panel on purpose; their content must not.
-    const edgeToEdge = el.matches('.ch-peek-head, .ch-peek-body');
-    if (!edgeToEdge && (r.right > box.right - 8 || r.left < box.left)) {
-      bad.push(`outside ${Math.round(r.right - box.right)}px: ${describe(el)}`);
-    }
-    const clips = style.overflowX !== 'visible';
-    if (clips && el.scrollWidth > el.clientWidth + 1 && !el.classList.contains('truncate'))
-      bad.push(`clipped ${el.scrollWidth - el.clientWidth}px: ${describe(el)}`);
-    if (el.classList.contains('cx-btn') && el.scrollWidth > el.clientWidth + 1)
-      bad.push(`button text over ${el.scrollWidth - el.clientWidth}px: ${describe(el)}`);
-  }
-  const walker = document.createTreeWalker(panel, NodeFilter.SHOW_TEXT);
-  while (walker.nextNode()) {
-    const node = walker.currentNode;
-    if (!node.textContent.trim() || node.parentElement.closest('.sr-only, .truncate')) continue;
-    const range = document.createRange();
-    range.selectNodeContents(node);
-    for (const r of range.getClientRects())
-      if (r.right > box.right - 8) {
-        bad.push(`text at edge ${Math.round(box.right - r.right)}px: ${describe(node.parentElement)}`);
-        break;
-      }
-  }
-  return [...new Set(bad)];
-};
 
 // Sizes are px like the CSS around them, so scale both ways: a root font change
 // and every size in the panel, whichever way the type setting ends up working.
@@ -267,6 +247,52 @@ async function checkTimeToFind(state) {
   }
 }
 
+// The brief's goal: eight invitees at the default font fit, or nearly, without scrolling.
+const FIT_SLACK_PX = 48;
+const FIT_STATE = 'past8';
+async function checkFit() {
+  for (const locale of ['en', 'pt-BR']) {
+    const { page, context } = await openPanel({ state: FIT_STATE, locale });
+    const { scroll, client, over } = await page.evaluate(FIT);
+    notes.push(`fit ${locale} 1280x800: body scroll ${scroll}px in ${client}px, ${over}px over`);
+    if (over > FIT_SLACK_PX)
+      report(FIT_STATE, 'fit', `${locale}: body scrolls ${over}px at 1280x800 (allowed ${FIT_SLACK_PX})`);
+    await context.close();
+  }
+}
+
+// Every line of the body says what it is, and the track ids never reach it.
+async function checkLabels(state) {
+  const { page, context } = await openPanel({ state });
+  for (const line of await page.evaluate(LABELS)) report(state, 'labels', line);
+  const closed = page.locator('.ch-peek [aria-expanded="false"]');
+  while (await closed.count()) await closed.first().click();
+  const text = await page.locator('.ch-peek-body').innerText();
+  for (const raw of /\b(output|mic|speaker-\d+|S\d)\b/g[Symbol.matchAll](text))
+    report(state, 'labels', `raw track id "${raw[0]}"`);
+  if (/\bRequired\b/.test(text)) report(state, 'labels', '"Required" is on a row');
+  await context.close();
+}
+
+async function shootMatrix(states) {
+  for (const state of states)
+    for (const theme of ['dark', 'light'])
+      for (const locale of ['en', 'pt-BR'])
+        for (const fontSize of [12, 16, 20]) {
+          const { page, context } = await openPanel({ state, theme, locale, fontSize });
+          if (panelWidth) await page.addStyleTag({ content: widthCss(panelWidth) });
+          await page.locator('.ch-peek').screenshot({
+            path: path.join(out, `matrix-${state}-${theme}-${locale}-${fontSize}.png`),
+          });
+          const closed = page.locator('.ch-peek [aria-expanded="false"]');
+          while (await closed.count()) await closed.first().click();
+          await page.locator('.ch-peek').screenshot({
+            path: path.join(out, `matrix-${state}-${theme}-${locale}-${fontSize}-open.png`),
+          });
+          await context.close();
+        }
+}
+
 // The meeting page takes the same structure in its inspector, at its own width.
 async function inspector(sessionId, { theme = 'dark', locale = 'en', shoot = false }) {
   const context = await browser.newContext({
@@ -315,6 +341,9 @@ for (const theme of ['dark', 'light'])
       for (const line of await page.evaluate(MEASURE, '.ch-peek')) report(state, 'overflow 320px', line);
     await context.close();
   }
+if (picked.includes(FIT_STATE)) await checkFit();
+for (const state of picked) await checkLabels(state);
+if (matrix) await shootMatrix(picked);
 if (!shotsOnly)
   for (const state of picked) {
     await checkOverflow(state);

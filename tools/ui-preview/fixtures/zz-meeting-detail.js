@@ -34,6 +34,9 @@
     [12, 'notResponded', 'required'],
     [7, 'notResponded', 'optional']
   );
+  const eight = [
+    ...invited([1, 'organizer'], [2, 'accepted'], [1, 'accepted', 'optional'], [1, 'tentativelyAccepted'], [2, 'declined'], [1, 'notResponded']),
+  ];
   const small = [
     { ...person(0, 'organizer'), name: 'Ana Almeida' },
     person(1, 'accepted'),
@@ -77,6 +80,7 @@
     event({ id: 'd-now', title: 'Standup under way', startsAt: at(0, 11, 30), endsAt: at(0, 12, 30), response: 'accepted', isOrganizer: false, joinUrl: 'https://teams.microsoft.com/l/meetup-join/y', bodyPreview: blockPt, attendeeResponses: small }),
     event({ id: 'd-past', title: 'Roadmap review', startsAt: at(-1, 14), endsAt: at(-1, 15, 20), response: 'organizer', isOrganizer: true, categories: ['Leadership'], location: 'Room 4', bodyPreview: `Bring the Q1 numbers.\n${teamsBlock}`, attendeeResponses: nine }),
     event({ id: 'd-transcript', title: 'Only a transcript', startsAt: at(-1, 10), endsAt: at(-1, 11, 22), response: 'organizer', isOrganizer: true, categories: ['Leadership'], location: 'Reuniões do Microsoft Teams', bodyPreview: blockPt, attendeeResponses: nine }),
+    event({ id: 'd-past8', title: 'Ledger depreciation review', startsAt: at(-1, 8), endsAt: at(-1, 9), response: 'accepted', categories: ['Leadership'], location: 'Reuniões do Microsoft Teams', bodyPreview: `Bring the open points.\n${blockPt}`, attendeeResponses: eight }),
     event({ id: 'd-empty', title: 'Nothing came out', startsAt: at(-1, 16), endsAt: at(-1, 17), response: 'accepted', attendeeResponses: small, bodyPreview: blockPt }),
     event({ id: 'd-40', title: 'All hands', startsAt: at(1, 9), endsAt: at(1, 10), response: 'tentativelyAccepted', showAs: 'tentative', location: 'Auditorium, 3rd floor, north wing', joinUrl: 'https://teams.microsoft.com/l/meetup-join/z', attendeeResponses: forty }),
     event({ id: 'd-long', title: longTitle, startsAt: at(1, 11), endsAt: at(1, 12), response: 'notResponded', joinUrl: 'https://teams.microsoft.com/l/meetup-join/w', bodyPreview: 'See https://example.test/a/very/long/link/that/has/no/natural/place/to/break/at/all/and/keeps/going/for/a/while', attendeeResponses: small }),
@@ -112,6 +116,7 @@
   const sessions = [
     recorded('d-past', 'Roadmap review', -1, 14, 0, 15, 20, { personal_note: { id: 'n-d-past', relative_path: 'n.md' } }),
     recorded('d-transcript', 'Only a transcript', -1, 10, 0, 11, 22),
+    recorded('d-past8', 'Ledger depreciation review', -1, 8, 0, 9, 0),
     session({ id: 'd-empty', title: 'Nothing came out', starts_at: at(-1, 16), ends_at: at(-1, 17) }),
     recorded('d-match', 'Meeting in Google Chrome', -1, 12, 0, 12, 40),
     session({ id: 'd-prep', title: 'Prepared one', starts_at: at(2, 14), ends_at: at(2, 15), status: 'planned', personal_note: { id: 'n-prep', relative_path: 'p.md' } }),
@@ -170,7 +175,7 @@
         { speaker: 'S1', state: 'confirmed', name: 'Bruno Barros' },
         { speaker: 'S2', state: 'confirmed', name: 'Outside Guest' },
       ]);
-    if (meetingId === 'm-d-transcript' || meetingId === 'm-d-match')
+    if (meetingId === 'm-d-transcript' || meetingId === 'm-d-match' || meetingId === 'm-d-past8')
       return report([{ speaker: 'S1', state: 'suggested', name: null }]);
     return { jobs: [], report: null, people: [] };
   };
@@ -196,6 +201,7 @@
   const signals = {
     'd-past': { transcript: true, speakers: { named: 3, unnamed: 1 }, note: true, summary: true, followUps: { linked: 1, actions: 3 }, generatedContent: true },
     'd-transcript': { transcript: true, speakers: { named: 0, unnamed: 6 } },
+    'd-past8': { transcript: true, speakers: { named: 0, unnamed: 6 } },
     'd-match': { transcript: true, speakers: { named: 0, unnamed: 2 } },
     'd-prep': { note: true, preparation: true },
   };

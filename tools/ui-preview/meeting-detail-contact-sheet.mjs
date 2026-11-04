@@ -12,6 +12,7 @@ import path from 'node:path';
 const [before, after, out] = process.argv.slice(2);
 const STATES = [
   ['upcoming', 'Upcoming'],
+  ['past8', 'Past, 8 invitees'],
   ['past', 'Past with outcome'],
   ['transcript', 'Past, transcript only'],
   ['empty', 'Past without outcome'],
