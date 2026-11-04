@@ -124,24 +124,81 @@ past with only a transcript, past without outcome, 40 invitees, very long title,
 attendees, declined, prepared, calendar match, and the inspector of a past and an
 upcoming meeting.
 
+### P9 Property sheet (supersedes the reading order of P2, P3, P5, and P6's order)
+
+The owner, 2026-11-03: "There is still a lot of text in the sheet... If there is
+going to be text, we have to organize it more, to make clear what each thing is."
+The head of P1 stays. The body becomes labelled rows, one shape for every section:
+a fixed label column (icon and short label, muted) and the value beside it.
+
+No sentence stands in for data. Running text is only what the owner wrote or a
+model summarized, under a title of its own. A value that is absent is a quiet dash,
+and a negative answer recedes in grey.
+
+| Past                                                                                           | Upcoming or under way                                       |
+| ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Calendar match, when there is one                                                              | Group "Meeting": response, location, organizer, preparation |
+| Group "Result": transcript, speakers, note, summary, follow-ups, files, diagram if any, memory | Group "People": invited                                     |
+| Summary or notes, as a titled card                                                             | Invitation (collapsed)                                      |
+| Group "People": present, invited                                                               |                                                             |
+| Rating, response, location, organizer, invitation (collapsed)                                  |                                                             |
+
+Rules that came with it:
+
+- The Result rows are always the same, in the same order, so the eye learns them.
+  An event with no recording shows them as "No" and dashes. "Nothing came out" is
+  no longer a sentence, because the rows already say it.
+- Transcript: "Yes · 1 h 22" with an action to the full transcript, "In progress",
+  "Failed" or "No". The raw excerpt is gone from the panel, so track ids such as
+  `output`, `mic` or `speaker-3` cannot reach it.
+- Speakers: "6 · none named", with an action to the meeting's naming tab only while
+  someone is unnamed.
+- Summary: "Yes", "Not yet", or "Off" with an action to the setting.
+- Memory: "Yes · summary only", "Not yet" or "No". The exact wording of spec 0124 P6
+  stays as the tooltip, so the short value never claims more than that.
+- Present: "Unknown", or "3 confirmed" with a disclosure. It keeps spec 0124's rule:
+  confirmed speakers only, never a full attendance. The caveat is its tooltip.
+- Invited: up to four avatars and how many more, the counts by response (each with
+  the dot of its colour on the bar) and the proportion bar. The list opens from this
+  row and is collapsed at every size. `groupStartsOpen` now only decides the groups
+  inside it. A cache without responses keeps a flat list and claims no group.
+- A person carries only the exception: "Organizer" and "Optional". "Required" is
+  gone, since nearly everyone is.
+- Rating: thumbs as an inline toggle, with the chosen word beside them so the state
+  does not rest on a pressed look. The sentence about generated content (spec 0124
+  P5) is gone: the Result rows show what was generated, and the mark stays apart.
+- Preparation: "Note · 1 file · 1 link", a disclosure with the note's text and the
+  items; or "None" with the prepare action. Personal blocks still have no such row.
+- A group whose rows are all empty leaves no title behind.
+- A Teams placeholder location is also hidden once the meeting is over: there it
+  costs a row and says nothing.
+
+The label column is 5.75rem, so labels stay aligned at any font. Long values wrap in
+the value column, and a row's action moves to the next line rather than squeezing
+it. Below 14.5rem of sheet width (the largest fonts), a label goes over its value.
+
+`MeetingInspector` shares the rows: when, event, audio, transcript and folder become
+rows, with what the meeting has, response, location, organizer and invitation under
+them; then the People group. It lists only what the meeting has, since it scrolls
+with a whole page and has no need of a fixed shape.
+
 ## Acceptance
 
 - [x] The preview loses Teams' block in pt-BR, English and Spanish, flattened or
       cut, and never shows a passcode; what a person wrote stays; nothing left means
       no preview (`invitationText.test.ts`, `MeetingDetail.panel.test.tsx`).
-- [x] Relative time, panel state, default-open groups, the location rule and the
-      short labels (`meetingDetail.test.ts`).
+- [x] Relative time, panel state, default-open groups and the speakers and memory
+      values (`meetingDetail.test.ts`); the location rule (`invitationText.test.ts`).
 - [x] Avatar: stable initials and hue, a photo when given, initials when it fails
       (`MeetingDetail.people.test.tsx`).
 - [x] Upcoming leads with join as the only primary action, then who is coming and
       preparation (`MeetingDetail.panel.test.tsx`).
-- [x] Past leads with the outcome and "Open meeting", then who came versus who was
-      invited, the mark and memory in that order; no outcome is said out loud
-      (`MeetingDetail.panel.test.tsx`).
+- [x] Past leads with the result and "Open meeting", then who came versus who was
+      invited and the mark, in that order (`MeetingDetail.past.test.tsx`).
 - [x] Declined and cancelled events have no primary action and keep join
       (`MeetingDetail.panel.test.tsx`).
-- [x] Rows carry organizer, required or optional; long lists start collapsed with
-      counts; collapse controls expose their state; a confirmed speaker is marked
+- [x] Rows carry organizer or optional; lists start collapsed with counts; collapse
+      controls expose their state; a confirmed speaker is marked
       (`MeetingDetail.people.test.tsx`, `MeetingDetail.panel.test.tsx`).
 - [x] Existing capabilities keep working: calendar match, record, prepare, open
       meeting, transcript link, mark, memory and settings link
@@ -158,9 +215,27 @@ upcoming meeting.
       focus to the block (`tools/ui-preview/meeting-detail.mjs`).
 - [x] Time to find: join and the outcome are in view without scrolling at 1280×800
       and 1366×768 (`tools/ui-preview/meeting-detail.mjs`).
+- [x] P9: every body line is a labelled row or sits under a title
+      (`MeetingDetail.past.test.tsx`, `tools/ui-preview/meeting-detail.mjs` "labels",
+      which fails on text outside a row, a row with no label, a raw track id or
+      "Required").
+- [x] P9: past order, always-present Result rows as dashes, transcript, speakers,
+      summary and memory values, and their actions (`MeetingDetail.panel.test.tsx`,
+      `MeetingsHub.signals.test.tsx`, `meetingDetail.test.ts`).
+- [x] P9: no transcript excerpt and no track id (`MeetingDetail.past.test.tsx`).
+- [x] P9: Invited sums up by response, its list starts collapsed even when short, only
+      the exception is marked (`MeetingDetail.people.test.tsx`).
+- [x] P9: preparation counts open the note and files; invitation collapsed in both
+      states (`MeetingDetail.panel.test.tsx`).
+- [x] P9: a past meeting with 8 invitees fits at 1280×800 and the default font, in both
+      languages (`tools/ui-preview/meeting-detail.mjs` "fit", state `past8`).
 - [ ] Owner: read a real week and a real past meeting in the running app.
 
 ## Evidence
+
+- Property sheet, before and after: `docs/design/meeting-detail/property-sheet.png`.
+  Body scroll height of `past8` at 1280×800, in a 467px body: 1047px (en) and 1064px
+  (pt-BR) before, 467px in both after.
 
 - Contact sheet: `docs/design/meeting-detail/contact-sheet.png`; references and
   findings: `docs/design/meeting-detail/README.md`.

@@ -10,21 +10,44 @@ Reproduce it with `tools/ui-preview/meeting-detail.mjs` and
 
 ## What was taken from where
 
-| Reference | Taken |
-| --- | --- |
-| Outlook's event form (owner's screenshot) | Join always findable at the top. Participants grouped by response with counts, avatars, and required or optional. Short facts about the recording. Not its form-like density |
-| [Calendly, event side panel](https://mobbin.com/screens/3b379998-72b4-4313-b418-ee0cb610baac) ([second view](https://mobbin.com/screens/2cb71f1d-cd9c-4675-8fd4-1b9dc19ddad5)) | Title and time first, then the action, then plain sentence-case sections in a narrow column |
-| [Maze, session details](https://mobbin.com/screens/4f1274cb-edca-45c1-8aad-fae84faae015) | Time and join kept together as one block above everything else |
-| [Lightfield, meeting page](https://mobbin.com/screens/8dce3755-0822-45f8-835d-a2561536bd75) | A quiet check at the end of a participant row, for what is confirmed |
-| [Time2book, booking details](https://mobbin.com/screens/3c2ac842-7d3d-46c7-b950-58c5466fad45) | Counts by attendance as the summary of the people section |
-| [Grain, meeting summary](https://mobbin.com/screens/6fafb81f-4df9-4f99-aeab-19452c587e9b) and [Calendly, recap](https://mobbin.com/screens/6fc83e69-b982-4945-bc3d-462e50aebfb7) | After a meeting: summary first, then what follows from it, people after that |
-| [Campsite, call page](https://mobbin.com/screens/e25dbcd8-8ca3-4c60-ae41-6eea865081a6) | The useful or not useful mark comes after the content it judges |
+| Reference                                                                                                                                                                        | Taken                                                                                                                                                                        |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Outlook's event form (owner's screenshot)                                                                                                                                        | Join always findable at the top. Participants grouped by response with counts, avatars, and required or optional. Short facts about the recording. Not its form-like density |
+| [Calendly, event side panel](https://mobbin.com/screens/3b379998-72b4-4313-b418-ee0cb610baac) ([second view](https://mobbin.com/screens/2cb71f1d-cd9c-4675-8fd4-1b9dc19ddad5))   | Title and time first, then the action, then plain sentence-case sections in a narrow column                                                                                  |
+| [Maze, session details](https://mobbin.com/screens/4f1274cb-edca-45c1-8aad-fae84faae015)                                                                                         | Time and join kept together as one block above everything else                                                                                                               |
+| [Lightfield, meeting page](https://mobbin.com/screens/8dce3755-0822-45f8-835d-a2561536bd75)                                                                                      | A quiet check at the end of a participant row, for what is confirmed                                                                                                         |
+| [Time2book, booking details](https://mobbin.com/screens/3c2ac842-7d3d-46c7-b950-58c5466fad45)                                                                                    | Counts by attendance as the summary of the people section                                                                                                                    |
+| [Grain, meeting summary](https://mobbin.com/screens/6fafb81f-4df9-4f99-aeab-19452c587e9b) and [Calendly, recap](https://mobbin.com/screens/6fc83e69-b982-4945-bc3d-462e50aebfb7) | After a meeting: summary first, then what follows from it, people after that                                                                                                 |
+| [Campsite, call page](https://mobbin.com/screens/e25dbcd8-8ca3-4c60-ae41-6eea865081a6)                                                                                           | The useful or not useful mark comes after the content it judges                                                                                                              |
 
 Mobbin has no screens indexed for Notion Calendar, Google Calendar or Granola under
 those names; searching for them returned other products. Cron, Fantastical and
 Linear did not appear in the searches either, so nothing here comes from them.
 
+## The property sheet (spec 0126 P9)
+
+`property-sheet.png` shows the panel before and after, in both themes. Reproduce it
+the same way, with the `past8` state.
+
+| Reference                                                                                  | Taken                                                                                                     |
+| ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| [Attio, record details](https://mobbin.com/screens/f5a0eb36-47fe-4f4d-9bd6-d4d1b11a8ef5)   | Icon and muted label, value in ink, about 24px a row                                                      |
+| [incident.io, properties](https://mobbin.com/screens/08de3a55-9bfe-491c-b6a1-9c87729e2981) | Plain group titles over rows; a quiet word for what is missing; a compact text action in the value column |
+| [Canny, details](https://mobbin.com/screens/2886b41d-0278-4978-9207-fd62c1c6a2d8)          | Every field keeps its row, with a dash when empty, so the shape stays learnable                           |
+| [Plane, properties](https://mobbin.com/screens/6f361585-e515-404d-9b4d-3cc9c83e592d)       | One label column across groups                                                                            |
+
+Linear, Notion, Height and Attio's record sidebar were the owner's named references.
+Only Attio appeared in Mobbin's results, so nothing here was taken from the other
+three.
+
 ## What the checks found and fixed
+
+- The label column first broke "Your response" at font 12: `scale` shrinks an icon's
+  drawing but keeps its 13px box. The icon's margin now gives that room back, and the
+  English label became "Response".
+- "Nomear" fell to a second line in pt-BR at 320px, at 16: the column went from 6rem
+  to 5.75rem, which took the last 13px of overflow out of the `past8` state.
+- A personal block left an empty "Meeting" title: a group with no rows now hides.
 
 - Before, at 1280×800: join was cut at the bottom edge after the invitee list, the
   outcome was below the fold, and long file names ran 132px past the panel.
