@@ -41,6 +41,7 @@
     return n;
   };
   f.create_note = () => {
+    window.__cxCreated = (window.__cxCreated ?? 0) + 1;
     const id = `n-new-${next++}`;
     const now = new Date().toISOString();
     const n = { id, title: '', path: `${id}.md`, tags: [], created_at: now, updated_at: now };

@@ -21,6 +21,7 @@ import { useAppStore } from '../../lib/store';
 import { useResolvedTheme } from '../../lib/useTheme';
 import { meetingBlockSpec } from '../meetings/MeetingBlock';
 import { isInteractiveClickTarget } from './editorFocus';
+import { useNoteShortcuts } from './useNoteShortcuts';
 import { type NoteFont } from './NoteActionsMenu';
 import { NoteRecovery } from './NoteRecovery';
 import { useNoteRecovery } from './useNoteRecovery';
@@ -293,20 +294,6 @@ function EditorInner({
     [flushNow]
   );
 
-  // Ctrl+. (or Cmd+. on mac) toggles the actions menu — mirrors
-  // Notion's shortcut. Gated on Ctrl/Cmd so it doesn't fight the
-  // editor's own typing of a period.
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (!(e.ctrlKey || e.metaKey)) return;
-      if (e.key !== '.') return;
-      e.preventDefault();
-      setMenuOpen((v) => !v);
-    }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, []);
-
   function focusEditorOnDeadSpace(e: React.MouseEvent<HTMLElement>) {
     // Clicks inside the editor surface or on interactive chrome
     // (title, tags, header buttons) already do the right thing —
@@ -326,6 +313,12 @@ function EditorInner({
   async function copyLinkToClipboard() {
     await navigator.clipboard.writeText(`coxinha://notes/${noteId}`);
   }
+
+  useNoteShortcuts({
+    toggleMenu: () => setMenuOpen((v) => !v),
+    copyLink: () => void copyLinkToClipboard(),
+    duplicate: () => void onDuplicate().catch(() => setDuplicateFailed(true)),
+  });
 
   async function confirmAndDelete() {
     const label = title || t('sidebar.untitled');

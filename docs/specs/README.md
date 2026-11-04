@@ -212,3 +212,4 @@ Pending decisions that block or shape the implementation.
 - [0124 — Agenda details and meeting signals](0124-agenda-details-and-signals.md) — in-progress
 - [0125 — Appearance: theme, colours, font size and language](0125-appearance-settings.md) — in-progress
 - [0126 — Meeting detail as a reading panel](0126-meeting-detail.md) — in-progress
+- [0128 — One keyboard shortcut system](0128-keyboard-shortcuts.md) — draft

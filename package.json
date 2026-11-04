@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:shortcuts": "node tools/ui-preview/shortcuts.mjs",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
     "screenshots": "node tools/capture-screenshots.mjs",
     "screenshots:install": "playwright install chromium",
