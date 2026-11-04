@@ -56,13 +56,13 @@ the decoded text. Routed over 10 s windows on 4 threads, the pair ran at RTF
 
 ## Acceptance criteria
 
-- [ ] English and Portuguese sentences from the owner's meetings are told
+- [x] English and Portuguese sentences from the owner's meetings are told
   apart, gibberish and ties go to the Portuguese pass, and an empty window
   keeps the multilingual result.
   (`live::language` tests)
-- [ ] A Portuguese window returns the Portuguese pass's words and an English
+- [x] A Portuguese window returns the Portuguese pass's words and an English
   window returns the multilingual words, without calling the Portuguese
   pass. (`live::routed` tests)
-- [ ] A configured Tagarela pairs with a Parakeet Ultra next to it, a
+- [x] A configured Tagarela pairs with a Parakeet Ultra next to it, a
   configured Ultra pairs with a Tagarela, and a lone model runs alone.
   (`speech_models` tests)

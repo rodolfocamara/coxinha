@@ -23,10 +23,13 @@ fn safe_names_drop_separators_reserved_words_and_dots() {
 
 #[test]
 fn meetings_are_named_by_date_and_title_activities_by_title() {
-    assert_eq!(desired_name(&meeting("Project Atlas")), "2026-11-03 Project Atlas");
-    let mut bad_date = meeting("Pulso");
+    assert_eq!(
+        desired_name(&meeting("Project Atlas")),
+        "2026-11-03 Project Atlas"
+    );
+    let mut bad_date = meeting("Atlas");
     bad_date.date = Some("03/11/2026".into());
-    assert_eq!(desired_name(&bad_date), "Pulso");
+    assert_eq!(desired_name(&bad_date), "Atlas");
     let activity = ItemRef {
         kind: ItemKind::Activity,
         id: "n-1".into(),
@@ -39,9 +42,9 @@ fn meetings_are_named_by_date_and_title_activities_by_title() {
 #[test]
 fn looking_never_creates_and_ids_must_be_plain() {
     let vault = tempfile::tempdir().unwrap();
-    assert_eq!(find(vault.path(), &meeting("Pulso")).unwrap(), None);
+    assert_eq!(find(vault.path(), &meeting("Atlas")).unwrap(), None);
     assert!(!vault.path().join("meetings").exists());
-    let mut bad = meeting("Pulso");
+    let mut bad = meeting("Atlas");
     bad.id = "../x".into();
     assert!(find(vault.path(), &bad).is_err());
 }
@@ -49,16 +52,20 @@ fn looking_never_creates_and_ids_must_be_plain() {
 #[test]
 fn folders_are_found_by_id_and_follow_the_title_when_free() {
     let vault = tempfile::tempdir().unwrap();
-    let first = ensure(vault.path(), &meeting("Pulso")).unwrap();
-    assert!(first.ends_with("meetings/2026-11-03 Pulso"));
+    let first = ensure(vault.path(), &meeting("Atlas")).unwrap();
+    assert!(first.ends_with("meetings/2026-11-03 Atlas"));
     assert_eq!(read_marker(&first).unwrap().id, "s-1");
 
     // Readers locate without renaming.
-    let located = locate(vault.path(), &meeting("Project Atlas")).unwrap().unwrap();
+    let located = locate(vault.path(), &meeting("Project Atlas"))
+        .unwrap()
+        .unwrap();
     assert_eq!(located, first);
     assert!(first.exists());
 
-    let renamed = find(vault.path(), &meeting("Project Atlas")).unwrap().unwrap();
+    let renamed = find(vault.path(), &meeting("Project Atlas"))
+        .unwrap()
+        .unwrap();
     assert!(renamed.ends_with("meetings/2026-11-03 Project Atlas"));
     assert!(!first.exists());
 
@@ -71,17 +78,17 @@ fn folders_are_found_by_id_and_follow_the_title_when_free() {
 #[test]
 fn a_new_folder_never_reuses_a_taken_name() {
     let vault = tempfile::tempdir().unwrap();
-    fs::create_dir_all(vault.path().join("meetings/2026-11-03 Pulso")).unwrap();
-    let dir = ensure(vault.path(), &meeting("Pulso")).unwrap();
-    assert!(dir.ends_with("meetings/2026-11-03 Pulso (2)"));
+    fs::create_dir_all(vault.path().join("meetings/2026-11-03 Atlas")).unwrap();
+    let dir = ensure(vault.path(), &meeting("Atlas")).unwrap();
+    assert!(dir.ends_with("meetings/2026-11-03 Atlas (2)"));
     let other = ItemRef {
         kind: ItemKind::Activity,
-        ..meeting("Pulso")
+        ..meeting("Atlas")
     };
     // Same id, other kind: its own folder under activities/.
     assert!(ensure(vault.path(), &other)
         .unwrap()
-        .ends_with("activities/Pulso"));
+        .ends_with("activities/Atlas"));
 }
 
 #[test]

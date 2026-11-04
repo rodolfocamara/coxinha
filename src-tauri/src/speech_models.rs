@@ -72,6 +72,7 @@ pub fn detect(app_models: &Path) -> Option<PathBuf> {
 
 /// Spec 0116 P1: the model that decodes every window and, when one is at
 /// hand, the Portuguese pass. Looks next to the configured file and in Handy's.
+#[cfg(feature = "stt-tagarela")]
 pub fn route(configured: &Path) -> (PathBuf, Option<PathBuf>) {
     let mut candidates = configured.parent().map(gguf_files).unwrap_or_default();
     if let Some(handy) = host_data_dir().map(|d| d.join("com.pais.handy").join("models")) {
@@ -80,6 +81,7 @@ pub fn route(configured: &Path) -> (PathBuf, Option<PathBuf>) {
     pair(configured, &candidates)
 }
 
+#[cfg(any(test, feature = "stt-tagarela"))]
 fn name(path: &Path) -> String {
     path.file_name()
         .and_then(|n| n.to_str())
@@ -87,6 +89,7 @@ fn name(path: &Path) -> String {
         .to_ascii_lowercase()
 }
 
+#[cfg(any(test, feature = "stt-tagarela"))]
 fn pair(configured: &Path, candidates: &[PathBuf]) -> (PathBuf, Option<PathBuf>) {
     let best = |accept: fn(u8) -> bool| {
         candidates

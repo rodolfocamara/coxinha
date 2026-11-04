@@ -68,7 +68,7 @@ describe('universal search groups (spec 0122 P3)', () => {
     const answer: UniversalAnswer = {
       ...empty,
       meetings: [
-        meeting('s1', 'Pulso', '2026-11-03T13:00:00Z', [
+        meeting('s1', 'Atlas', '2026-11-03T13:00:00Z', [
           { field: 'notes', snippet: 'decide the backend' },
           { field: 'transcript', snippet: 'Ana: the backend', atMs: 65_000 },
         ]),

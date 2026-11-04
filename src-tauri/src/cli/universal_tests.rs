@@ -108,7 +108,7 @@ fn events_without_a_session_match_on_the_cache() {
     let paths = paths_of(&f.vault, &f.data);
     let library = Library::open(&paths).unwrap();
     // e1 belongs to session s1, so only e2 answers.
-    assert!(search::events(&library, "pulso", 10).is_empty());
+    assert!(search::events(&library, "atlas", 10).is_empty());
     let other = search::events(&library, "other", 10);
     assert_eq!(other[0].id, "e2");
     assert_eq!(other[0].starts_at.as_deref(), Some("2026-11-03T13:00:00Z"));
@@ -152,9 +152,9 @@ fn a_newer_query_stops_the_scan() {
         calls.set(calls.get() + 1);
         calls.get() > 1
     };
-    let answer = universal(&paths, "pulso", 10, &stale).unwrap();
+    let answer = universal(&paths, "atlas", 10, &stale).unwrap();
     assert!(answer.meetings.is_empty() && answer.notes.is_empty() && answer.people.is_empty());
-    let fresh = universal(&paths, "pulso", 10, &|| false).unwrap();
+    let fresh = universal(&paths, "atlas", 10, &|| false).unwrap();
     assert_eq!(fresh.meetings[0].id, "s1");
     assert!(universal(&paths, "  ", 10, &|| false)
         .unwrap()

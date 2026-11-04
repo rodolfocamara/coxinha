@@ -56,12 +56,12 @@ describe('layoutDay', () => {
       lanes([
         eventRow('lunch', at(12), at(13, 30)),
         eventRow('focus', at(13), at(15)),
-        eventRow('pulso', at(13), at(15, 20)),
+        eventRow('atlas', at(13), at(15, 20)),
         eventRow('late', at(16), at(17)),
       ])
     ).toEqual({
       lunch: [0, 3, 720, 810],
-      pulso: [1, 3, 780, 920],
+      atlas: [1, 3, 780, 920],
       focus: [2, 3, 780, 900],
       late: [0, 1, 960, 1020],
     });

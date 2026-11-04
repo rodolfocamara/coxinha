@@ -39,7 +39,7 @@ beforeEach(async () => {
   db.account = 'me@example.com';
   db.sessions = [
     session({
-      id: 'pulso',
+      id: 'atlas',
       title: 'Project Atlas',
       starts_at: new Date(2026, 10, 3, 13, 30).toISOString(),
       ends_at: new Date(2026, 10, 3, 15, 20).toISOString(),
@@ -65,25 +65,25 @@ afterEach(() => {
 const detail = () => screen.getByRole('article');
 
 it('keeps files in a Files tab of the meeting, named by date and title', async () => {
-  renderAt('/meetings/pulso');
+  renderAt('/meetings/atlas');
   await screen.findByRole('heading', { level: 2, name: 'Project Atlas' });
   fireEvent.click(within(detail()).getByRole('tab', { name: 'Files' }));
   expect(await within(detail()).findByText(/No files yet/)).toBeInTheDocument();
   expect(calledWith(db, 'items_list')[0]).toEqual({
-    item: { kind: 'meeting', id: 'pulso', title: 'Project Atlas', date: '2026-11-03' },
+    item: { kind: 'meeting', id: 'atlas', title: 'Project Atlas', date: '2026-11-03' },
   });
   expect(within(detail()).getByRole('button', { name: 'Include file' })).toBeInTheDocument();
 });
 
 it('links an activity from the meeting inspector', async () => {
-  renderAt('/meetings/pulso');
+  renderAt('/meetings/atlas');
   const inspector = await screen.findByRole('complementary', { name: 'Meeting details' });
   expect(await within(inspector).findByText('No linked activities.')).toBeInTheDocument();
   fireEvent.click(within(inspector).getByRole('button', { name: 'Link activity' }));
   const results = await within(inspector).findByRole('list', { name: 'Activities found' });
   fireEvent.click(within(results).getByRole('button', { name: 'Deck do comitê' }));
   await waitFor(() =>
-    expect(db.links).toEqual([{ session: 'pulso', note: 'n-deck', createdAt: 'now' }])
+    expect(db.links).toEqual([{ session: 'atlas', note: 'n-deck', createdAt: 'now' }])
   );
   expect(
     within(await within(inspector).findByRole('list', { name: 'Activities' })).getByRole('button', {

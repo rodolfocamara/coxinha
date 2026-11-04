@@ -76,6 +76,7 @@ impl Worker {
         config: Value,
     ) -> anyhow::Result<Value> {
         anyhow::ensure!(self.processing.is_none(), "local processing already active");
+        #[cfg(feature = "local-processing")]
         let request = (meeting.clone(), config.clone());
         self.live.yield_backlog();
         // B3: one ASR model resident; the live drain finishes first.

@@ -41,10 +41,10 @@ pub(super) fn fixture() -> Fixture {
     drop(coxinha_core::store::Store::open(&library).unwrap());
     let db = Connection::open(library.join("meetings.db")).unwrap();
     db.execute_batch(
-        "INSERT INTO meeting(id,title,created_at,capture_state) VALUES('m1','Pulso','2026-11-03 13:00:00','finished');
+        "INSERT INTO meeting(id,title,created_at,capture_state) VALUES('m1','Atlas','2026-11-03 13:00:00','finished');
          INSERT INTO session(id,title,starts_at,ends_at,status,origin,meeting_id,note_id,note_path)
            VALUES('s1','Project Atlas - App Alignment','2026-11-03T13:00:00Z','2026-11-03T14:00:00Z','completed','manual','m1','n-meet','notes/session-n-meet.md');
-         INSERT INTO session(id,title,status,origin) VALUES('s2','Retro do time','planned','manual');
+         INSERT INTO session(id,title,status,origin,created_at) VALUES('s2','Retro do time','planned','manual','2026-11-01 09:00:00');
          INSERT INTO job(id,meeting_id,identity_key,stage,input_json,state) VALUES('j1','m1','k1','process','{}','succeeded');",
     )
     .unwrap();

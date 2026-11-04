@@ -49,14 +49,14 @@ Date: 2026-11-03
 
 ## Acceptance criteria
 
-- [ ] A recovered capture reports no recovery needed, and an unsealed or
+- [x] A recovered capture reports no recovery needed, and an unsealed or
   unreadable one does. (`capture::recording` tests)
-- [ ] A sealed interruption leaves the review list unless it lacks a
+- [x] A sealed interruption leaves the review list unless it lacks a
   transcript, and an unsealed one stays. (`meetingRows.test.ts`,
   `MeetingsHub.detail.test.tsx`)
-- [ ] "Israel", "méxico" and "Sao Paulo" find their zones, and an IANA name
+- [x] "Israel", "méxico" and "Sao Paulo" find their zones, and an IANA name
   still does. (`zoneCatalog.test.ts`)
-- [ ] Picking a result adds the zone with its country code, editable.
+- [x] Picking a result adds the zone with its country code, editable.
   (`CalendarSection.test.tsx`)
-- [ ] The toolbar button opens the setting. (`MeetingsHub.week.test.tsx`)
+- [x] The toolbar button opens the setting. (`MeetingsHub.week.test.tsx`)
 - [ ] Owner: DR and RH leave "To review", and IL and MX show in the grid.
