@@ -7,7 +7,7 @@ Date: 2026-11-03
 ## Why
 
 The owner wants to ask an AI about meetings ("o que foi decidido na reunião
-com o Yehuda?") and have it add things to them ("adiciona esse HTML na
+com o Ana?") and have it add things to them ("adiciona esse HTML na
 reunião de amanhã", "vincula a tarefa à reunião"). Meeting data is spread
 over the library database, the vault notes, the Outlook cache and the item
 folders of spec 0105, and the running app holds the library lock. An agent

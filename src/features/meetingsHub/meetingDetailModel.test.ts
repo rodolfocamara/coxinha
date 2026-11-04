@@ -5,7 +5,7 @@ import {
   panelState,
   relativeLabel,
   speakersValue,
-} from './meetingDetail';
+} from './meetingDetailModel';
 import i18n from '../../lib/i18n';
 import type { MeetingRow } from './meetingRows';
 

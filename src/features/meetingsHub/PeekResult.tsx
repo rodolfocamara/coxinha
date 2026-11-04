@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import type { MeetingSignals } from '../meetings/library';
 import { durationLabel } from './format';
-import { memoryState, speakersValue } from './meetingDetail';
+import { memoryState, speakersValue } from './meetingDetailModel';
 import { ItemList, TextLines } from './PeekSections';
 import { PropAction, PropDash, PropDisclosure, PropRow } from './PropertySheet';
 import { useSignalsReport } from './meetingSignals';

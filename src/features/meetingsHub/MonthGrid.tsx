@@ -5,7 +5,7 @@ import { clockTime } from './format';
 import { OUTLOOK_PRESETS, colourStyle, colourVar, useEventColour } from '../agenda/categories';
 import { CategoryLabel } from '../agenda/CategoryLabel';
 import { itemHandlers, type GridActions } from './CalendarBlock';
-import { eventLook } from './eventDetails';
+import { eventLook } from './eventDetailsModel';
 import './monthView.css';
 
 /**

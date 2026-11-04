@@ -34,7 +34,7 @@ beforeEach(async () => {
         ];
       case 'library_sessions':
         return [
-          { id: 's-1', title: 'Pulso MX', starts_at: '2026-11-03T16:30:00Z', created_at: '' },
+          { id: 's-1', title: 'Project Atlas', starts_at: '2026-11-03T16:30:00Z', created_at: '' },
           {
             id: 's-2',
             title: 'Comitê de produto',
@@ -91,7 +91,7 @@ it('links an activity to a meeting, skipping meeting and daily notes, and unlink
 it('shows the same link from the activity and opens the meeting', async () => {
   links = [{ session: 's-1', note: 'n-deck', createdAt: 'now' }];
   render(<ItemLinks side="activity" noteId="n-deck" />);
-  const chip = await screen.findByRole('button', { name: 'Pulso MX' });
+  const chip = await screen.findByRole('button', { name: 'Project Atlas' });
   fireEvent.click(chip);
   expect(mocks.navigate).toHaveBeenCalledWith({
     to: '/meetings/$sessionId',

@@ -5,7 +5,7 @@ import { colourVar, useOutlookCategories } from '../agenda/categories';
 import type { OutlookConnection } from '../agenda/useOutlookConnection';
 import { MiniMonth } from './MiniMonth';
 import { OutlookStatus } from './OutlookStatus';
-import { NO_CATEGORY, useCalendarHome } from './calendarHome';
+import { NO_CATEGORY, useCalendarHome } from './calendarHomeModel';
 
 type Props = {
   anchor: Date;

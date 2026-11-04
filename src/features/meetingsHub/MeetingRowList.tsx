@@ -5,7 +5,7 @@ import { durationLabel, rowTime } from './format';
 import { localDay, nextDay } from '../sessions/sessionDates';
 import { markProps, useEventColour } from '../agenda/categories';
 import { CategoryLabel } from '../agenda/CategoryLabel';
-import { eventLook } from './eventDetails';
+import { eventLook } from './eventDetailsModel';
 import { sessionIdOf, signalItems, useSessionSignals } from './meetingSignals';
 import { SignalIcons } from './SignalIcons';
 

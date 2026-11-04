@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildRows, type MeetingRow } from './meetingRows';
 import { event, recording, session } from './meetingsHub.fixtures';
-import { NO_CATEGORY, categoryKey, nowAndNext, visibleRows } from './calendarHome';
+import { NO_CATEGORY, categoryKey, nowAndNext, visibleRows } from './calendarHomeModel';
 import { noteLines } from './peekData';
 
 // Thursday 15 October 2026, 12:00 local; the week runs Monday 12 to Sunday 18.
@@ -19,7 +19,7 @@ const rows = buildRows(
   [
     event({
       id: 'cto',
-      title: 'Pulso MX',
+      title: 'Project Atlas',
       startsAt: iso(0, 11, 30),
       endsAt: iso(0, 13),
       categories: ['Plain', 'CTO'],

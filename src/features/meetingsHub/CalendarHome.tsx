@@ -14,7 +14,7 @@ import { CalendarToolbar } from './CalendarToolbar';
 import { CalendarRail } from './CalendarRail';
 import { NowStrip } from './NowStrip';
 import { MeetingPeek } from './MeetingPeek';
-import { useCalendarHome, visibleRows } from './calendarHome';
+import { useCalendarHome, visibleRows } from './calendarHomeModel';
 import type { DetailPanel } from './meetingsSearch';
 import './calendarHome.css';
 

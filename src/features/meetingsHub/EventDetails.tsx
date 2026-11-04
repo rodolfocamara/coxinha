@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { Button } from '../../components/ui';
 import { calendar, type CalendarEvent } from '../agenda/calendar';
-import { myResponse, type MyResponse } from './eventDetails';
+import { myResponse, type MyResponse } from './eventDetailsModel';
 import { invitationText, shownLocation } from './invitationText';
 import { PropDisclosure, PropRow } from './PropertySheet';
 import './signals.css';

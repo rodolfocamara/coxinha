@@ -1,5 +1,5 @@
 // People, voice samples and settings fixtures (spec 0096 P6). Mirrors the
-// prototype: Rita with samples from the 1:1 and the weekly, Rodolfo, Marcos
+// prototype: Rita with samples from the 1:1 and the weekly, Tiago, Marcos
 // without samples and Juliana with two.
 (() => {
   const f = (window.__cxFixtures = window.__cxFixtures || {});
@@ -9,7 +9,7 @@
     { personId: 'p-juliana', name: 'Juliana Alves' },
     { personId: 'p-marcos', name: 'Marcos Lima' },
     { personId: 'p-rita', name: 'Rita Souza' },
-    { personId: 'p-rodolfo', name: 'Rodolfo Camara' },
+    { personId: 'p-tiago', name: 'Tiago Prado' },
   ];
   const space = { model: 'wespeaker-resnet34', revision: 'r2', model_hash: 'a1b2c3d4', preprocessing: 'fbank80', dimension: 256 };
   const sample = (personId, sampleId, meetingId, startMs, endMs, createdAt, stateName = 'active') => ({
@@ -24,9 +24,9 @@
       sample('p-rita', 's3', 'm-weekly', 760_000, 771_000, '2026-10-24 10:30:00'),
       sample('p-rita', 's4', 'm-daily', 30_000, 38_000, '2026-10-20 09:40:00', 'revoked'),
     ],
-    'p-rodolfo': [
-      sample('p-rodolfo', 's5', 'm-weekly', 4_000, 11_000, '2026-10-24 10:05:00'),
-      sample('p-rodolfo', 's6', 'm-rita', 27_000, 40_000, '2026-10-28 16:22:00'),
+    'p-tiago': [
+      sample('p-tiago', 's5', 'm-weekly', 4_000, 11_000, '2026-10-24 10:05:00'),
+      sample('p-tiago', 's6', 'm-rita', 27_000, 40_000, '2026-10-28 16:22:00'),
     ],
     'p-juliana': [
       sample('p-juliana', 's7', 'm-daily', 61_000, 70_000, '2026-10-20 09:41:00'),

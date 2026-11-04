@@ -185,14 +185,14 @@ it('builds speaker lanes with shares, positions and speakers still to confirm', 
     warnings: [],
     corrections: {},
     assignments: [
-      { id: 'a', speaker: 'S0', track: 'mic', person_id: 'p', state: 'confirmed', name: 'Rodolfo' },
+      { id: 'a', speaker: 'S0', track: 'mic', person_id: 'p', state: 'confirmed', name: 'Tiago' },
       { id: 'b', speaker: 'S1', track: 'output', person_id: 'q', state: 'suggested', name: 'Rita' },
     ],
   };
   const { lanes, totalMs, unconfirmed } = buildLanes(report, 120_000);
   expect(totalMs).toBe(120_000);
   expect(lanes.map((l) => [l.name, l.share])).toEqual([
-    ['Rodolfo', 32],
+    ['Tiago', 32],
     [null, 63],
     [null, 5],
   ]);

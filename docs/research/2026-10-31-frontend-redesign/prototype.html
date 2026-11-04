@@ -511,7 +511,7 @@ path.draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 360ms var
 
     <!-- HOJE -->
     <section class="view" id="v-hoje"><div class="hoje"><div class="wrap">
-      <h1>Bom dia, Rodolfo.</h1>
+      <h1>Bom dia, Tiago.</h1>
       <p class="lede" id="lede"></p>
       <div class="g12">
         <div class="panel glass s6"><h3>Agenda de hoje<button class="btn sm ghost hd" data-go="meetings">Ver todas<svg class="i sm"><use href="#right"/></svg></button></h3>
@@ -568,7 +568,7 @@ path.draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 360ms var
         <div class="lsearch"><input class="input" placeholder="Buscar pessoa"></div>
         <div class="scroll">
           <div class="row on"><b style="display:flex;gap:8px;align-items:center"><span class="av" style="background:var(--p2-bg);color:var(--p2)">RS</span>Rita Souza</b><span class="t">9 reuniões</span><div class="m">6 amostras de voz · última: 1:1 ter.</div></div>
-          <div class="row"><b style="display:flex;gap:8px;align-items:center"><span class="av" style="background:var(--p1-bg);color:var(--p1)">RC</span>Rodolfo Camara</b><span class="t">23</span><div class="m">14 amostras · você</div></div>
+          <div class="row"><b style="display:flex;gap:8px;align-items:center"><span class="av" style="background:var(--p1-bg);color:var(--p1)">RC</span>Tiago Prado</b><span class="t">23</span><div class="m">14 amostras · você</div></div>
           <div class="row"><b style="display:flex;gap:8px;align-items:center"><span class="av" style="background:var(--p3-bg);color:var(--p3)">ML</span>Marcos Lima</b><span class="t">3</span><div class="m"><span class="warn">sem amostras · sugerido em 1 reunião</span></div></div>
           <div class="row"><b style="display:flex;gap:8px;align-items:center"><span class="av" style="background:var(--p4-bg);color:var(--p4)">JA</span>Juliana Alves</b><span class="t">4</span><div class="m">2 amostras</div></div>
         </div>
@@ -682,11 +682,11 @@ const M = {
   live: { t: 'Weekly de TI', when: 'hoje · 10:00–10:45', ev: 'Weekly de TI · Teams', ppl: ['RS', 'ML', 'JA', 'RC'], src: 'Outlook · 8 pessoas', time: '10:00' },
   planned: { t: 'Comitê de produto', when: 'hoje · 14:00–15:00', ev: 'Comitê de produto · Teams', ppl: ['JA', 'RS', 'RC'], src: 'Outlook · 6 pessoas', time: '14:00' },
   roadmap: { t: 'Revisão de roadmap', when: 'seg., 3 nov · 09:00–10:00', ev: 'Revisão de roadmap', ppl: ['RC', 'JA'], src: 'Outlook · 12 pessoas', time: 'seg 09:00' },
-  done: { t: '1:1 com a Rita', when: 'ter., 28 out · 16:00–16:32', ev: '1:1 Rodolfo / Rita', ppl: ['RS', 'RC'], src: '32 min', time: 'ter 16:00' },
+  done: { t: '1:1 com a Rita', when: 'ter., 28 out · 16:00–16:32', ev: '1:1 Tiago / Rita', ppl: ['RS', 'RC'], src: '32 min', time: 'ter 16:00' },
   notx: { t: 'Daily do squad', when: 'ter., 28 out · 09:30–09:44', ev: 'gravação local', ppl: ['RC'], src: '14 min', time: 'ter 09:30' },
   failed: { t: 'Entrevista: dev backend', when: 'seg., 27 out · 15:00–15:51', ev: 'áudio importado', ppl: ['RC'], src: '51 min', time: 'seg 15:00' },
 };
-const P = { RS: ['Rita Souza', 'p2'], RC: ['Rodolfo Camara', 'p1'], ML: ['Marcos Lima', 'p3'], JA: ['Juliana Alves', 'p4'] };
+const P = { RS: ['Rita Souza', 'p2'], RC: ['Tiago Prado', 'p1'], ML: ['Marcos Lima', 'p3'], JA: ['Juliana Alves', 'p4'] };
 const av = k => `<span class="av" style="background:var(--${P[k][1]}-bg);color:var(--${P[k][1]})">${k}</span>`;
 
 function rowMeta(k) {
@@ -739,7 +739,7 @@ function renderDetail(fx = '') {
   else if (mv === 'done') tx = `<div class="player glass"><button class="pp">${ic('play', 'sm')}</button><span class="mono" style="color:var(--ink-3)">08:41 / 32:10</span><span style="color:var(--ink-4);font-size:12px">clique num trecho ou na faixa de falas para ouvir</span></div>${seg('00:04', 'RC', 'Bom, a ideia hoje é fechar o contrato da API v2 e ver quem fica com a revisão.')}${seg('00:11', 'RS', 'Eu posso pegar. Só preciso que segurança olhe a parte de tokens antes de sexta.', 'hl')}${seg('00:19', '?', 'Dá para marcar essa revisão na quinta de manhã.')}${seg('00:27', 'RC', 'Fechado. Eu mando o rascunho hoje ainda.')}${seg('01:02', 'RS', 'Outra coisa: o feedback do trimestre, dá para falar agora ou fica para a próxima?')}`;
   else tx = `<div class="empty"><h4>${mv === 'failed' ? 'Transcrição indisponível' : 'Ainda sem transcrição'}</h4>${mv === 'planned' || mv === 'roadmap' ? 'Grave a reunião ou importe um áudio para transcrever.' : 'Use o botão acima para transcrever este áudio.'}</div>`;
   const spk = mv === 'done' ? `<p style="margin:0 0 12px;color:var(--ink-3)">Confirme quem falou. Fica registrado com a reunião e a data; amostras de voz só se você escolher.</p>
-    <div class="spk glass"><div class="who">${av('RC')}<div><b>Rodolfo Camara</b><div style="font-size:12px;color:var(--ink-3)">microfone · 14 min · confirmado</div></div></div><div class="acts"><button class="btn sm ghost">${ic('headphones', 'sm')}Ouvir</button><button class="btn sm">Guardar amostras</button></div></div>
+    <div class="spk glass"><div class="who">${av('RC')}<div><b>Tiago Prado</b><div style="font-size:12px;color:var(--ink-3)">microfone · 14 min · confirmado</div></div></div><div class="acts"><button class="btn sm ghost">${ic('headphones', 'sm')}Ouvir</button><button class="btn sm">Guardar amostras</button></div></div>
     <div class="spk glass"><div class="who">${av('RS')}<div><b>Rita Souza</b><div style="font-size:12px;color:var(--ink-3)">computador · 15 min · confirmado</div></div></div><div class="acts"><button class="btn sm ghost">${ic('headphones', 'sm')}Ouvir</button><button class="btn sm">Guardar amostras</button></div></div>
     ${m.spkOk ? `<div class="spk glass done" style="view-transition-name:spk3"><div class="who">${av('ML')}<div><b>Marcos Lima</b><div style="font-size:12px;color:var(--ink-3)">computador · 2 min · confirmado agora</div></div></div><div class="acts"><button class="btn sm ghost">${ic('headphones', 'sm')}Ouvir</button><button class="btn sm">Guardar amostras</button><button class="btn sm ghost" data-unconfirm>Desfazer</button></div></div>`
       : `<div class="spk glass" style="box-shadow:inset 0 0 0 1px var(--warn-soft);view-transition-name:spk3"><div class="who"><span class="av" style="width:32px;height:32px;background:var(--warn-soft);color:var(--warn)">?</span><div><b>Falante 3</b><div style="font-size:12px;color:var(--ink-3)">computador · 2 min</div><div class="sug">Voz parecida com <b>Marcos Lima</b> em 3 reuniões</div></div></div><div class="acts"><button class="btn sm ghost">${ic('headphones', 'sm')}Ouvir</button><select class="select" style="width:170px;height:30px"><option>Marcos Lima</option><option>Nova pessoa…</option></select><button class="btn sm pri" data-confirm>Confirmar</button></div></div>`}`

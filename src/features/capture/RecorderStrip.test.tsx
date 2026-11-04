@@ -237,12 +237,12 @@ it('records into the calendar meeting under way, and the arrow offers recording 
   const at = (minutes: number) => new Date(now + minutes * 60_000).toISOString();
   const roadmap = {
     id: 'e-roadmap',
-    title: 'Roadmap with Yehuda',
+    title: 'Roadmap with Ana',
     startsAt: at(-5),
     endsAt: at(55),
     cancelled: false,
     allDay: false,
-    attendees: [{ name: 'Yehuda', email: 'y@example.com' }],
+    attendees: [{ name: 'Ana', email: 'ana@example.com' }],
   };
   const lunch = {
     ...roadmap,
@@ -260,12 +260,12 @@ it('records into the calendar meeting under way, and the arrow offers recording 
   acceptDetectionStatus(detection, false);
   render(<RecorderStrip />);
   await waitFor(() =>
-    expect(screen.getByTestId('record-target')).toHaveTextContent('Roadmap with Yehuda')
+    expect(screen.getByTestId('record-target')).toHaveTextContent('Roadmap with Ana')
   );
   fireEvent.click(screen.getByRole('button', { name: 'Which meeting to record into' }));
   const items = screen.getAllByRole('menuitemradio');
   expect(items.map((i) => i.getAttribute('aria-checked'))).toEqual(['true', 'false', 'false']);
-  expect(items[0]).toHaveTextContent('Roadmap with Yehuda');
+  expect(items[0]).toHaveTextContent('Roadmap with Ana');
   expect(items[1]).toHaveTextContent('Lunch');
   fireEvent.click(items[2]);
   expect(screen.getByTestId('record-target')).toHaveTextContent('Record without a meeting');

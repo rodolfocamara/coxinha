@@ -112,9 +112,9 @@ fn events_without_a_session_match_on_the_cache() {
     let other = search::events(&library, "other", 10);
     assert_eq!(other[0].id, "e2");
     assert_eq!(other[0].starts_at.as_deref(), Some("2026-11-03T13:00:00Z"));
-    let people = search::events(&library, "rodolfo", 10);
-    assert_eq!(search::tier(&people[0], "rodolfo"), 2);
-    assert!(search::events(&library, "rodolfo", 0).is_empty());
+    let people = search::events(&library, "tiago", 10);
+    assert_eq!(search::tier(&people[0], "tiago"), 2);
+    assert!(search::events(&library, "tiago", 0).is_empty());
 }
 
 #[test]

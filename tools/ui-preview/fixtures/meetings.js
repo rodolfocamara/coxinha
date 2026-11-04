@@ -6,7 +6,7 @@
   const state = (window.__cxState = window.__cxState || {});
   const min = 60_000;
   const storage = (ms, dir) => ({
-    directory: `/home/rodolfo/coxinha/recordings/${dir}`,
+    directory: `/home/demo/coxinha/recordings/${dir}`,
     totalBytes: Math.round(ms * 32),
     durationMs: ms,
     files: [
@@ -73,7 +73,7 @@
     warnings: [],
     corrections: {},
     assignments: [
-      { id: 'a1', speaker: 'S0', track: 'mic', person_id: 'p-rc', state: 'confirmed', name: 'Rodolfo Camara' },
+      { id: 'a1', speaker: 'S0', track: 'mic', person_id: 'p-tp', state: 'confirmed', name: 'Tiago Prado' },
       { id: 'a2', speaker: 'S1', track: 'output', person_id: 'p-rs', state: 'confirmed', name: 'Rita Souza' },
     ],
   };
@@ -83,7 +83,7 @@
         jobs: [{ id: 'j-rita', state: 'succeeded', attempts: 1, error: null }],
         report: ritaReport,
         people: [
-          { id: 'p-rc', name: 'Rodolfo Camara' },
+          { id: 'p-tp', name: 'Tiago Prado' },
           { id: 'p-rs', name: 'Rita Souza' },
           { id: 'p-ml', name: 'Marcos Lima' },
         ],
@@ -107,7 +107,7 @@
   const contexts = {
     'm-rita': [
       { name: 'Rita Souza', email: 'rita@example.com' },
-      { name: 'Rodolfo Camara', email: 'rodolfo@example.com' },
+      { name: 'Tiago Prado', email: 'tiago@example.com' },
     ],
   };
   f.library_participant_context = ({ meetingId }) => contexts[meetingId] ?? [];

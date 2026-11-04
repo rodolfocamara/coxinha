@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { library, type MeetingSignals } from '../meetings/library';
-import { eventLook } from './eventDetails';
+import { eventLook } from './eventDetailsModel';
 import type { MeetingRow } from './meetingRows';
 
 /**

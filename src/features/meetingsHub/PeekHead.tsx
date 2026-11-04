@@ -4,9 +4,9 @@ import { X } from 'lucide-react';
 import { Button } from '../../components/ui';
 import { colourVar, type CategoryColour } from '../agenda/categories';
 import type { CalendarEvent } from '../agenda/calendar';
-import { eventLook } from './eventDetails';
+import { eventLook } from './eventDetailsModel';
 import { durationLabel, whenLabel } from './format';
-import { relativeLabel, type PanelState } from './meetingDetail';
+import { relativeLabel, type PanelState } from './meetingDetailModel';
 import type { MeetingRow } from './meetingRows';
 
 /**

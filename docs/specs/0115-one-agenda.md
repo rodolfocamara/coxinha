@@ -18,7 +18,7 @@ The owner's afternoon of 2026-11-03 showed four gaps:
 - That call was recorded into "Lunch": the record target (spec 0113) assumed
   the event under way, and a personal block without invitees counts as one.
   Spec 0100 already ignores such blocks when offering a match.
-- "Roadmap with Yehuda" shows twice. A session was prepared for the event
+- "Roadmap with Ana" shows twice. A session was prepared for the event
   (with links and files); the recording made before spec 0113 got its own
   session; confirming "É essa reunião" renamed and re-timed that session but
   left the prepared one next to it.
@@ -90,4 +90,4 @@ The owner's afternoon of 2026-11-03 showed four gaps:
 - [x] An unscheduled recording takes its real span once
       (`session::tests::an_unscheduled_recording_takes_its_real_span_once`).
 - [ ] Owner: a Teams call ending with Coxinha hidden raises the
-      notification; "Roadmap with Yehuda" shows once.
+      notification; "Roadmap with Ana" shows once.

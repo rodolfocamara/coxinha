@@ -6,7 +6,7 @@ import type { MeetingRow } from './meetingRows';
 import { clockTime } from './format';
 import { OUTLOOK_PRESETS, colourStyle, useEventColour } from '../agenda/categories';
 import { HOUR_PX, type Block } from './weekLayout';
-import { eventLook } from './eventDetails';
+import { eventLook } from './eventDetailsModel';
 import { sessionIdOf, signalItems, useSessionSignals } from './meetingSignals';
 import { SignalIcons, signalLabel } from './SignalIcons';
 

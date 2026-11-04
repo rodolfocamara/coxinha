@@ -5,7 +5,7 @@ const ID: &str = "0b9c3f0e-7a51-4c1e-9d55-2f1f3a4b5c6d";
 
 fn event() -> NewEvent {
     validate(
-        " Pulso MX ",
+        " Project Atlas ",
         "2026-11-04T16:30:00Z",
         "2026-11-04T17:00:00Z",
         ID,
@@ -18,7 +18,7 @@ fn body_sends_utc_times_and_invites_nobody() {
     assert_eq!(
         create_body(&event()),
         json!({
-            "subject": "Pulso MX",
+            "subject": "Project Atlas",
             "start": {"dateTime": "2026-11-04T16:30:00", "timeZone": "UTC"},
             "end": {"dateTime": "2026-11-04T17:00:00", "timeZone": "UTC"},
             "showAs": "busy",
@@ -76,7 +76,7 @@ fn rejects_empty_or_long_subjects_bad_ranges_and_odd_transaction_ids() {
 fn created(id: &str, start: &str) -> serde_json::Value {
     json!({
         "id": id,
-        "subject": "Pulso MX",
+        "subject": "Project Atlas",
         "start": {"dateTime": start, "timeZone": "UTC"},
         "end": {"dateTime": "2026-11-04T17:00:00.0000000", "timeZone": "UTC"},
         "isCancelled": false,

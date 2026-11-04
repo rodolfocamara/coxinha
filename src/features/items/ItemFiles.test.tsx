@@ -9,7 +9,7 @@ vi.mock('@tauri-apps/plugin-dialog', () => ({ open: mocks.open }));
 
 import { ItemFiles } from './ItemFiles';
 
-const item = { kind: 'meeting' as const, id: 's-1', title: 'Pulso MX', date: '2026-11-03' };
+const item = { kind: 'meeting' as const, id: 's-1', title: 'Project Atlas', date: '2026-11-03' };
 let data: ItemFilesData;
 const calls = (command: string) =>
   mocks.invoke.mock.calls.filter(([c]) => c === command).map(([, args]) => args);
@@ -25,7 +25,7 @@ beforeEach(async () => {
         return data;
       case 'items_include':
         data = {
-          folder: '/vault/meetings/2026-11-03 Pulso MX',
+          folder: '/vault/meetings/2026-11-03 Project Atlas',
           files: (args.paths as string[]).map((p) => ({
             name: p.split('/').pop()!,
             kind: 'html',
@@ -38,7 +38,7 @@ beforeEach(async () => {
       case 'items_reference':
         data = {
           ...data,
-          folder: data.folder ?? '/vault/meetings/2026-11-03 Pulso MX',
+          folder: data.folder ?? '/vault/meetings/2026-11-03 Project Atlas',
           references: [
             {
               target: String(args.target),

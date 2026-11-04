@@ -27,7 +27,7 @@ fn event(id: &str, title: &str, start: &str, end: &str, categories: &[&str]) -> 
     json!({
         "id": id, "title": title, "startsAt": start, "endsAt": end, "cancelled": false,
         "allDay": false, "attendees": [{ "name": "Ana Souza", "email": "ana@x.com" }],
-        "organizer": { "name": "Rodolfo", "email": "r@x.com" }, "categories": categories,
+        "organizer": { "name": "Tiago", "email": "r@x.com" }, "categories": categories,
     })
 }
 
@@ -43,7 +43,7 @@ pub(super) fn fixture() -> Fixture {
     db.execute_batch(
         "INSERT INTO meeting(id,title,created_at,capture_state) VALUES('m1','Pulso','2026-11-03 13:00:00','finished');
          INSERT INTO session(id,title,starts_at,ends_at,status,origin,meeting_id,note_id,note_path)
-           VALUES('s1','Pulso MX - App Alignment','2026-11-03T13:00:00Z','2026-11-03T14:00:00Z','completed','manual','m1','n-meet','notes/session-n-meet.md');
+           VALUES('s1','Project Atlas - App Alignment','2026-11-03T13:00:00Z','2026-11-03T14:00:00Z','completed','manual','m1','n-meet','notes/session-n-meet.md');
          INSERT INTO session(id,title,status,origin) VALUES('s2','Retro do time','planned','manual');
          INSERT INTO job(id,meeting_id,identity_key,stage,input_json,state) VALUES('j1','m1','k1','process','{}','succeeded');",
     )
@@ -76,7 +76,7 @@ pub(super) fn fixture() -> Fixture {
     let cache = json!({
         "account": "me", "syncedAt": null, "categories": [],
         "events": [
-            event("e1", "PULSO MX - App alignment", "2026-11-03T13:10:00Z", "2026-11-03T14:00:00Z", &["CTO"]),
+            event("e1", "PROJECT ATLAS - App alignment", "2026-11-03T13:10:00Z", "2026-11-03T14:00:00Z", &["CTO"]),
             event("e2", "Other", "2026-11-03T13:00:00Z", "2026-11-03T13:30:00Z", &[]),
         ],
     });
@@ -322,7 +322,7 @@ fn writes_files_references_and_links_through_item_rules() {
     assert!(added["folder"]
         .as_str()
         .unwrap()
-        .ends_with("meetings/2026-11-03 Pulso MX - App Alignment"));
+        .ends_with("meetings/2026-11-03 Project Atlas - App Alignment"));
     assert_eq!(added["files"][0]["name"], "deck.html");
     let again = f.run(&["add-file", "meeting", "s1", &deck]).unwrap();
     assert_eq!(again["files"].as_array().unwrap().len(), 2);

@@ -1,7 +1,7 @@
 import type { TFunction } from 'i18next';
 import type { MeetingSignals } from '../meetings/library';
 import type { MeetingRow } from './meetingRows';
-import type { AttendeeGroupId } from './eventDetails';
+import type { AttendeeGroupId } from './eventDetailsModel';
 
 /** Spec 0126: the panel reads differently before and after a meeting. */
 export type PanelState = 'upcoming' | 'now' | 'past';

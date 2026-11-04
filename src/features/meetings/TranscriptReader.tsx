@@ -5,7 +5,7 @@ import { Button, Input, Textarea } from '../../components/ui';
 import { buildLanes } from '../meetingsHub/lanes';
 import { mediaClock } from '../meetingsHub/format';
 import { library, type ProcessingReport } from './library';
-import { findHits, groupSegments, shownText, type Hit } from './transcriptReader';
+import { findHits, groupSegments, shownText, type Hit } from './transcriptReaderModel';
 
 type Segment = ProcessingReport['segments'][number];
 type Speaker = { name: string; colour: string; confirmed: boolean };

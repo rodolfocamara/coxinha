@@ -12,7 +12,7 @@ Three Teams calls in Chrome on 2026-11-03, all recorded by hand:
 |---|---|---|---|
 | Unscheduled | 15:00:12 | 15:00:21 | 15:01:41 |
 | AI Talk 2 | 16:43:38 | 16:43:43 | 16:44:28 |
-| Pulso MX | 18:26:14 | 18:26:22 | 18:30:14 |
+| Project Atlas | 18:26:14 | 18:26:22 | 18:30:14 |
 
 Detection works: the end is known 5 to 9 s after the last remote word.
 Every signal that needs the owner's attention failed: the strip prompt

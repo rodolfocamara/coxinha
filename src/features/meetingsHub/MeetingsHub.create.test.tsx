@@ -125,18 +125,18 @@ it('creates the meeting, then the Outlook event for the same slot', async () => 
   press(thursday(), 9);
   release(thursday(), 9);
   await screen.findByRole('dialog', { name: 'New meeting' });
-  fireEvent.change(field('Title'), { target: { value: 'Pulso MX' } });
+  fireEvent.change(field('Title'), { target: { value: 'Project Atlas' } });
   fireEvent.click(outlookBox());
   fireEvent.click(screen.getByRole('button', { name: 'Create meeting' }));
   await waitFor(() => expect(router.state.location.pathname).toBe('/meetings/s-new-0'));
   const [created] = calledWith(db, 'library_create_session');
   expect(created.input).toMatchObject({
-    title: 'Pulso MX',
+    title: 'Project Atlas',
     starts_at: at(0, 9),
     ends_at: at(0, 9, 30),
   });
   expect(calledWith(db, 'calendar_create_event')).toEqual([
-    { subject: 'Pulso MX', startsAt: at(0, 9), endsAt: at(0, 9, 30), transactionId: 's-new-0' },
+    { subject: 'Project Atlas', startsAt: at(0, 9), endsAt: at(0, 9, 30), transactionId: 's-new-0' },
   ]);
 });
 
@@ -146,7 +146,7 @@ it('keeps the meeting when Outlook fails and retries only the event', async () =
   press(thursday(), 9);
   release(thursday(), 9);
   await screen.findByRole('dialog', { name: 'New meeting' });
-  fireEvent.change(field('Title'), { target: { value: 'Pulso MX' } });
+  fireEvent.change(field('Title'), { target: { value: 'Project Atlas' } });
   fireEvent.click(outlookBox());
   fireEvent.click(screen.getByRole('button', { name: 'Create meeting' }));
   expect(

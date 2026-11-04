@@ -30,7 +30,7 @@ vi.mock('../sessions/sessions', async () => {
   return {
     sessions: { create: vi.fn() },
     sessionListCache: create(() => ({
-      data: [{ id: 's-done', meeting_id: 'm-done', title: 'Pulso MX' }],
+      data: [{ id: 's-done', meeting_id: 'm-done', title: 'Project Atlas' }],
       isError: false,
       updatedAt: 0,
     })),

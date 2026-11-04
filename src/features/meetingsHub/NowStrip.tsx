@@ -7,7 +7,7 @@ import { useCaptureStore } from '../capture/captureStore';
 import { useEventColour } from '../agenda/categories';
 import { attendeesOf, type MeetingRow } from './meetingRows';
 import { clockTime } from './format';
-import { nowAndNext } from './calendarHome';
+import { nowAndNext } from './calendarHomeModel';
 import { useMeetingActions } from './useMeetingActions';
 
 type Props = {

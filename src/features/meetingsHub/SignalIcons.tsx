@@ -14,7 +14,7 @@ import {
   Users,
   type LucideIcon,
 } from 'lucide-react';
-import { speakersValue } from './meetingDetail';
+import { speakersValue } from './meetingDetailModel';
 import type { SignalItem } from './meetingSignals';
 import { PropRow } from './PropertySheet';
 import './signals.css';

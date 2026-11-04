@@ -27,7 +27,7 @@ import { initialCaptureState, useCaptureStore } from '../capture/captureStore';
 import { forgetProcessingConfig } from '../meetings/processingConfigMemory';
 import { takePendingSheet } from './meetingsSheets';
 import { CALENDAR_PREF_KEYS } from './calendarViews';
-import { resetCalendarHome } from './calendarHome';
+import { resetCalendarHome } from './calendarHomeModel';
 import { resetTimeZones } from './timeZones';
 
 export type Db = {

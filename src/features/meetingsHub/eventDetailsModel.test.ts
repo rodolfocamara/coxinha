@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 import type { AttendeeResponse } from '../agenda/calendar';
-import { attendeeGroups, eventLook, myResponse } from './eventDetails';
+import { attendeeGroups, eventLook, myResponse } from './eventDetailsModel';
 import { event } from './meetingsHub.fixtures';
 
 const person = (

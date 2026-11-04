@@ -164,7 +164,7 @@ describe('Hoje on a fresh vault', () => {
       document.querySelector('[data-row], [data-note], [data-review], [data-card]')
     ).toBeNull();
     // Names that the removed Home fixtures and the prototype used.
-    for (const fake of ['Rodolfo', 'Weekly', 'Rita', 'Contrato', 'CRM', 'Comitê'])
+    for (const fake of ['Tiago', 'Weekly', 'Rita', 'Contrato', 'CRM', 'Comitê'])
       expect(document.body).not.toHaveTextContent(fake);
     fireEvent.click(create);
     expect(navigate).toHaveBeenCalledWith({ to: '/workspace', viewTransition: 'vt:zoom' });

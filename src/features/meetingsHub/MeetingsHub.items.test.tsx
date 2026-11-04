@@ -40,7 +40,7 @@ beforeEach(async () => {
   db.sessions = [
     session({
       id: 'pulso',
-      title: 'Pulso MX',
+      title: 'Project Atlas',
       starts_at: new Date(2026, 10, 3, 13, 30).toISOString(),
       ends_at: new Date(2026, 10, 3, 15, 20).toISOString(),
     }),
@@ -66,11 +66,11 @@ const detail = () => screen.getByRole('article');
 
 it('keeps files in a Files tab of the meeting, named by date and title', async () => {
   renderAt('/meetings/pulso');
-  await screen.findByRole('heading', { level: 2, name: 'Pulso MX' });
+  await screen.findByRole('heading', { level: 2, name: 'Project Atlas' });
   fireEvent.click(within(detail()).getByRole('tab', { name: 'Files' }));
   expect(await within(detail()).findByText(/No files yet/)).toBeInTheDocument();
   expect(calledWith(db, 'items_list')[0]).toEqual({
-    item: { kind: 'meeting', id: 'pulso', title: 'Pulso MX', date: '2026-11-03' },
+    item: { kind: 'meeting', id: 'pulso', title: 'Project Atlas', date: '2026-11-03' },
   });
   expect(within(detail()).getByRole('button', { name: 'Include file' })).toBeInTheDocument();
 });

@@ -149,7 +149,7 @@
     account: 'owner@example.com',
     syncedAt: at(0, 8),
     events: [
-      { id: 'e1', title: 'Weekly de TI', startsAt: at(0, 10), endsAt: at(0, 10, 45), cancelled: false, allDay: false, attendees: [{ name: 'Rita Souza', email: 'rita@example.com' }, { name: 'Marcos Lima', email: 'marcos@example.com' }], organizer: { name: 'Rodolfo Camara', email: 'rodolfo@example.com' } },
+      { id: 'e1', title: 'Weekly de TI', startsAt: at(0, 10), endsAt: at(0, 10, 45), cancelled: false, allDay: false, attendees: [{ name: 'Rita Souza', email: 'rita@example.com' }, { name: 'Marcos Lima', email: 'marcos@example.com' }], organizer: { name: 'Tiago Prado', email: 'tiago@example.com' } },
       { id: 'e2', title: 'Comitê de produto', startsAt: at(0, 14), endsAt: at(0, 15), cancelled: false, allDay: false, attendees: [{ name: 'Juliana Alves', email: 'ju@example.com' }], organizer: null },
       { id: 'e3', title: 'Bloco de foco', startsAt: at(0, 16, 30), endsAt: at(0, 17, 30), cancelled: false, allDay: false, attendees: [], organizer: null },
       { id: 'e4', title: 'Revisão de roadmap', startsAt: at(3, 9), endsAt: at(3, 10), cancelled: false, allDay: false, attendees: [], organizer: null },

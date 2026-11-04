@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ProcessingReport } from './library';
-import { findHits, findRanges, groupSegments } from './transcriptReader';
+import { findHits, findRanges, groupSegments } from './transcriptReaderModel';
 
 const segment = (id: string, speaker: string | null, text: string, track = 'output') => ({
   id,

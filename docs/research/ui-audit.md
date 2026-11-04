@@ -1,7 +1,7 @@
 # UI audit — Coxinha current state and direction
 
 - **Date:** 2026-04-20
-- **Author:** Claude Code (under direction from Rodolfo)
+- **Author:** Claude Code (under direction from the owner)
 - **Status:** Research artifact, not a spec
 - **Companion:** `screenshots/README.md` (produced by a parallel
   background agent — screenshots at three viewports across five

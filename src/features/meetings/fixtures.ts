@@ -23,7 +23,7 @@ export const meetingFixtures: MeetingRow[] = [
     title: 'IT Weekly Status Meeting',
     startsAt: '2026-01-15T10:00:00-03:00',
     durationMin: 45,
-    participants: ['Rodolfo', 'Rita Menezes', 'Ana Souza', 'Kathia'],
+    participants: ['Tiago', 'Rita Menezes', 'Ana Souza', 'Kathia'],
     summaryMd:
       'Rita detalhou a proposta de endossos para cobertura-mãe; decisão de consolidar fluxo ' +
       'de exceção em uma única tela no portal NPV. Sofia assume o follow-up com jurídico.\n\n' +
@@ -33,12 +33,12 @@ export const meetingFixtures: MeetingRow[] = [
       '- **Release em abril** depende de validação jurídica — endosso retroativo bloqueado',
     transcriptMd:
       '**Rita:** Bom dia, pessoal. Quero alinhar a proposta que mandei ontem.\n\n' +
-      '**Rodolfo:** Peguei. Qual é o recorte que você quer atacar primeiro?\n\n' +
+      '**Tiago:** Peguei. Qual é o recorte que você quer atacar primeiro?\n\n' +
       '**Rita:** Foco em endossos automáticos. As corretoras estão empurrando volume ' +
       'e a gente precisa consolidar — o fluxo atual passa por três sistemas.\n\n' +
       '**Ana:** A parte de histórico no CRM já tem protótipo. Posso trazer na semana que vem.',
     actionItemsMd:
-      '- [ ] **Rodolfo** — alinha com jurídico sobre endosso retroativo (até 25/abr)\n' +
+      '- [ ] **Tiago** — alinha com jurídico sobre endosso retroativo (até 25/abr)\n' +
       '- [ ] **Rita** — envia draft de UX pro painel de endossos (até 22/abr)\n' +
       '- [ ] **Ana** — traz protótipo do histórico no CRM (próxima reunião)',
     recordingPath: null,
@@ -48,16 +48,16 @@ export const meetingFixtures: MeetingRow[] = [
     title: 'Reunião Kathia — HDI endossos',
     startsAt: '2026-04-21T14:00:00-03:00',
     durationMin: 14,
-    participants: ['Rodolfo', 'Kathia'],
+    participants: ['Tiago', 'Kathia'],
     summaryMd:
       'Kathia trouxe 3 decisões rápidas sobre HDI endossos. 2 pendências atribuídas:\n\n' +
-      '- Revisar cláusula de exceção (Rodolfo)\n' +
+      '- Revisar cláusula de exceção (Tiago)\n' +
       '- Mapear corretoras afetadas (Kathia)',
     transcriptMd:
       '**Kathia:** Rápido — HDI fez contato sobre endossos retroativos.\n\n' +
-      '**Rodolfo:** Me manda o escopo que eu revisto. Já sei a cláusula.',
+      '**Tiago:** Me manda o escopo que eu revisto. Já sei a cláusula.',
     actionItemsMd:
-      '- [ ] **Rodolfo** — revisar cláusula de exceção\n' +
+      '- [ ] **Tiago** — revisar cláusula de exceção\n' +
       '- [ ] **Kathia** — mapear corretoras afetadas',
     recordingPath: null,
   },

@@ -6,7 +6,7 @@ Date: 2026-11-03
 
 ## Why
 
-On 2026-11-03 the owner joined "Roadmap with Yehuda", confirmed the detected
+On 2026-11-03 the owner joined "Roadmap with Ana", confirmed the detected
 call, and Coxinha recorded "Meeting in Google Chrome": a new session with no
 calendar event, next to the session already prepared for that meeting. The
 detected-call strip starts with no event chosen; linking needed opening
@@ -27,7 +27,7 @@ recording would belong to.
   the calendar meeting around now (spec 0094's window: started, or starting
   within 15 minutes, and not over): one already under way first, then one
   with invitees over a personal block, then the nearest start.
-- Beside "Gravar" the strip shows what it records into: "Roadmap with Yehuda
+- Beside "Gravar" the strip shows what it records into: "Roadmap with Ana
   · 09:00–10:00", or "Gravar sem reunião".
 
 ### P2 The arrow chooses

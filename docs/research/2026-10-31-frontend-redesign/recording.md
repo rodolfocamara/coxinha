@@ -192,7 +192,7 @@ Posição na shell: `RecordingDock` no topo do sidebar quando expandido (onde ho
 
 Remove: `sessionCaptureCache` (ACK), `useRecordingStatusHost`, os `useState<CaptureStatus>` locais, os polls de `SessionRecording` e `LibraryView`, e o `library.status()` próprio em `CallDetectionController` (passa a ler o store).
 
-### Decisões que dependem do Rodolfo
+### Decisões que dependem do dono
 
 1. **Start na página da sessão**: manter um botão "Gravar esta sessão" que delega ao controller, ou começar só pelo dock? Recomendo manter o botão, porque é o contexto natural, desde que não traga seletores nem transporte. Isso substitui o critério do spec 0092 ("Pause/Resume e Stop ao lado do estado da reunião atual"), que precisa ser revisto num spec novo.
 2. **Reconciliação no boot**: recuperar automaticamente (marcar `interrupted` e preservar o bruto) ou só sinalizar `needs_recovery` e esperar clique? Recomendo automático, porque ninguém retoma uma captura depois de crash e a linha órfã trava o processamento. Precisa de ADR, por mexer em estado persistido.

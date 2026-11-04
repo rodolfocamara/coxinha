@@ -23,7 +23,7 @@ fn safe_names_drop_separators_reserved_words_and_dots() {
 
 #[test]
 fn meetings_are_named_by_date_and_title_activities_by_title() {
-    assert_eq!(desired_name(&meeting("Pulso MX")), "2026-11-03 Pulso MX");
+    assert_eq!(desired_name(&meeting("Project Atlas")), "2026-11-03 Project Atlas");
     let mut bad_date = meeting("Pulso");
     bad_date.date = Some("03/11/2026".into());
     assert_eq!(desired_name(&bad_date), "Pulso");
@@ -54,12 +54,12 @@ fn folders_are_found_by_id_and_follow_the_title_when_free() {
     assert_eq!(read_marker(&first).unwrap().id, "s-1");
 
     // Readers locate without renaming.
-    let located = locate(vault.path(), &meeting("Pulso MX")).unwrap().unwrap();
+    let located = locate(vault.path(), &meeting("Project Atlas")).unwrap().unwrap();
     assert_eq!(located, first);
     assert!(first.exists());
 
-    let renamed = find(vault.path(), &meeting("Pulso MX")).unwrap().unwrap();
-    assert!(renamed.ends_with("meetings/2026-11-03 Pulso MX"));
+    let renamed = find(vault.path(), &meeting("Project Atlas")).unwrap().unwrap();
+    assert!(renamed.ends_with("meetings/2026-11-03 Project Atlas"));
     assert!(!first.exists());
 
     // A name taken by another folder keeps the current one.

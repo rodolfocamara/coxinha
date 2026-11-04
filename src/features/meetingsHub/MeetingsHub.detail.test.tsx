@@ -63,7 +63,7 @@ const report: ProcessingReport = {
       track: 'mic',
       person_id: 'p',
       state: 'confirmed',
-      name: 'Rodolfo Camara',
+      name: 'Tiago Prado',
     },
   ],
 };
@@ -153,7 +153,7 @@ it('shows notes, transcript and speakers tabs with keyboard navigation and lanes
     'Agenda text'
   );
   const lanes = await within(detail()).findByRole('group', { name: 'Speaker lanes' });
-  expect(lanes).toHaveTextContent('Rodolfo Camara');
+  expect(lanes).toHaveTextContent('Tiago Prado');
   expect(lanes).toHaveTextContent('Speaker 2');
   expect(lanes).toHaveTextContent('50%');
   // One speaker waits for confirmation: banner and Speakers badge.

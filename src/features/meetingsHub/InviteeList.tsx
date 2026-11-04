@@ -1,9 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { Check, UsersRound } from 'lucide-react';
 import type { AttendeeResponse, CalendarEvent } from '../agenda/calendar';
-import { attendeeGroups } from './eventDetails';
+import { attendeeGroups } from './eventDetailsModel';
 import { Disclosure } from './Disclosure';
-import { groupStartsOpen } from './meetingDetail';
+import { groupStartsOpen } from './meetingDetailModel';
 import { normalize } from './meetingRows';
 import { PersonAvatar } from './PersonAvatar';
 import { PropDisclosure, PropRow } from './PropertySheet';
