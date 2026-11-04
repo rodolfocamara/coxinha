@@ -15,6 +15,7 @@ import { CalendarRail } from './CalendarRail';
 import { NowStrip } from './NowStrip';
 import { MeetingPeek } from './MeetingPeek';
 import { useCalendarHome, visibleRows } from './calendarHomeModel';
+import { useCalendarKeys } from './useCalendarKeys';
 import type { DetailPanel } from './meetingsSearch';
 import './calendarHome.css';
 
@@ -71,6 +72,13 @@ export function CalendarHome(p: Props) {
       document.querySelector<HTMLElement>(`.ch-body [data-key="${CSS.escape(key ?? '')}"]`)?.focus()
     );
   }, [selectedKey]);
+  useCalendarKeys({
+    today: () => setAnchor(p.now),
+    move: (direction) => setAnchor(stepAnchor(p.view, anchor, p.days, direction)),
+    view: (view) => p.onView(view, p.days),
+    create: () => p.onNew(),
+    canCreate: p.desktop,
+  });
   const step = p.view === 'day' ? 'Day' : p.view === 'month' ? 'Month' : 'Week';
   const stepOptions = p.view === 'day' ? { count: p.days } : undefined;
 

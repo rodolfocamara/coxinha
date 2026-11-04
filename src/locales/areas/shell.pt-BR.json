@@ -10,7 +10,7 @@
     },
     "record": {
       "start": "Gravar agora",
-      "startHint": "Gravar agora (Ctrl+Alt+W)",
+      "startHint": "Gravar agora ({{keys}})",
       "stop": "Parar e salvar a gravação",
       "quickTitle": "Gravação"
     }

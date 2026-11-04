@@ -182,6 +182,8 @@ it('rolls back and explains when Outlook refuses the change', async () => {
 });
 
 it('asks to reconnect when the categories scope is missing, without colours', async () => {
+  // A connection needs a client id; a checkout without `.env.local` has none.
+  localStorage.setItem('outlook.clientId', 'fixture-client');
   db.categoryAccess = { read: false, write: false };
   db.categories = [];
   renderAt('/meetings?event=e-arch');

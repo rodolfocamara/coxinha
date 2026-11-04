@@ -81,7 +81,7 @@
         "recording": "Valem para o botão de gravar, para as reuniões e para chamadas detectadas.",
         "transcription": "Roda neste computador, nada é enviado para fora.",
         "integrations": "Opcional. Nada sai do computador sem você conectar.",
-        "shortcuts": "Os atalhos globais funcionam mesmo com a janela escondida.",
+        "shortcuts": "Mude os atalhos que valem em todo o computador e veja todos os outros.",
         "storage": "Suas notas são arquivos Markdown nesta pasta.",
         "diagnostics": "Texto para colar ao relatar um problema.",
         "calendar": "Como a grade da semana mostra os fusos horários. Salvo neste computador.",

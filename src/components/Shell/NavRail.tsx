@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import brandMark from '../../assets/coxinha-mark.svg';
 import { toggleCapture } from '../../features/capture/captureActions';
 import { useCaptureStore } from '../../features/capture/captureStore';
+import { formatChord, useSystemChord } from '../../lib/shortcuts';
 import { prepareRouteTransition, setZoomOrigin, type TransitionKind } from '../../lib/motion';
 import { openSearch } from '../AppShell/SearchBar';
 import { useAppearanceLayout } from '../../lib/appearance/useAppearanceLayout';
@@ -48,6 +49,7 @@ export function NavRail() {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const current = areaForPath(path);
   const live = useCaptureStore((s) => !!s.status?.active);
+  const recordChord = useSystemChord('toggle_recording');
   const busy = useCaptureStore((s) => s.busy !== null);
   const layout = useAppearanceLayout();
   const indicator = useRef<HTMLSpanElement>(null);
@@ -113,7 +115,11 @@ export function NavRail() {
         aria-pressed={live}
         disabled={busy}
         aria-label={t(live ? 'shell.record.stop' : 'shell.record.start')}
-        title={t(live ? 'shell.record.stop' : 'shell.record.startHint')}
+        title={
+          live
+            ? t('shell.record.stop')
+            : t('shell.record.startHint', { keys: formatChord(recordChord) })
+        }
         onClick={() => void toggleCapture(quickCaptureTitle(t('shell.record.quickTitle')))}
       >
         <Mic size={16} aria-hidden="true" />

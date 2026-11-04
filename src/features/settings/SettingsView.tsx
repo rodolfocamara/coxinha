@@ -12,12 +12,8 @@ import { RecordingSection } from './RecordingSection';
 import { TranscriptionSection } from './TranscriptionSection';
 import { IntegrationsSection, TitlesSection } from './IntegrationsSection';
 import { StorageSection } from './StorageSection';
-import {
-  DiagnosticsSection,
-  DiagnosticsText,
-  ShortcutsSection,
-  useDiagnostics,
-} from './SettingsSections';
+import { DiagnosticsSection, DiagnosticsText, useDiagnostics } from './SettingsSections';
+import { ShortcutsSection } from './ShortcutsSection';
 
 type LoadState =
   | { kind: 'loading' }

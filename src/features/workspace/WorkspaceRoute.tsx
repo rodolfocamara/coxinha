@@ -9,6 +9,7 @@ import { useWorkspace } from './useWorkspace';
 import { useRemoveShortcut } from './useRemoveShortcut';
 import { BoardTools } from './BoardTools';
 import { noteDeletionErrorKey } from '../../lib/noteFileErrors';
+import { useShortcutScope } from '../../lib/shortcuts';
 import type { TFunction } from 'i18next';
 import './workspace.css';
 
@@ -20,6 +21,7 @@ import './workspace.css';
 export function WorkspaceRoute() {
   const { t } = useTranslation();
   const ws = useWorkspace();
+  useShortcutScope('board');
   const removal = useRemoveShortcut({
     selected: ws.item ?? null,
     remove: (item) => {
@@ -27,6 +29,7 @@ export function WorkspaceRoute() {
       ws.removeFromBoard(item.id);
       ws.close();
     },
+    removeNote: ws.forgetNote,
     title: ws.title,
     onError: (error) => ws.setActionError(deletionError(error, t)),
   });
@@ -107,7 +110,7 @@ export function WorkspaceRoute() {
           </BoardCanvas>
         )}
       </section>
-      {ws.editorOpen && <SideEditor ws={ws} />}
+      {ws.editorOpen && <SideEditor ws={ws} onTrash={removal.trashNote} />}
     </div>
   );
 }

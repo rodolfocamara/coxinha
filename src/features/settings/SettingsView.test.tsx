@@ -245,14 +245,6 @@ describe('SettingsView — shortcuts panel', () => {
     expect(await screen.findByText('Ctrl+Shift+Space')).toBeInTheDocument();
     expect(screen.queryByText('Ctrl+Alt+Y')).not.toBeInTheDocument();
   });
-
-  it('surfaces the "rebind coming soon" hint', async () => {
-    getConfig.mockResolvedValue({ status: 'ok', data: BASE_CONFIG });
-
-    render(<SettingsView section="shortcuts" />);
-
-    expect(await screen.findByText('settings.shortcuts.rebindComingSoon')).toBeInTheDocument();
-  });
 });
 
 it('recovers from rejected IPC promises with explicit retry', async () => {

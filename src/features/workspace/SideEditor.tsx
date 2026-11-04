@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { CalendarDays, Maximize2, Minimize2, X } from 'lucide-react';
 import { Alert, Button } from '../../components/ui';
+import { useEscapeLayer } from '../../lib/shortcuts';
 import { prepareRouteTransition } from '../../lib/motion';
 import { sessionListCache } from '../sessions/sessions';
 import { AreaFields, LayoutFields } from '../board/BoardFields';
@@ -16,10 +17,18 @@ import { ItemFiles } from '../items/ItemFiles';
 import { ItemLinks } from '../items/ItemLinks';
 
 /** The Workspace's only editor: the note's Markdown plus its board properties. */
-export function SideEditor({ ws }: { ws: Workspace }) {
+export function SideEditor({
+  ws,
+  onTrash,
+}: {
+  ws: Workspace;
+  /** Moves a note to the trash, with the board's undo. */
+  onTrash: (noteId: string, title: string) => void | Promise<void>;
+}) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { item, note } = ws;
+  useEscapeLayer(true, ws.close);
   const noteId = ws.sel.noteId ?? note?.id ?? null;
   const sessions = sessionListCache((s) => s.data);
   const meeting = noteId ? sessions?.find((s) => s.personal_note?.id === noteId) : undefined;
@@ -33,13 +42,6 @@ export function SideEditor({ ws }: { ws: Workspace }) {
       className="ws-editor"
       data-expanded={ws.expanded || undefined}
       aria-label={t('workspace.editor.label')}
-      onKeyDown={(event) => {
-        if (event.key !== 'Escape' || event.defaultPrevented) return;
-        // A nested menu (note actions, selects) closes first.
-        if (document.querySelector('[role="menu"], [data-select-popup]')) return;
-        event.preventDefault();
-        ws.close();
-      }}
     >
       <header className="ws-editor-head">
         {item && item.kind !== 'area' ? (
@@ -136,7 +138,7 @@ export function SideEditor({ ws }: { ws: Workspace }) {
                 <OffBoardProps ws={ws} noteId={noteId} />
               ) : null}
               {item && !note && <Alert tone="warning">{t('workspace.editor.missing')}</Alert>}
-              {noteId && <NoteBody ws={ws} noteId={noteId} />}
+              {noteId && <NoteBody ws={ws} noteId={noteId} onTrash={onTrash} />}
               {noteId && !meeting && (
                 <>
                   <ItemLinks side="activity" noteId={noteId} />
@@ -162,7 +164,15 @@ export function SideEditor({ ws }: { ws: Workspace }) {
   );
 }
 
-function NoteBody({ ws, noteId }: { ws: Workspace; noteId: string }) {
+function NoteBody({
+  ws,
+  noteId,
+  onTrash,
+}: {
+  ws: Workspace;
+  noteId: string;
+  onTrash: (noteId: string, title: string) => void | Promise<void>;
+}) {
   const { t } = useTranslation();
   const query = useQuery({
     ...noteContentQueryOptions(noteId),
@@ -203,7 +213,7 @@ function NoteBody({ ws, noteId }: { ws: Workspace; noteId: string }) {
             )
           : undefined
       }
-      onDeleted={() => ws.forgetNote(noteId)}
+      onTrash={() => onTrash(noteId, ws.note?.title || t('workspace.untitled'))}
       onDuplicated={(copy) => ws.openNote(copy)}
     />
   );

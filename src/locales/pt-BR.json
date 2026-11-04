@@ -1,7 +1,4 @@
 {
-  "palette": {
-    "deleteConfirm": "Excluir \"{{title}}\"? Isso remove o arquivo do cofre e ainda não pode ser desfeito."
-  },
   "library": {
     "title": "Biblioteca de reuniões",
     "intro": "Grave microfone e monitor de saída em originais locais separados. Nenhuma nota é obrigatória.",
@@ -299,8 +296,7 @@
         "agenda": "Abrir agenda de hoje",
         "meetings": "Abrir reuniões"
       },
-      "heading": "Atalhos de teclado",
-      "rebindComingSoon": "Atalhos globais configurados. A edição pelo aplicativo estará disponível em uma próxima versão."
+      "heading": "Atalhos de teclado"
     },
     "loading": "Carregando preferências…"
   },

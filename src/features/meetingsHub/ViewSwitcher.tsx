@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CalendarDays, CalendarRange, Check, ChevronDown, Columns3, Rows3 } from 'lucide-react';
+import { shortcutAria, shortcutHint, useEscapeLayer } from '../../lib/shortcuts';
 import { DAY_COUNTS, type CalendarView } from './calendarViews';
 
 /**
@@ -19,10 +20,14 @@ export function ViewSwitcher({
   const { t } = useTranslation();
   const k = (key: string, options?: Record<string, unknown>) =>
     t(`meetingsHub.calendar.${key}`, options);
-  const views: { id: Exclude<CalendarView, 'day'>; icon: typeof Rows3 }[] = [
+  const views: {
+    id: Exclude<CalendarView, 'day'>;
+    icon: typeof Rows3;
+    shortcut?: 'calendar.week' | 'calendar.month';
+  }[] = [
     { id: 'workweek', icon: Columns3 },
-    { id: 'week', icon: CalendarRange },
-    { id: 'month', icon: CalendarDays },
+    { id: 'week', icon: CalendarRange, shortcut: 'calendar.week' },
+    { id: 'month', icon: CalendarDays, shortcut: 'calendar.month' },
   ];
   return (
     <div className="mh-cal-switch" role="group" aria-label={k('label')}>
@@ -31,7 +36,8 @@ export function ViewSwitcher({
           type="button"
           className="mh-cal-opt"
           aria-pressed={view === 'day'}
-          title={k('day')}
+          aria-keyshortcuts={shortcutAria('calendar.day')}
+          title={`${k('day')} · ${shortcutHint('calendar.day')}`}
           onClick={() => onChange('day', days)}
         >
           <Rows3 size={14} aria-hidden="true" />
@@ -39,13 +45,14 @@ export function ViewSwitcher({
         </button>
         <DayMenu days={days} onPick={(count) => onChange('day', count)} />
       </span>
-      {views.map(({ id, icon: Icon }) => (
+      {views.map(({ id, icon: Icon, shortcut }) => (
         <button
           key={id}
           type="button"
           className="mh-cal-opt"
           aria-pressed={view === id}
-          title={k(id)}
+          aria-keyshortcuts={shortcut && shortcutAria(shortcut)}
+          title={shortcut ? `${k(id)} · ${shortcutHint(shortcut)}` : k(id)}
           onClick={() => onChange(id, days)}
         >
           <Icon size={14} aria-hidden="true" />
@@ -83,6 +90,7 @@ function DayMenu({ days, onPick }: { days: number; onPick: (count: number) => vo
     setOpen(false);
     trigger.current?.focus();
   };
+  useEscapeLayer(open, dismiss);
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const list = items();
     const index = list.indexOf(document.activeElement as HTMLElement);
@@ -91,7 +99,6 @@ function DayMenu({ days, onPick }: { days: number; onPick: (count: number) => vo
     else if (event.key === 'ArrowUp') move(index - 1);
     else if (event.key === 'Home') move(0);
     else if (event.key === 'End') move(list.length - 1);
-    else if (event.key === 'Escape') dismiss();
     else if (event.key === 'Tab') setOpen(false);
     else return;
     if (event.key !== 'Tab') event.preventDefault();

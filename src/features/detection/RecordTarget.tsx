@@ -1,3 +1,4 @@
+import { useEscapeLayer } from '../../lib/shortcuts';
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, ChevronDown, Mic } from 'lucide-react';
@@ -50,16 +51,17 @@ export function RecordTarget({
     setOpen(false);
     trigger.current?.focus();
   };
+  useEscapeLayer(open, () => {
+    setOpen(false);
+    trigger.current?.focus();
+  });
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const list = items();
     const index = list.indexOf(document.activeElement as HTMLElement);
     const move = (to: number) => list[(to + list.length) % list.length]?.focus();
     if (event.key === 'ArrowDown') move(index + 1);
     else if (event.key === 'ArrowUp') move(index - 1);
-    else if (event.key === 'Escape') {
-      setOpen(false);
-      trigger.current?.focus();
-    } else if (event.key === 'Tab') setOpen(false);
+    else if (event.key === 'Tab') setOpen(false);
     else return;
     if (event.key !== 'Tab') event.preventDefault();
   };

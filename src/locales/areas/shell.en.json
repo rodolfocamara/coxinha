@@ -10,7 +10,7 @@
     },
     "record": {
       "start": "Record now",
-      "startHint": "Record now (Ctrl+Alt+W)",
+      "startHint": "Record now ({{keys}})",
       "stop": "Stop and save the recording",
       "quickTitle": "Recording"
     }

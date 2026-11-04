@@ -23,7 +23,7 @@ vi.mock('../../lib/store', () => ({
 }));
 
 import { CommandPalette } from './CommandPalette';
-import { resetPaletteShortcuts } from './usePaletteActions';
+import { resetSystemChords } from '../../lib/shortcuts';
 
 const answer: UniversalAnswer = {
   notes: [
@@ -53,7 +53,7 @@ const active = () => document.getElementById(input().getAttribute('aria-activede
 beforeEach(async () => {
   await i18n.changeLanguage('en');
   navigate.mockReset();
-  resetPaletteShortcuts();
+  resetSystemChords();
   invoke.mockReset();
   invoke.mockImplementation(async (command: string, args?: { query: string }) => {
     if (command === 'get_config') return null;

@@ -11,6 +11,7 @@ import {
   Type,
   Undo2,
 } from 'lucide-react';
+import { shortcutHint, useEscapeLayer } from '../../lib/shortcuts';
 
 export type NoteFont = 'default' | 'serif' | 'mono';
 
@@ -97,19 +98,10 @@ export function NoteActionsMenu({
       if (anchorRef.current?.contains(target as HTMLElement)) return;
       onClose();
     }
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        onClose();
-      }
-    }
     window.addEventListener('mousedown', onDown);
-    window.addEventListener('keydown', onKey);
-    return () => {
-      window.removeEventListener('mousedown', onDown);
-      window.removeEventListener('keydown', onKey);
-    };
+    return () => window.removeEventListener('mousedown', onDown);
   }, [open, onClose, anchorRef]);
+  useEscapeLayer(open, onClose);
 
   const q = query.trim().toLowerCase();
   const filter = useMemo(() => (label: string) => !q || label.toLowerCase().includes(q), [q]);
@@ -176,7 +168,7 @@ export function NoteActionsMenu({
           <Row
             icon={<LinkIcon size={14} aria-hidden="true" />}
             label={t('noteMenu.copyLink')}
-            hint="Ctrl+L"
+            hint={shortcutHint('note.copyLink')}
             onClick={run(onCopyLink)}
           />
         )}
@@ -191,7 +183,7 @@ export function NoteActionsMenu({
           <Row
             icon={<CopyPlus size={14} aria-hidden="true" />}
             label={t('noteMenu.duplicate')}
-            hint="Ctrl+D"
+            hint={shortcutHint('note.duplicate')}
             onClick={run(onDuplicate)}
           />
         )}
@@ -232,7 +224,7 @@ export function NoteActionsMenu({
           <Row
             icon={<Undo2 size={14} aria-hidden="true" />}
             label={t('noteMenu.undo')}
-            hint="Ctrl+Z"
+            hint={shortcutHint('note.undo')}
             onClick={run(onUndo)}
           />
         )}

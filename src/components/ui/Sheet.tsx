@@ -1,6 +1,7 @@
 import { useRef, type ReactNode } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
+import { pressEscape, useEscapeLayer } from '../../lib/shortcuts';
 import { Button } from './Button';
 import './ui.css';
 
@@ -15,7 +16,10 @@ type Props = {
   children: ReactNode;
 };
 
-/** Right-side modal panel: focus trap, Escape and focus return come from Radix. */
+/**
+ * Right-side modal panel: focus trap and focus return come from Radix; Escape
+ * goes through the one stack, so what opened over a sheet closes first.
+ */
 export function Sheet({
   open,
   onOpenChange,
@@ -27,6 +31,7 @@ export function Sheet({
 }: Props) {
   // Radix restores focus only to a Dialog.Trigger; callers open sheets from any control.
   const opener = useRef<HTMLElement | null>(null);
+  useEscapeLayer(open, () => onOpenChange(false), { modal: true });
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
@@ -34,6 +39,10 @@ export function Sheet({
         <Dialog.Content
           className="cx-sheet"
           {...(description ? {} : { 'aria-describedby': undefined })}
+          onEscapeKeyDown={(event) => {
+            event.preventDefault();
+            pressEscape(event);
+          }}
           onOpenAutoFocus={() => {
             opener.current =
               document.activeElement instanceof HTMLElement ? document.activeElement : null;

@@ -5,6 +5,7 @@ import { ClipboardList, Mic } from 'lucide-react';
 import { Button } from '../../components/ui';
 import { library, type CalendarMatch } from '../meetings/library';
 import type { CalendarEvent } from '../agenda/calendar';
+import { useEscapeLayer } from '../../lib/shortcuts';
 import { useCaptureStore } from '../capture/captureStore';
 import { useEventColour } from '../agenda/categories';
 import type { MeetingRow } from './meetingRows';
@@ -87,18 +88,8 @@ export function MeetingPeek({
   useEffect(() => {
     heading.current?.focus();
   }, [row.key]);
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape' || e.defaultPrevented) return;
-      const target = e.target instanceof Element ? e.target : null;
-      // Fields keep Escape for themselves (the search clears); dialogs and menus close first.
-      if (target?.closest('input, textarea, select, [role="dialog"], [role="menu"]')) return;
-      e.preventDefault();
-      onClose();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  // Fields keep Escape for themselves (the search clears).
+  useEscapeLayer(true, onClose, { fromFields: false });
 
   const durationMs = detail.data?.storage?.durationMs ?? null;
   const state = panelState(row, now, !!meetingId);

@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import {
   CalendarDays,
   FileText,
+  Keyboard,
   LayoutGrid,
   Mic,
   Plus,
@@ -15,7 +16,13 @@ import {
   Upload,
   Users,
 } from 'lucide-react';
-import { commands, type ShortcutsConfig } from '../../lib/bindings';
+import {
+  chordOf,
+  formatChord,
+  loadSystemChords,
+  shortcutHint,
+  useSystemChords,
+} from '../../lib/shortcuts';
 import { applyTheme, setThemePreference } from '../../lib/theme';
 import { useResolvedTheme } from '../../lib/useTheme';
 import { prepareRouteTransition, setZoomOrigin } from '../../lib/motion';
@@ -28,6 +35,7 @@ import {
 } from '../../components/Shell/NavRail';
 import { toggleCapture } from '../capture/captureActions';
 import { useCaptureStore } from '../capture/captureStore';
+import { OPEN_SHORTCUTS_EVENT } from './ShortcutSheet';
 
 export type PaletteAction = {
   kind: 'action';
@@ -43,20 +51,6 @@ export type PaletteAction = {
 };
 
 const icon = (Icon: typeof Mic) => <Icon size={15} aria-hidden="true" />;
-
-/** Global shortcuts are configurable; read them once per app run. */
-let shortcutsRequest: Promise<ShortcutsConfig | null> | null = null;
-function loadShortcuts() {
-  shortcutsRequest ??= commands
-    .getConfig()
-    .then((res) => (res.status === 'ok' ? res.data.shortcuts : null))
-    .catch(() => null);
-  return shortcutsRequest;
-}
-/** Test hook: forget the cached config read. */
-export function resetPaletteShortcuts() {
-  shortcutsRequest = null;
-}
 
 /** Lets the next screen mount its listeners before it receives the intent. */
 function afterPaint() {
@@ -81,17 +75,12 @@ export function usePaletteActions({
   const resolvedTheme = useResolvedTheme();
   const newNote = useAppStore((s) => s.newNote);
   const live = useCaptureStore((s) => !!s.status?.active);
-  const [shortcuts, setShortcuts] = useState<ShortcutsConfig | null>(null);
+  const report = useSystemChords((state) => state.report);
   const deleteCurrent = useRef(onDeleteCurrent);
   deleteCurrent.current = onDeleteCurrent;
   useEffect(() => {
-    if (!open || shortcuts) return;
-    let alive = true;
-    void loadShortcuts().then((value) => alive && setShortcuts(value));
-    return () => {
-      alive = false;
-    };
-  }, [open, shortcuts]);
+    if (open) void loadSystemChords();
+  }, [open]);
 
   return useMemo(() => {
     const go = (area: NavArea, to: string) => {
@@ -111,7 +100,7 @@ export function usePaletteActions({
         id: 'record',
         label: a(live ? 'stop' : 'record'),
         icon: icon(live ? Square : Mic),
-        hint: shortcuts?.toggle_recording,
+        hint: report ? formatChord(chordOf(report, 'toggle_recording')) : undefined,
         run: () => toggleCapture(quickCaptureTitle(t('shell.record.quickTitle'))),
       },
       {
@@ -126,7 +115,7 @@ export function usePaletteActions({
         id: 'new-note',
         label: a('newNote'),
         icon: icon(FileText),
-        hint: shortcuts?.new_note,
+        hint: report ? formatChord(chordOf(report, 'new_note')) : undefined,
         run: async () => {
           const note = await newNote();
           await navigate({ to: '/workspace/$noteId', params: { noteId: note.id } });
@@ -138,6 +127,14 @@ export function usePaletteActions({
         label: a('importAudio'),
         icon: icon(Upload),
         run: () => meetingsIntent('coxinha:import-audio'),
+      },
+      {
+        kind: 'action',
+        id: 'keyboard-shortcuts',
+        label: t('shortcuts.sheet.title'),
+        icon: icon(Keyboard),
+        hint: shortcutHint('app.help'),
+        run: () => void window.dispatchEvent(new Event(OPEN_SHORTCUTS_EVENT)),
       },
       {
         kind: 'action',
@@ -177,5 +174,5 @@ export function usePaletteActions({
     ];
     return { actions, destinations };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [t, navigate, newNote, live, shortcuts, resolvedTheme, currentNote, pathname]);
+  }, [t, navigate, newNote, live, report, resolvedTheme, currentNote, pathname]);
 }

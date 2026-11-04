@@ -44,11 +44,11 @@ vi.mock('../notes/NoteEditor', () => ({
     variant: string;
     content: { markdown: string };
     overlay?: (editor: unknown) => React.ReactNode;
-    onDeleted?: () => void;
+    onTrash?: () => void;
   }) => (
     <section data-testid="note-editor" data-note-id={props.noteId} data-variant={props.variant}>
       <div className="relative">{props.overlay?.(fakeEditor(props.content.markdown))}</div>
-      <button type="button" onClick={props.onDeleted}>
+      <button type="button" onClick={props.onTrash}>
         delete-note-file
       </button>
     </section>

@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState, type PointerEvent } from 'react';
+import { useRef, useState, type PointerEvent } from 'react';
+import { useEscapeLayer } from '../../lib/shortcuts';
 import { dayKey } from '../sessions/sessionDates';
 import { DRAG_PX, atMinutes, minutesAt, selection, type Range } from './gridSelect';
 
@@ -28,17 +29,7 @@ export function useGridCreate(onCreate?: (start: Date, end: Date) => void) {
   };
   const active = draft !== null;
 
-  useEffect(() => {
-    if (!active) return;
-    const cancel = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape') return;
-      event.preventDefault();
-      live.current = null;
-      setDraft(null);
-    };
-    window.addEventListener('keydown', cancel);
-    return () => window.removeEventListener('keydown', cancel);
-  }, [active]);
+  useEscapeLayer(active, () => put(null));
 
   const columnProps = (day: Date) => {
     if (!onCreate) return {};

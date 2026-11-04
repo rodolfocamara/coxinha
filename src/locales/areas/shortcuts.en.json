@@ -1,0 +1,81 @@
+{
+  "shortcuts": {
+    "scopes": {
+      "system": "Anywhere on the computer",
+      "app": "Everywhere in Coxinha",
+      "palette": "Command palette",
+      "note": "Note",
+      "board": "Board",
+      "calendar": "Calendar",
+      "layer": "Panels and menus",
+      "list": "Lists and menus"
+    },
+    "actions": {
+      "palette": "Open or close the command palette",
+      "help": "Show keyboard shortcuts",
+      "undoTrash": "Undo moving a note to the trash",
+      "paletteMove": "Move through the results",
+      "paletteOpen": "Open the result",
+      "paletteDelete": "Move the note to the trash",
+      "noteMenu": "Open the note menu",
+      "noteCopyLink": "Copy a link to the note",
+      "noteDuplicate": "Duplicate the note",
+      "noteUndo": "Undo in the editor",
+      "boardRemove": "Remove the selection",
+      "boardUndo": "Undo a removal",
+      "boardNote": "New note",
+      "boardActivity": "New activity",
+      "boardArea": "New area",
+      "boardOpen": "Open the focused card",
+      "calendarToday": "Go to today",
+      "calendarNext": "Next period",
+      "calendarPrevious": "Previous period",
+      "calendarDay": "Day view",
+      "calendarWeek": "Week view",
+      "calendarMonth": "Month view",
+      "calendarNew": "New meeting",
+      "calendarOpen": "Open the focused meeting",
+      "layerClose": "Close the top panel or menu",
+      "layerCancelEdit": "Cancel an edit in progress",
+      "listMove": "Move in a list, menu or tab bar",
+      "listPick": "Choose the highlighted option",
+      "dialogFocusTrap": "Stay inside the dialog"
+    },
+    "sheet": {
+      "title": "Keyboard shortcuts",
+      "description": "What works on this screen, and from anywhere.",
+      "close": "Close"
+    },
+    "settings": {
+      "system": "Anywhere on the computer",
+      "all": "All shortcuts",
+      "change": "Change",
+      "changeLabel": "Change the shortcut for {{action}}",
+      "reset": "Restore default",
+      "resetLabel": "Restore the default shortcut for {{action}}",
+      "pressNow": "Press the new shortcut",
+      "captureLabel": "Press the new shortcut for {{action}}. Escape cancels.",
+      "needsModifier": "Needs Ctrl, Alt or Super with the key.",
+      "unsupported": "That key cannot be used in a shortcut.",
+      "received": "Last reached Coxinha at {{time}}.",
+      "notReceived": "Has not reached Coxinha since the app started.",
+      "inactive": "Not active: {{chord}} did not register.",
+      "failure": {
+        "invalid": "Coxinha cannot read {{chord}} as a shortcut.",
+        "taken": "Another app already holds {{chord}}. Choose another one.",
+        "duplicate": "{{chord}} is already the shortcut for {{other}}.",
+        "failed": "The system refused {{chord}}."
+      },
+      "kept": "The previous shortcut, {{chord}}, stays in force.",
+      "conflict": "{{chord}} also belongs to {{owner}}, so the desktop may keep the key. Choose another shortcut if this one does not open Coxinha.",
+      "wayland": "This session uses Wayland. Coxinha asking for a shortcut does not prove the key arrives: the desktop decides. To test one, press it with another window focused, then come back here and read the time on its row.",
+      "note": "A shortcut works even with the window hidden."
+    },
+    "notice": {
+      "message": "Some keyboard shortcuts may not work: {{chords}}.",
+      "open": "Review shortcuts",
+      "dismiss": "Dismiss"
+    },
+    "undoFailed": "Could not bring the note back from the trash."
+  }
+}

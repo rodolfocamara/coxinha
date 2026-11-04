@@ -65,12 +65,8 @@
     "empty": "No suggestions yet.",
     "askPlaceholder": "Ask…"
   },
-  "palette": {
-    "deleteConfirm": "Delete \"{{title}}\"? This moves the file out of the vault and cannot be undone yet."
-  },
   "sidebar": {
     "newNoteButton": "+ New",
-    "newNoteTooltip": "New note (Ctrl+Alt+Y)",
     "searchPlaceholder": "Search notes…",
     "searchClear": "Clear search",
     "searchNoResults": "Nothing found",
@@ -84,8 +80,7 @@
     "untitled": "(untitled)"
   },
   "empty": {
-    "noNoteSelected": "No note selected.",
-    "newNoteCta": "New note (Ctrl+Alt+Y)"
+    "noNoteSelected": "No note selected."
   },
   "status": {
     "draftCount": "0 words · 0 min"
@@ -145,7 +140,6 @@
     },
     "shortcuts": {
       "heading": "Global shortcuts",
-      "rebindComingSoon": "Configured global shortcuts. Editing these in the app will be available in a later version.",
       "action": {
         "new_note": "New note",
         "open_app": "Show / hide Coxinha",

@@ -2,6 +2,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { ChevronLeft, ChevronRight, Globe2, Plus, Search, Upload } from 'lucide-react';
 import { Button } from '../../components/ui';
+import { shortcutAria, shortcutHint } from '../../lib/shortcuts';
 import { openSearch } from '../../components/AppShell/SearchBar';
 import type { CalendarView } from './calendarViews';
 import { ViewSwitcher } from './ViewSwitcher';
@@ -35,6 +36,8 @@ export function CalendarToolbar(p: Props) {
         size="sm"
         icon={<Plus size={14} aria-hidden="true" />}
         disabled={!p.desktop}
+        aria-keyshortcuts={shortcutAria('calendar.new')}
+        title={`${k('newMeeting')} · ${shortcutHint('calendar.new')}`}
         onClick={p.onNew}
       >
         {k('newMeeting')}
@@ -50,7 +53,12 @@ export function CalendarToolbar(p: Props) {
         onClick={p.onImport}
       />
       <span className="ch-sep" aria-hidden="true" />
-      <Button size="sm" onClick={p.onToday}>
+      <Button
+        size="sm"
+        aria-keyshortcuts={shortcutAria('calendar.today')}
+        title={`${t('meetingsHub.calendar.today')} · ${shortcutHint('calendar.today')}`}
+        onClick={p.onToday}
+      >
         {t('meetingsHub.calendar.today')}
       </Button>
       <Button
@@ -58,6 +66,8 @@ export function CalendarToolbar(p: Props) {
         iconOnly
         icon={<ChevronLeft size={15} aria-hidden="true" />}
         aria-label={p.previousLabel}
+        aria-keyshortcuts={shortcutAria('calendar.previous')}
+        title={`${p.previousLabel} · ${shortcutHint('calendar.previous')}`}
         onClick={() => p.onStep(-1)}
       />
       <Button
@@ -65,6 +75,8 @@ export function CalendarToolbar(p: Props) {
         iconOnly
         icon={<ChevronRight size={15} aria-hidden="true" />}
         aria-label={p.nextLabel}
+        aria-keyshortcuts={shortcutAria('calendar.next')}
+        title={`${p.nextLabel} · ${shortcutHint('calendar.next')}`}
         onClick={() => p.onStep(1)}
       />
       <h2 className="ch-title" aria-live="polite">

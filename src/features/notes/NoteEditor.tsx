@@ -21,18 +21,14 @@ import { useAppStore } from '../../lib/store';
 import { useResolvedTheme } from '../../lib/useTheme';
 import { meetingBlockSpec } from '../meetings/MeetingBlock';
 import { isInteractiveClickTarget } from './editorFocus';
+import { useShortcutScope } from '../../lib/shortcuts';
 import { useNoteShortcuts } from './useNoteShortcuts';
-import { type NoteFont } from './NoteActionsMenu';
 import { NoteRecovery } from './NoteRecovery';
 import { useNoteRecovery } from './useNoteRecovery';
+import { moveNoteToTrash } from './trashUndo';
+import { NoteLoadingSkeleton } from './NoteLoadingSkeleton';
 import { NoteEditorFrame, type NoteEditorVariant } from './NoteEditorFrame';
-import {
-  PREF_FONT_KEY,
-  PREF_FULLWIDTH_KEY,
-  PREF_SMALL_KEY,
-  readPrefBool,
-  readPrefString,
-} from './notePrefs';
+import { useNotePrefs } from './useNotePrefs';
 import { en, pt } from '@blocknote/core/locales';
 
 // Schema extends BlockNote's defaults with our custom MeetingBlock.
@@ -58,11 +54,13 @@ interface Props {
   content: NoteContent;
   /** Rendered over the editor document (Workspace checklist actions). */
   overlay?: (editor: NoteBlockEditor) => ReactNode;
-  /** Replaces the default "back to the Workspace" after the file is deleted. */
-  onDeleted?: () => void | Promise<void>;
+  /** Replaces moving to the trash with this editor's own undo and leaving for the Workspace. */
+  onTrash?: () => void | Promise<void>;
   /** Replaces the default "open the copy" after duplication. */
   onDuplicated?: (noteId: string) => void | Promise<void>;
 }
+
+export { NoteLoadingSkeleton };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type NoteBlockEditor = BlockNoteEditor<any, any, any>;
@@ -73,7 +71,7 @@ export function NoteEditor({
   variant = 'standalone',
   focusRequest,
   overlay,
-  onDeleted,
+  onTrash,
   onDuplicated,
 }: Props) {
   // Placed at the top of the component body so the mark captures
@@ -108,9 +106,9 @@ export function NoteEditor({
       onSave={save}
       overlay={overlay}
       onDelete={async () => {
-        await deleteNote(noteId);
-        if (onDeleted) await onDeleted();
-        else await navigate({ to: '/workspace' });
+        if (onTrash) return onTrash();
+        await moveNoteToTrash({ id: noteId, title: metadata.title }, deleteNote);
+        await navigate({ to: '/workspace' });
       }}
       onDuplicate={async () => {
         const copy = await duplicateNote(noteId);
@@ -146,25 +144,11 @@ function EditorInner({
   onDelete: () => Promise<void>;
   onDuplicate: () => Promise<void>;
 }) {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const theme = useResolvedTheme();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
-  const [font, setFont] = useState<NoteFont>(() =>
-    readPrefString<NoteFont>(PREF_FONT_KEY, ['default', 'serif', 'mono'], 'default')
-  );
-  const [smallText, setSmallText] = useState(() => readPrefBool(PREF_SMALL_KEY, false));
-  const [fullWidth, setFullWidth] = useState(() => readPrefBool(PREF_FULLWIDTH_KEY, false));
-
-  useEffect(() => {
-    window.localStorage.setItem(PREF_FONT_KEY, font);
-  }, [font]);
-  useEffect(() => {
-    window.localStorage.setItem(PREF_SMALL_KEY, smallText ? '1' : '0');
-  }, [smallText]);
-  useEffect(() => {
-    window.localStorage.setItem(PREF_FULLWIDTH_KEY, fullWidth ? '1' : '0');
-  }, [fullWidth]);
+  const { font, setFont, smallText, setSmallText, fullWidth, setFullWidth } = useNotePrefs();
   const completedUploads = useRef<
     Array<{ url?: string; blockId?: string; observed: boolean; finish: () => void }>
   >([]);
@@ -314,15 +298,14 @@ function EditorInner({
     await navigator.clipboard.writeText(`coxinha://notes/${noteId}`);
   }
 
+  useShortcutScope('note');
   useNoteShortcuts({
     toggleMenu: () => setMenuOpen((v) => !v),
     copyLink: () => void copyLinkToClipboard(),
     duplicate: () => void onDuplicate().catch(() => setDuplicateFailed(true)),
   });
 
-  async function confirmAndDelete() {
-    const label = title || t('sidebar.untitled');
-    if (!window.confirm(t('palette.deleteConfirm', { title: label }))) return;
+  async function moveToTrash() {
     try {
       await onDelete();
     } catch (error) {
@@ -363,7 +346,7 @@ function EditorInner({
         onCopyLink: () => void copyLinkToClipboard(),
         onCopyContents: () => void copyContentsToClipboard(),
         onDuplicate: () => void onDuplicate().catch(() => setDuplicateFailed(true)),
-        onMoveToTrash: () => void confirmAndDelete(),
+        onMoveToTrash: () => void moveToTrash(),
         onUndo: () => editor.undo(),
         font,
         onFontChange: setFont,
@@ -384,18 +367,5 @@ function EditorInner({
         {initialized && overlay?.(editor as NoteBlockEditor)}
       </div>
     </NoteEditorFrame>
-  );
-}
-
-export function NoteLoadingSkeleton() {
-  const { t } = useTranslation();
-  return (
-    <div role="status" aria-busy="true" aria-live="polite" className="p-8 space-y-3 animate-pulse">
-      <span className="sr-only">{t('editor.loading')}</span>
-      <div className="h-8 w-1/2 bg-muted rounded" aria-hidden="true" />
-      <div className="h-4 w-full bg-muted rounded" aria-hidden="true" />
-      <div className="h-4 w-5/6 bg-muted rounded" aria-hidden="true" />
-      <div className="h-4 w-4/6 bg-muted rounded" aria-hidden="true" />
-    </div>
   );
 }

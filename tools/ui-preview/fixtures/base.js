@@ -208,6 +208,34 @@
     ],
   });
   f.board_save = ({ board }) => ({ ...board, revision: board.revision + 1 });
+  const CHORDS = {
+    new_note: 'Ctrl+Alt+Y',
+    open_app: 'Ctrl+Alt+O',
+    agenda: 'Ctrl+Alt+G',
+    meetings: 'Ctrl+Alt+T',
+    toggle_recording: 'Ctrl+Alt+W',
+  };
+  const shortcutReport = (state) => ({
+    wayland: !!state.wayland,
+    statuses: Object.keys(CHORDS).map((action) => ({
+      action,
+      chord: state.chords?.[action] ?? CHORDS[action],
+      registered: !state.shortcutFailure?.[action],
+      failure: state.shortcutFailure?.[action] ?? null,
+      detail: null,
+      conflict: state.shortcutConflict?.[action] ?? null,
+      lastFiredMs: null,
+    })),
+  });
+  f.shortcut_status = (_args, state) => shortcutReport(state);
+  /** `state.takenChords` plays the other apps; the chord in force stays when one refuses. */
+  f.set_shortcut = ({ action, chord }, state) => {
+    if (state.takenChords?.includes(chord))
+      return { ok: false, failure: 'taken', detail: 'already registered', report: shortcutReport(state) };
+    state.chords = { ...state.chords, [action]: chord };
+    if (state.shortcutFailure) delete state.shortcutFailure[action];
+    return { ok: true, failure: null, detail: null, report: shortcutReport(state) };
+  };
   f.get_config = () => ({
     vault_path: '/home/owner/coxinha',
     locale: 'pt-BR',

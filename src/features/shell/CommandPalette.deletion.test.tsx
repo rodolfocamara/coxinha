@@ -41,7 +41,6 @@ it.each(['en', 'pt-BR'])(
     vi.mocked(invoke).mockRejectedValue(
       new Error('session_note_delete_requires_detach\nprotected session note')
     );
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
     const close = vi.fn();
     render(<CommandPalette open onClose={close} />);
     fireEvent.click(
@@ -51,8 +50,6 @@ it.each(['en', 'pt-BR'])(
       i18n.t('editor.sessionNoteDeleteRequiresDetach')
     );
     expect(screen.getByRole('alert')).not.toHaveTextContent('protected session note');
-    expect(confirm).toHaveBeenCalledWith(i18n.t('palette.deleteConfirm', { title: note.title }));
-    if (language === 'pt-BR') expect(confirm.mock.calls[0][0]).toMatch(/^Excluir/);
     expect(invoke).toHaveBeenCalledWith('delete_note', { id: note.id });
     expect(useAppStore.getState().notes).toEqual([note]);
     expect(useAppStore.getState().activeNoteId).toBe(note.id);

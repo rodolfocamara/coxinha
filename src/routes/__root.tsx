@@ -7,10 +7,14 @@ import type { UnlistenFn } from '@tauri-apps/api/event';
 import { useTranslation } from 'react-i18next';
 import { reportFrontendError } from '../lib/lifecycle';
 import { CommandPalette } from '../features/shell/CommandPalette';
+import { ShortcutNotice } from '../features/shell/ShortcutNotice';
+import { ShortcutSheet } from '../features/shell/ShortcutSheet';
+import { TrashUndoBar } from '../features/notes/TrashUndoBar';
 import { OPEN_PALETTE_EVENT } from '../components/AppShell/SearchBar';
 import { Button } from '../components/ui';
 import { events, type Route } from '../lib/bindings';
 import { mark } from '../lib/perf';
+import { loadSystemChords, useShortcut } from '../lib/shortcuts';
 import { useAppStore } from '../lib/store';
 import { followThemePreference, getThemePreference, THEME_PREF_EVENT } from '../lib/theme';
 import { Shell } from '../components/Shell/Shell';
@@ -96,26 +100,16 @@ export function RootLayout() {
     };
   }, [loadNotes, navigate, newNote, startupAttempt, t]);
 
-  // Ctrl+K / Ctrl+P open the command palette. Gated on Ctrl/Cmd so it
-  // doesn't fight the editor's own hotkeys.
+  useShortcut('app.palette', () => setPaletteOpen((v) => !v));
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (!(e.ctrlKey || e.metaKey)) return;
-      const key = e.key.toLowerCase();
-      if (key === 'k' || key === 'p') {
-        e.preventDefault();
-        setPaletteOpen((v) => !v);
-      }
-    };
+    void loadSystemChords();
     const openPalette = () => setPaletteOpen(true);
     const openMap = () => void navigate({ to: '/' });
     window.addEventListener('coxinha:open-map', openMap);
     window.addEventListener(OPEN_PALETTE_EVENT, openPalette);
-    window.addEventListener('keydown', handler);
     return () => {
       window.removeEventListener(OPEN_PALETTE_EVENT, openPalette);
       window.removeEventListener('coxinha:open-map', openMap);
-      window.removeEventListener('keydown', handler);
     };
   }, [navigate]);
 
@@ -136,9 +130,12 @@ export function RootLayout() {
             </Button>
           </div>
         )}
+        <ShortcutNotice />
         <Outlet />
       </Shell>
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
+      <ShortcutSheet />
+      <TrashUndoBar />
     </>
   );
 }

@@ -187,7 +187,6 @@ it.each(['en', 'pt-BR'])(
     mocks.delete.mockRejectedValueOnce(
       new Error('session_note_delete_requires_detach\nprivate diagnostic')
     );
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
     mount();
     await waitFor(() =>
       expect(screen.getByTestId('rich-text')).toHaveAttribute('data-editable', 'true')
@@ -198,10 +197,6 @@ it.each(['en', 'pt-BR'])(
       i18n.t('editor.sessionNoteDeleteRequiresDetach')
     );
     expect(screen.getByRole('alert')).not.toHaveTextContent('private diagnostic');
-    expect(confirm).toHaveBeenCalledWith(
-      i18n.t('palette.deleteConfirm', { title: content.note.title })
-    );
-    if (language === 'pt-BR') expect(confirm.mock.calls[0][0]).toMatch(/^Excluir/);
     expect(mocks.navigate).not.toHaveBeenCalled();
     expect(mocks.editor.tryParseMarkdownToBlocks).toHaveBeenCalledWith(content.markdown);
   }
@@ -258,12 +253,11 @@ it('honors a fresh explicit open request for the already initialized board note'
 });
 
 it('workspace variant: compact side panel with every note action, overlay and Workspace callbacks', async () => {
-  const onDeleted = vi.fn();
+  const onTrash = vi.fn();
   const onDuplicated = vi.fn();
   const overlay = vi.fn(() => <p>checklist overlay</p>);
   mocks.duplicate.mockResolvedValue({ id: 'copy-id' });
   mocks.delete.mockResolvedValue(undefined);
-  const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
   render(
     <QueryClientProvider client={new QueryClient()}>
       <NoteEditor
@@ -271,7 +265,7 @@ it('workspace variant: compact side panel with every note action, overlay and Wo
         content={content}
         variant="workspace"
         overlay={overlay}
-        onDeleted={onDeleted}
+        onTrash={onTrash}
         onDuplicated={onDuplicated}
       />
     </QueryClientProvider>
@@ -289,8 +283,7 @@ it('workspace variant: compact side panel with every note action, overlay and Wo
   await waitFor(() => expect(onDuplicated).toHaveBeenCalledWith('copy-id'));
   fireEvent.click(screen.getByRole('button', { name: 'More actions' }));
   fireEvent.click(await screen.findByRole('menuitem', { name: 'Move to Trash' }));
-  await waitFor(() => expect(onDeleted).toHaveBeenCalledOnce());
-  expect(mocks.delete).toHaveBeenCalledWith('embedded-note');
+  await waitFor(() => expect(onTrash).toHaveBeenCalledOnce());
+  expect(mocks.delete).not.toHaveBeenCalled();
   expect(mocks.navigate).not.toHaveBeenCalled();
-  confirm.mockRestore();
 });

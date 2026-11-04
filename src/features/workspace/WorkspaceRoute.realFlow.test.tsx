@@ -1,6 +1,6 @@
 /* The other Workspace suites stub React Flow, and the stub hid that the real one
    prevents every key it watches: Delete reached no item for months. */
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import i18n from '../../lib/i18n';
@@ -20,7 +20,15 @@ vi.mock('../notes/NoteEditor', () => ({
   NoteEditor: (props: {
     content: { markdown: string };
     overlay?: (editor: unknown) => React.ReactNode;
-  }) => <div data-testid="note-editor">{props.overlay?.(fakeEditor(props.content.markdown))}</div>,
+    onTrash?: () => void;
+  }) => (
+    <div data-testid="note-editor">
+      {props.overlay?.(fakeEditor(props.content.markdown))}
+      <button type="button" onClick={props.onTrash}>
+        move to trash
+      </button>
+    </div>
+  ),
 }));
 
 import { WorkspaceRoute } from './WorkspaceRoute';
@@ -111,5 +119,35 @@ it('Delete in a text field edits the text and removes nothing', async () => {
   field.focus();
   const before = ids();
   await press('Delete');
+  expect(ids()).toEqual(before);
+});
+
+it('the side editor moves its note to the trash with the board undo, asking nothing', async () => {
+  const confirm = vi.spyOn(window, 'confirm');
+  await mount();
+  fireEvent.click(node('c-api'));
+  fireEvent.click(await screen.findByRole('button', { name: 'move to trash' }));
+  await waitFor(() => expect(ids()).not.toContain('c-api'));
+  expect(confirm).not.toHaveBeenCalled();
+  expect(screen.queryByTestId('note-editor')).toBeNull();
+  const offer = await waitFor(() => {
+    const bar = document.querySelector<HTMLElement>('.ws-undo');
+    expect(bar).not.toBeNull();
+    return bar!;
+  });
+  fireEvent.click(within(offer).getByRole('button', { name: i18n.t('workspace.undo') }));
+  await waitFor(() => expect(ids()).toContain('c-api'));
+  confirm.mockRestore();
+});
+
+it('Esc closes the side editor once, from anywhere, and then does nothing', async () => {
+  await mount();
+  fireEvent.click(node('c-api'));
+  await screen.findByTestId('note-editor');
+  (document.activeElement as HTMLElement | null)?.blur();
+  await press('Escape');
+  await waitFor(() => expect(screen.queryByTestId('note-editor')).toBeNull());
+  const before = ids();
+  await press('Escape');
   expect(ids()).toEqual(before);
 });

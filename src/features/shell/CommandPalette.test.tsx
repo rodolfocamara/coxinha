@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 vi.mock('react-i18next', () => ({
@@ -35,7 +35,8 @@ vi.mock('../../lib/store', () => ({
 import { applyTheme, getThemePreference } from '../../lib/theme';
 
 import { CommandPalette } from './CommandPalette';
-import { resetPaletteShortcuts } from './usePaletteActions';
+import { resetSystemChords } from '../../lib/shortcuts';
+import { useTrashUndo } from '../notes/trashUndo';
 import { initialCaptureState, useCaptureStore } from '../capture/captureStore';
 
 const SHORTCUTS = {
@@ -68,10 +69,17 @@ beforeEach(() => {
   storeState.newNote.mockReset();
   storeState.deleteNote.mockReset();
   toggleCapture.mockReset();
-  resetPaletteShortcuts();
+  resetSystemChords();
   invoke.mockReset();
   invoke.mockImplementation(async (command: string) => {
-    if (command === 'get_config') return { vault_path: '/v', shortcuts: SHORTCUTS };
+    if (command === 'shortcut_status')
+      return {
+        wayland: false,
+        statuses: [
+          { action: 'toggle_recording', chord: SHORTCUTS.toggle_recording },
+          { action: 'new_note', chord: SHORTCUTS.new_note },
+        ],
+      };
     throw new Error(`unexpected ${command}`);
   });
   useCaptureStore.setState({ ...initialCaptureState });
@@ -276,9 +284,8 @@ describe('CommandPalette', () => {
     expect(screen.queryByText('people.palette.actions.deleteCurrentNote')).not.toBeInTheDocument();
   });
 
-  it('calls deleteNote when the user confirms the row trash icon', async () => {
+  it('moves the note to the trash from the row icon and offers the undo', async () => {
     const user = userEvent.setup();
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
     render(<CommandPalette open onClose={() => {}} />);
 
     // Every note row has a Delete button — grab them all, pick Beta's.
@@ -289,21 +296,23 @@ describe('CommandPalette', () => {
     await user.click(buttons[1]);
 
     expect(storeState.deleteNote).toHaveBeenCalledWith('b');
-    confirmSpy.mockRestore();
+    await waitFor(() =>
+      expect(useTrashUndo.getState().pending).toEqual({ noteId: 'b', title: 'Beta meeting' })
+    );
   });
 
-  it('skips deletion when the user cancels the confirm', async () => {
-    const user = userEvent.setup();
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+  it('Mod+Backspace trashes the note under the cursor, and only a note', async () => {
     render(<CommandPalette open onClose={() => {}} />);
-
-    const [firstDelete] = screen.getAllByRole('button', {
-      name: 'people.palette.actions.deleteNote',
-    });
-    await user.click(firstDelete);
-
+    const field = screen.getByRole('combobox');
+    const untouched = fireEvent.keyDown(field, { key: 'Backspace', ctrlKey: true });
+    expect(untouched).toBe(true);
     expect(storeState.deleteNote).not.toHaveBeenCalled();
-    confirmSpy.mockRestore();
+    fireEvent.change(field, { target: { value: 'Beta' } });
+    await waitFor(() =>
+      expect(screen.getByRole('option', { selected: true })).toHaveTextContent('Beta')
+    );
+    fireEvent.keyDown(field, { key: 'Backspace', ctrlKey: true });
+    expect(storeState.deleteNote).toHaveBeenCalledWith('b');
   });
 });
 
@@ -317,7 +326,6 @@ it.each([
   ],
 ])('keeps a failed trash action visible with stable guidance for %s', async (code, message) => {
   storeState.deleteNote.mockRejectedValue(new Error(code));
-  const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
   const close = vi.fn();
   try {
     const user = userEvent.setup();
@@ -330,14 +338,12 @@ it.each([
     expect(close).not.toHaveBeenCalled();
     expect(navigate).not.toHaveBeenCalled();
   } finally {
-    confirm.mockRestore();
   }
 });
 
 it('the Delete-current-note action remains open when continuity rejection needs attention', async () => {
   pathname.current = '/notes/b';
   storeState.deleteNote.mockRejectedValue('note_file_changed_externally');
-  const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
   const close = vi.fn();
   try {
     const user = userEvent.setup();
@@ -347,6 +353,5 @@ it('the Delete-current-note action remains open when continuity rejection needs 
     expect(close).not.toHaveBeenCalled();
     expect(navigate).not.toHaveBeenCalled();
   } finally {
-    confirm.mockRestore();
   }
 });

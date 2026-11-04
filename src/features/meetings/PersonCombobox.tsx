@@ -1,3 +1,4 @@
+import { useEscapeLayer } from '../../lib/shortcuts';
 import { useId, useState, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { UserPlus } from 'lucide-react';
@@ -63,13 +64,13 @@ export function PersonCombobox({
         setOpen(false);
         onSubmit?.();
       }
-    } else if (e.key === 'Escape' && open) {
-      e.preventDefault();
-      setOpen(false);
-      setActive(-1);
     }
   }
   const expanded = open && options.length > 0;
+  useEscapeLayer(expanded, () => {
+    setOpen(false);
+    setActive(-1);
+  });
   return (
     <div className="relative min-w-0 flex-1">
       <input

@@ -81,7 +81,7 @@
         "recording": "Used by the record button, by meetings and by detected calls.",
         "transcription": "Runs on this computer, nothing is sent out.",
         "integrations": "Optional. Nothing leaves this computer until you connect.",
-        "shortcuts": "Global shortcuts work even when the window is hidden.",
+        "shortcuts": "Change the chords that work anywhere on the computer, and see all the others.",
         "storage": "Your notes are plain Markdown files in this folder.",
         "diagnostics": "Text to paste when reporting a problem.",
         "calendar": "How the week grid shows time zones. Saved on this computer.",

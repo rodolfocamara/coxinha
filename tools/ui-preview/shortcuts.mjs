@@ -1,186 +1,187 @@
 #!/usr/bin/env node
 /**
- * Every in-app shortcut, pressed in a real browser with the real React Flow and
- * editor: `pnpm test:shortcuts`. Unit tests stub those two, which once hid that
- * Delete reached nothing. Prints one line per shortcut and exits 1 on a failure.
+ * Every shortcut of `src/lib/shortcuts/table.ts`, pressed in a real browser with
+ * the real React Flow and editor: `pnpm test:shortcuts`. The run is generated from
+ * the table: each chord of each entry runs that entry's probe. Prints one line per
+ * check and exits 1 on a failure. Global chords cannot be pressed from a browser:
+ * their probes check the row in Settings and what their event does, not the OS.
  */
 import { devServer, launch, openApp } from './harness.mjs';
+import { PROBES } from './shortcutProbes.mjs';
 
 const server = await devServer(14289);
 const browser = await launch();
 const failures = [];
-const check = (name, ok, detail = '') => {
+const report = (name, ok, detail = '') => {
   console.log(`${ok ? 'ok  ' : 'FAIL'} ${name}${detail ? `  (${detail})` : ''}`);
   if (!ok) failures.push(name);
 };
-const open = (route) =>
-  openApp(browser, {
+
+const pressable = (chord) =>
+  chord
+    .split('+')
+    .map((part) => (part === 'Mod' ? 'Control' : /^[A-Z]$/.test(part) ? part.toLowerCase() : part))
+    .join('+');
+
+async function runProbe(entry, chord) {
+  const contexts = [];
+  const errors = [];
+  const name = `${entry.id} [${chord}]`;
+  const t = {
+    chord,
+    keysAsShown: chord,
+    press: (page) => page.keyboard.press(pressable(chord)),
+    check: (what, ok, detail) => report(`${name}: ${what}`, !!ok, detail),
+    open: async (route, options = {}) => {
+      const opened = await openApp(browser, {
+        url: server.url,
+        route,
+        viewport: { width: 1400, height: 900 },
+        locale: 'en',
+        ...options,
+      });
+      contexts.push(opened.context);
+      opened.page.on('pageerror', (error) => errors.push(error.message));
+      return opened.page;
+    },
+  };
+  try {
+    await PROBES[entry.id](t);
+    const real = errors.filter((error) => !error.includes('Transition was skipped'));
+    if (real.length) report(`${name}: no page errors`, false, real.join('; '));
+  } catch (error) {
+    report(`${name}: ran to the end`, false, String(error.message ?? error).split('\n')[0]);
+  } finally {
+    await Promise.all(contexts.map((context) => context.close()));
+  }
+}
+
+/** Rebinding and its failures, which only exist in Settings (spec 0128 P6). */
+async function rebinding() {
+  const open = async (state = {}) => {
+    const opened = await openApp(browser, {
+      url: server.url,
+      route: '/settings/shortcuts',
+      viewport: { width: 1400, height: 900 },
+      locale: 'en',
+      state,
+    });
+    const row = opened.page.locator('.cx-settings-row:has(#shortcut-meetings-title)');
+    await row.waitFor();
+    await opened.page.waitForTimeout(300);
+    return { ...opened, row };
+  };
+  const shown = (row) => row.locator('kbd').innerText();
+  const change = (row) => row.getByRole('button', { name: /change the shortcut/i });
+
+  {
+    const { page, row, context } = await open({ takenChords: ['Control+Alt+X', 'Ctrl+Alt+X'] });
+    await change(row).click();
+    await page.keyboard.press('Control+Alt+m');
+    await page.waitForTimeout(300);
+    report('rebind: a free chord takes effect', (await shown(row)) === 'Ctrl+Alt+M', await shown(row));
+    report('rebind: focus returns to the button', await change(row).evaluate((el) => el === document.activeElement));
+    await change(row).click();
+    await page.keyboard.press('Control+Alt+x');
+    await page.waitForTimeout(300);
+    const alert = row.getByRole('alert');
+    report('rebind: a refused chord is visible', (await alert.count()) === 1 && /holds Ctrl\+Alt\+X/.test(await alert.innerText()));
+    report('rebind: the refusal says the old chord stays', /Ctrl\+Alt\+M/.test(await alert.innerText()));
+    report('rebind: the old chord stays on the row', (await shown(row)) === 'Ctrl+Alt+M');
+    await change(row).click();
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(150);
+    report('rebind: Esc cancels the capture', (await shown(row)) === 'Ctrl+Alt+M');
+    await change(row).click();
+    await page.keyboard.press('y');
+    await page.waitForTimeout(150);
+    report('rebind: a key without a modifier asks for one', (await row.getByRole('status').innerText()).includes('Needs'));
+    await page.keyboard.press('Tab');
+    await page.waitForTimeout(150);
+    report('rebind: Tab leaves the capture', (await row.locator('.cx-chord-capture').count()) === 0);
+    await row.getByRole('button', { name: /restore the default/i }).click();
+    await page.waitForTimeout(300);
+    report('rebind: restore goes back to the default', (await shown(row)) === 'Ctrl+Alt+T');
+    await context.close();
+  }
+  {
+    const { page, row, context } = await open({
+      shortcutFailure: { meetings: 'taken' },
+      shortcutConflict: { agenda: 'Fixture Terminal' },
+      wayland: true,
+    });
+    report('startup: a failed chord is visible on its row', (await row.getByRole('alert').count()) === 1);
+    report('startup: the app says so outside Settings too', (await page.getByRole('alert').filter({ hasText: /may not work/ }).count()) === 1);
+    const agenda = page.locator('.cx-settings-row:has(#shortcut-agenda-title)');
+    report('conflict: the owner the desktop declares is named', /Fixture Terminal/.test(await agenda.innerText()));
+    report('wayland: the page says accepted is not proof', (await page.getByText(/does not prove the key arrives/).count()) === 1);
+    await context.close();
+  }
+  {
+    const { page, context } = await open();
+    report('list: Settings lists the in-app shortcuts', (await page.locator('[data-shortcut="board.remove"]').count()) === 1);
+    report('list: no failure notice when nothing failed', (await page.getByRole('alert').count()) === 0);
+    await context.close();
+  }
+}
+
+/** Moving a note to the trash from the side editor, with the board's undo (spec 0128). */
+async function sideEditorTrash() {
+  const { page, context } = await openApp(browser, {
     url: server.url,
-    route,
+    route: '/workspace',
     viewport: { width: 1400, height: 900 },
     locale: 'en',
   });
-const wait = (page, ms = 450) => page.waitForTimeout(ms);
-const palette = (page) => page.locator('[role="dialog"] [role="combobox"]').count();
+  await page.waitForSelector('.react-flow__node-card');
+  await page.waitForTimeout(500);
+  const nodes = () => page.locator('.react-flow__node').count();
+  const total = await nodes();
+  const box = await page.locator('.react-flow__node-card').first().boundingBox();
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  await page.waitForSelector('[contenteditable="true"]', { timeout: 15000 });
+  let dialog = false;
+  page.on('dialog', async (shown) => {
+    dialog = true;
+    await shown.dismiss();
+  });
+  await page.getByTestId('note-actions-trigger').click();
+  await page.getByRole('menuitem', { name: /move to trash/i }).click();
+  await page.waitForTimeout(450);
+  report('trash: no native dialog', !dialog);
+  report('trash: the card leaves the board', (await nodes()) === total - 1);
+  report('trash: the side editor closes', (await page.locator('.ws-editor').count()) === 0);
+  await page.locator('.ws-undo').getByRole('button').click();
+  await page.waitForTimeout(450);
+  report('trash: undo brings the card back', (await nodes()) === total);
+  await context.close();
+}
 
 try {
-  // Palette, from any screen.
-  {
-    const { page } = await open('/meetings');
-    await wait(page, 900);
-    for (const combo of ['Control+k', 'Control+p']) {
-      await page.keyboard.press(combo);
-      await wait(page);
-      check(`${combo} opens the palette`, (await palette(page)) === 1);
-      await page.keyboard.press('Escape');
-      await wait(page);
-      check(`Escape closes the palette opened by ${combo}`, (await palette(page)) === 0);
+  const first = await openApp(browser, {
+    url: server.url,
+    route: '/settings/shortcuts',
+    viewport: { width: 1400, height: 900 },
+    locale: 'en',
+  });
+  // Read through Vite, as the app does: nothing here restates the table.
+  const table = await first.page.evaluate(
+    async () => (await import('/src/lib/shortcuts/table.ts')).SHORTCUTS
+  );
+  await first.context.close();
+  report(`the table has ${table.length} shortcuts`, table.length > 0);
+
+  for (const entry of table) {
+    if (!PROBES[entry.id]) {
+      report(`${entry.id}: has a probe`, false);
+      continue;
     }
+    for (const chord of entry.keys) await runProbe(entry, chord);
   }
-
-  // Board.
-  {
-    const { page, errors } = await open('/workspace');
-    await page.waitForSelector('.react-flow__node-card');
-    const nodes = () => page.locator('.react-flow__node').count();
-    const edges = () => page.locator('.react-flow__edge').count();
-    const select = async (kind) => {
-      const box = await page.locator(`.react-flow__node-${kind}`).first().boundingBox();
-      await page.mouse.click(
-        box.x + box.width / 2,
-        box.y + (kind === 'area' ? 12 : box.height / 2)
-      );
-      await wait(page, 300);
-    };
-    const deselect = async () => {
-      await page.keyboard.press('Escape');
-      await wait(page, 200);
-    };
-    const total = await nodes();
-
-    await select('card');
-    await page.keyboard.press('Delete');
-    await wait(page);
-    check(
-      'Delete removes the selected card',
-      (await nodes()) === total - 1,
-      `${total} -> ${await nodes()}`
-    );
-    await page.keyboard.press('Control+z');
-    await wait(page);
-    check('Ctrl+Z restores it', (await nodes()) === total);
-
-    await deselect();
-    await select('card');
-    await page.keyboard.press('Backspace');
-    await wait(page);
-    check('Backspace removes the selected card', (await nodes()) === total - 1);
-    await page.keyboard.press('Control+z');
-    await wait(page);
-
-    await deselect();
-    await select('area');
-    await page.keyboard.press('Delete');
-    await wait(page);
-    check('Delete removes the selected area', (await nodes()) === total - 1);
-    await page.keyboard.press('Control+z');
-    await wait(page);
-    check('Ctrl+Z restores the area', (await nodes()) === total);
-
-    await deselect();
-    await select('area');
-    const field = page.getByRole('textbox', { name: /area name/i });
-    await field.focus();
-    await page.keyboard.press('End');
-    await page.keyboard.press('Delete');
-    await page.keyboard.press('1');
-    await wait(page);
-    check('Delete and 1 in a text field stay in the text', (await nodes()) === total);
-    await page.keyboard.press('Escape');
-    await wait(page, 300);
-    check('Escape closes the side editor', (await field.count()) === 0);
-
-    await page.mouse.click(1000, 800);
-    await wait(page, 300);
-    const links = await edges();
-    await page.locator('.react-flow__edge').first().dispatchEvent('click');
-    await wait(page, 300);
-    await page.keyboard.press('Delete');
-    await wait(page);
-    check(
-      'Delete on a dependency removes only it',
-      (await edges()) === links - 1 && (await nodes()) === total,
-      `edges ${links} -> ${await edges()}`
-    );
-
-    for (const [key, what] of [
-      ['1', 'note'],
-      ['2', 'activity'],
-      ['3', 'area'],
-    ]) {
-      const before = await nodes();
-      await page.mouse.click(1000, 800);
-      await page.keyboard.press(key);
-      await wait(page);
-      check(
-        `${key} creates a ${what}`,
-        (await nodes()) === before + 1,
-        `${before} -> ${await nodes()}`
-      );
-      await page.keyboard.press('Escape');
-      await wait(page, 300);
-    }
-
-    const real = errors.filter((e) => !e.includes('Transition was skipped'));
-    check('board raised no page errors', real.length === 0, real.join('; '));
-  }
-
-  // Calendar peek.
-  {
-    const { page } = await open('/meetings?view=week');
-    await page.waitForSelector('.mh-week-col [data-row], .mh-week-col button', { timeout: 15000 });
-    await page.locator('.mh-week-col button').first().click();
-    await wait(page);
-    const panels = () => page.locator('.ch-peek').count();
-    check('a block opens the peek', (await panels()) === 1);
-    await page.keyboard.press('Escape');
-    await wait(page);
-    check('Escape closes the peek', (await panels()) === 0);
-  }
-
-  // Note menu: every hint it shows must do what it says.
-  {
-    const { page } = await open('/workspace');
-    await page.waitForSelector('.react-flow__node-card');
-    const box = await page.locator('.react-flow__node-card').first().boundingBox();
-    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-    await page.waitForSelector('[contenteditable="true"]', { timeout: 15000 });
-    await page.locator('[contenteditable="true"]').first().click();
-    await page.keyboard.press('Control+.');
-    await wait(page);
-    const menu = () => page.getByRole('menu').count();
-    check('Ctrl+. opens the note menu', (await menu()) === 1);
-    await page.keyboard.press('Escape');
-    await wait(page);
-    check('Escape closes the note menu', (await menu()) === 0);
-
-    await page.evaluate(() => {
-      window.__clip = [];
-      navigator.clipboard.writeText = async (text) => void window.__clip.push(text);
-    });
-    await page.locator('[contenteditable="true"]').first().click();
-    await page.keyboard.press('Control+l');
-    await wait(page);
-    check(
-      'Ctrl+L copies the note link, as its menu hint says',
-      (await page.evaluate(() => window.__clip.length)) === 1
-    );
-    const created = () => page.evaluate(() => window.__cxCreated ?? 0);
-    const before = await created();
-    await page.keyboard.press('Control+d');
-    await wait(page);
-    check('Ctrl+D duplicates the note, as its menu hint says', (await created()) === before + 1);
-  }
+  for (const id of Object.keys(PROBES))
+    if (!table.some((entry) => entry.id === id)) report(`${id}: is still in the table`, false);
+  await rebinding();
+  await sideEditorTrash();
 } finally {
   await browser.close();
   server.stop();

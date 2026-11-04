@@ -6,6 +6,7 @@ import { BacklinksPanel } from './BacklinksPanel';
 import { NoteHeader } from './NoteHeader';
 import { NoteActionsMenu, type NoteFont } from './NoteActionsMenu';
 import { noteDeletionErrorKey } from '../../lib/noteFileErrors';
+import { shortcutAria, shortcutHint } from '../../lib/shortcuts';
 
 /**
  * `standalone`: full page with header and backlinks column. `embedded`:
@@ -77,7 +78,8 @@ export function NoteEditorFrame({
             aria-label={t('noteMenu.open')}
             aria-haspopup="menu"
             aria-expanded={menuOpen}
-            title={`${t('noteMenu.open')} (Ctrl+.)`}
+            aria-keyshortcuts={shortcutAria('note.menu')}
+            title={`${t('noteMenu.open')} (${shortcutHint('note.menu')})`}
             data-testid="note-actions-trigger"
             className={clsx(
               'z-10 flex items-center gap-1 rounded-md hover:bg-secondary px-2 py-1.5 text-foreground transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
@@ -86,7 +88,7 @@ export function NoteEditorFrame({
           >
             <MoreHorizontal size={16} aria-hidden="true" />
             <kbd className="hidden sm:inline-block font-mono text-[0.625rem] text-muted-foreground">
-              {/Mac|iPhone|iPad/.test(navigator.platform) ? '⌘.' : 'Ctrl+.'}
+              {shortcutHint('note.menu')}
             </kbd>
           </button>
         </div>

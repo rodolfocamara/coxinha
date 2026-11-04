@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useEscapeLayer } from './shortcuts';
 export type RecoveryReason =
   | 'save_failed'
   | 'attachment_pending'
@@ -24,6 +25,13 @@ export function DesktopRecoveryDialog({
 }) {
   const { t } = useTranslation();
   const dialog = useRef<HTMLDivElement>(null);
+  useEscapeLayer(
+    true,
+    () => {
+      if (!busy) onAction('cancel');
+    },
+    { modal: true }
+  );
   useLayoutEffect(() => {
     dialog.current?.querySelector<HTMLButtonElement>('button')?.focus();
     onPresented();
@@ -45,11 +53,6 @@ export function DesktopRecoveryDialog({
         tabIndex={-1}
         className="max-h-full w-full max-w-lg overflow-auto rounded-lg border bg-background p-6 shadow-xl"
         onKeyDown={(event) => {
-          if (event.key === 'Escape') {
-            event.preventDefault();
-            event.stopPropagation();
-            if (!busy) onAction('cancel');
-          }
           if (event.key === 'Tab') {
             const buttons = [
               ...(dialog.current?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)') ??

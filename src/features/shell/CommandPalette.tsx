@@ -4,6 +4,14 @@ import { useTranslation } from 'react-i18next';
 import { Search } from 'lucide-react';
 
 import { useAppStore } from '../../lib/store';
+import {
+  shortcutHint,
+  shortcutHints,
+  useEscapeLayer,
+  useShortcut,
+  useShortcutScope,
+} from '../../lib/shortcuts';
+import { moveNoteToTrash } from '../notes/trashUndo';
 import { noteDeletionErrorKey } from '../../lib/noteFileErrors';
 import { buildGroups, type Target } from '../search/universalSearch';
 import { useUniversalSearch } from '../search/useUniversalSearch';
@@ -25,13 +33,11 @@ interface Props {
   onClose: () => void;
 }
 
-const isMac = () => typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
-
 /**
  * Ctrl+K overlay (specs 0096, 0122): actions, every rail destination and the
  * universal search over notes, meetings, transcripts and people. Note rows
- * open in the Workspace; the trash button and Ctrl+Backspace delete with
- * confirmation.
+ * open in the Workspace; the trash button and Mod+Backspace move the note to
+ * the trash, with an undo.
  */
 export function CommandPalette({ open, onClose }: Props) {
   const { t } = useTranslation();
@@ -70,10 +76,9 @@ export function CommandPalette({ open, onClose }: Props) {
     [currentNoteId, notes]
   );
 
-  async function confirmAndDelete(note: { id: string; title: string }) {
-    if (!window.confirm(t('palette.deleteConfirm', { title: note.title || untitled }))) return;
+  async function trash(note: { id: string; title: string }) {
     try {
-      await deleteNote(note.id);
+      await moveNoteToTrash(note, deleteNote);
       setDeleteFailure(null);
       if (note.id === currentNoteId) {
         await navigate({ to: '/workspace' });
@@ -88,7 +93,7 @@ export function CommandPalette({ open, onClose }: Props) {
     open,
     pathname,
     currentNote,
-    onDeleteCurrent: (note) => void confirmAndDelete(note),
+    onDeleteCurrent: (note) => void trash(note),
   });
 
   const settingAction = (entry: SettingsRowEntry): PaletteAction => {
@@ -183,25 +188,24 @@ export function CommandPalette({ open, onClose }: Props) {
     else void openTarget(row.item.target);
   }
 
-  async function onKey(e: React.KeyboardEvent) {
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      dismiss();
-      return;
-    }
+  useShortcutScope('palette', open);
+  useEscapeLayer(open, dismiss, { modal: true, scope: 'palette' });
+  useShortcut(
+    'palette.delete',
+    () => {
+      const row = flat[cursor];
+      const note = row?.kind === 'note' ? notes.find((n) => n.id === row.id) : undefined;
+      if (!note) return false;
+      void trash(note);
+    },
+    { enabled: open }
+  );
+
+  function onKey(e: React.KeyboardEvent) {
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
       e.preventDefault();
       const step = e.key === 'ArrowDown' ? 1 : -1;
       setCursor((v) => Math.min(flat.length - 1, Math.max(0, v + step)));
-      return;
-    }
-    if (e.key === 'Backspace' && (e.ctrlKey || e.metaKey)) {
-      const row = flat[cursor];
-      if (row?.kind === 'note') {
-        e.preventDefault();
-        const note = notes.find((n) => n.id === row.id);
-        if (note) await confirmAndDelete({ id: note.id, title: note.title });
-      }
       return;
     }
     if (e.key === 'Enter' && flat[cursor]) {
@@ -211,8 +215,6 @@ export function CommandPalette({ open, onClose }: Props) {
   }
 
   if (!open) return null;
-
-  const mod = isMac() ? '⌘' : 'Ctrl';
 
   return (
     <div
@@ -243,7 +245,7 @@ export function CommandPalette({ open, onClose }: Props) {
             aria-label={t('people.palette.placeholder')}
             className="flex-1 bg-transparent text-[0.9375rem] text-foreground outline-none placeholder:text-muted-foreground"
           />
-          <kbd className="cx-kbd">Esc</kbd>
+          <kbd className="cx-kbd">{shortcutHint('layer.close')}</kbd>
         </div>
 
         {deleteFailure && (
@@ -265,7 +267,7 @@ export function CommandPalette({ open, onClose }: Props) {
             onPick={pick}
             onDelete={(id) => {
               const note = notes.find((n) => n.id === id);
-              if (note) void confirmAndDelete({ id: note.id, title: note.title });
+              if (note) void trash(note);
             }}
           />
         </div>
@@ -279,17 +281,24 @@ export function CommandPalette({ open, onClose }: Props) {
 
         <div className="flex gap-3.5 border-t border-border px-3.5 py-2 text-[0.6875rem] text-muted-foreground">
           <span>
-            <kbd className="cx-kbd">↑</kbd>
-            <kbd className="cx-kbd ml-0.5">↓</kbd> {t('people.palette.hints.navigate')}
+            {shortcutHints('palette.move').map((hint, index) => (
+              <kbd key={hint} className={index ? 'cx-kbd ml-0.5' : 'cx-kbd'}>
+                {hint}
+              </kbd>
+            ))}{' '}
+            {t('people.palette.hints.navigate')}
           </span>
           <span>
-            <kbd className="cx-kbd">↵</kbd> {t('people.palette.hints.open')}
+            <kbd className="cx-kbd">{shortcutHint('palette.open')}</kbd>{' '}
+            {t('people.palette.hints.open')}
           </span>
           <span>
-            <kbd className="cx-kbd">{mod}⌫</kbd> {t('people.palette.hints.delete')}
+            <kbd className="cx-kbd">{shortcutHint('palette.delete')}</kbd>{' '}
+            {t('people.palette.hints.delete')}
           </span>
           <span>
-            <kbd className="cx-kbd">Esc</kbd> {t('people.palette.hints.close')}
+            <kbd className="cx-kbd">{shortcutHint('layer.close')}</kbd>{' '}
+            {t('people.palette.hints.close')}
           </span>
         </div>
       </div>

@@ -234,7 +234,6 @@ it('refreshes acknowledged metadata without reparsing the editor document', asyn
 it('reports failed deletion locally and retains the source editor', async () => {
   mocks.editor.tryParseMarkdownToBlocks.mockResolvedValue(['loaded']);
   mocks.delete.mockRejectedValue(new Error('delete unavailable'));
-  const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
   await act(async () => {
     render(<NoteEditor noteId="editor-load" content={content} />);
   });
@@ -243,7 +242,6 @@ it('reports failed deletion locally and retains the source editor', async () => 
   });
   expect(screen.getByRole('alert')).toHaveTextContent('editor.deleteFailed');
   expect(screen.getByTestId('editable')).toBeInTheDocument();
-  confirm.mockRestore();
 });
 it('releases a pending upload only when its previously observed owner block is removed', async () => {
   mocks.editor.tryParseMarkdownToBlocks.mockResolvedValue(['loaded']);
@@ -385,7 +383,6 @@ it.each([
   mocks.editor.blocksToMarkdownLossy.mockReturnValue('# Unchanged editor');
   mocks.editor.tryParseMarkdownToBlocks.mockResolvedValue(['loaded']);
   mocks.delete.mockRejectedValue(new Error(code));
-  const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
   try {
     render(<NoteEditor noteId="editor-load" content={content} />);
     await waitFor(() =>
@@ -398,6 +395,5 @@ it.each([
     expect(screen.getByTestId('editable')).toBeInTheDocument();
     expect(mocks.save).not.toHaveBeenCalled();
   } finally {
-    confirm.mockRestore();
   }
 });

@@ -45,6 +45,7 @@ export const SETTINGS_ROWS: readonly SettingsRowEntry[] = [
   row('shortcuts', 'shortcut-agenda', 'settings.shortcuts.action.agenda'),
   row('shortcuts', 'shortcut-meetings', 'settings.shortcuts.action.meetings'),
   row('shortcuts', 'shortcut-toggle_recording', `${P}.shortcuts.toggleRecording`),
+  row('shortcuts', 'shortcuts-all', 'shortcuts.settings.all', undefined, 'shortcuts-all-heading'),
   row('recording', 'mic', `${P}.mic.title`, `${P}.mic.hint`),
   row('recording', 'output', `${P}.output.title`, `${P}.output.hint`),
   row('recording', 'detection', `${P}.detection.title`, `${P}.detection.hint`, 'detection-heading'),

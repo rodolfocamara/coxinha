@@ -1,34 +1,29 @@
 import { useEffect, useRef, useState } from 'react';
+import { useShortcut } from '../../lib/shortcuts';
 import { useAppStore } from '../../lib/store';
+import { TRASH_UNDO_MS } from '../notes/trashUndo';
 import { boardSession } from '../board/persistence';
 import type { Board, BoardItem } from '../board/model';
-
-const UNDO_MS = 8000;
-
-/** Fields keep Delete and Backspace for their text. */
-function typing(target: EventTarget | null) {
-  return (
-    target instanceof Element &&
-    !!target.closest('input, textarea, select, [contenteditable="true"], [role="textbox"]')
-  );
-}
 
 type Removed = { board: Board; title: string; noteId: string | null };
 
 /**
  * Delete or Backspace removes the selected item, as in Excalidraw (spec 0112
  * P3). An activity or note goes with its note file to `.coxinha/trash/`; an
- * area only leaves the board. Undo (button or Ctrl+Z) restores both.
+ * area only leaves the board. Undo (button or Mod+Z) restores both.
  */
 export function useRemoveShortcut({
   selected,
   remove,
+  removeNote,
   title,
   onError,
 }: {
   selected: BoardItem | null;
   /** Takes the item, and every card of its note, off the board and closes the editor. */
   remove: (item: BoardItem) => void;
+  /** The same for a note the side editor shows, on the board or not. */
+  removeNote: (noteId: string) => void;
   title: (item: BoardItem) => string;
   onError: (error: unknown) => void;
 }) {
@@ -36,25 +31,21 @@ export function useRemoveShortcut({
   const restoreNote = useAppStore((s) => s.restoreNote);
   const [removed, setRemoved] = useState<Removed | null>(null);
   const busy = useRef(false);
-  const latest = useRef({ selected, remove, title, removed, onError, deleteNote, restoreNote });
-  latest.current = { selected, remove, title, removed, onError, deleteNote, restoreNote };
 
   useEffect(() => {
     if (!removed) return;
-    const timer = setTimeout(() => setRemoved(null), UNDO_MS);
+    const timer = setTimeout(() => setRemoved(null), TRASH_UNDO_MS);
     return () => clearTimeout(timer);
   }, [removed]);
 
-  async function removeSelected() {
-    const { selected, remove, title, onError, deleteNote } = latest.current;
+  async function take(what: { title: string; noteId: string | null; remove: () => void }) {
     const board = boardSession.get();
-    if (!selected || !board || busy.current) return;
+    if (!board || busy.current) return;
     busy.current = true;
-    const noteId = selected.kind === 'area' ? null : selected.noteId;
-    remove(selected);
+    what.remove();
     try {
-      if (noteId) await deleteNote(noteId);
-      setRemoved({ board, title: title(selected), noteId });
+      if (what.noteId) await deleteNote(what.noteId);
+      setRemoved({ board, title: what.title, noteId: what.noteId });
     } catch (error) {
       // The note stays (a meeting's own note, a file in use): so does its card.
       const current = boardSession.get();
@@ -66,8 +57,8 @@ export function useRemoveShortcut({
   }
 
   async function undo() {
-    const { removed: snapshot, restoreNote, onError } = latest.current;
-    if (!snapshot || busy.current) return;
+    if (!removed || busy.current) return;
+    const snapshot = removed;
     busy.current = true;
     setRemoved(null);
     try {
@@ -92,29 +83,25 @@ export function useRemoveShortcut({
     }
   }
 
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (event.defaultPrevented || typing(event.target)) return;
-      if (
-        (event.ctrlKey || event.metaKey) &&
-        event.key.toLowerCase() === 'z' &&
-        latest.current.removed
-      ) {
-        event.preventDefault();
-        void undo();
-        return;
-      }
-      if ((event.key !== 'Delete' && event.key !== 'Backspace') || !latest.current.selected) return;
-      event.preventDefault();
-      void removeSelected();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, []);
+  useShortcut('board.undo', () => void undo(), { enabled: !!removed });
+  useShortcut(
+    'board.remove',
+    () => {
+      if (!selected) return;
+      void take({
+        title: title(selected),
+        noteId: selected.kind === 'area' ? null : selected.noteId,
+        remove: () => remove(selected),
+      });
+    },
+    { enabled: !!selected }
+  );
 
   return {
     removed: removed ? { title: removed.title, trashed: !!removed.noteId } : null,
     undo: () => void undo(),
+    trashNote: (noteId: string, noteTitle: string) =>
+      take({ title: noteTitle, noteId, remove: () => removeNote(noteId) }),
   };
 }
 

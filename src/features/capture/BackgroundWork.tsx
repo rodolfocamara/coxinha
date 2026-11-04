@@ -1,6 +1,7 @@
 import { Mic, PhoneOff, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../components/ui';
+import { formatChord, useSystemChord } from '../../lib/shortcuts';
 import { dismissEndedWithCall } from './autoRecord';
 import { quickCaptureTitle } from '../../components/Shell/NavRail';
 import { toggleCapture } from './captureActions';
@@ -41,13 +42,14 @@ export function BackgroundLine({ text }: { text: string }) {
 export function RecordButton() {
   const { t } = useTranslation();
   const busy = useCaptureStore((s) => !!s.busy);
+  const chord = useSystemChord('toggle_recording');
   return (
     <Button
       size="xs"
       variant="primary"
       icon={<Mic size={13} aria-hidden="true" />}
       disabled={busy}
-      title={t('shell.record.startHint')}
+      title={t('shell.record.startHint', { keys: formatChord(chord) })}
       onClick={() => void toggleCapture(quickCaptureTitle(t('shell.record.quickTitle')))}
     >
       {t('recorder.record')}
