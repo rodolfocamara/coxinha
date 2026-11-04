@@ -1,0 +1,93 @@
+@layer theme, base, components, utilities;
+
+/* Month grid of the calendar (specs 0096, 0104). */
+@layer components {
+  .mh-month-grid {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .mh-month-grid th {
+    padding: 0.5rem 0.625rem;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    text-align: left;
+    color: var(--color-muted-foreground);
+  }
+  .mh-month-grid td {
+    height: 6rem;
+    padding: 0.375rem;
+    vertical-align: top;
+    border-top: 1px solid var(--color-border);
+    border-left: 1px solid var(--color-border);
+  }
+  .mh-month-grid td:first-child {
+    border-left: 0;
+  }
+  .mh-month-grid td[data-outside] {
+    opacity: 0.4;
+  }
+  .mh-day-n {
+    display: inline-grid;
+    place-items: center;
+    min-width: 1.375rem;
+    height: 1.375rem;
+    margin-bottom: 2px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    color: var(--color-muted-foreground);
+  }
+  .mh-month-grid td[aria-current='date'] .mh-day-n {
+    background: var(--color-primary);
+    color: var(--color-primary-foreground);
+    font-weight: 600;
+  }
+  .mh-month-ev {
+    display: flex;
+    align-items: center;
+    gap: 0.3125rem;
+    width: 100%;
+    margin-top: 2px;
+    padding: 2px 0.3125rem;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: inherit;
+    font-size: 0.71875rem;
+    text-align: left;
+    cursor: pointer;
+  }
+  .mh-month-ev:hover {
+    background: var(--color-secondary);
+  }
+  .mh-month-ev[data-category] {
+    background: var(--cx-cat-bg);
+  }
+  .mh-month-ev[data-category]:hover {
+    background: color-mix(in oklab, var(--cx-cat-bg) 88%, var(--color-foreground));
+  }
+  /* Spec 0124 P3. */
+  .mh-month-ev[data-look='declined'] {
+    background: none;
+    color: var(--color-muted-foreground);
+    text-decoration: line-through;
+  }
+  .mh-month-ev[data-look='tentative'] {
+    background-image: repeating-linear-gradient(135deg, var(--cx-hatch) 0 4px, transparent 4px 8px);
+  }
+  .mh-month-ev[data-look='free'] {
+    background: none;
+    box-shadow: inset 0 0 0 1px var(--color-border);
+  }
+  .mh-month-ev:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: -1px;
+  }
+  /* A filled blue dot would read as Outlook's blue category (spec 0103). */
+  .mh-month-body .mh-dot[data-tone='info'] {
+    background: transparent;
+    box-shadow: inset 0 0 0 1.5px var(--color-info);
+  }
+}

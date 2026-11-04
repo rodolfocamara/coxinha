@@ -1,0 +1,19 @@
+{
+  "provenance": "In-memory SQLite using actual coxinha-core/src/schema.sql; public synthetic rows only",
+  "schema_sha256": "d348b93f76d84562d38ec031c4088bd92242218a8900dc08159a23728a7aa0c5",
+  "default_sample": "2026-10-25 08:01:11",
+  "cases": [
+    {
+      "utc": "2026-10-25T01:55:00Z",
+      "createdAt": "2026-10-25 01:55:00"
+    },
+    {
+      "utc": "2026-10-25T07:55:00Z",
+      "createdAt": "2026-10-25 07:55:00"
+    },
+    {
+      "utc": "2024-02-29T23:59:59Z",
+      "createdAt": "2024-02-29 23:59:59"
+    }
+  ]
+}

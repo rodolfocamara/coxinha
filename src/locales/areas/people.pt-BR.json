@@ -1,0 +1,365 @@
+{
+  "people": {
+    "title": "Pessoas",
+    "add": "Adicionar",
+    "refresh": "Atualizar lista",
+    "search": "Buscar pessoa",
+    "listLabel": "Pessoas",
+    "created": "Cadastro de {{name}} criado.",
+    "noMatch": "Ninguém com esse nome entre as pessoas carregadas.",
+    "loadMore": "Carregar mais pessoas",
+    "restart": "Recomeçar",
+    "retry": "Tentar de novo",
+    "row": {
+      "samples_one": "{{count}} amostra de voz",
+      "samples_other": "{{count}} amostras de voz",
+      "samplesPartial": "{{count}}+ amostras de voz",
+      "noSamples": "sem amostras",
+      "unknown": "abra para ver as amostras",
+      "meetings_one": "{{count}} reunião",
+      "meetings_other": "{{count}} reuniões",
+      "meetingsLabel": "Reuniões com amostras de voz"
+    },
+    "detail": {
+      "pick": "Escolha uma pessoa para ver as amostras de voz.",
+      "inMeetings_one": "em {{count}} reunião",
+      "inMeetings_other": "em {{count}} reuniões",
+      "samplesTitle": "Amostras de voz",
+      "samplesHint": "usadas só para sugerir quem fala",
+      "noSamples": "Nenhuma amostra de voz ainda. Elas são guardadas quando você confirma quem fala numa reunião e escolhe amostras para lembrar.",
+      "loadMore": "Carregar mais amostras",
+      "technical": "Detalhes técnicos",
+      "refresh": "Atualizar",
+      "revoked_one": "{{count}} revogada",
+      "revoked_other": "{{count}} revogadas",
+      "invalidated_one": "{{count}} invalidada",
+      "invalidated_other": "{{count}} invalidadas"
+    },
+    "sample": {
+      "saved": "guardada em {{date}}",
+      "unknownMeeting": "Gravação",
+      "listen": "Ouvir amostra",
+      "stop": "Parar de ouvir",
+      "playError": "Não deu para tocar esta amostra.",
+      "revoke": "Revogar",
+      "states": {
+        "revoked": "revogada",
+        "invalidated": "invalidada"
+      }
+    },
+    "revoke": {
+      "title": "Revogar esta amostra?",
+      "body": "Ela deixa de ser usada para sugerir quem fala. A gravação e o histórico continuam.",
+      "reason": "Motivo",
+      "reasonHint": "Obrigatório, uma linha curta.",
+      "confirm": "Revogar amostra",
+      "cancel": "Cancelar"
+    },
+    "inspector": {
+      "recent": "Reuniões recentes",
+      "none": "Nenhuma reunião com amostras ainda.",
+      "privacyTitle": "Privacidade",
+      "privacy": "As amostras ficam neste computador. Revogar uma amostra para de usá-la em sugestões.",
+      "teachTitle": "Como ensinar uma voz"
+    },
+    "settings": {
+      "title": "Ajustes",
+      "sectionsLabel": "Seções dos ajustes",
+      "sections": {
+        "appearance": "Aparência",
+        "recording": "Gravação",
+        "transcription": "Transcrição",
+        "integrations": "Integrações",
+        "shortcuts": "Atalhos",
+        "storage": "Armazenamento",
+        "diagnostics": "Diagnóstico",
+        "calendar": "Agenda",
+        "titles": "Títulos e resumos"
+      },
+      "descriptions": {
+        "appearance": "Tema, cores, texto e idioma. Salvo neste computador.",
+        "recording": "Valem para o botão de gravar, para as reuniões e para chamadas detectadas.",
+        "transcription": "Roda neste computador, nada é enviado para fora.",
+        "integrations": "Opcional. Nada sai do computador sem você conectar.",
+        "shortcuts": "Mude os atalhos que valem em todo o computador e veja todos os outros.",
+        "storage": "Suas notas são arquivos Markdown nesta pasta.",
+        "diagnostics": "Texto para colar ao relatar um problema.",
+        "calendar": "Fusos na grade da semana e fotos dos convidados. Ficam neste computador.",
+        "titles": "Com o seu próprio servidor via SSH. Envia texto da transcrição, nunca áudio."
+      },
+      "theme": {
+        "title": "Tema",
+        "hint": "Automático segue o sistema.",
+        "auto": "Automático",
+        "light": "Claro",
+        "dark": "Escuro"
+      },
+      "ambient": {
+        "title": "Fundo com gradiente",
+        "hint": "Desligue para um fundo liso."
+      },
+      "mic": {
+        "title": "Microfone",
+        "hint": "Sua voz."
+      },
+      "output": {
+        "title": "Áudio do computador",
+        "hint": "O que os outros falam na chamada."
+      },
+      "devices": {
+        "systemDefault": "{{name}} (padrão do sistema)",
+        "none": "Nenhum dispositivo encontrado",
+        "loading": "Procurando dispositivos…",
+        "error": "Não deu para listar os dispositivos de áudio.",
+        "retry": "Tentar de novo",
+        "liveNote": "A gravação atual continua com os dispositivos de quando começou; a troca vale para a próxima."
+      },
+      "detection": {
+        "title": "Avisar quando uma chamada começar",
+        "hint": "Teams, Meet, Zoom. Linux com PipeWire ou PulseAudio."
+      },
+      "transcription": {
+        "engine": "Transcrição",
+        "diarizer": "Separação de falantes",
+        "configured": "Configurada",
+        "notConfigured": "Não configurada",
+        "perMeeting": "Cada reunião escolhe os modelos na aba Transcrição.",
+        "noDefault": "Nenhum modelo padrão nos ajustes do app."
+      },
+      "storage": {
+        "folder": "Pasta das notas"
+      },
+      "diagnostics": {
+        "title": "Informações de diagnóstico"
+      },
+      "shortcuts": {
+        "toggleRecording": "Gravar ou parar a gravação"
+      },
+      "autoRecord": {
+        "title": "Gravar chamadas automaticamente",
+        "hint": "Começa a gravar quando uma chamada é detectada, mesmo com a janela fechada. Avise os participantes: você é responsável pela gravação. O Coxinha mostra REC e uma notificação a cada gravação.",
+        "stopTitle": "Parar quando a chamada terminar",
+        "stopHint": "Toda gravação feita durante uma chamada para um minuto depois do fim dela, quando ninguém fala no microfone. A faixa mostra a contagem para você continuar, se quiser.",
+        "needsDetection": "Ligar a gravação automática também liga o aviso de chamadas."
+      },
+      "live": {
+        "title": "Transcrever durante a chamada",
+        "hint": "Usa o Tagarela neste computador enquanto grava. O texto é provisório e nada sai da máquina.",
+        "needsModel": "Nenhum modelo encontrado neste computador. Baixe o Parakeet v3 público (740 MB, CC-BY-4.0) ou escolha um arquivo abaixo.",
+        "model": "Modelo Tagarela",
+        "modelHint": "Arquivo .gguf do Parakeet pt-BR. Só leitura: o Coxinha nunca altera o arquivo do Handy.",
+        "useHandy": "Usar o do Handy",
+        "threads": "Threads da transcrição",
+        "threadsHint": "Menos threads deixam mais CPU para a chamada e para o Handy.",
+        "backlog": "Transcrever gravações anteriores",
+        "backlogHint": "Quando nada estiver gravando, transcreve sozinho as reuniões que ainda não têm transcrição completa, da mais nova para a mais antiga, e depois separa quem falou. Uma chamada ou um processamento passam na frente.",
+        "download": "Baixar modelo",
+        "downloading": "Baixando… {{percent}}%"
+      },
+      "titles": {
+        "title": "Título sugerido",
+        "hint": "Gera o título das gravações automáticas sem evento na agenda, com o seu servidor via SSH.",
+        "target": "Destino SSH",
+        "port": "Porta",
+        "model": "Modelo",
+        "privacy": "Envia só trechos de texto da transcrição, nunca áudio.",
+        "test": "Testar",
+        "testing": "Testando…",
+        "testOk": "Funcionou: {{title}}",
+        "testFailed": "Não funcionou: {{error}}",
+        "summaries": "Gerar resumos",
+        "summariesPrivacy": "Depois de cada transcrição, envia o texto inteiro da transcrição, em partes, para este mesmo servidor escrever um resumo com decisões e ações. Desligado por padrão; nunca áudio.",
+        "server": "Seu servidor",
+        "whatItDoes": "O que ele faz",
+        "testTitle": "Testar o servidor"
+      },
+      "zones": {
+        "title": "Fusos horários extras",
+        "hint": "Aparecem ao lado das horas nas visões de dia e semana, até {{count}}.",
+        "localTitle": "Rótulo do fuso deste computador",
+        "localHint": "Encabeça a coluna de horas quando há fusos extras. Vazio usa o código do país.",
+        "search": "País ou cidade",
+        "placeholder": "Israel, México, Lisboa",
+        "results": "Fusos encontrados",
+        "noResults": "Nada encontrado. Tente o país em inglês ou uma cidade.",
+        "pick": "Adicionar {{name}}",
+        "labelFor": "Rótulo de {{name}}",
+        "full": "Remova um fuso para adicionar outro.",
+        "up": "Subir {{name}}",
+        "down": "Descer {{name}}",
+        "remove": "Remover {{name}}"
+      },
+      "accent": {
+        "title": "Cor de destaque",
+        "hint": "Botões, item ativo e foco. As categorias do Outlook mantêm as cores delas.",
+        "tangerine": "Tangerina",
+        "blue": "Azul",
+        "teal": "Verde-azulado",
+        "green": "Verde",
+        "violet": "Violeta",
+        "pink": "Rosa",
+        "graphite": "Grafite",
+        "custom": "Cor personalizada",
+        "picker": "Escolher a cor personalizada",
+        "hex": "Cor personalizada em hexadecimal, por exemplo #e8843c",
+        "chosen": "Cor de destaque: {{name}}",
+        "sample": "Botão de exemplo",
+        "readable": "{{ink}} sobre esta cor, contraste {{ratio}}:1.",
+        "darkText": "Texto escuro",
+        "lightText": "Texto claro",
+        "adjusted": "Luminosidade ajustada para aparecer neste tema."
+      },
+      "contrast": {
+        "title": "Contraste",
+        "hint": "Quanto o texto se destaca da página. O texto nunca fica abaixo de um nível legível.",
+        "reset": "Restaurar o contraste",
+        "wasReset": "Contraste de volta a 100%"
+      },
+      "fontSize": {
+        "title": "Tamanho da fonte da interface",
+        "hint": "Texto, controles e agenda crescem juntos. 16 é o tamanho original.",
+        "reset": "Restaurar o tamanho da fonte",
+        "wasReset": "Tamanho da fonte de volta a 16 px"
+      },
+      "fontFamilyDefault": "Fonte do sistema",
+      "fontSans": {
+        "title": "Fonte da interface",
+        "hint": "Nomes de fontes instaladas, separados por vírgula."
+      },
+      "fontMono": {
+        "title": "Fonte monoespaçada",
+        "hint": "Para atalhos, caminhos e notas na fonte mono."
+      },
+      "language": {
+        "title": "Idioma",
+        "hint": "Automático segue o sistema. A bandeja e as notificações mudam na próxima abertura.",
+        "auto": "Automático",
+        "ptBR": "Português (Brasil)",
+        "en": "English",
+        "changed": "Idioma: {{language}}"
+      },
+      "groups": {
+        "app": "App",
+        "meetings": "Reuniões",
+        "connections": "Conexões",
+        "system": "Sistema",
+        "themeAndColour": "Tema e cor",
+        "text": "Texto",
+        "devices": "Dispositivos",
+        "calls": "Chamadas",
+        "automatic": "Automática",
+        "meetingModels": "Modelos das reuniões"
+      },
+      "filter": {
+        "label": "Buscar um ajuste",
+        "placeholder": "Buscar um ajuste",
+        "results": "Ajustes encontrados",
+        "none": "Nenhum ajuste encontrado.",
+        "found_one": "{{count}} ajuste encontrado",
+        "found_other": "{{count}} ajustes encontrados"
+      },
+      "keywords": {
+        "theme": "modo escuro claro dark light",
+        "accent": "cor botão",
+        "fontSize": "zoom letra maior menor texto",
+        "contrast": "legibilidade",
+        "fontSans": "tipografia letra",
+        "fontMono": "código tipografia",
+        "language": "português inglês locale",
+        "mic": "entrada voz áudio dispositivo",
+        "output": "saída alto-falante som dispositivo",
+        "detection": "teams meet zoom notificação",
+        "auto-record": "gravar automático sozinho",
+        "live": "tagarela parakeet tempo real",
+        "live-model": "parakeet gguf handy",
+        "live-threads": "cpu desempenho",
+        "transcriber": "whisper parakeet modelo",
+        "diarizer": "pyannote speakrs quem falou",
+        "time-zones": "fuso timezone relógio",
+        "local-zone": "fuso timezone",
+        "outlook": "microsoft calendário conta",
+        "titles-target": "ssh host",
+        "suggest-titles": "ia llm ssh",
+        "summaries": "ia llm ssh",
+        "vault": "obsidian markdown caminho",
+        "rebuild": "índice reindexar",
+        "diagnostics": "log versão build",
+        "directory-photos": "rostos avatares imagens Microsoft 365"
+      },
+      "directoryPhotos": {
+        "title": "Fotos dos convidados",
+        "hint": "Mostra a foto de perfil do Microsoft 365 das pessoas que você importou dos convidados das suas reuniões.",
+        "privacy": "Ligar abre um novo login da Microsoft que pede mais uma permissão, User.ReadBasic.All: ler o perfil básico (nome, e-mail e foto) das pessoas da sua organização. O Coxinha só a usa para buscar a foto de pessoas importadas de convidados com endereço na sua organização, no máximo uma vez por semana. As fotos ficam neste computador, na pasta privada da biblioteca, nunca nas notas. Desligar interrompe os pedidos e apaga todas as fotos. A permissão em si continua na sua conta Microsoft até você removê-la em Meus Aplicativos.",
+        "connectFirst": "Conecte o Outlook em Integrações primeiro.",
+        "stored_one": "Ligado. {{count}} foto guardada neste computador.",
+        "stored_other": "Ligado. {{count}} fotos guardadas neste computador.",
+        "waiting": "Aguardando sua resposta na página da Microsoft.",
+        "cancel": "Cancelar",
+        "reconnect": "Entrar de novo",
+        "statusError": "Não foi possível ler o estado das fotos.",
+        "disableError": "Não foi possível apagar as fotos. Tente de novo."
+      }
+    },
+    "palette": {
+      "title": "Paleta de comandos",
+      "placeholder": "Buscar notas, reuniões, transcrições, pessoas ou executar uma ação",
+      "groups": {
+        "actions": "Ações",
+        "goTo": "Ir para",
+        "notes": "Notas",
+        "settings": "Ajustes"
+      },
+      "actions": {
+        "record": "Gravar agora",
+        "stop": "Parar gravação",
+        "newMeeting": "Nova reunião",
+        "newNote": "Nova nota",
+        "importAudio": "Importar áudio",
+        "toggleTheme": "Alternar tema claro ou escuro",
+        "deleteCurrentNote": "Excluir esta nota",
+        "deleteNote": "Excluir nota"
+      },
+      "empty": "Nada encontrado para “{{query}}”.",
+      "hints": {
+        "navigate": "navegar",
+        "open": "abrir",
+        "delete": "excluir nota",
+        "close": "fechar"
+      }
+    },
+    "import": {
+      "button": "Importar da agenda",
+      "title": "Importar pessoas da agenda",
+      "description": "Todos os convidados das reuniões da sua agenda que ainda não estão em Pessoas. Só o nome é salvo.",
+      "search": "Buscar participantes",
+      "meetings_one": "{{count}} reunião",
+      "meetings_other": "{{count}} reuniões",
+      "selectAll": "Marcar todos",
+      "selectNone": "Desmarcar todos",
+      "submit_one": "Importar {{count}} pessoa",
+      "submit_other": "Importar {{count}} pessoas",
+      "cancel": "Cancelar",
+      "close": "Fechar",
+      "loading": "Lendo sua agenda…",
+      "noCalendar": "Conecte o Outlook em Ajustes para importar os participantes das suas reuniões.",
+      "empty": "Todos da sua agenda já estão em Pessoas.",
+      "noMatch": "Nenhum participante corresponde à busca.",
+      "consent": "Participante de reuniões da sua agenda",
+      "done": "{{created}} importadas, {{skipped}} já existiam."
+    },
+    "voiceMemory": {
+      "title": "Memória de voz",
+      "forget": "Esquecer a voz",
+      "forgetReason": "Por que esquecer esta voz?",
+      "forgetConfirm": "Esquecer",
+      "cancel": "Cancelar",
+      "off": "Memória de voz desligada. Confirmar esta pessoa não memoriza a voz.",
+      "rememberAgain": "Lembrar a voz de novo",
+      "pending_one": "{{count}} confirmação aguardando para memorizar quando o Coxinha estiver livre",
+      "pending_other": "{{count}} confirmações aguardando para memorizar quando o Coxinha estiver livre",
+      "failed": "Não consegui memorizar uma confirmação em {{meeting}}: {{reason}}",
+      "retry": "Tentar de novo"
+    },
+    "photoAlt": "Foto de {{name}}"
+  }
+}

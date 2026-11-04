@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="8 8 84 84" width="64" height="64">
+<defs>
+  <mask id="cm-m" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100"><rect width="100" height="100" fill="#fff"/><circle cx="80" cy="37" r="14" fill="#000"/></mask>
+  <clipPath id="cm-c"><path d="M50 10 C54.6 10 57.6 13.4 57.6 18 C57.6 22.2 60 27.2 64 33 C68 39 81 50 81 64.5 C81 79.5 68 88 50 88 C32 88 19 79.5 19 64.5 C19 50 32 39 36 33 C40 27.2 42.4 22.2 42.4 18 C42.4 13.4 45.4 10 50 10 Z"/></clipPath>
+</defs>
+<g mask="url(#cm-m)"><path d="M50 10 C54.6 10 57.6 13.4 57.6 18 C57.6 22.2 60 27.2 64 33 C68 39 81 50 81 64.5 C81 79.5 68 88 50 88 C32 88 19 79.5 19 64.5 C19 50 32 39 36 33 C40 27.2 42.4 22.2 42.4 18 C42.4 13.4 45.4 10 50 10 Z" fill="none" stroke="#F69B5A" stroke-width="7.5" stroke-linejoin="round"/></g>
+<g clip-path="url(#cm-c)"><circle cx="80" cy="37" r="14" fill="none" stroke="#F69B5A" stroke-width="7.5"/></g>
+<circle cx="46" cy="64" r="9.375" fill="#F69B5A"/>
+</svg>

@@ -1,0 +1,392 @@
+/* Workspace canvas (spec 0096 P5): areas, activity and note cards, edges. */
+/* Declare Tailwind's layer order first: whichever file loads first fixes it. */
+@layer theme, base, components, utilities;
+@layer components {
+  .ws-canvas {
+    --ws-dot: oklch(var(--fg-primary) / 0.13);
+    --ws-card-bg: oklch(var(--bg-surface));
+    flex: 1;
+    position: relative;
+    min-height: 0;
+    min-width: 0;
+    view-transition-name: ws-canvas;
+  }
+  .ws-canvas .react-flow {
+    --xy-background-color: transparent;
+    --xy-edge-stroke: oklch(var(--fg-quaternary));
+    --xy-edge-stroke-width: 1.5;
+    --xy-edge-stroke-selected: oklch(var(--accent));
+    --xy-controls-button-background-color: var(--ws-card-bg);
+    --xy-controls-button-background-color-hover: var(--color-secondary);
+    --xy-controls-button-color: var(--color-foreground);
+    --xy-controls-button-border-color: var(--color-border);
+    --xy-minimap-background-color: var(--ws-card-bg);
+    --xy-minimap-mask-background-color: oklch(var(--bg-canvas) / 0.6);
+    --xy-node-boxshadow-selected: none;
+    --xy-handle-background-color: var(--ws-card-bg);
+    --xy-handle-border-color: oklch(var(--fg-quaternary));
+  }
+  .ws-canvas .react-flow__node {
+    border: 0;
+    padding: 0;
+    background: none;
+    border-radius: 12px;
+    text-align: left;
+    color: var(--color-foreground);
+  }
+  .ws-canvas .react-flow__node:focus-visible {
+    outline: 2px solid oklch(var(--accent));
+    outline-offset: 2px;
+  }
+  .ws-canvas .react-flow__node-area {
+    border-radius: 16px;
+  }
+
+  /* Card (prototype .bcard): title, excerpt, progress bar, side handles. */
+  .ws-card {
+    position: relative;
+    padding: 0.625rem 0.75rem;
+    border-radius: 12px;
+    background: var(--ws-card-bg);
+    border: 1px solid var(--color-border);
+    box-shadow: 0 1px 2px oklch(0 0 0 / 0.06);
+    cursor: pointer;
+    transition: border-color var(--m-fast);
+  }
+  /* No lift or press scale: the resize handles live inside the card and must not move. */
+  .ws-card:hover {
+    border-color: oklch(var(--fg-primary) / 0.22);
+  }
+  .react-flow__node.selected .ws-card {
+    outline: 2px solid oklch(var(--accent));
+    outline-offset: 1px;
+  }
+  .ws-card-title {
+    margin: 0 0 3px;
+    padding-right: 2.625rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+  .ws-card-note .ws-card-title {
+    font-weight: 550;
+  }
+  .ws-card-excerpt {
+    margin: 0;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: var(--color-muted-foreground);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .ws-card-kind {
+    position: absolute;
+    top: 0.5625rem;
+    right: 0.625rem;
+    display: flex;
+    gap: 0.25rem;
+    align-items: center;
+    font-size: 0.65625rem;
+    color: var(--color-muted-foreground);
+    font-variant-numeric: tabular-nums;
+  }
+  .ws-card-note .ws-card-kind {
+    color: oklch(var(--fg-quaternary));
+  }
+  .ws-card-bar {
+    height: 3px;
+    margin-top: 0.5625rem;
+    border-radius: 2px;
+    background: oklch(var(--fg-primary) / 0.12);
+    overflow: hidden;
+  }
+  .ws-card-bar i {
+    display: block;
+    height: 100%;
+    transform-origin: left;
+  }
+  .ws-card.cx-card-pop .ws-card-kind {
+    animation: cx-pop 280ms var(--e-spring) 60ms both;
+  }
+  .ws-card.cx-card-pop .ws-card-bar i {
+    animation: cx-grow-x var(--m-med) var(--e-out) 80ms both;
+  }
+  .ws-card-quick {
+    position: absolute;
+    left: 0.625rem;
+    bottom: -0.875rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--m-fast);
+  }
+  .ws-card-quick .cx-btn {
+    background: var(--ws-card-bg);
+    box-shadow: 0 2px 8px oklch(0 0 0 / 0.12);
+  }
+  .ws-card:hover .ws-card-quick,
+  .ws-card:focus-within .ws-card-quick,
+  .react-flow__node.selected .ws-card-quick,
+  .react-flow__node:focus-visible .ws-card-quick {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .ws-canvas .react-flow__handle {
+    width: 0.5625rem;
+    height: 0.5625rem;
+    border-width: 1.5px;
+  }
+
+  /* Area (prototype .area): tinted rectangle, heading, aggregated meter. */
+  .ws-area {
+    --area: var(--fg-tertiary);
+    position: absolute;
+    inset: 0;
+    padding: 0.625rem 0.75rem;
+    border-radius: 16px;
+    border: 1px solid oklch(var(--area) / 0.3);
+    background: oklch(var(--area) / 0.05);
+  }
+  .ws-area[data-color='blue'] {
+    --area: var(--info);
+  }
+  .ws-area[data-color='green'] {
+    --area: var(--success);
+  }
+  .ws-area[data-color='orange'] {
+    --area: var(--accent);
+  }
+  .ws-area[data-color='purple'] {
+    --area: 0.6 0.15 300;
+  }
+  .ws-area-heading {
+    margin: 0;
+    display: flex;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .ws-area-heading span {
+    color: var(--color-muted-foreground);
+    font-weight: 400;
+  }
+  .ws-area-meter {
+    height: 3px;
+    margin-top: 0.375rem;
+    max-width: 16.25rem;
+    border-radius: 2px;
+    background: oklch(var(--fg-primary) / 0.12);
+    overflow: hidden;
+  }
+  .ws-area-meter i {
+    display: block;
+    height: 100%;
+  }
+  .ws-area-drop {
+    position: absolute;
+    left: 0.75rem;
+    bottom: 0.625rem;
+    font-size: 0.75rem;
+    color: oklch(var(--accent));
+  }
+  .ws-drop-target .ws-area {
+    border-color: oklch(var(--accent) / 0.6);
+  }
+  .react-flow__node-area.selected .ws-area {
+    outline: 2px solid oklch(var(--accent));
+    outline-offset: 2px;
+  }
+
+  .board-resize-handle {
+    width: 0.625rem !important;
+    height: 0.625rem !important;
+    border-radius: 3px;
+    background: oklch(var(--accent)) !important;
+    border: 1.5px solid var(--ws-card-bg) !important;
+    z-index: 2;
+  }
+  /* A 4px visual handle inside a 16px grip, so a corner is easy to catch. */
+  .board-resize-handle::before {
+    content: '';
+    position: absolute;
+    inset: -0.3125rem;
+  }
+  /* The sides grab 10px wide; the selection outline already draws the edge. */
+  .react-flow__resize-control.line.board-resize-line {
+    border-color: transparent !important;
+  }
+  .react-flow__resize-control.line.board-resize-line.left,
+  .react-flow__resize-control.line.board-resize-line.right {
+    width: 0.625rem;
+    border-left-width: 0;
+    border-right-width: 0;
+  }
+  .react-flow__resize-control.line.board-resize-line.top,
+  .react-flow__resize-control.line.board-resize-line.bottom {
+    height: 0.625rem;
+    border-top-width: 0;
+    border-bottom-width: 0;
+  }
+
+  .ws-canvas .react-flow__controls {
+    border: 1px solid var(--color-border);
+    border-radius: 9px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px oklch(0 0 0 / 0.06);
+  }
+  .ws-canvas .react-flow__controls-button {
+    width: 1.625rem;
+    height: 1.625rem;
+    padding: 0.3125rem;
+  }
+  .ws-canvas .react-flow__minimap {
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    overflow: hidden;
+    width: 132px;
+    height: 86px;
+  }
+  .ws-canvas .react-flow__minimap svg {
+    width: 132px;
+    height: 86px;
+  }
+  .ws-canvas .react-flow__edge.selected .react-flow__edge-path {
+    stroke-width: 2.25;
+  }
+  @container (max-width: 40rem) {
+    .ws-canvas .react-flow__minimap {
+      display: none;
+    }
+  }
+
+  /* Every checklist line of an activity (spec 0112 P4). */
+  .ws-card-tasks {
+    display: grid;
+    gap: 3px;
+    margin: 0.25rem 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.75rem;
+    line-height: 1.35;
+  }
+  .ws-card-tasks li {
+    display: flex;
+    gap: 0.375rem;
+    align-items: flex-start;
+  }
+  .ws-card-tasks svg {
+    flex: none;
+    margin-top: 2px;
+    color: var(--color-muted-foreground);
+  }
+  .ws-card-tasks li[data-done] {
+    color: var(--color-muted-foreground);
+  }
+  .ws-card-tasks li[data-done] > span {
+    text-decoration: line-through;
+  }
+  .ws-card-tasks li[data-done] svg {
+    color: oklch(var(--success));
+  }
+
+  /* The area's name being edited in place. */
+  .ws-area-name {
+    min-width: 0;
+    width: 220px;
+    margin: -3px 0 -3px -0.3125rem;
+    padding: 2px 0.3125rem;
+    border: 1px solid oklch(var(--accent) / 0.6);
+    border-radius: 5px;
+    background: var(--ws-card-bg);
+    color: inherit;
+    font: inherit;
+    outline: none;
+  }
+
+  /* "Saiu do quadro · Desfazer". */
+  .ws-undo {
+    position: absolute;
+    left: 50%;
+    bottom: 1.125rem;
+    z-index: 5;
+    display: flex;
+    gap: 0.625rem;
+    align-items: center;
+    padding: 0.375rem 0.375rem 0.375rem 0.875rem;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    background: var(--ws-card-bg);
+    box-shadow: 0 6px 20px oklch(0 0 0 / 0.18);
+    font-size: 0.8125rem;
+    transform: translateX(-50%);
+  }
+
+  /* Excalidraw-style islands (spec 0112 P6): opaque, they float, so they cast a shadow. */
+  .ws-island {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 0.25rem;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    background: var(--ws-card-bg);
+    box-shadow: 0 2px 10px oklch(0 0 0 / 0.14);
+  }
+  .ws-tools {
+    position: absolute;
+    top: 0.75rem;
+    left: 50%;
+    z-index: 5;
+    transform: translateX(-50%);
+  }
+  .ws-tool {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-width: 2.125rem;
+    height: 2.125rem;
+    padding: 0 0.375rem;
+    border: 0;
+    border-radius: 8px;
+    background: none;
+    color: var(--color-foreground);
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+  }
+  .ws-tool:hover:not(:disabled) {
+    background: var(--color-secondary);
+  }
+  .ws-tool:active:not(:disabled) {
+    background: oklch(var(--accent) / 0.18);
+  }
+  .ws-tool:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 1px;
+  }
+  .ws-tool:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+  .ws-tool kbd {
+    position: absolute;
+    right: 3px;
+    bottom: 1px;
+    font: inherit;
+    font-size: 0.5625rem;
+    color: var(--color-muted-foreground);
+  }
+  .ws-zoom {
+    margin: 0.75rem;
+  }
+  .ws-zoom-level {
+    min-width: 3rem;
+  }
+  .ws-island-sep {
+    width: 1px;
+    height: 1.125rem;
+    margin: 0 3px;
+    background: var(--color-border);
+  }
+}

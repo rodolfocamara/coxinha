@@ -1,0 +1,81 @@
+{
+  "shortcuts": {
+    "scopes": {
+      "system": "Em qualquer lugar do computador",
+      "app": "Em todo o Coxinha",
+      "palette": "Paleta de comandos",
+      "note": "Nota",
+      "board": "Quadro",
+      "calendar": "Calendário",
+      "layer": "Painéis e menus",
+      "list": "Listas e menus"
+    },
+    "actions": {
+      "palette": "Abrir ou fechar a paleta de comandos",
+      "help": "Mostrar os atalhos de teclado",
+      "undoTrash": "Desfazer o envio de uma nota para a lixeira",
+      "paletteMove": "Percorrer os resultados",
+      "paletteOpen": "Abrir o resultado",
+      "paletteDelete": "Enviar a nota para a lixeira",
+      "noteMenu": "Abrir o menu da nota",
+      "noteCopyLink": "Copiar o link da nota",
+      "noteDuplicate": "Duplicar a nota",
+      "noteUndo": "Desfazer no editor",
+      "boardRemove": "Remover a seleção",
+      "boardUndo": "Desfazer uma remoção",
+      "boardNote": "Nova nota",
+      "boardActivity": "Nova atividade",
+      "boardArea": "Nova área",
+      "boardOpen": "Abrir o cartão em foco",
+      "calendarToday": "Ir para hoje",
+      "calendarNext": "Próximo período",
+      "calendarPrevious": "Período anterior",
+      "calendarDay": "Ver o dia",
+      "calendarWeek": "Ver a semana",
+      "calendarMonth": "Ver o mês",
+      "calendarNew": "Nova reunião",
+      "calendarOpen": "Abrir a reunião em foco",
+      "layerClose": "Fechar o painel ou menu do topo",
+      "layerCancelEdit": "Cancelar uma edição em andamento",
+      "listMove": "Mover em lista, menu ou abas",
+      "listPick": "Escolher a opção destacada",
+      "dialogFocusTrap": "Ficar dentro do diálogo"
+    },
+    "sheet": {
+      "title": "Atalhos de teclado",
+      "description": "O que funciona nesta tela e de qualquer lugar.",
+      "close": "Fechar"
+    },
+    "settings": {
+      "system": "Em qualquer lugar do computador",
+      "all": "Todos os atalhos",
+      "change": "Alterar",
+      "changeLabel": "Alterar o atalho de {{action}}",
+      "reset": "Restaurar padrão",
+      "resetLabel": "Restaurar o atalho padrão de {{action}}",
+      "pressNow": "Pressione o novo atalho",
+      "captureLabel": "Pressione o novo atalho de {{action}}. Esc cancela.",
+      "needsModifier": "Use Ctrl, Alt ou Super junto com a tecla.",
+      "unsupported": "Essa tecla não pode ser usada em um atalho.",
+      "received": "O atalho chegou pela última vez às {{time}}.",
+      "notReceived": "O atalho ainda não chegou desde que o aplicativo abriu.",
+      "inactive": "Inativo: {{chord}} não foi registrado.",
+      "failure": {
+        "invalid": "O Coxinha não reconhece {{chord}} como atalho.",
+        "taken": "Outro aplicativo já usa {{chord}}. Escolha outro.",
+        "duplicate": "{{chord}} já é o atalho de {{other}}.",
+        "failed": "O sistema recusou {{chord}}."
+      },
+      "kept": "O atalho anterior, {{chord}}, continua valendo.",
+      "conflict": "{{chord}} também pertence a {{owner}}, então o desktop pode ficar com a tecla. Escolha outro atalho se este não abrir o Coxinha.",
+      "wayland": "Esta sessão usa Wayland. O Coxinha pedir um atalho não prova que a tecla chega: quem decide é o desktop. Para testar, pressione o atalho com outra janela em foco, volte aqui e confira o horário na linha dele.",
+      "note": "Um atalho funciona mesmo com a janela escondida."
+    },
+    "notice": {
+      "message": "Alguns atalhos de teclado podem não funcionar: {{chords}}.",
+      "open": "Revisar atalhos",
+      "dismiss": "Dispensar"
+    },
+    "undoFailed": "Não foi possível trazer a nota de volta da lixeira."
+  }
+}

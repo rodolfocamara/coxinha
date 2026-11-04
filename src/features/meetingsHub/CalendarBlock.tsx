@@ -1,0 +1,138 @@
+import type { CSSProperties, KeyboardEvent } from 'react';
+import { useTranslation } from 'react-i18next';
+import { rem } from '../../lib/appearance/units';
+import { nextDay } from '../sessions/sessionDates';
+import type { MeetingRow } from './meetingRows';
+import { clockTime } from './format';
+import { OUTLOOK_PRESETS, colourStyle, useEventColour } from '../agenda/categories';
+import { HOUR_PX, type Block } from './weekLayout';
+import { eventLook } from './eventDetailsModel';
+import { sessionIdOf, signalItems, useSessionSignals } from './meetingSignals';
+import { SignalIcons, signalLabel } from './SignalIcons';
+
+/** Design pixels: text and blocks scale together, so these thresholds hold at any font size. */
+export const px = (minutes: number) => (minutes / 60) * HOUR_PX;
+/** An hour's block fits title, time and icons; below that, none rather than clipped. */
+const ICONS_FROM_PX = HOUR_PX;
+const ORGANIZER_FROM_PX = 52;
+const ORGANIZER_WITH_ICONS_FROM_PX = 66;
+
+export type GridActions = {
+  onSelect: (row: MeetingRow) => void;
+  /** Double click or Enter: the full meeting page (spec 0107). */
+  onOpen?: (row: MeetingRow) => void;
+  selectedKey?: string | null;
+  /** While the peek asks which event a recording is (spec 0111): only these stay in colour. */
+  focusKeys?: string[] | null;
+};
+
+/** Click selects (the peek opens); double click or Enter opens the meeting. */
+export function itemHandlers(row: MeetingRow, actions: GridActions) {
+  const open = actions.onOpen;
+  return {
+    onClick: () => actions.onSelect(row),
+    onDoubleClick: open ? () => open(row) : undefined,
+    onKeyDown: open
+      ? (event: KeyboardEvent<HTMLButtonElement>) => {
+          if (event.key !== 'Enter') return;
+          event.preventDefault();
+          open(row);
+        }
+      : undefined,
+    'aria-expanded':
+      actions.selectedKey === undefined ? undefined : actions.selectedKey === row.key,
+    'data-selected': actions.selectedKey === row.key || undefined,
+    'data-dimmed': (actions.focusKeys && !actions.focusKeys.includes(row.key)) || undefined,
+    'data-candidate':
+      (actions.focusKeys?.includes(row.key) && actions.selectedKey !== row.key) || undefined,
+  };
+}
+
+/** "09:00–10:00" for the part of the block on this day. */
+export function blockTime(block: Block, day: Date, locale: string) {
+  const at = (minutes: number) =>
+    minutes >= 24 * 60
+      ? clockTime(nextDay(day), locale)
+      : clockTime(new Date(day.getTime() + minutes * 60_000), locale);
+  const start = block.row.start! < day ? at(0) : clockTime(block.row.start!, locale);
+  return `${start}–${at(block.bottom)}`;
+}
+
+/** A recording the calendar does not know: it gets its own tone (spec 0119 P2). */
+export const recordedOutsideCalendar = (row: MeetingRow) =>
+  row.kind === 'recording' || (row.kind === 'session' && !row.event && !!row.session.meeting_id);
+
+/**
+ * A meeting on the time grid (spec 0104 P3): filled with its category, sized
+ * by its block when it has one (all-day items have none).
+ */
+export function CalendarBlock({
+  row,
+  block,
+  live,
+  when,
+  now,
+  ...actions
+}: GridActions & {
+  row: MeetingRow;
+  block?: Block;
+  live: boolean;
+  when: string;
+  now: Date;
+}) {
+  const { t } = useTranslation();
+  const event = row.kind === 'recording' ? null : row.event;
+  const colour = useEventColour(event);
+  const tinted = colour && !live;
+  const title = row.title || t('meetingsHub.untitled');
+  const height = block ? px(block.bottom - block.top) : 0;
+  const position: CSSProperties | undefined = block && {
+    top: rem(px(block.top)),
+    height: rem(Math.max(height - 2, 12)),
+    left: `calc(${(block.lane / block.lanes) * 100}% + 2px)`,
+    width: `calc(${100 / block.lanes}% - 4px)`,
+  };
+  const organizer = event?.organizer?.name || event?.organizer?.email;
+  const look = eventLook(event);
+  const signals = signalItems(row, useSessionSignals(sessionIdOf(row)), now);
+  const icons = !!block && height >= ICONS_FROM_PX && signals.length > 0;
+  return (
+    <button
+      type="button"
+      className="mh-week-ev"
+      data-category={tinted ? OUTLOOK_PRESETS[colour.preset] : undefined}
+      data-tone={
+        live
+          ? 'live'
+          : event && !colour
+            ? 'event'
+            : recordedOutsideCalendar(row)
+              ? 'recorded'
+              : undefined
+      }
+      data-cancelled={event?.cancelled || undefined}
+      data-look={look ?? undefined}
+      data-signals={icons || undefined}
+      data-key={row.key}
+      style={{ ...(tinted ? colourStyle(colour.preset) : {}), ...position }}
+      title={`${when} ${title}`}
+      aria-label={[
+        when,
+        title,
+        colour && t('outlookCategories.mark', { name: colour.name }),
+        look && t(`meetingsHub.eventDetails.look.${look}`),
+        ...signals.map((item) => signalLabel(item, t)),
+      ]
+        .filter(Boolean)
+        .join(', ')}
+      {...itemHandlers(row, actions)}
+    >
+      <b>{title}</b>
+      {block && height >= 34 && <span className="mh-week-ev-meta">{when}</span>}
+      {icons && <SignalIcons items={signals} />}
+      {block &&
+        height >= (icons ? ORGANIZER_WITH_ICONS_FROM_PX : ORGANIZER_FROM_PX) &&
+        organizer && <span className="mh-week-ev-meta">{organizer}</span>}
+    </button>
+  );
+}

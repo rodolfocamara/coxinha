@@ -24,13 +24,14 @@ export default defineConfig(async () => ({
       ? { protocol: 'ws', host, port: 1421 }
       : undefined,
     watch: {
-      ignored: ['**/src-tauri/**'],
+      // Cargo output and docs never feed the frontend; watching them exhausts inotify.
+      ignored: ['**/src-tauri/**', '**/target/**', '**/docs/**'],
     },
   },
 
   build: {
     target: 'chrome105',
-    minify: !process.env.TAURI_DEBUG ? 'esbuild' : false,
+    minify: !process.env.TAURI_DEBUG ? 'oxc' : false,
     sourcemap: !!process.env.TAURI_DEBUG,
   },
 }));

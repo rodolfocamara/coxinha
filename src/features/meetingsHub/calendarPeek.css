@@ -1,0 +1,99 @@
+@layer theme, base, components, utilities;
+
+/* Reuniões calendar (spec 0107): peek, search results and the meeting page. */
+@layer components {
+  /* Full meeting page */
+  .ch-page {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+  }
+  .ch-page-bar {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .ch-page > .mh-detail {
+    min-height: 0;
+  }
+  .mh-rowlist {
+    margin: 0 -0.5rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* A selected block in the grid. */
+  .mh-week-ev[data-selected],
+  .mh-month-ev[data-selected] {
+    outline: 1.5px solid var(--color-foreground);
+    outline-offset: -1px;
+  }
+  /* Only the recording and the event it may be stay in colour (spec 0111). */
+  .mh-week-ev[data-dimmed],
+  .mh-month-ev[data-dimmed] {
+    opacity: 0.28;
+    filter: grayscale(1);
+  }
+  .mh-week-ev[data-candidate],
+  .mh-month-ev[data-candidate] {
+    z-index: 1;
+    outline: 1.5px dashed var(--color-foreground);
+    outline-offset: -1px;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .mh-week-ev,
+    .mh-month-ev {
+      transition:
+        opacity 160ms ease,
+        filter 160ms ease;
+    }
+  }
+}
+
+/* "É esta reunião?" (spec 0111): pick the calendar event a recording belongs to. */
+@layer components {
+  .ch-match-list {
+    display: grid;
+    gap: 2px;
+  }
+  .ch-match-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .ch-match-row:hover,
+  .ch-match-row[data-checked] {
+    background: var(--color-secondary);
+  }
+  .ch-match-row input {
+    flex: none;
+    accent-color: var(--color-primary);
+  }
+  .ch-match-bar {
+    align-self: stretch;
+    width: 3px;
+    border-radius: 2px;
+    background: var(--color-info);
+  }
+  .ch-match-text {
+    display: grid;
+    min-width: 0;
+    font-size: 0.78125rem;
+    line-height: 1.35;
+  }
+  .ch-match-text b {
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+  .ch-match-text span {
+    color: var(--color-muted-foreground);
+    font-size: 0.71875rem;
+    font-variant-numeric: tabular-nums;
+  }
+}

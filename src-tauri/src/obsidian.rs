@@ -72,9 +72,11 @@ fn parse_vaults(json: &str) -> Result<Vec<ObsidianVault>> {
 }
 
 fn leaf_name(path: &str) -> String {
-    Path::new(path)
-        .file_name()
-        .and_then(|s| s.to_str())
+    // Display labels must also handle an imported config from another OS.
+    path.trim_end_matches(['/', '\\'])
+        .rsplit(['/', '\\'])
+        .next()
+        .filter(|name| !name.is_empty())
         .unwrap_or(path)
         .to_string()
 }

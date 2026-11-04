@@ -1,26 +1,37 @@
+import { CallDetectionController } from '../features/detection/CallDetectionController';
 import { useEffect, useState } from 'react';
+import { RotateCw } from 'lucide-react';
 import { Outlet, useNavigate } from '@tanstack/react-router';
 import type { UnlistenFn } from '@tauri-apps/api/event';
 
+import { useTranslation } from 'react-i18next';
+import { reportFrontendError } from '../lib/lifecycle';
 import { CommandPalette } from '../features/shell/CommandPalette';
+import { ShortcutNotice } from '../features/shell/ShortcutNotice';
+import { ShortcutSheet } from '../features/shell/ShortcutSheet';
+import { TrashUndoBar } from '../features/notes/TrashUndoBar';
+import { OPEN_PALETTE_EVENT } from '../components/AppShell/SearchBar';
+import { Button } from '../components/ui';
 import { events, type Route } from '../lib/bindings';
-import { useSidePanel } from '../lib/panels';
 import { mark } from '../lib/perf';
+import { loadSystemChords, useShortcut } from '../lib/shortcuts';
 import { useAppStore } from '../lib/store';
-import {
-  followThemePreference,
-  getThemePreference,
-  THEME_PREF_EVENT,
-} from '../lib/theme';
+import { followThemePreference, getThemePreference, THEME_PREF_EVENT } from '../lib/theme';
+import { Shell } from '../components/Shell/Shell';
+import { quickCaptureTitle } from '../components/Shell/NavRail';
+import { CaptureController } from '../features/capture/CaptureController';
+import { toggleCapture } from '../features/capture/captureActions';
 
 /**
- * Root layout. Every route renders inside its own AppShell (spec
- * 0057) so this component only owns global concerns: theme
- * follow-up, IPC listeners, command palette overlay, and
- * shortcut handling that spans every route.
+ * Root layout (spec 0096): the persistent Shell (recorder strip + rail),
+ * the single CaptureController, theme follow-up, IPC listeners, the command
+ * palette and shortcuts that span every route.
  */
 export function RootLayout() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const [startupFailed, setStartupFailed] = useState(false);
+  const [startupAttempt, setStartupAttempt] = useState(0);
   const loadNotes = useAppStore((s) => s.loadNotes);
   const newNote = useAppStore((s) => s.newNote);
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -42,23 +53,20 @@ export function RootLayout() {
     let cancelled = false;
     const unsubs: UnlistenFn[] = [];
 
-    loadNotes();
+    setStartupFailed(false);
+    const failed = () => {
+      if (!cancelled) setStartupFailed(true);
+      reportFrontendError('frontend_error');
+    };
+    void loadNotes().catch(failed);
 
     (async () => {
       const navUnsub = await events.navigate.listen(async (e) => {
-        await handleRoute(e.payload.route);
+        await handleRoute(e.payload.route).catch(failed);
       });
       if (cancelled) return navUnsub();
       unsubs.push(navUnsub);
-
-      const callUnsub = await events.callDetected.listen((e) => {
-        // TODO(spec 0007): surface a toast with a "Record" button.
-        // eslint-disable-next-line no-console
-        console.log('Call detected', e.payload);
-      });
-      if (cancelled) return callUnsub();
-      unsubs.push(callUnsub);
-    })();
+    })().catch(failed);
 
     async function handleRoute(route: Route) {
       switch (route) {
@@ -75,16 +83,13 @@ export function RootLayout() {
           navigate({ to: '/agenda' });
           return;
         case 'meetings':
-          // /meetings was removed in spec 0057; the shortcut slot
-          // is repurposed in a later commit. Until then, send the
-          // user to /notes so they land somewhere sensible.
-          navigate({ to: '/notes' });
+          navigate({ to: '/meetings' });
           return;
         case 'settings':
           navigate({ to: '/settings' });
           return;
         case 'toggle-recording':
-          // TODO (spec 0007)
+          await toggleCapture(quickCaptureTitle(t('shell.record.quickTitle')));
           return;
       }
     }
@@ -93,34 +98,44 @@ export function RootLayout() {
       cancelled = true;
       unsubs.forEach((f) => f());
     };
-  }, [loadNotes, navigate, newNote]);
+  }, [loadNotes, navigate, newNote, startupAttempt, t]);
 
-  // Ctrl+K / Ctrl+P open the command palette; Ctrl+\ toggles
-  // the side panel. All gated on Ctrl/Cmd so they don't fight
-  // the editor's own hotkeys.
-  const toggleSidePanel = useSidePanel((s) => s.toggle);
+  useShortcut('app.palette', () => setPaletteOpen((v) => !v));
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (!(e.ctrlKey || e.metaKey)) return;
-      const key = e.key.toLowerCase();
-      if (key === 'k' || key === 'p') {
-        e.preventDefault();
-        setPaletteOpen((v) => !v);
-        return;
-      }
-      if (key === '\\') {
-        e.preventDefault();
-        toggleSidePanel();
-      }
+    void loadSystemChords();
+    const openPalette = () => setPaletteOpen(true);
+    const openMap = () => void navigate({ to: '/' });
+    window.addEventListener('coxinha:open-map', openMap);
+    window.addEventListener(OPEN_PALETTE_EVENT, openPalette);
+    return () => {
+      window.removeEventListener(OPEN_PALETTE_EVENT, openPalette);
+      window.removeEventListener('coxinha:open-map', openMap);
     };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [toggleSidePanel]);
+  }, [navigate]);
 
   return (
     <>
-      <Outlet />
+      <CaptureController />
+      <CallDetectionController />
+      <Shell>
+        {startupFailed && (
+          <div role="alert" className="flex items-center gap-3 border-b px-4 py-2 text-sm">
+            {t('desktopRecovery.startup')}
+            <Button
+              size="sm"
+              onClick={() => setStartupAttempt((n) => n + 1)}
+              icon={<RotateCw size={14} aria-hidden="true" />}
+            >
+              {t('desktopRecovery.retry')}
+            </Button>
+          </div>
+        )}
+        <ShortcutNotice />
+        <Outlet />
+      </Shell>
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
+      <ShortcutSheet />
+      <TrashUndoBar />
     </>
   );
 }

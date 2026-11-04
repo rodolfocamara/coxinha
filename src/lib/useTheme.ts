@@ -1,36 +1,24 @@
-import { useEffect, useState } from 'react';
-
+import { useSyncExternalStore } from 'react';
 import {
-  getThemePreference,
+  THEME_APPLIED_EVENT,
   resolveThemePreference,
-  systemTheme,
+  getThemePreference,
   type Theme,
-  THEME_PREF_EVENT,
 } from './theme';
 
-/**
- * Reactive read of the currently applied theme ('light' | 'dark').
- * Listens to the `THEME_PREF_EVENT` dispatched by `setThemePreference`
- * and to the OS `prefers-color-scheme` media query. Used by
- * components that need to hand the theme down to libraries (BlockNote,
- * tooltips, etc.) — everything else should rely on the `.dark` class
- * on `<html>` + CSS variables.
- */
+function subscribe(changed: () => void): () => void {
+  window.addEventListener(THEME_APPLIED_EVENT, changed);
+  return () => window.removeEventListener(THEME_APPLIED_EVENT, changed);
+}
+
+function snapshot(): Theme {
+  const applied = document.documentElement.getAttribute('data-theme');
+  return applied === 'dark' || applied === 'light'
+    ? applied
+    : resolveThemePreference(getThemePreference());
+}
+
+/** Editors consume the same resolved theme that paints HTML and native controls. */
 export function useResolvedTheme(): Theme {
-  const [theme, setTheme] = useState<Theme>(() => systemTheme());
-
-  useEffect(() => {
-    const read = () => setTheme(resolveThemePreference(getThemePreference()));
-    read();
-    const onPrefChange = () => read();
-    window.addEventListener(THEME_PREF_EVENT, onPrefChange);
-    const media = window.matchMedia('(prefers-color-scheme: dark)');
-    media.addEventListener('change', read);
-    return () => {
-      window.removeEventListener(THEME_PREF_EVENT, onPrefChange);
-      media.removeEventListener('change', read);
-    };
-  }, []);
-
-  return theme;
+  return useSyncExternalStore(subscribe, snapshot, () => 'light');
 }

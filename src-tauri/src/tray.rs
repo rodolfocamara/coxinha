@@ -9,12 +9,8 @@ use tauri::{
 };
 use tauri_specta::Event;
 
-use crate::events::{BeforeQuit, Navigate, Route};
+use crate::events::{Navigate, Route};
 use crate::window::show_main;
-
-/// Covers the editor's 500 ms save debounce + ~100 ms IPC roundtrip.
-/// Longer feels like lag; shorter risks losing the last keystrokes.
-const QUIT_GRACE: std::time::Duration = std::time::Duration::from_millis(600);
 
 pub fn setup(app: &AppHandle) -> Result<()> {
     let open_item = MenuItem::with_id(app, "open", t!("tray.open"), true, None::<&str>)?;
@@ -29,8 +25,9 @@ pub fn setup(app: &AppHandle) -> Result<()> {
         &[&open_item, &new_note_item, &sep, &settings_item, &quit_item],
     )?;
 
+    // A dedicated glyph: the app icon's tile and crumbs turn to mush at 16-22 px.
     let _tray = TrayIconBuilder::with_id("main-tray")
-        .icon(app.default_window_icon().unwrap().clone())
+        .icon(tauri::include_image!("icons/tray.png"))
         .menu(&menu)
         .on_menu_event(move |app, event| match event.id.as_ref() {
             "open" => show_main(app),
@@ -48,7 +45,7 @@ pub fn setup(app: &AppHandle) -> Result<()> {
                 }
                 .emit(app);
             }
-            "quit" => request_graceful_quit(app),
+            "quit" => crate::desktop::request_exit(app),
             _ => {}
         })
         .on_tray_icon_event(|tray, event| {
@@ -64,16 +61,4 @@ pub fn setup(app: &AppHandle) -> Result<()> {
         .build(app)?;
 
     Ok(())
-}
-
-fn request_graceful_quit(app: &AppHandle) {
-    if let Err(e) = BeforeQuit.emit(app) {
-        tracing::warn!("BeforeQuit emit failed: {e}");
-    }
-    let handle = app.clone();
-    tauri::async_runtime::spawn(async move {
-        tokio::time::sleep(QUIT_GRACE).await;
-        tracing::info!("graceful quit window elapsed, exiting");
-        handle.exit(0);
-    });
 }

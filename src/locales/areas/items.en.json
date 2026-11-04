@@ -1,0 +1,48 @@
+{
+  "items": {
+    "files": {
+      "title": "Files",
+      "list": "Files and references",
+      "include": "Include file",
+      "reference": "Reference",
+      "referenceHint": "Link to a web address or a file that stays where it is",
+      "chooseFile": "Choose file",
+      "add": "Add",
+      "cancel": "Cancel",
+      "reveal": "Show in folder",
+      "empty": "No files yet. Include a file or reference a link.",
+      "open": "Open {{name}}",
+      "remove": "Remove",
+      "removeNamed": "Remove {{name}}",
+      "confirmRemove": "Move to the vault trash?",
+      "missing": "not found",
+      "link": "link",
+      "external": "external file",
+      "eventHint": "Prepare the meeting to keep files with it."
+    },
+    "links": {
+      "meeting": {
+        "title": "Activities",
+        "empty": "No linked activities.",
+        "link": "Link activity",
+        "search": "Search activities",
+        "results": "Activities found",
+        "noResults": "No activity found.",
+        "unlink": "Unlink {{name}}",
+        "missing": "Missing activity",
+        "untitled": "Untitled"
+      },
+      "activity": {
+        "title": "Meetings",
+        "empty": "No linked meetings.",
+        "link": "Link meeting",
+        "search": "Search meetings",
+        "results": "Meetings found",
+        "noResults": "No meeting found.",
+        "unlink": "Unlink {{name}}",
+        "missing": "Missing meeting",
+        "untitled": "Untitled"
+      }
+    }
+  }
+}

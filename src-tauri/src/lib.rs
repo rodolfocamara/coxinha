@@ -10,18 +10,36 @@
 // the recorder into them directly — the whole module is dead code
 // in the crate today and `#[allow(dead_code)]` here keeps the port
 // faithful without sprinkling the allow attribute on every symbol.
+mod app_paths;
 #[allow(dead_code)]
 mod audio_toolkit;
+mod auto_record;
+mod board;
+mod calendar;
 mod call_detector;
+mod cli;
 mod config;
 mod db;
+mod desktop;
 mod diarizer;
 mod events;
+mod items;
+mod library;
+#[cfg(target_os = "linux")]
+mod native_audio;
+mod note_errors;
 mod obsidian;
 mod recorder;
 mod shortcuts;
+mod signals;
 mod storage;
+mod summaries;
 mod summarizer;
+// Spec 0097 P4: the meeting actor wires this in; nothing calls it yet.
+mod settings_file;
+mod speech_download;
+mod speech_models;
+mod titles;
 mod transcriber;
 mod tray;
 mod window;
@@ -39,6 +57,9 @@ rust_i18n::i18n!("locales", fallback = "en");
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    if cli::requested() {
+        std::process::exit(cli::main());
+    }
     tracing_subscriber::fmt()
         .with_env_filter(
             tracing_subscriber::EnvFilter::try_from_default_env()
@@ -50,9 +71,20 @@ pub fn run() {
 
     info!("Coxinha starting...");
 
+    let test_profile = app_paths::TestProfile::from_env().expect("valid native test profile");
+    let mut context = tauri::generate_context!();
+    if let Some(profile) = &test_profile {
+        for window in &mut context.config_mut().app.windows {
+            window.data_directory = Some(profile.webview());
+            // WKWebView does not support a custom data directory. Its ephemeral
+            // store prevents persistent browser data on macOS as well.
+            window.incognito = true;
+        }
+    }
+
     let specta_builder = build_specta();
 
-    #[cfg(debug_assertions)]
+    #[cfg(all(debug_assertions, dev))]
     export_bindings_if_changed(&specta_builder);
 
     tauri::Builder::default()
@@ -60,6 +92,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_opener::init())
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
                 .with_handler(shortcuts::handle_shortcut)
@@ -72,6 +105,32 @@ pub fn run() {
         .invoke_handler(specta_builder.invoke_handler())
         .setup(move |app| {
             specta_builder.mount_events(app);
+            let logs = match &test_profile {
+                Some(profile) => profile.logs(),
+                None => app.path().app_log_dir()?,
+            };
+            let library = match &test_profile {
+                Some(profile) => profile.library(),
+                None => app.path().app_data_dir()?.join("meeting-library"),
+            };
+            app.manage(desktop::Desktop::new(logs)?);
+            let handle = app.handle().clone();
+            let notify: library::Notifier = Box::new(move || {
+                let _ = tauri_specta::Event::emit(&events::CaptureChanged::now(), &handle);
+            });
+            app.manage(library::Library::open(library, Some(notify))?);
+            // Spec 0097 P3: the actor learns the persisted live settings once at start.
+            {
+                let settings = library::load_live_settings(app.handle());
+                let live = app.state::<library::Library>().inner().clone();
+                tauri::async_runtime::spawn(async move {
+                    let _ = live.configure_live(settings).await;
+                });
+            }
+            #[cfg(target_os = "linux")]
+            app.manage(Arc::new(native_audio::NativeAudio::start(
+                native_audio::app_origins(app.config()),
+            )?));
 
             // Tauri's .setup is sync; block_on is the bridge for
             // AppState::initialize's async signature.
@@ -88,13 +147,28 @@ pub fn run() {
             // directly so saves don't serialize against searches via
             // the AppState mutex. Commands spanning multiple
             // subsystems still go through the full state below.
+            app.state::<library::Library>()
+                .reconcile_session_notes(state.storage.clone());
             app.manage(state.storage.clone());
 
             let shared_state = Arc::new(Mutex::new(state));
             app.manage(shared_state);
 
             tray::setup(app.handle())?;
+            if !std::env::args().any(|arg| arg == "--hidden") {
+                window::show_main(app.handle());
+            }
 
+            let auto_record = auto_record::AutoRecord::load(match &test_profile {
+                Some(profile) => profile.root.join("app-data/auto-record.json"),
+                None => app.path().app_data_dir()?.join("auto-record.json"),
+            });
+            let detector = call_detector::Detector::default();
+            if auto_record.enabled() {
+                detector.enable_for_auto_record();
+            }
+            app.manage(auto_record);
+            app.manage(detector);
             let handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {
                 if let Err(e) = call_detector::run_loop(handle).await {
@@ -102,19 +176,20 @@ pub fn run() {
                 }
             });
 
+            calendar::spawn_refresh(app.handle().clone());
+            summaries::spawn(app.handle().clone());
             info!("Coxinha ready");
             Ok(())
         })
         .on_window_event(|window, event| {
-            // Closing the window hides it (tray-resident); real quit
-            // only goes through the tray menu or `app.exit()`.
             if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-                let _ = window.hide();
                 api.prevent_close();
+                desktop::request_exit(window.app_handle());
             }
         })
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(context)
+        .expect("error while building tauri application")
+        .run(|_, _| {});
 }
 
 /// Escape hatch for integration tests in `tests/perf_*.rs` that
@@ -149,9 +224,81 @@ pub mod perf_helpers {
 pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
     tauri_specta::Builder::<tauri::Wry>::new()
         .commands(tauri_specta::collect_commands![
+            calendar::calendar_status,
+            calendar::calendar_begin,
+            calendar::photos::directory_photos_disable,
+            calendar::calendar_complete,
+            calendar::calendar_cancel,
+            calendar::calendar_sync,
+            calendar::calendar_disconnect,
+            calendar::categories::calendar_set_categories,
+            calendar::create::calendar_create_event,
+            calendar::details::calendar_open_link,
+            calendar::respond::calendar_respond,
+            board::board_load,
+            board::board_save,
+            board::board_export_recovery,
+            items::items_list,
+            items::items_include,
+            items::items_reference,
+            items::items_remove_reference,
+            items::items_remove_file,
+            items::items_open,
+            items::items_reveal,
+            items::links_list,
+            items::links_add,
+            items::links_remove,
+            desktop::desktop_diagnostic,
+            desktop::desktop_diagnostic_info,
+            desktop::desktop_flush_result,
+            desktop::desktop_flush_started,
+            desktop::desktop_recovery_response,
+            library::library_import_audio,
+            library::library_recognition,
+            library::library_enrollment_candidates,
+            library::library_enroll_selected_turns,
+            library::library_voice_profiles,
+            library::library_voice_profiles_page,
+            library::library_person_samples_page,
+            library::library_person_samples,
+            library::library_revoke_voice_sample,
+            library::library_voice_comparison,
+            library::library_reject_speaker,
+            library::library_retry_voice,
+            library::library_forget_voice,
+            library::library_remember_voice,
+            library::library_voice_memory,
+            library::library_speaker_levels,
+            library::library_participant_context,
+            library::library_set_participant_context,
+            library::library_sessions,
+            library::library_session,
+            library::library_create_session,
+            library::library_update_session,
+            library::library_ensure_personal_note,
+            library::library_start_session,
+            library::library_list,
+            library::library_sources,
+            library::library_start,
+            library::library_status,
+            library::library_pause,
+            library::library_stop,
+            library::library_detail,
+            library::library_recover,
+            library::library_process,
+            library::library_processing,
+            library::library_create_person,
+            library::library_import_people,
+            library::person_photo_index,
+            library::person_photo,
+            library::directory_photos_status,
+            library::library_confirm_speaker,
+            library::library_revoke_assignment,
+            library::library_edit_segment,
             commands::create_note,
             commands::update_note,
             commands::delete_note,
+            commands::restore_note,
             commands::list_notes,
             commands::get_note,
             commands::search_notes,
@@ -162,9 +309,36 @@ pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
             commands::transcribe_meeting,
             commands::summarize_meeting,
             commands::get_active_calls,
+            call_detector::set_call_detection_enabled,
+            call_detector::call_detection_status,
+            auto_record::auto_record_status,
+            auto_record::set_auto_record,
+            auto_record::auto_record_keep,
+            library::live_settings,
+            library::set_live_settings,
+            library::library_calendar_matches,
+            library::universal_search,
+            library::library_resolve_calendar_match,
+            speech_download::speech_model_download,
+            speech_download::speech_default_processing_config,
+            library::library_live_transcript,
+            library::library_live_status,
+            library::library_live_pause,
+            library::library_live_resume,
+            titles::watch::title_llm_settings,
+            titles::watch::set_title_llm_settings,
+            titles::watch::title_llm_test,
+            titles::watch::library_title_suggestion,
+            titles::watch::library_dismiss_title_suggestion,
+            summaries::library_meeting_summary,
+            summaries::library_summarize,
+            signals::library_meeting_signals,
+            signals::library_set_meeting_mark,
             commands::save_attachment,
             commands::get_config,
             commands::update_config,
+            shortcuts::shortcut_status,
+            shortcuts::set_shortcut,
             commands::list_obsidian_vaults,
             commands::get_or_create_daily_note,
             commands::get_backlinks,
@@ -174,8 +348,9 @@ pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
         ])
         .events(tauri_specta::collect_events![
             events::Navigate,
-            events::BeforeQuit,
             events::CallDetected,
+            events::CaptureChanged,
+            events::SessionsChanged,
             events::RecordingProgress,
             events::TranscriptionProgress,
         ])
@@ -186,7 +361,7 @@ pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
 /// unconditional write fires Vite's HMR on every `cargo run` even
 /// when nothing changed — and during dev that can race with
 /// in-flight IPC calls by reloading types mid-flight.
-#[cfg(debug_assertions)]
+#[cfg(all(debug_assertions, dev))]
 fn export_bindings_if_changed(builder: &tauri_specta::Builder<tauri::Wry>) {
     use specta_typescript::{BigIntExportBehavior, Typescript};
     use std::fs;
@@ -203,13 +378,13 @@ fn export_bindings_if_changed(builder: &tauri_specta::Builder<tauri::Wry>) {
         }
     };
 
-    let path = Path::new("../src/lib/bindings.ts");
-    if let Ok(existing) = fs::read_to_string(path) {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../src/lib/bindings.ts");
+    if let Ok(existing) = fs::read_to_string(&path) {
         if existing == new_content {
             return;
         }
     }
-    if let Err(e) = fs::write(path, new_content) {
+    if let Err(e) = fs::write(&path, new_content) {
         tracing::warn!("failed to write {}: {e}", path.display());
     }
 }
@@ -247,7 +422,7 @@ mod commands {
         storage
             .create_note(&title, &content)
             .await
-            .map_err(|e| e.to_string())
+            .map_err(crate::note_errors::ipc_error)
     }
 
     #[tauri::command]
@@ -260,16 +435,30 @@ mod commands {
         storage
             .update_note(id, &content)
             .await
-            .map_err(|e| e.to_string())
+            .map_err(crate::note_errors::ipc_error)
     }
 
     #[tauri::command]
     #[specta::specta]
     pub async fn delete_note(
         storage: tauri::State<'_, Arc<Storage>>,
+        library: tauri::State<'_, library::Library>,
         id: Uuid,
     ) -> Result<(), String> {
-        storage.delete_note(id).await.map_err(|e| e.to_string())
+        library.delete_note(storage.inner().clone(), id).await
+    }
+
+    /// Spec 0112 P3: a deleted note goes to `.coxinha/trash/`; this brings it back.
+    #[tauri::command]
+    #[specta::specta]
+    pub async fn restore_note(
+        storage: tauri::State<'_, Arc<Storage>>,
+        id: Uuid,
+    ) -> Result<Note, String> {
+        storage
+            .restore_note(id)
+            .await
+            .map_err(crate::note_errors::ipc_error)
     }
 
     #[tauri::command]
@@ -284,7 +473,10 @@ mod commands {
         storage: tauri::State<'_, Arc<Storage>>,
         id: Uuid,
     ) -> Result<NoteContent, String> {
-        storage.get_note(id).await.map_err(|e| e.to_string())
+        storage
+            .get_note(id)
+            .await
+            .map_err(crate::note_errors::ipc_error)
     }
 
     #[tauri::command]
@@ -401,9 +593,11 @@ mod commands {
     #[specta::specta]
     pub async fn update_config(
         state: tauri::State<'_, Arc<Mutex<AppState>>>,
-        config: AppConfig,
+        mut config: AppConfig,
     ) -> Result<(), String> {
         let mut state = state.lock().await;
+        // A page's copy of the config is older than a rebind: `set_shortcut` owns these.
+        config.shortcuts = state.config.shortcuts.clone();
         state.update_config(config).await.map_err(|e| e.to_string())
     }
 
@@ -428,7 +622,7 @@ mod commands {
         storage
             .get_or_create_daily_note(date.as_deref())
             .await
-            .map_err(|e| e.to_string())
+            .map_err(crate::note_errors::ipc_error)
     }
 
     /// Notes that `[[…]]`-link to this one. Match is resolved
@@ -456,7 +650,7 @@ mod commands {
         storage
             .rebuild_from_vault()
             .await
-            .map_err(|e| e.to_string())
+            .map_err(crate::note_errors::ipc_error)
     }
 
     #[tauri::command]

@@ -34,36 +34,48 @@ either the spec needs writing or the PR is out of scope.
 Implement in numeric order. Cold-start check lands as spec 0003
 on purpose — measured early, tracked on every PR from then on.
 
-| #    | Feature                                                                    | Status      |
-|------|----------------------------------------------------------------------------|-------------|
-| 0001 | [Build & dependency baseline](./0001-build-baseline.md)                    | in-progress |
-| 0002 | [Testing & reliability baseline](./0002-testing-baseline.md)               | done        |
-| 0003 | [Cold-start + load benchmarks](./0003-cold-start-load.md)                  | draft       |
-| 0004 | [Database migrations](./0004-db-migrations.md)                             | draft       |
-| 0005 | [Notes, daily notes, and search](./0005-notes-and-search.md)               | in-progress |
-| 0006 | [App shell — tray, auto-launch, global shortcuts](./0006-app-shell.md)     | in-progress |
-| 0007 | [Recording & call detection](./0007-recording-and-call-detection.md)       | draft       |
-| 0008 | [Meeting pipeline — transcribe + diarize + summarize](./0008-meeting-pipeline.md) | draft |
-| 0009 | [Meetings list view](./0009-meetings-list.md)                              | in-progress |
-| 0010 | [Settings view UI](./0010-settings-view.md)                                | draft       |
+| #    | Feature                                                                           | Status      |
+| ---- | --------------------------------------------------------------------------------- | ----------- |
+| 0001 | [Build & dependency baseline](./0001-build-baseline.md)                           | in-progress |
+| 0002 | [Testing & reliability baseline](./0002-testing-baseline.md)                      | done        |
+| 0003 | [Cold-start + load benchmarks](./0003-cold-start-load.md)                         | draft       |
+| 0004 | [Database migrations](./0004-db-migrations.md)                                    | draft       |
+| 0005 | [Notes, daily notes, and search](./0005-notes-and-search.md)                      | in-progress |
+| 0006 | [App shell — tray, auto-launch, global shortcuts](./0006-app-shell.md)            | in-progress |
+| 0007 | [Recording & call detection](./0007-recording-and-call-detection.md)              | draft       |
+| 0008 | [Meeting pipeline — transcribe + diarize + summarize](./0008-meeting-pipeline.md) | draft       |
+| 0009 | [Meetings list view](./0009-meetings-list.md)                                     | in-progress |
+| 0010 | [Settings view UI](./0010-settings-view.md)                                       | draft       |
+| 0063 | [Integrated window chrome](./0063-integrated-window-chrome.md)                    | in-progress |
+| 0064 | [Collapsible workspace sidebar](./0064-collapsible-workspace-sidebar.md)          | in-progress |
+| 0065 | [Dash navigation and Sana content](./0065-dash-navigation-and-sana-content.md)    | in-progress |
+| 0066 | [Desktop window contract](./0066-desktop-window-contract.md)                      | in-progress |
+| 0067 | [Rounded native window](./0067-rounded-native-window.md)                          | in-progress |
+| 0068 | [Meeting sessions and activity map](./0068-meeting-sessions-and-activity-map.md)  | in-progress |
+| 0069 | [Stable note identity and lossless metadata](./0069-stable-note-identity.md)      | in-progress |
+| 0075 | [Board editing and quiet session navigation](./0075-board-session-refinement.md)  | in-progress |
+| 0076 | [Opaque search dialog](./0076-opaque-search-dialog.md)                            | in-progress |
+| 0077 | [Session people and voices workspace](./0077-speaker-curation-workspace.md)       | in-progress |
+| 0070 | [Meeting session persistence](./0070-session-foundation.md)                       | in-progress |
+| 0071 | [Session workspace and recoverable personal notes](./0071-session-workspace.md)   | in-progress |
 
 ### F1.5 — Rich blocks and real-product polish
 
-| #    | Feature                                                     | Status |
-|------|-------------------------------------------------------------|--------|
-| 0011 | [Mermaid block](./0011-mermaid-block.md)                    | draft  |
-| 0012 | [Excalidraw block](./0012-excalidraw-block.md)              | draft  |
-| 0013 | [Wiki-links `[[note]]`](./0013-wiki-links.md)               | draft  |
-| 0014 | [Tags `#project`](./0014-tags-filter.md)                    | draft  |
-| 0015 | [Vault import](./0015-vault-import.md)                      | draft  |
-| 0016 | [Vault backup & export](./0016-backup-and-export.md)        | draft  |
-| 0017 | [Installer & first-run onboarding](./0017-installer-onboarding.md) | draft |
-| 0018 | [External edit conflicts](./0018-external-edit-conflicts.md) | draft |
+| #    | Feature                                                            | Status |
+| ---- | ------------------------------------------------------------------ | ------ |
+| 0011 | [Mermaid block](./0011-mermaid-block.md)                           | draft  |
+| 0012 | [Excalidraw block](./0012-excalidraw-block.md)                     | draft  |
+| 0013 | [Wiki-links `[[note]]`](./0013-wiki-links.md)                      | draft  |
+| 0014 | [Tags `#project`](./0014-tags-filter.md)                           | draft  |
+| 0015 | [Vault import](./0015-vault-import.md)                             | draft  |
+| 0016 | [Vault backup & export](./0016-backup-and-export.md)               | draft  |
+| 0017 | [Installer & first-run onboarding](./0017-installer-onboarding.md) | draft  |
+| 0018 | [External edit conflicts](./0018-external-edit-conflicts.md)       | draft  |
 
 ### F2 — Optional sync
 
 | #    | Feature                                                  | Status |
-|------|----------------------------------------------------------|--------|
+| ---- | -------------------------------------------------------- | ------ |
 | 0019 | [Sync backend (Axum + Postgres)](./0019-sync-backend.md) | draft  |
 | 0020 | [Sync client + WebSocket](./0020-sync-client.md)         | draft  |
 | 0021 | [Conflict resolution (CRDT)](./0021-crdt-conflict.md)    | draft  |
@@ -72,32 +84,32 @@ on purpose — measured early, tracked on every PR from then on.
 
 ### F3 — External integrations
 
-| #    | Feature                                                  | Status |
-|------|----------------------------------------------------------|--------|
-| 0024 | [Microsoft Graph OAuth](./0024-oauth-microsoft.md)       | draft  |
-| 0025 | [Google Calendar/Tasks OAuth](./0025-oauth-google.md)    | draft  |
-| 0026 | [MS Todo / Google Tasks sync](./0026-tasks-sync.md)      | draft  |
-| 0027 | [GitHub PRs/issues sync](./0027-github-sync.md)          | draft  |
-| 0028 | [Azure DevOps sync](./0028-azdo-sync.md)                 | draft  |
-| 0029 | [Unified daily timeline](./0029-unified-timeline.md)     | draft  |
+| #    | Feature                                               | Status |
+| ---- | ----------------------------------------------------- | ------ |
+| 0024 | [Microsoft Graph OAuth](./0024-oauth-microsoft.md)    | draft  |
+| 0025 | [Google Calendar/Tasks OAuth](./0025-oauth-google.md) | draft  |
+| 0026 | [MS Todo / Google Tasks sync](./0026-tasks-sync.md)   | draft  |
+| 0027 | [GitHub PRs/issues sync](./0027-github-sync.md)       | draft  |
+| 0028 | [Azure DevOps sync](./0028-azdo-sync.md)              | draft  |
+| 0029 | [Unified daily timeline](./0029-unified-timeline.md)  | draft  |
 
 ### F4 — Advanced AI layer
 
-| #    | Feature                                                  | Status |
-|------|----------------------------------------------------------|--------|
-| 0030 | [Automatic embeddings](./0030-embeddings.md)             | draft  |
-| 0031 | [Embedded vector store](./0031-vector-store.md)          | draft  |
-| 0032 | [Chat with the vault](./0032-chat-vault.md)              | draft  |
-| 0033 | [MCP server](./0033-mcp-server.md)                       | draft  |
-| 0034 | [Long-term memories](./0034-long-term-memory.md)         | draft  |
-| 0035 | [Pre-meeting briefing](./0035-pre-meeting-briefing.md)   | draft  |
-| 0036 | [Auto-tag + auto-link](./0036-auto-tag-link.md)          | draft  |
+| #    | Feature                                                | Status |
+| ---- | ------------------------------------------------------ | ------ |
+| 0030 | [Automatic embeddings](./0030-embeddings.md)           | draft  |
+| 0031 | [Embedded vector store](./0031-vector-store.md)        | draft  |
+| 0032 | [Chat with the vault](./0032-chat-vault.md)            | draft  |
+| 0033 | [MCP server](./0033-mcp-server.md)                     | draft  |
+| 0034 | [Long-term memories](./0034-long-term-memory.md)       | draft  |
+| 0035 | [Pre-meeting briefing](./0035-pre-meeting-briefing.md) | draft  |
+| 0036 | [Auto-tag + auto-link](./0036-auto-tag-link.md)        | draft  |
 
 ### F1.5 addendum
 
-| #    | Feature                                                      | Status |
-|------|--------------------------------------------------------------|--------|
-| 0037 | [Obsidian vault adoption](./0037-obsidian-vault-adoption.md) | draft  |
+| #    | Feature                                                           | Status |
+| ---- | ----------------------------------------------------------------- | ------ |
+| 0037 | [Obsidian vault adoption](./0037-obsidian-vault-adoption.md)      | draft  |
 | 0038 | [Embedded dictation (hold-to-talk)](./0038-embedded-dictation.md) | draft  |
 
 ## Template
@@ -112,25 +124,94 @@ on purpose — measured early, tracked on every PR from then on.
 - **Relevant ADRs:** ADR-NNNN
 
 ## Why
+
 User problem in 2-3 sentences. Link evidence when available.
 
 ## Scope
 
 ### In
+
 - explicit list of what's included
 
 ### Out
+
 - explicit list of what is NOT included (point to another spec if
   applicable)
 
 ## Behavior (acceptance)
+
 Verifiable criteria. Use "Given / When / Then" or short imperatives.
 Each bullet must be testable (manually or automated).
 
 ## Design notes
+
 Affected modules, IPC commands, DB tables, vault paths. Keep short —
 heavy detail belongs in `docs/architecture/`.
 
 ## Open questions
+
 Pending decisions that block or shape the implementation.
 ```
+
+- [0081 — Inline activities and consistent desktop controls](0081-inline-activity-design.md) — in-progress
+
+- [0082 — Default audio devices](0082-default-audio-devices.md) — implemented
+
+- [0083 — Local meeting detection](0083-local-meeting-detection.md) — in-progress
+
+- [0084 — Freeform activity canvas](0084-freeform-activity-canvas.md)
+
+- [0085 — Board item resizing](0085-board-item-resizing.md)
+
+- [0086 — Quiet activity nodes and direct recording consent](0086-quiet-nodes-direct-capture.md)
+
+- [0087 — Meeting boundaries and reversible sessions](0087-meeting-boundaries-and-reversible-sessions.md) — in-progress
+
+- [0088 — Visible local processing lifecycle](0088-visible-local-processing.md) — in-progress (partial)
+
+- [0089 — Local incremental transcription](0089-local-incremental-transcription.md) — in-progress (partial)
+
+- [0090 — Recoverable processing publication](0090-recoverable-processing-publication.md) — in-progress
+
+- [0091 — Recording transparency and joint playback](0091-recording-transparency-and-joint-playback.md) — in-progress
+
+- [0092 — Global people and visible recording controls](0092-global-people-and-recording-controls.md) — in-progress
+
+- [0093 — Sidebar live recording pill and unified status](0093-sidebar-recording-status.md) — superseded by 0096
+
+- [0094 — Meeting end/boundary prompt, focus bring-up and UI simplification](0094-meeting-end-prompt-and-simplification.md) — superseded by 0096
+
+- [0096 — Frontend redesign (Hoje, Reuniões, Workspace, one recorder)](0096-frontend-redesign.md) — in-progress
+- [0097 — Automatic call recording, live transcript and meeting titles](0097-automatic-call-recording.md) — in-progress
+- [0098 — Automatic transcription of recordings, calendar refresh and icon pass](0098-automatic-transcription-and-calendar-refresh.md) — in-progress
+- [0099 — Speech models without setup and automatic speaker separation](0099-bundled-speech-models-and-automatic-speaker-separation.md) — in-progress
+- [0100 — Match past recordings to calendar events](0100-match-recordings-to-calendar-events.md) — in-progress
+- [0101 — Offline speaker clustering and per-word attribution](0101-offline-speaker-clustering.md) — in-progress
+- [0102 — Name speakers from the meeting's invitees](0102-name-speakers-from-invitees.md) — in-progress
+- [0103 — Outlook categories and colours](0103-outlook-categories-and-colours.md) — in-progress
+- [0104 — Calendar views in Reuniões](0104-week-view.md) — in-progress
+- [0105 — Files and links for meetings and activities](0105-item-files-and-links.md) — in-progress
+- [0106 — Meetings CLI and a Claude Code skill](0106-meetings-cli-and-skill.md) — in-progress
+- [0107 — Reuniões as the calendar](0107-reunioes-calendar-home.md) — in-progress
+- [0108 — Meeting summaries](0108-meeting-summaries.md) — in-progress
+- [0109 — Transcript reader](0109-transcript-reader.md) — in-progress
+- [0110 — Name speakers by typing, and people from the calendar](0110-name-speakers-by-typing.md) — in-progress
+- [0111 — Confirm a recording's meeting in the peek](0111-confirm-recordings-in-the-peek.md) — in-progress
+- [0112 — Board: rename, resize, delete and checklists on the canvas](0112-board-direct-editing.md) — in-progress
+- [0113 — Record a detected call into its calendar meeting](0113-record-into-the-calendar-meeting.md) — in-progress
+- [0114 — Notice when a detected call ends](0114-notice-when-a-call-ends.md) — in-progress
+- [0115 — One agenda: each meeting once, recordings at their real time](0115-one-agenda.md) — in-progress
+- [0116 — Multilingual live transcript](0116-multilingual-live-transcript.md) — in-progress
+- [0117 — Faces for people](0117-faces-for-people.md) — draft
+- [0118 — A recording ends with its call](0118-recording-ends-with-its-call.md) — in-progress
+- [0119 — Agenda polish: repairs without the view, recordings in view, Outlook's colours and time zones](0119-agenda-polish.md) — in-progress
+- [0120 — Voices from confirmations, and noise kept out of naming](0120-voices-from-confirmations.md) — in-progress
+- [0121 — Record while the previous meeting is processing](0121-record-while-processing.md) — in-progress
+- [0122 — Universal search](0122-universal-search.md) — in-progress
+- [0123 — Settled interruptions, and time zones by country](0123-settled-interruptions-and-zone-picker.md) — in-progress
+- [0124 — Agenda details and meeting signals](0124-agenda-details-and-signals.md) — in-progress
+- [0125 — Appearance: theme, colours, font size and language](0125-appearance-settings.md) — in-progress
+- [0126 — Meeting detail as a reading panel](0126-meeting-detail.md) — in-progress
+- [0128 — One keyboard shortcut system](0128-keyboard-shortcuts.md) — done
+- [0129 — Settings as pages: one section per route, grouped sidebar, find a setting](0129-settings-pages.md) — in-progress
+- [0130 — Respond to invites](0130-respond-to-invites.md) — in-progress

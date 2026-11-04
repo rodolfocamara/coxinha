@@ -1,379 +1,155 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { RotateCw, Stethoscope } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import {
-  commands,
-  type AppConfig,
-  type ObsidianVault,
-  type RebuildStats,
-} from '../../lib/bindings';
-import { useAppStore } from '../../lib/store';
-import {
-  getThemePreference,
-  setThemePreference,
-  type ThemePreference,
-} from '../../lib/theme';
+import { commands, type AppConfig, type ObsidianVault } from '../../lib/bindings';
+import { Alert, Button } from '../../components/ui';
+import { SettingsLayout } from './SettingsLayout';
+import { SettingsSection } from './controls';
+import { sectionHeadingId, type SettingsSectionId } from './settingsIndex';
+import { AppearanceSection } from './AppearanceSection';
+import { CalendarSection } from './CalendarSection';
+import { RecordingSection } from './RecordingSection';
+import { TranscriptionSection } from './TranscriptionSection';
+import { IntegrationsSection, TitlesSection } from './IntegrationsSection';
+import { StorageSection } from './StorageSection';
+import { DiagnosticsSection, DiagnosticsText, useDiagnostics } from './SettingsSections';
+import { ShortcutsSection } from './ShortcutsSection';
 
 type LoadState =
   | { kind: 'loading' }
   | { kind: 'ready'; config: AppConfig; vaults: ObsidianVault[] }
   | { kind: 'error'; message: string };
 
-type SaveState =
-  | { kind: 'idle' }
-  | { kind: 'saving' }
-  | { kind: 'saved' }
-  | { kind: 'error'; message: string };
+type Props = {
+  /** Opens the agenda from the Outlook integration; the route supplies navigation. */
+  onOpenAgenda?: () => void;
+  /** The page on screen; the route supplies it. */
+  section?: SettingsSectionId;
+  /** Hash of the row to land on. */
+  target?: string;
+  onNavigate?: (section: SettingsSectionId, target?: string) => void;
+};
 
-type RebuildState =
-  | { kind: 'idle' }
-  | { kind: 'running' }
-  | { kind: 'done'; stats: RebuildStats }
-  | { kind: 'error'; message: string };
+/** Pages that wait for the config; until then they show its state under their title. */
+const CONFIG_PAGES: readonly SettingsSectionId[] = [
+  'transcription',
+  'integrations',
+  'titles',
+  'shortcuts',
+  'storage',
+  'diagnostics',
+];
 
-export function SettingsView() {
+/**
+ * Ajustes (spec 0096 P6). Aparência and Gravação work without the config;
+ * the rest waits for `get_config` + `list_obsidian_vaults`.
+ */
+export function SettingsView({
+  onOpenAgenda,
+  section = 'appearance',
+  target,
+  onNavigate,
+}: Props = {}) {
   const { t } = useTranslation();
-  const loadNotes = useAppStore((s) => s.loadNotes);
+  const [retry, setRetry] = useState(0);
   const [state, setState] = useState<LoadState>({ kind: 'loading' });
-  const [selectedPath, setSelectedPath] = useState<string>('');
-  const [save, setSave] = useState<SaveState>({ kind: 'idle' });
-  const [rebuild, setRebuild] = useState<RebuildState>({ kind: 'idle' });
+  const diagnostics = useDiagnostics();
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const [cfgRes, vaultRes] = await Promise.all([
-        commands.getConfig(),
-        commands.listObsidianVaults(),
-      ]);
-      if (cancelled) return;
-
-      if (cfgRes.status === 'error') {
-        setState({ kind: 'error', message: cfgRes.error });
-        return;
+      setState({ kind: 'loading' });
+      try {
+        const [cfgRes, vaultRes] = await Promise.all([
+          commands.getConfig(),
+          commands.listObsidianVaults(),
+        ]);
+        if (cancelled) return;
+        if (cfgRes.status === 'error') {
+          setState({ kind: 'error', message: cfgRes.error });
+          return;
+        }
+        const vaults = vaultRes.status === 'ok' ? vaultRes.data : [];
+        setState({ kind: 'ready', config: cfgRes.data, vaults });
+      } catch {
+        if (!cancelled) setState({ kind: 'error', message: t('settings.recovery.loadError') });
       }
-      const vaults = vaultRes.status === 'ok' ? vaultRes.data : [];
-      setState({ kind: 'ready', config: cfgRes.data, vaults });
-      setSelectedPath(cfgRes.data.vault_path);
     })();
     return () => {
       cancelled = true;
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [retry]);
 
-  const dirty = useMemo(() => {
-    if (state.kind !== 'ready') return false;
-    return selectedPath.trim().length > 0 && selectedPath !== state.config.vault_path;
-  }, [state, selectedPath]);
-
-  async function onSave() {
-    if (state.kind !== 'ready' || !dirty) return;
-    setSave({ kind: 'saving' });
-    const next: AppConfig = { ...state.config, vault_path: selectedPath.trim() };
-    const res = await commands.updateConfig(next);
-    if (res.status === 'error') {
-      setSave({ kind: 'error', message: res.error });
-      return;
-    }
-    setSave({ kind: 'saved' });
-    setState({ ...state, config: next });
-  }
-
-  async function onRebuild() {
-    setRebuild({ kind: 'running' });
-    const res = await commands.rebuildFromVault();
-    if (res.status === 'error') {
-      setRebuild({ kind: 'error', message: res.error });
-      return;
-    }
-    setRebuild({ kind: 'done', stats: res.data });
-    await loadNotes();
-  }
-
-  if (state.kind === 'loading') {
-    return (
-      <SettingsFrame>
-        <p role="status" aria-live="polite" className="text-muted-foreground">
-          {t('settings.comingSoon')}
-        </p>
-      </SettingsFrame>
-    );
-  }
-  if (state.kind === 'error') {
-    return (
-      <SettingsFrame>
-        <p role="alert" className="text-red-600">
-          {t('settings.vault.loadError', { error: state.message })}
-        </p>
-      </SettingsFrame>
-    );
-  }
-
-  const { vaults, config } = state;
-
-  return (
-    <SettingsFrame>
-      <section aria-labelledby="vault-heading" className="space-y-4">
-        <h2 id="vault-heading" className="text-lg font-semibold">
-          {t('settings.vault.heading')}
-        </h2>
-
-        <p className="text-sm text-muted-foreground">
-          <span className="font-medium">{t('settings.vault.currentPath')}:</span>{' '}
-          <code className="font-mono">{config.vault_path}</code>
-        </p>
-
-        <fieldset className="space-y-2">
-          <legend className="text-sm font-medium">
-            {t('settings.vault.detectedObsidian')}
-          </legend>
-          {vaults.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              {t('settings.vault.noObsidian')}
-            </p>
-          ) : (
-            <ul className="space-y-1">
-              {vaults.map((v) => (
-                <li key={v.id}>
-                  <label className="flex items-start gap-2 rounded px-2 py-1.5 hover:bg-accent/50 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="vault"
-                      value={v.path}
-                      checked={selectedPath === v.path}
-                      onChange={() => setSelectedPath(v.path)}
-                      className="mt-1"
-                      aria-describedby={`vault-meta-${v.id}`}
-                    />
-                    <span className="flex-1">
-                      <span className="font-medium">{v.name || v.path}</span>
-                      <span
-                        id={`vault-meta-${v.id}`}
-                        className="block text-xs text-muted-foreground"
-                      >
-                        <code className="font-mono">{v.path}</code>
-                        {' · '}
-                        {v.last_opened_ms
-                          ? `${t('settings.vault.lastOpenedPrefix')} ${formatRelative(v.last_opened_ms)}`
-                          : t('settings.vault.neverOpened')}
-                        {!v.exists && (
-                          <>
-                            {' · '}
-                            <span className="text-amber-600">
-                              {t('settings.vault.missingFolder')}
-                            </span>
-                          </>
-                        )}
-                      </span>
-                    </span>
-                  </label>
-                </li>
-              ))}
-            </ul>
-          )}
-        </fieldset>
-
-        <fieldset className="space-y-1">
-          <label htmlFor="vault-custom-path" className="text-sm font-medium">
-            {t('settings.vault.customPath')}
-          </label>
-          <input
-            id="vault-custom-path"
-            type="text"
-            value={selectedPath}
-            onChange={(e) => setSelectedPath(e.target.value)}
-            placeholder={t('settings.vault.customPathPlaceholder')}
-            className="w-full rounded border border-border bg-background px-2 py-1 font-mono text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-          />
-        </fieldset>
-
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={onSave}
-            disabled={!dirty || save.kind === 'saving'}
-            className="px-4 py-2 rounded bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-          >
-            {save.kind === 'saving' ? t('settings.vault.saving') : t('settings.vault.save')}
-          </button>
-          {save.kind === 'saved' && (
-            <p role="status" aria-live="polite" className="text-sm text-green-700">
-              {t('settings.vault.saved')}
-            </p>
-          )}
-          {save.kind === 'error' && (
-            <p role="alert" className="text-sm text-red-600">
-              {t('settings.vault.saveError', { error: save.message })}
-            </p>
-          )}
-        </div>
-      </section>
-
-      <AppearanceSection />
-
-      <ShortcutsSection shortcuts={config.shortcuts} />
-
-      <section aria-labelledby="rebuild-heading" className="space-y-3">
-        <h2 id="rebuild-heading" className="text-lg font-semibold">
-          {t('settings.vault.rebuildHeading')}
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          {t('settings.vault.rebuildDescription')}
-        </p>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={onRebuild}
-            disabled={rebuild.kind === 'running'}
-            className="px-4 py-2 rounded border border-border bg-background hover:bg-accent/50 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-          >
-            {rebuild.kind === 'running'
-              ? t('settings.vault.rebuilding')
-              : t('settings.vault.rebuild')}
-          </button>
-          {rebuild.kind === 'done' && (
-            <p
-              role="status"
-              aria-live="polite"
-              className={
-                rebuild.stats.notes_skipped > 0
-                  ? 'text-sm text-amber-600'
-                  : 'text-sm text-green-700'
-              }
-            >
-              {rebuild.stats.notes_skipped > 0
-                ? t('settings.vault.rebuiltWithSkips', {
-                    notes: String(rebuild.stats.notes_indexed),
-                    links: String(rebuild.stats.links_indexed),
-                    skipped: String(rebuild.stats.notes_skipped),
-                  })
-                : t('settings.vault.rebuiltSuccess', {
-                    notes: String(rebuild.stats.notes_indexed),
-                    links: String(rebuild.stats.links_indexed),
-                  })}
-            </p>
-          )}
-          {rebuild.kind === 'error' && (
-            <p role="alert" className="text-sm text-red-600">
-              {t('settings.vault.rebuildError', { error: rebuild.message })}
-            </p>
-          )}
-        </div>
-      </section>
-    </SettingsFrame>
-  );
-}
-
-function AppearanceSection() {
-  const { t } = useTranslation();
-  const [pref, setPref] = useState<ThemePreference>(() => getThemePreference());
-
-  function choose(next: ThemePreference) {
-    setPref(next);
-    setThemePreference(next);
-  }
-
-  const options: ThemePreference[] = ['auto', 'light', 'dark'];
-
-  return (
-    <fieldset aria-labelledby="appearance-heading" className="space-y-3">
-      <legend id="appearance-heading" className="text-lg font-semibold">
-        {t('settings.appearance.heading')}
-      </legend>
-      <p className="text-xs text-muted-foreground">
-        {t('settings.appearance.themeHint')}
+  const configState =
+    state.kind === 'loading' ? (
+      <p role="status" aria-live="polite" className="text-ui text-muted-foreground">
+        {t('settings.loading')}
       </p>
-      <div className="flex gap-2">
-        {options.map((opt) => (
-          <label
-            key={opt}
-            className={
-              'cursor-pointer text-sm px-3 py-1.5 rounded border focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring ' +
-              (pref === opt
-                ? 'bg-primary text-primary-foreground border-primary'
-                : 'border-border hover:bg-accent/50')
-            }
+    ) : state.kind === 'error' ? (
+      <div className="space-y-3">
+        <Alert tone="error">{t('settings.vault.loadError', { error: state.message })}</Alert>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="primary"
+            onClick={() => setRetry((v) => v + 1)}
+            icon={<RotateCw size={14} aria-hidden="true" />}
           >
-            <input
-              type="radio"
-              name="theme-pref"
-              value={opt}
-              checked={pref === opt}
-              onChange={() => choose(opt)}
-              className="sr-only"
-            />
-            {t(`settings.appearance.theme.${opt}`)}
-          </label>
-        ))}
+            {t('settings.recovery.retry')}
+          </Button>
+          <Button onClick={diagnostics.show} icon={<Stethoscope size={14} aria-hidden="true" />}>
+            {t('settings.recovery.showDiagnostics')}
+          </Button>
+        </div>
+        <DiagnosticsText text={diagnostics.text} />
       </div>
-    </fieldset>
-  );
-}
+    ) : null;
 
-// Display order matches the user's mental model (create → navigate
-// → record), not the struct field order — lifted to module scope
-// so it isn't recreated per render.
-const SHORTCUT_KEYS: ReadonlyArray<keyof AppConfig['shortcuts']> = [
-  'new_note',
-  'open_app',
-  'agenda',
-  'meetings',
-  'toggle_recording',
-];
-
-function ShortcutsSection({
-  shortcuts,
-}: {
-  shortcuts: AppConfig['shortcuts'];
-}) {
-  const { t } = useTranslation();
+  const configSections =
+    state.kind === 'ready' ? (
+      <>
+        <TranscriptionSection config={state.config} />
+        <IntegrationsSection onOpenAgenda={onOpenAgenda} />
+        <TitlesSection />
+        <ShortcutsSection shortcuts={state.config.shortcuts} />
+        <StorageSection
+          config={state.config}
+          vaults={state.vaults}
+          onConfig={(config) => setState({ ...state, config })}
+        />
+        <DiagnosticsSection />
+      </>
+    ) : (
+      CONFIG_PAGES.map((id) => (
+        <SettingsSection
+          key={id}
+          id={id}
+          headingId={sectionHeadingId(id)}
+          title={t(`people.settings.sections.${id}`)}
+          description={t(`people.settings.descriptions.${id}`)}
+        >
+          {id === section && configState}
+        </SettingsSection>
+      ))
+    );
 
   return (
-    <section aria-labelledby="shortcuts-heading" className="space-y-3">
-      <h2 id="shortcuts-heading" className="text-lg font-semibold">
-        {t('settings.shortcuts.heading')}
-      </h2>
-      <p className="text-xs text-muted-foreground">
-        {t('settings.shortcuts.rebindComingSoon')}
-      </p>
-      <ul className="space-y-0.5">
-        {SHORTCUT_KEYS.map((key) => (
-          <li
-            key={key}
-            className="grid grid-cols-[1fr_auto] items-center gap-4 px-2 py-1.5 rounded hover:bg-accent/30"
-          >
-            <span className="text-sm">
-              {t(`settings.shortcuts.action.${key}`)}
-            </span>
-            <kbd className="text-xs font-mono px-2 py-0.5 rounded border border-border bg-background">
-              {shortcuts[key]}
-            </kbd>
-          </li>
-        ))}
-      </ul>
-    </section>
+    <SettingsLayout
+      ready={state.kind === 'ready'}
+      section={section}
+      target={target}
+      onNavigate={onNavigate}
+    >
+      <AppearanceSection
+        onLocale={(locale) =>
+          setState((now) =>
+            now.kind === 'ready' ? { ...now, config: { ...now.config, locale } } : now
+          )
+        }
+      />
+      <CalendarSection />
+      <RecordingSection />
+      {configSections}
+    </SettingsLayout>
   );
-}
-
-function SettingsFrame({ children }: { children: React.ReactNode }) {
-  const { t } = useTranslation();
-  return (
-    <section className="p-8 space-y-6 max-w-3xl" aria-labelledby="settings-heading">
-      <h1 id="settings-heading" className="cx-display text-4xl">
-        {t('settings.title')}
-      </h1>
-      {children}
-    </section>
-  );
-}
-
-function formatRelative(ms: number): string {
-  const diff = Date.now() - ms;
-  const hours = diff / 36e5;
-  if (hours < 1) return 'just now';
-  if (hours < 24) return `${Math.round(hours)}h ago`;
-  const days = hours / 24;
-  if (days < 30) return `${Math.round(days)}d ago`;
-  const months = days / 30;
-  if (months < 12) return `${Math.round(months)}mo ago`;
-  return `${Math.round(months / 12)}y ago`;
 }

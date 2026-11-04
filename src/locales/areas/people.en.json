@@ -1,0 +1,365 @@
+{
+  "people": {
+    "title": "People",
+    "add": "Add",
+    "refresh": "Refresh list",
+    "search": "Search people",
+    "listLabel": "People",
+    "created": "{{name}} was added.",
+    "noMatch": "No one with that name among the loaded people.",
+    "loadMore": "Load more people",
+    "restart": "Start over",
+    "retry": "Try again",
+    "row": {
+      "samples_one": "{{count}} voice sample",
+      "samples_other": "{{count}} voice samples",
+      "samplesPartial": "{{count}}+ voice samples",
+      "noSamples": "no voice samples",
+      "unknown": "open to see voice samples",
+      "meetings_one": "{{count}} meeting",
+      "meetings_other": "{{count}} meetings",
+      "meetingsLabel": "Meetings with voice samples"
+    },
+    "detail": {
+      "pick": "Choose a person to see their voice samples.",
+      "inMeetings_one": "in {{count}} meeting",
+      "inMeetings_other": "in {{count}} meetings",
+      "samplesTitle": "Voice samples",
+      "samplesHint": "used only to suggest who is speaking",
+      "noSamples": "No voice samples yet. They are saved when you confirm who is speaking in a meeting and choose samples to remember.",
+      "loadMore": "Load more samples",
+      "technical": "Technical details",
+      "refresh": "Refresh",
+      "revoked_one": "{{count}} revoked",
+      "revoked_other": "{{count}} revoked",
+      "invalidated_one": "{{count}} invalidated",
+      "invalidated_other": "{{count}} invalidated"
+    },
+    "sample": {
+      "saved": "saved {{date}}",
+      "unknownMeeting": "Recording",
+      "listen": "Listen to sample",
+      "stop": "Stop playback",
+      "playError": "Could not play this sample.",
+      "revoke": "Revoke",
+      "states": {
+        "revoked": "revoked",
+        "invalidated": "invalidated"
+      }
+    },
+    "revoke": {
+      "title": "Revoke this sample?",
+      "body": "It stops being used to suggest who is speaking. The recording and its history stay.",
+      "reason": "Reason",
+      "reasonHint": "Required, one short line.",
+      "confirm": "Revoke sample",
+      "cancel": "Cancel"
+    },
+    "inspector": {
+      "recent": "Recent meetings",
+      "none": "No meetings with voice samples yet.",
+      "privacyTitle": "Privacy",
+      "privacy": "Samples stay on this computer. Revoking a sample stops using it in suggestions.",
+      "teachTitle": "Teaching a voice"
+    },
+    "settings": {
+      "title": "Settings",
+      "sectionsLabel": "Settings sections",
+      "sections": {
+        "appearance": "Appearance",
+        "recording": "Recording",
+        "transcription": "Transcription",
+        "integrations": "Integrations",
+        "shortcuts": "Shortcuts",
+        "storage": "Storage",
+        "diagnostics": "Diagnostics",
+        "calendar": "Calendar",
+        "titles": "Titles and summaries"
+      },
+      "descriptions": {
+        "appearance": "Theme, colours, text and language. Saved on this computer.",
+        "recording": "Used by the record button, by meetings and by detected calls.",
+        "transcription": "Runs on this computer, nothing is sent out.",
+        "integrations": "Optional. Nothing leaves this computer until you connect.",
+        "shortcuts": "Change the chords that work anywhere on the computer, and see all the others.",
+        "storage": "Your notes are plain Markdown files in this folder.",
+        "diagnostics": "Text to paste when reporting a problem.",
+        "calendar": "Time zones in the week grid and photos of invitees. Kept on this computer.",
+        "titles": "With your own server over SSH. Sends transcript text, never audio."
+      },
+      "theme": {
+        "title": "Theme",
+        "hint": "Automatic follows the system.",
+        "auto": "Automatic",
+        "light": "Light",
+        "dark": "Dark"
+      },
+      "ambient": {
+        "title": "Gradient background",
+        "hint": "Turn off for a plain background."
+      },
+      "mic": {
+        "title": "Microphone",
+        "hint": "Your voice."
+      },
+      "output": {
+        "title": "Computer audio",
+        "hint": "What the others say on the call."
+      },
+      "devices": {
+        "systemDefault": "{{name}} (system default)",
+        "none": "No device found",
+        "loading": "Looking for devices…",
+        "error": "Could not list the audio devices.",
+        "retry": "Try again",
+        "liveNote": "The current recording keeps the devices it started with; a change applies to the next one."
+      },
+      "detection": {
+        "title": "Notify when a call starts",
+        "hint": "Teams, Meet, Zoom. Linux with PipeWire or PulseAudio."
+      },
+      "transcription": {
+        "engine": "Transcription",
+        "diarizer": "Speaker separation",
+        "configured": "Configured",
+        "notConfigured": "Not configured",
+        "perMeeting": "Each meeting chooses its models in its Transcription tab.",
+        "noDefault": "No default model in the app config."
+      },
+      "storage": {
+        "folder": "Notes folder"
+      },
+      "diagnostics": {
+        "title": "Diagnostic information"
+      },
+      "shortcuts": {
+        "toggleRecording": "Start or stop recording"
+      },
+      "autoRecord": {
+        "title": "Record calls automatically",
+        "hint": "Starts recording when a call is detected, even with the window closed. Tell participants: you are responsible for the recording. Coxinha shows REC and a notification for every recording.",
+        "stopTitle": "Stop when the call ends",
+        "stopHint": "Any recording made during a call stops a minute after the call ends, once nobody speaks into the microphone. The strip shows the countdown so you can keep recording.",
+        "needsDetection": "Turning on automatic recording also turns on call detection."
+      },
+      "live": {
+        "title": "Transcribe during the call",
+        "hint": "Uses Tagarela on this computer while recording. The text is provisional and nothing leaves the machine.",
+        "needsModel": "No model found on this computer. Download the public Parakeet v3 (740 MB, CC-BY-4.0) or choose a file below.",
+        "model": "Tagarela model",
+        "modelHint": "Parakeet pt-BR .gguf file. Read-only: Coxinha never changes Handy's file.",
+        "useHandy": "Use Handy's",
+        "threads": "Transcript threads",
+        "threadsHint": "Fewer threads leave more CPU for the call and for Handy.",
+        "backlog": "Transcribe earlier recordings",
+        "backlogHint": "While nothing is recording, transcribes meetings without a complete transcript on its own, newest first, and then separates who spoke. A call or processing goes first.",
+        "download": "Download model",
+        "downloading": "Downloading… {{percent}}%"
+      },
+      "titles": {
+        "title": "Suggested title",
+        "hint": "Titles automatic recordings without a calendar event, using your own server over SSH.",
+        "target": "SSH target",
+        "port": "Port",
+        "model": "Model",
+        "privacy": "Sends only transcript text excerpts, never audio.",
+        "test": "Test",
+        "testing": "Testing…",
+        "testOk": "It worked: {{title}}",
+        "testFailed": "It did not work: {{error}}",
+        "summaries": "Generate summaries",
+        "summariesPrivacy": "After each transcript, sends the whole transcript text, in parts, to this same server to write a summary with decisions and actions. Off by default; never audio.",
+        "server": "Your server",
+        "whatItDoes": "What it does",
+        "testTitle": "Test the server"
+      },
+      "zones": {
+        "title": "Extra time zones",
+        "hint": "Shown beside the hours in the day and week views, up to {{count}}.",
+        "localTitle": "Label for this computer's time zone",
+        "localHint": "Heads its hour column when extra zones show. Empty uses the country code.",
+        "search": "Country or city",
+        "placeholder": "Israel, Mexico, Lisbon",
+        "results": "Time zones found",
+        "noResults": "Nothing found. Try the country in English or a city.",
+        "pick": "Add {{name}}",
+        "labelFor": "Label for {{name}}",
+        "full": "Remove a time zone to add another.",
+        "up": "Move {{name}} up",
+        "down": "Move {{name}} down",
+        "remove": "Remove {{name}}"
+      },
+      "accent": {
+        "title": "Accent colour",
+        "hint": "Buttons, the active item and focus. Outlook's categories keep their colours.",
+        "tangerine": "Tangerine",
+        "blue": "Blue",
+        "teal": "Teal",
+        "green": "Green",
+        "violet": "Violet",
+        "pink": "Pink",
+        "graphite": "Graphite",
+        "custom": "Custom colour",
+        "picker": "Choose the custom colour",
+        "hex": "Custom colour as hex, for example #e8843c",
+        "chosen": "Accent colour: {{name}}",
+        "sample": "Sample button",
+        "readable": "{{ink}} on this colour, contrast {{ratio}}:1.",
+        "darkText": "Dark text",
+        "lightText": "Light text",
+        "adjusted": "Lightness adjusted to stay visible on this theme."
+      },
+      "contrast": {
+        "title": "Contrast",
+        "hint": "How far text stands out from the page. Text never drops below a readable level.",
+        "reset": "Reset contrast",
+        "wasReset": "Contrast back to 100%"
+      },
+      "fontSize": {
+        "title": "Interface font size",
+        "hint": "Text, controls and the agenda grow together. 16 is the original size.",
+        "reset": "Reset interface font size",
+        "wasReset": "Interface font size back to 16 px"
+      },
+      "fontFamilyDefault": "System font",
+      "fontSans": {
+        "title": "Interface font",
+        "hint": "Installed font names, separated by commas."
+      },
+      "fontMono": {
+        "title": "Monospace font",
+        "hint": "For shortcuts, paths and notes in the mono font."
+      },
+      "language": {
+        "title": "Language",
+        "hint": "Automatic follows the system. The tray and notifications change at the next start.",
+        "auto": "Automatic",
+        "ptBR": "Português (Brasil)",
+        "en": "English",
+        "changed": "Language: {{language}}"
+      },
+      "groups": {
+        "app": "App",
+        "meetings": "Meetings",
+        "connections": "Connections",
+        "system": "System",
+        "themeAndColour": "Theme and colour",
+        "text": "Text",
+        "devices": "Devices",
+        "calls": "Calls",
+        "automatic": "Automatic",
+        "meetingModels": "Meeting models"
+      },
+      "filter": {
+        "label": "Find a setting",
+        "placeholder": "Find a setting",
+        "results": "Settings found",
+        "none": "No setting matches.",
+        "found_one": "{{count}} setting found",
+        "found_other": "{{count}} settings found"
+      },
+      "keywords": {
+        "theme": "dark light mode",
+        "accent": "colour color button",
+        "fontSize": "zoom bigger smaller text",
+        "contrast": "readability",
+        "fontSans": "typeface",
+        "fontMono": "code typeface",
+        "language": "portuguese english locale",
+        "mic": "input voice audio device",
+        "output": "speaker sound device",
+        "detection": "teams meet zoom notification",
+        "auto-record": "record automatic",
+        "live": "tagarela parakeet real time",
+        "live-model": "parakeet gguf handy",
+        "live-threads": "cpu performance",
+        "transcriber": "whisper parakeet model",
+        "diarizer": "pyannote speakrs who spoke",
+        "time-zones": "timezone clock",
+        "local-zone": "timezone",
+        "outlook": "microsoft calendar account",
+        "titles-target": "ssh host",
+        "suggest-titles": "ai llm ssh",
+        "summaries": "ai llm ssh",
+        "vault": "obsidian markdown path",
+        "rebuild": "index reindex",
+        "diagnostics": "log version build",
+        "directory-photos": "faces avatars pictures Microsoft 365"
+      },
+      "directoryPhotos": {
+        "title": "Photos of invitees",
+        "hint": "Shows the Microsoft 365 profile photo of people you imported from your meetings' invitees.",
+        "privacy": "Turning this on opens a new Microsoft sign-in that asks for one more permission, User.ReadBasic.All: read the basic profile (name, email and photo) of people in your organization. Coxinha uses it only to fetch the photo of people imported from invitees whose address is in your organization, at most once a week. Photos stay on this computer, in the library's private folder, never in the notes. Turning this off stops the requests and deletes every photo. The permission itself stays in your Microsoft account until you remove it in My Apps.",
+        "connectFirst": "Connect Outlook in Integrations first.",
+        "stored_one": "On. {{count}} photo kept on this computer.",
+        "stored_other": "On. {{count}} photos kept on this computer.",
+        "waiting": "Waiting for your answer in the Microsoft page.",
+        "cancel": "Cancel",
+        "reconnect": "Sign in again",
+        "statusError": "Could not read the state of the photos.",
+        "disableError": "Could not delete the photos. Try again."
+      }
+    },
+    "palette": {
+      "title": "Command palette",
+      "placeholder": "Search notes, meetings, transcripts, people or run an action",
+      "groups": {
+        "actions": "Actions",
+        "goTo": "Go to",
+        "notes": "Notes",
+        "settings": "Settings"
+      },
+      "actions": {
+        "record": "Record now",
+        "stop": "Stop recording",
+        "newMeeting": "New meeting",
+        "newNote": "New note",
+        "importAudio": "Import audio",
+        "toggleTheme": "Switch light or dark theme",
+        "deleteCurrentNote": "Delete this note",
+        "deleteNote": "Delete note"
+      },
+      "empty": "Nothing found for “{{query}}”.",
+      "hints": {
+        "navigate": "navigate",
+        "open": "open",
+        "delete": "delete note",
+        "close": "close"
+      }
+    },
+    "import": {
+      "button": "Import from calendar",
+      "title": "Import people from your calendar",
+      "description": "Everyone invited to the meetings in your calendar who is not in People yet. Only the name is saved.",
+      "search": "Search participants",
+      "meetings_one": "{{count}} meeting",
+      "meetings_other": "{{count}} meetings",
+      "selectAll": "Select all",
+      "selectNone": "Select none",
+      "submit_one": "Import {{count}} person",
+      "submit_other": "Import {{count}} people",
+      "cancel": "Cancel",
+      "close": "Close",
+      "loading": "Reading your calendar…",
+      "noCalendar": "Connect Outlook in Settings to import the participants of your meetings.",
+      "empty": "Everyone in your calendar is already in People.",
+      "noMatch": "No participant matches this search.",
+      "consent": "Participant in meetings from your calendar",
+      "done": "{{created}} imported, {{skipped}} already existed."
+    },
+    "voiceMemory": {
+      "title": "Voice memory",
+      "forget": "Forget the voice",
+      "forgetReason": "Why forget this voice?",
+      "forgetConfirm": "Forget",
+      "cancel": "Cancel",
+      "off": "Voice memory is off. Confirming this person does not remember the voice.",
+      "rememberAgain": "Remember the voice again",
+      "pending_one": "{{count}} confirmation waiting to be remembered when Coxinha is free",
+      "pending_other": "{{count}} confirmations waiting to be remembered when Coxinha is free",
+      "failed": "Could not remember a confirmation in {{meeting}}: {{reason}}",
+      "retry": "Try again"
+    },
+    "photoAlt": "Photo of {{name}}"
+  }
+}

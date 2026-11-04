@@ -1,0 +1,65 @@
+import { useTranslation } from 'react-i18next';
+import { FileAudio, Users, type LucideIcon } from 'lucide-react';
+import { Badge } from '../../components/ui';
+import type { AppConfig } from '../../lib/bindings';
+import { SettingsGroup, SettingsRow, SettingsSection } from './controls';
+import { LiveSettings } from '../live/LiveSettings';
+
+const NONE = { engine: 'none' } as const;
+const file = (path: string) => path.split(/[\\/]/).filter(Boolean).pop() ?? path;
+
+function describe(engine: AppConfig['transcriber'] | AppConfig['diarizer']) {
+  switch (engine.engine) {
+    case 'none':
+      return null;
+    case 'whisper':
+      return `Whisper · ${file(engine.model_path)} · ${engine.accelerator}`;
+    case 'parakeet':
+      return `Parakeet · ${file(engine.model_dir)} · ${engine.accelerator}`;
+    case 'pyannote':
+      return `pyannote · ${file(engine.segmentation_model)}`;
+    case 'speakrs':
+      return `speakrs · ${file(engine.model_dir)} · ${engine.accelerator}`;
+  }
+}
+
+/** Transcrição: what the app config holds today (read-only; models are picked per meeting). */
+export function TranscriptionSection({ config }: { config: AppConfig }) {
+  const { t } = useTranslation();
+  const s = (key: string) => t(`people.settings.${key}`);
+  const row = (
+    name: string,
+    title: string,
+    engine: AppConfig['transcriber'] | AppConfig['diarizer'],
+    icon: LucideIcon
+  ) => {
+    const detail = describe(engine);
+    return (
+      <SettingsRow
+        name={name}
+        icon={icon}
+        title={title}
+        description={detail ?? s('transcription.noDefault')}
+        control={
+          <Badge tone={detail ? 'success' : 'neutral'}>
+            {s(detail ? 'transcription.configured' : 'transcription.notConfigured')}
+          </Badge>
+        }
+      />
+    );
+  };
+  return (
+    <SettingsSection
+      id="transcription"
+      headingId="transcription-heading"
+      title={s('sections.transcription')}
+      description={s('descriptions.transcription')}
+    >
+      <LiveSettings />
+      <SettingsGroup title={s('groups.meetingModels')} note={s('transcription.perMeeting')}>
+        {row('transcriber', s('transcription.engine'), config.transcriber ?? NONE, FileAudio)}
+        {row('diarizer', s('transcription.diarizer'), config.diarizer ?? NONE, Users)}
+      </SettingsGroup>
+    </SettingsSection>
+  );
+}

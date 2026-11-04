@@ -1,6 +1,6 @@
 //! Whisper implementation via `whisper-rs` (whisper.cpp binding).
 //!
-//! Uses GGUF models. Recommended downloads:
+//! Uses whisper.cpp GGML models. Recommended downloads:
 //! `ggml-base.bin`, `ggml-small.bin`, `ggml-medium.bin`, `ggml-large-v3.bin`
 //! See https://huggingface.co/ggerganov/whisper.cpp/tree/main
 
@@ -31,6 +31,11 @@ impl WhisperTranscriber {
                 model_path.display()
             );
         }
+        anyhow::ensure!(
+            matches!(accelerator, Accelerator::Cpu)
+                || (matches!(accelerator, Accelerator::Cuda) && cfg!(feature = "cuda")),
+            "Whisper supports CPU or compiled CUDA in this adapter"
+        );
         Ok(Self {
             model_path,
             accelerator,
@@ -43,7 +48,8 @@ impl WhisperTranscriber {
         if let Some(ctx) = guard.as_ref() {
             return Ok(ctx.clone());
         }
-        let params = whisper_rs::WhisperContextParameters::default();
+        let mut params = whisper_rs::WhisperContextParameters::default();
+        params.use_gpu(matches!(self.accelerator, Accelerator::Cuda));
         let path = self.model_path.to_str().context("non-UTF8 model path")?;
         let ctx = WhisperContext::new_with_params(path, params)
             .map_err(|e| anyhow::anyhow!("whisper load: {:?}", e))?;
@@ -77,22 +83,13 @@ impl Transcriber for WhisperTranscriber {
                 .full(p, &samples)
                 .map_err(|e| anyhow::anyhow!("whisper full: {:?}", e))?;
 
-            let n = state
-                .full_n_segments()
-                .map_err(|e| anyhow::anyhow!("{:?}", e))?;
+            let n = state.full_n_segments();
             let mut segments = Vec::with_capacity(n as usize);
             for i in 0..n {
-                let text = state
-                    .full_get_segment_text(i)
-                    .map_err(|e| anyhow::anyhow!("{:?}", e))?;
-                let t0 = state
-                    .full_get_segment_t0(i)
-                    .map_err(|e| anyhow::anyhow!("{:?}", e))? as f32
-                    / 100.0;
-                let t1 = state
-                    .full_get_segment_t1(i)
-                    .map_err(|e| anyhow::anyhow!("{:?}", e))? as f32
-                    / 100.0;
+                let segment = state.get_segment(i).context("missing Whisper segment")?;
+                let text = segment.to_str()?;
+                let t0 = segment.start_timestamp() as f32 / 100.0;
+                let t1 = segment.end_timestamp() as f32 / 100.0;
                 segments.push(TranscriptSegment {
                     start: t0,
                     end: t1,
@@ -120,6 +117,12 @@ fn read_wav_16k_mono(path: &Path) -> Result<Vec<f32>> {
             spec.sample_rate
         );
     }
+    anyhow::ensure!(
+        spec.channels > 0
+            && spec.bits_per_sample == 16
+            && spec.sample_format == hound::SampleFormat::Int,
+        "WAV must contain PCM16 samples"
+    );
     let samples: Result<Vec<i16>, _> = reader.samples::<i16>().collect();
     let samples = samples?;
     let mut mono: Vec<f32> = if spec.channels == 1 {

@@ -32,6 +32,13 @@ file. Lean format (look at any existing ADR as a template).
 | 0014 | [Audio toolkit ported from Handy](./0014-audio-toolkit-from-handy.md) | Accepted |
 | 0015 | [Layered architecture — Knowledge vs Memory](./0015-layered-knowledge-memory.md) | Accepted |
 
+| 0018 | [Biblioteca local e identidade confirmada](./0018-meeting-library-and-identity.md) | Accepted |
+
+| 0021 | [Separate durable capture from local incremental inference](./0021-local-incremental-asr.md) | Accepted |
+| 0022 | [Reconcile orphan captures when the library opens](./0022-orphan-capture-reconciliation.md) | Accepted |
+| 0023 | [Opt-in automatic recording of detected calls](./0023-opt-in-automatic-call-recording.md) | Accepted |
+| 0024 | [Meeting titles from a user-owned LLM over SSH](./0024-user-owned-llm-over-ssh-for-titles.md) | Accepted |
+
 ## Template
 
 ```md

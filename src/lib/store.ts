@@ -3,6 +3,7 @@ import { invoke } from '@tauri-apps/api/core';
 
 import type { Note } from './bindings';
 import { sortByUpdated } from './notes';
+import { deleteAfterPendingSaves, waitForNotePersistence } from './noteSessions';
 import { mark } from './perf';
 
 interface AppStore {
@@ -15,6 +16,8 @@ interface AppStore {
   saveNote: (id: string, markdown: string) => Promise<void>;
   duplicateNote: (id: string) => Promise<Note>;
   deleteNote: (id: string) => Promise<void>;
+  /** Spec 0112 P3: back from `.coxinha/trash/`, possibly under a new path. */
+  restoreNote: (id: string) => Promise<Note>;
   searchNotes: (query: string) => Promise<Note[]>;
   openDailyNote: (date?: string) => Promise<Note>;
 }
@@ -56,25 +59,20 @@ export const useAppStore = create<AppStore>((set) => ({
   async saveNote(id, markdown) {
     const updated = await invoke<Note>('update_note', { id, content: markdown });
     set((state) => ({
-      notes: sortByUpdated([
-        updated,
-        ...state.notes.filter((n) => n.id !== id),
-      ]),
+      notes: sortByUpdated([updated, ...state.notes.filter((n) => n.id !== id)]),
     }));
   },
 
   async duplicateNote(id) {
-    const existing = await invoke<{ note: Note; markdown: string } | null>(
-      'get_note',
-      { id },
-    );
+    await waitForNotePersistence(id);
+    const existing = await invoke<{ note: Note; markdown: string } | null>('get_note', { id });
     if (!existing) throw new Error(`note ${id} not found`);
     // Prepend a dupe marker to the first heading if one exists; else
     // just pass the markdown through — the backend derives the title
     // from the first heading on save either way.
     const dupedMd = existing.markdown.replace(
       /^(#\s+)(.+)$/m,
-      (_m, prefix, heading) => `${prefix}${heading} (copy)`,
+      (_m, prefix, heading) => `${prefix}${heading} (copy)`
     );
     const fresh = await invoke<Note>('create_note', {
       title: '',
@@ -92,11 +90,19 @@ export const useAppStore = create<AppStore>((set) => ({
   },
 
   async deleteNote(id) {
-    await invoke('delete_note', { id });
+    await deleteAfterPendingSaves(id, () => invoke('delete_note', { id }));
     set((state) => ({
       activeNoteId: state.activeNoteId === id ? null : state.activeNoteId,
       notes: state.notes.filter((n) => n.id !== id),
     }));
+  },
+
+  async restoreNote(id) {
+    const note = await invoke<Note>('restore_note', { id });
+    set((state) => ({
+      notes: sortByUpdated([note, ...state.notes.filter((n) => n.id !== note.id)]),
+    }));
+    return note;
   },
 
   async searchNotes(query) {

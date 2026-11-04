@@ -1,0 +1,79 @@
+{
+  "shell": {
+    "nav": {
+      "hoje": "Today",
+      "meetings": "Meetings",
+      "workspace": "Workspace",
+      "people": "People",
+      "search": "Search",
+      "settings": "Settings"
+    },
+    "record": {
+      "start": "Record now",
+      "startHint": "Record now ({{keys}})",
+      "stop": "Stop and save the recording",
+      "quickTitle": "Recording"
+    }
+  },
+  "recorder": {
+    "label": "Recording",
+    "untitled": "Untitled meeting",
+    "openMeeting": "Open the meeting",
+    "recording": "Recording {{time}}",
+    "paused": "Paused {{time}}",
+    "pause": "Pause",
+    "resume": "Resume",
+    "stop": "Stop and save",
+    "stopping": "Saving…",
+    "levels": "Microphone and computer audio level",
+    "metadataFailed": "Outlook invitees were not attached",
+    "nextCall": "New call in {{app}}",
+    "stillRecording": "still recording {{title}}",
+    "stillRecordingFor": "still recording {{title}} · {{time}}",
+    "recordNew": "Record the new one",
+    "sameMeeting": "Same meeting",
+    "callEnded": "The {{app}} call ended",
+    "keepRecording": "Keep recording",
+    "processing": {
+      "validation": "Checking audio and models",
+      "inference": "Transcribing",
+      "stopping": "Stopping transcription",
+      "running": "Processing"
+    },
+    "background": "continues in the background",
+    "detected": "Call in {{app}}",
+    "detectedHelp": "records microphone and computer audio",
+    "record": "Record",
+    "starting": "Starting…",
+    "details": "Details",
+    "ignore": "Ignore",
+    "interrupted": "Recording interrupted",
+    "interruptedHelp": "what was recorded is saved and can be recovered",
+    "review": "Review",
+    "dismiss": "Dismiss notice",
+    "badgeLive": "recording",
+    "badgePaused": "paused",
+    "failure": {
+      "start": "Could not start recording.",
+      "pause": "Could not pause.",
+      "stop": "Could not stop. Try again.",
+      "devices": "Could not list audio devices.",
+      "devicesMissing": "No microphone or computer audio found.",
+      "captureBusy": "A recording is already running."
+    },
+    "autoStopIn": "stopping on its own in {{time}}",
+    "stopNow": "Stop now",
+    "auto": "automatic",
+    "livePause": "Pause transcript",
+    "liveResume": "Resume transcript",
+    "target": {
+      "choose": "Which meeting to record into",
+      "solo": "Record without a meeting",
+      "soloHelp": "A new recording, not tied to the calendar"
+    },
+    "callSilent": "No one has spoken in the {{app}} call for 2 minutes. Did it end?",
+    "previousTranscript": "Transcribing the previous meeting",
+    "endedWithCall": "Recording ended",
+    "endedWithCallBody": "Coxinha stopped together with the {{app}} call."
+  }
+}

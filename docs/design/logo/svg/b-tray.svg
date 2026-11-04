@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="8 8 84 84" width="32" height="32">
+<defs><clipPath id="bt-in"><path d="M50 8.5 C56 8.5 59.6 12.8 59.6 18.6 C59.6 23 62 27.6 66 33 C70.5 39.5 82.5 50 82.5 65.5 C82.5 80.5 69 89.5 50 89.5 C31 89.5 17.5 80.5 17.5 65.5 C17.5 50 29.5 39.5 34 33 C38 27.6 40.4 23 40.4 18.6 C40.4 12.8 44 8.5 50 8.5 Z" transform="translate(50 62) scale(0.8) translate(-50 -62)"/></clipPath></defs>
+<path d="M50 8.5 C56 8.5 59.6 12.8 59.6 18.6 C59.6 23 62 27.6 66 33 C70.5 39.5 82.5 50 82.5 65.5 C82.5 80.5 69 89.5 50 89.5 C31 89.5 17.5 80.5 17.5 65.5 C17.5 50 29.5 39.5 34 33 C38 27.6 40.4 23 40.4 18.6 C40.4 12.8 44 8.5 50 8.5 Z" fill="none" stroke="#4A2508" stroke-width="6" stroke-linejoin="round"/>
+<path d="M50 8.5 C56 8.5 59.6 12.8 59.6 18.6 C59.6 23 62 27.6 66 33 C70.5 39.5 82.5 50 82.5 65.5 C82.5 80.5 69 89.5 50 89.5 C31 89.5 17.5 80.5 17.5 65.5 C17.5 50 29.5 39.5 34 33 C38 27.6 40.4 23 40.4 18.6 C40.4 12.8 44 8.5 50 8.5 Z" fill="#E8892C"/>
+
+<g clip-path="url(#bt-in)"><line x1="40" y1="58" x2="40" y2="70" stroke="#4A2508" stroke-width="7" stroke-linecap="round"/><line x1="50" y1="51" x2="50" y2="77" stroke="#4A2508" stroke-width="7" stroke-linecap="round"/><line x1="60" y1="58" x2="60" y2="70" stroke="#4A2508" stroke-width="7" stroke-linecap="round"/></g>
+</svg>

@@ -29,6 +29,7 @@ pub trait Transcriber: Send + Sync {
     /// Called from the meeting pipeline (spec 0008) — trait + factory
     /// exist today so config is type-checked against the real surface.
     #[allow(dead_code)]
+    #[must_use = "Await transcription to obtain the transcript."]
     async fn transcribe_file(&self, wav: &Path) -> Result<TranscriptBody>;
 }
 

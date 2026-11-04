@@ -1,0 +1,48 @@
+{
+  "items": {
+    "files": {
+      "title": "Arquivos",
+      "list": "Arquivos e referências",
+      "include": "Incluir arquivo",
+      "reference": "Referenciar",
+      "referenceHint": "Link para um endereço web ou um arquivo que fica onde está",
+      "chooseFile": "Escolher arquivo",
+      "add": "Adicionar",
+      "cancel": "Cancelar",
+      "reveal": "Mostrar na pasta",
+      "empty": "Nenhum arquivo ainda. Inclua um arquivo ou referencie um link.",
+      "open": "Abrir {{name}}",
+      "remove": "Remover",
+      "removeNamed": "Remover {{name}}",
+      "confirmRemove": "Mover para a lixeira do cofre?",
+      "missing": "não encontrado",
+      "link": "link",
+      "external": "arquivo externo",
+      "eventHint": "Prepare a reunião para guardar arquivos com ela."
+    },
+    "links": {
+      "meeting": {
+        "title": "Atividades",
+        "empty": "Nenhuma atividade vinculada.",
+        "link": "Vincular atividade",
+        "search": "Buscar atividades",
+        "results": "Atividades encontradas",
+        "noResults": "Nenhuma atividade encontrada.",
+        "unlink": "Desvincular {{name}}",
+        "missing": "Atividade ausente",
+        "untitled": "Sem título"
+      },
+      "activity": {
+        "title": "Reuniões",
+        "empty": "Nenhuma reunião vinculada.",
+        "link": "Vincular reunião",
+        "search": "Buscar reuniões",
+        "results": "Reuniões encontradas",
+        "noResults": "Nenhuma reunião encontrada.",
+        "unlink": "Desvincular {{name}}",
+        "missing": "Reunião ausente",
+        "untitled": "Sem título"
+      }
+    }
+  }
+}

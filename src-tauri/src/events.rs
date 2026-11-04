@@ -30,14 +30,6 @@ pub struct Navigate {
     pub route: Route,
 }
 
-/// Broadcast from both shutdown paths (tray Quit today,
-/// `window::close_for_quit` later). Components that hold
-/// pending work (editor debounced saves, drafts, etc.) listen
-/// and flush immediately — the host gives a ~600 ms window
-/// before calling `app.exit(0)`.
-#[derive(Debug, Clone, Serialize, Deserialize, Type, Event)]
-pub struct BeforeQuit;
-
 #[derive(Debug, Clone, Serialize, Deserialize, Type, Event)]
 pub struct CallDetected {
     pub app_name: String,
@@ -56,4 +48,31 @@ pub struct TranscriptionProgress {
     pub meeting_id: Uuid,
     pub percent: f32,
     pub message: String,
+}
+
+/// Live capture or processing state changed; payload-free signal to refetch `library_status`.
+#[derive(Debug, Clone, Serialize, Deserialize, Type, Event)]
+pub struct CaptureChanged {
+    pub at_ms: u64,
+}
+impl CaptureChanged {
+    pub fn now() -> Self {
+        let at_ms = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map_or(0, |d| d.as_millis() as u64);
+        Self { at_ms }
+    }
+}
+
+/// Session rows changed outside an IPC mutation (a suggested title was applied).
+#[derive(Debug, Clone, Serialize, Deserialize, Type, Event)]
+pub struct SessionsChanged {
+    pub at_ms: u64,
+}
+impl SessionsChanged {
+    pub fn now() -> Self {
+        Self {
+            at_ms: CaptureChanged::now().at_ms,
+        }
+    }
 }

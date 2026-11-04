@@ -1,0 +1,14 @@
+_version: 2
+desktop:
+  confirm: "Sair do Coxinha? As alterações serão salvas e a gravação será finalizada antes de sair. O processamento em execução será interrompido e poderá ser tentado novamente."
+  exit: "Salvar e sair"
+  minimize: "Minimizar para a bandeja"
+  cancel: "Cancelar"
+  failed: "O Coxinha continua aberto. Falha ao salvar ou encerrar. Verifique os detalhes da gravação, recupere se necessário e tente novamente. Diagnóstico local:"
+  unavailable: "O editor não confirmou o salvamento. Ele pode estar indisponível ou ainda salvando. Cancele para aguardar ou recuperar. Sair mesmo assim pode perder alterações não salvas; as gravações serão finalizadas."
+  retry: "Tentar salvar / continuar aguardando"
+  discardExit: "Descartar alterações não salvas e sair"
+  delayed: "O salvamento ainda não foi confirmado. O editor pode continuar salvando; isso não comprova que ele parou de responder."
+  discardWarning: "Você pode cancelar ou tentar novamente. Descartar e sair abandona alterações que ainda não chegaram ao disco. Escritas nativas em andamento terminarão primeiro. Os arquivos brutos da gravação são preservados, mas a finalização pode ficar incompleta e exigir recuperação na próxima abertura. Esta ação não confirma uma gravação salva com sucesso."
+  attachmentPending: "Um anexo ainda está sendo copiado. A inserção dele e as alterações da nota ainda não foram confirmadas. Aguarde e tente novamente, ou cancele para voltar à nota. Descartar e sair pode deixar esse anexo fora da nota."
+  saveFailed: "O editor não confirmou o salvamento das alterações de notas ou do quadro. Cancele para verificar o erro de salvamento ou tente novamente."

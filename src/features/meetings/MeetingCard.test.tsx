@@ -18,9 +18,7 @@ describe('MeetingCard', () => {
 
   it('renders the meeting title, date, and participants count', () => {
     render(<MeetingCard meetingId="it-weekly-status" />);
-    expect(
-      screen.getByRole('heading', { name: 'IT Weekly Status Meeting' }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'IT Weekly Status Meeting' })).toBeInTheDocument();
     expect(screen.getByText('meeting.label')).toBeInTheDocument();
   });
 
@@ -31,12 +29,11 @@ describe('MeetingCard', () => {
     const summaryTab = screen.getByRole('tab', { name: 'meeting.card.tabs.summary' });
     expect(summaryTab).toHaveAttribute('aria-selected', 'true');
 
-    await user.click(
-      screen.getByRole('tab', { name: 'meeting.card.tabs.transcript' }),
+    await user.click(screen.getByRole('tab', { name: 'meeting.card.tabs.transcript' }));
+    expect(screen.getByRole('tab', { name: 'meeting.card.tabs.transcript' })).toHaveAttribute(
+      'aria-selected',
+      'true'
     );
-    expect(
-      screen.getByRole('tab', { name: 'meeting.card.tabs.transcript' }),
-    ).toHaveAttribute('aria-selected', 'true');
     expect(summaryTab).toHaveAttribute('aria-selected', 'false');
   });
 

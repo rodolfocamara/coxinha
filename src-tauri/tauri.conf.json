@@ -3,6 +3,7 @@
   "productName": "Coxinha",
   "version": "0.1.0",
   "identifier": "br.dev.coxinha.app",
+  "mainBinaryName": "Coxinha",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "beforeBuildCommand": "pnpm build",
@@ -10,6 +11,7 @@
     "frontendDist": "../dist"
   },
   "app": {
+    "enableGTKAppId": false,
     "windows": [
       {
         "label": "main",
@@ -20,13 +22,20 @@
         "minHeight": 600,
         "visible": false,
         "skipTaskbar": false,
-        "decorations": true,
+        "decorations": false,
+        "transparent": true,
+        "backgroundColor": [0, 0, 0, 0],
+        "resizable": true,
         "center": true,
         "theme": null
       }
     ],
     "security": {
-      "csp": null
+      "csp": null,
+      "assetProtocol": {
+        "enable": true,
+        "scope": []
+      }
     }
   },
   "plugins": {},

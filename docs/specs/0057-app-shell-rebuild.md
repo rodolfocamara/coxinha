@@ -1,5 +1,11 @@
 # 0057 — App shell rebuild: three-column layout, Home landing, meeting-as-block
 
+> Emenda 2026-10-17: ADR-0018 e spec 0058 prevalecem no domínio de reuniões.
+> Linux+Windows, biblioteca independente de notas, trilhas originais separadas,
+> core sem Tauri, bancos canônicos separados e identidade apenas confirmada.
+> Regras anteriores conflitantes permanecem abaixo como histórico, sem vigência.
+
+
 **Status:** draft
 **Supersedes part of:** [0052 Mix B Refined shell](./0052-mix-b-refined-shell.md)
 **Depends on / references:** [0006 App shell](./0006-app-shell.md), [0043 Command palette](./0043-command-palette.md), [0008 Meeting pipeline](./0008-meeting-pipeline.md), [0015 Vault import](./0015-vault-import.md)

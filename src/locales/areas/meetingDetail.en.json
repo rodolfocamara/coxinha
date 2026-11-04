@@ -1,0 +1,157 @@
+{
+  "meetingDetail": {
+    "underWay": "Under way, {{left}} left",
+    "people": {
+      "organizer": "Organizer",
+      "optional": "Optional",
+      "spoke": "Confirmed on the recording",
+      "more_one": "and {{count}} more",
+      "more_other": "and {{count}} more",
+      "stackMore": "+{{count}}",
+      "response": {
+        "accepted": "{{count}} yes",
+        "tentative": "{{count}} maybe",
+        "declined": "{{count}} no",
+        "noAnswer": "{{count}} no answer"
+      }
+    },
+    "signals": {
+      "files_one": "{{count}} file",
+      "files_other": "{{count}} files"
+    },
+    "rows": {
+      "result": "Result",
+      "people": "People",
+      "transcript": "Transcript",
+      "speakers": "Speakers",
+      "note": "Note",
+      "summary": "Summary",
+      "followUps": "Follow-ups",
+      "files": "Files",
+      "diagram": "Diagram",
+      "memory": "Memory",
+      "present": "Present",
+      "invited": "Invited",
+      "mark": "Rating",
+      "response": "Response",
+      "location": "Location",
+      "organizer": "Organizer",
+      "preparation": "Preparation",
+      "invitation": "Invitation",
+      "calendar": "Calendar",
+      "meeting": "Meeting"
+    },
+    "values": {
+      "yes": "Yes",
+      "no": "No",
+      "none": "None",
+      "transcriptYes": "Yes · {{duration}}",
+      "running": "In progress",
+      "failed": "Failed",
+      "off": "Off",
+      "notYet": "Not yet",
+      "memoryKept": "Yes · summary only",
+      "unknown": "Unknown",
+      "confirmed_one": "{{count}} confirmed",
+      "confirmed_other": "{{count}} confirmed",
+      "nobodyInvited": "None · only on your calendar",
+      "notLinked": "Not linked",
+      "showMessage": "Show message",
+      "prepNone": "None",
+      "prepNote": "Note",
+      "prepLinks_one": "{{count}} link",
+      "prepLinks_other": "{{count}} links",
+      "prepActivities_one": "{{count}} activity",
+      "prepActivities_other": "{{count}} activities",
+      "speakersNone": "{{total}} · none named",
+      "speakersAll_one": "{{count}} · named",
+      "speakersAll_other": "{{count}} · all named",
+      "speakersSome_one": "{{total}} · {{count}} named",
+      "speakersSome_other": "{{total}} · {{count}} named",
+      "response": {
+        "organizer": "You organize",
+        "accepted": "Accepted",
+        "tentative": "Tentative",
+        "declined": "Declined",
+        "none": "Not answered"
+      }
+    },
+    "actions": {
+      "open": "Open",
+      "openTranscript": "Open the full transcript",
+      "name": "Name",
+      "nameSpeakers": "Name the speakers",
+      "setUp": "Set up",
+      "setUpSummaries": "Set up summaries in Settings › Titles and summaries",
+      "link": "Link"
+    },
+    "respond": {
+      "action": {
+        "respond": "Respond",
+        "change": "Change",
+        "respondName": "Respond to this invitation",
+        "changeName": "Change your response"
+      },
+      "note": {
+        "sent": "Sent to {{name}}",
+        "silent": "Saved, organizer not notified"
+      },
+      "title": "Respond to the invitation",
+      "reviewTitle": "Review before sending",
+      "current": "Your response now: {{response}}",
+      "choiceLegend": "Your response",
+      "choice": {
+        "accept": "Accept",
+        "tentative": "Tentative",
+        "decline": "Decline",
+        "propose": "Propose a new time"
+      },
+      "noProposals": "The organizer does not allow proposing a new time.",
+      "proposeAsLegend": "Send it as",
+      "date": "Date",
+      "from": "From",
+      "to": "To",
+      "zoneHint": "Times in {{zone}}.",
+      "problem": {
+        "noChoice": "Choose a response.",
+        "range": "The new time must end after it starts.",
+        "past": "The new time is already in the past.",
+        "same": "The new time is the meeting's current time. Pick another one."
+      },
+      "scopeLegend": "Applies to",
+      "scope": {
+        "occurrence": "This occurrence, {{when}}",
+        "series": "The whole series",
+        "single": "This meeting"
+      },
+      "oneOccurrence": "A new time is proposed for this occurrence only.",
+      "comment": "Comment (optional)",
+      "commentHint": "Goes to the organizer with your response.",
+      "notify": "Notify {{name}}",
+      "notifyProposal": "A proposal always goes to the organizer.",
+      "notifyNotAsked": "The organizer did not ask for responses.",
+      "noWrite": "Outlook has not allowed responding on this connection. Reconnect it in Settings › Calendar.",
+      "review": {
+        "to": "To",
+        "nobody": "Nobody, the organizer is not notified",
+        "event": "Event",
+        "response": "Response",
+        "comment": "Comment",
+        "proposed": "New time",
+        "appliesTo": "Applies to",
+        "willSend": "This goes to {{name}} and cannot be recalled.",
+        "silent": "Nothing goes to the organizer. Only your calendar changes.",
+        "tentativeNewTime": "Tentative, with a new time",
+        "declineNewTime": "Decline, with a new time"
+      },
+      "buttons": {
+        "review": "Review",
+        "back": "Back",
+        "send": "Send to {{name}}",
+        "save": "Save without notifying",
+        "sending": "Sending…",
+        "retry": "Try again"
+      }
+    }
+  }
+}

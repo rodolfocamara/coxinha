@@ -270,9 +270,9 @@ Pegadinhas conhecidas que não são óbvias:
 - **StrictMode roda effects 2× em dev.** Se `loadNotes` aparece
   no log duas vezes, não é bug — é design pra detectar effects
   não idempotentes. Em produção só roda uma vez.
-- **Tray sem ícone explode.** `tray::setup` chama
-  `app.default_window_icon().unwrap()`. Se o build não tiver
-  ícone (spec 0017), panic no boot.
+- **The tray icon is compiled in.** `tray::setup` embeds
+  `src-tauri/icons/tray.png` with `tauri::include_image!`; a missing
+  or broken file fails the build, not the boot.
 - **Suspense fica "girando" pra sempre.** `NoteEditor` usa
   `use(getNotePromise(id))`. Se você chamar
   `getNotePromise(id)` **dentro** do componente em vez de via
@@ -327,7 +327,7 @@ pendente (drafts futuros, forms, etc.) só precisa de um
 | Janela abre em branco | `App.tsx` useEffect principal; Network no DevTools |
 | "Coxinha ready" nunca aparece | `config.rs::AppState::initialize` |
 | Atalho global não funciona | `shortcuts.rs::handle_shortcut`; se nem entra, é o `register_all` |
-| Tray não aparece | `tray::setup`, em particular `app.default_window_icon().unwrap()` |
+| Tray não aparece | `tray::setup` and `src-tauri/icons/tray.png` |
 | `invoke` retorna `not allowed` | checar `capabilities/default.json` |
 | `invoke` retorna `state not found` | faltou `app.manage(...)` pro tipo declarado no command |
 | Command retorna erro mas UI fica muda | `lib.rs mod commands` fn correspondente; lembrar que `Result<T, String>` vira `{status:'error', error}` |

@@ -1,8 +1,6 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
-/* Google Fonts are loaded via `<link>` in index.html so PostCSS
-   doesn't trip over the "imports must come first" rule when
-   Tailwind expands its own layer blocks ahead of ours. */
+/* System fonts avoid external requests and remain available offline. */
 
 /* BlockNote's shadcn bundle brings its own utility classes — keep
    them in the Tailwind 4 scan so nothing gets purged. */
@@ -12,12 +10,14 @@
 
 /* ---------------------------------------------------------------
    Coxinha design tokens — Mix B Refined handoff (2026-04-20).
-   Geist sans throughout; neutral zinc-leaning surfaces; single
+   System sans throughout; neutral zinc-leaning surfaces; single
    warm-tangerine accent. OKLCH so perceptual steps stay even.
    See docs/research/ui-audit/DESIGN.md.
    --------------------------------------------------------------- */
 
 @theme {
+  --color-canvas: oklch(var(--bg-canvas));
+  --color-surface: oklch(var(--bg-surface));
   --color-background: oklch(var(--bg-canvas));
   --color-foreground: oklch(var(--fg-primary));
   --color-card: oklch(var(--bg-surface));
@@ -26,6 +26,7 @@
   --color-popover-foreground: oklch(var(--fg-primary));
   --color-primary: oklch(var(--accent));
   --color-primary-foreground: oklch(var(--fg-on-accent));
+  --color-primary-ink: oklch(var(--accent-ink));
   --color-secondary: oklch(var(--bg-surface-2));
   --color-secondary-foreground: oklch(var(--fg-primary));
   --color-muted: oklch(var(--bg-sunken));
@@ -33,90 +34,151 @@
   --color-accent: oklch(var(--accent-soft));
   --color-accent-foreground: oklch(var(--fg-primary));
   --color-destructive: oklch(var(--danger));
-  --color-destructive-foreground: oklch(var(--fg-on-accent));
+  --color-destructive-foreground: oklch(0.99 0 0);
   --color-border: oklch(var(--fg-primary) / 0.08);
-  --color-input: oklch(var(--fg-primary) / 0.14);
-  --color-ring: oklch(var(--accent) / 0.40);
+  --color-input: oklch(var(--fg-primary) / 0.55);
+  --color-ring: oklch(var(--accent));
+  /* Status hues (spec 0096): red only for live capture, amber attention,
+     green done, blue Outlook. Each has a soft fill for pills and rows. */
+  --color-live: oklch(var(--live));
+  --color-live-soft: oklch(var(--live) / 0.16);
+  --color-warning: oklch(var(--warning));
+  --color-warning-soft: oklch(var(--warning) / 0.16);
+  --color-success: oklch(var(--success));
+  --color-success-soft: oklch(var(--success) / 0.14);
+  --color-info: oklch(var(--info));
+  --color-info-soft: oklch(var(--info) / 0.14);
+
+  /* Control text size between text-xs (12px) and text-sm (14px), spec 0095. */
+  --text-ui: 0.8125rem;
+  --text-ui--line-height: 1.25rem;
 
   --radius-lg: 16px;
   --radius-md: 10px;
   --radius-sm: 6px;
 
-  --font-sans: 'Geist', 'Inter Tight', ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
-  --font-display: 'Geist', 'Inter Tight', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+  --font-display: ui-sans-serif, system-ui, sans-serif;
 
   /* Motion — Opera Air-inspired "calm" easing. */
   --ease-calm: cubic-bezier(0.22, 0.61, 0.36, 1);
 
   /* AppShell dimensions (spec 0057). Canvases + chrome reference
      these instead of hardcoding pixel widths. */
-  --shell-rail-width: 256px;
-  --shell-chrome-height: 48px;
-  --shell-panel-width: 380px;
+  --shell-rail-width: 16rem;
+  --shell-chrome-height: 3rem;
+  --shell-panel-width: 23.75rem;
+  /* Redesigned shell (spec 0096): labelled icon rail and recorder strip. */
+  --shell-nav-width: 4.25rem;
+  --shell-strip-height: 2.375rem;
 }
 
 @layer base {
   :root {
-    /* Light — near-neutral zinc stepped surfaces.
-       Matches the Mix B Refined swatches: canvas #FFFFFF,
-       surface #FAFAFA, divider #E4E4E7, ink #18181B. */
-    --bg-canvas:    1.000 0 0;
-    --bg-surface:   0.984 0 0;
-    --bg-surface-2: 0.960 0 0;
-    --bg-sunken:    0.940 0 0;
-    --bg-overlay:   0.990 0 0;
+    color-scheme: light;
+    /* Light: warm off-white with readable secondary text. */
+    --bg-canvas: 0.9667 0.0027 84.6;
+    --bg-surface: 0.9958 0.0016 84.6;
+    --bg-surface-2: 0.9405 0.0035 84.6;
+    --bg-sunken: 0.9232 0.0045 84.6;
+    --bg-overlay: 0.9958 0.0016 84.6;
 
-    --fg-primary:    0.200 0.004 285;
-    --fg-secondary:  0.500 0.005 285;
-    --fg-tertiary:   0.620 0.005 285;
-    --fg-quaternary: 0.770 0.005 285;
-    --fg-on-accent:  0.995 0 0;
+    --fg-primary: 0.28518 0.00564 271.22;
+    --fg-secondary: 0.45364 0.00658 274.85;
+    --fg-tertiary: 0.5005 0.00797 277.04;
+    --fg-quaternary: 0.55975 0.00775 277.07;
+    --fg-on-accent: 0.25997 0.01184 67.27;
+    --fg-on-danger: 0.25997 0.01184 67.27;
 
-    /* Accent — warm tangerine. The only non-neutral hue in
-       chrome. Used for active rail icon, save dot, primary CTA. */
-    --accent:       0.700 0.140 55;
-    --accent-hover: 0.640 0.150 55;
-    --accent-soft:  0.935 0.035 65;
+    /* Accent — warm tangerine by default (spec 0125 swaps it). The only
+       non-neutral hue in chrome. Used for active rail icon, save dot, primary
+       CTA. `--accent-ink` is the accent as text on a surface, at 4.5:1. */
+    --accent: 0.7 0.14 55;
+    --accent-hover: 0.65 0.15 55;
+    --accent-soft: 0.935 0.035 65;
+    --accent-ink: 0.5249 0.1306 55;
+    --selection: 0.86 0.06 55;
 
-    --success: 0.620 0.080 150;
-    --warning: 0.720 0.110 80;
-    --danger:  0.560 0.120 30;
+    --success: 0.55 0.11 158;
+    --warning: 0.6 0.12 75;
+    --danger: 0.56 0.12 30;
+    --live: 0.6 0.19 31;
+    --info: 0.52 0.14 258;
+
+    /* Ambient gradient blobs behind the app; Ajustes can switch it off. */
+    --blob-a: 0.84 0.09 55 / 0.2;
+    --blob-b: 0.85 0.07 180 / 0.14;
+    --blob-c: 0.8 0.08 265 / 0.14;
+
+    /* Person hues for speakers and avatars: ink on a soft fill. */
+    --p1: 0.6 0.13 50;
+    --p1-bg: 0.9 0.04 55;
+    --p2: 0.52 0.14 345;
+    --p2-bg: 0.89 0.04 345;
+    --p3: 0.54 0.08 225;
+    --p3-bg: 0.9 0.03 220;
+    --p4: 0.56 0.11 135;
+    --p4-bg: 0.91 0.04 135;
+
+    /* Motion (spec 0096): speed first, only transform and opacity. */
+    --m-instant: 80ms;
+    --m-fast: 140ms;
+    --m-med: 200ms;
+    --m-zoom: 380ms;
+    --e-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+    --e-spring: cubic-bezier(0.34, 1.5, 0.5, 1);
 
     /* Motion tokens — see DESIGN.md §6. */
-    --dur-fast:   120ms;
-    --dur-med:    180ms;
-    --dur-slow:   260ms;
+    --dur-fast: 120ms;
+    --dur-med: 180ms;
+    --dur-slow: 260ms;
     --dur-breath: 600ms;
   }
 
-  /* Dark — near-black base (spec 0057 retune, supersedes the warm
-     #2A2A2A range from spec 0052). Matches docs/ui/new-options.pen
-     Pages 26/27/28 and the Notion reference: canvas ~#0A0A0A, with
-     surfaces stepped upward so cards still read against the bg. A
-     0.003 chroma keeps the faint warm cast from Mix B Refined. */
+  /* Dark: comfortable graphite, canvas #242528 and surfaces #2b2d30. */
   .dark,
-  [data-theme="dark"] {
-    --bg-canvas:    0.058 0.003 60;
-    --bg-surface:   0.110 0.003 60;
-    --bg-surface-2: 0.160 0.003 60;
-    --bg-sunken:    0.035 0.003 60;
-    --bg-overlay:   0.125 0.003 60;
+  [data-theme='dark'] {
+    color-scheme: dark;
+    --bg-canvas: 0.1645 0.0055 271;
+    --bg-surface: 0.2085 0.0065 271;
+    --bg-surface-2: 0.2455 0.0075 271;
+    --bg-sunken: 0.1495 0.005 271;
+    --bg-overlay: 0.2235 0.007 271;
 
-    --fg-primary:    0.940 0.003 60;
-    --fg-secondary:  0.740 0.005 60;
-    --fg-tertiary:   0.600 0.005 60;
-    --fg-quaternary: 0.460 0.005 60;
-    --fg-on-accent:  0.985 0.003 60;
+    --fg-primary: 0.94548 0.00675 97.35;
+    --fg-secondary: 0.81001 0.00837 98.91;
+    --fg-tertiary: 0.7347 0.00881 91.51;
+    --fg-quaternary: 0.67629 0.00899 91.52;
+    --fg-on-accent: 0.25997 0.01184 67.27;
+    --fg-on-danger: 0.25997 0.01184 67.27;
 
-    --accent:       0.770 0.135 55;
-    --accent-hover: 0.810 0.135 55;
-    --accent-soft:  0.320 0.060 55;
+    --accent: 0.77 0.135 55;
+    --accent-hover: 0.81 0.135 55;
+    --accent-soft: 0.32 0.06 55;
+    --accent-ink: 0.77 0.135 55;
+    --selection: 0.86 0.06 55;
 
-    /* Explicit border in dark to match the Pen stroke ~#1F1F1F.
-       The derived `fg-primary / 0.08` token dissolves against the
-       near-black canvas, so rail + card edges need a fixed value. */
-    --color-border: oklch(0.220 0.003 60);
+    --success: 0.8 0.11 158;
+    --warning: 0.84 0.11 80;
+    --live: 0.69 0.19 33;
+    --info: 0.76 0.11 258;
+    --blob-a: 0.74 0.14 55 / 0.13;
+    --blob-b: 0.74 0.11 190 / 0.09;
+    --blob-c: 0.6 0.15 268 / 0.09;
+    --p1: 0.78 0.11 55;
+    --p1-bg: 0.33 0.04 55;
+    --p2: 0.72 0.11 340;
+    --p2-bg: 0.31 0.04 340;
+    --p3: 0.77 0.07 220;
+    --p3-bg: 0.33 0.04 220;
+    --p4: 0.81 0.1 135;
+    --p4-bg: 0.34 0.05 135;
+
+    /* Keep surface edges visible without turning dividers into chrome. */
+    --danger: 0.75 0.11 30;
+    --color-destructive-foreground: oklch(var(--fg-on-danger));
+    --color-border: oklch(1 0 0 / 0.08);
   }
 
   * {
@@ -131,12 +193,14 @@
 
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 1;
   }
 
   ::selection {
-    background: oklch(0.860 0.060 55);
-    color: oklch(var(--fg-primary));
+    background: oklch(var(--selection));
+    color: #28231e;
   }
 
   /* Respect the OS "reduce motion" setting. */
@@ -156,7 +220,7 @@
 .bn-container {
   height: 100%;
   /* Per-note font family is switched by the NoteActionsMenu
-     picker (Default/Serif/Mono) — default to Geist. */
+     picker (Default/Serif/Mono) — default to the system sans font. */
   --cx-note-font: var(--font-sans);
   --cx-note-size: 1rem;
 }
@@ -167,7 +231,7 @@
 }
 
 .cx-note-font-serif {
-  --cx-note-font: 'Newsreader', 'Source Serif Pro', Georgia, serif;
+  --cx-note-font: ui-serif, Georgia, 'Times New Roman', serif;
 }
 .cx-note-font-mono {
   --cx-note-font: var(--font-mono);
@@ -194,11 +258,11 @@
    when this block is the sole empty block in the doc, which maps
    exactly to the "first and only" case. Subsequent empty blocks
    (created by Enter) lack the attribute and go quiet. */
-.bn-block-content[data-is-empty-and-focused="true"]:not([data-is-only-empty-block="true"])::after {
-  content: "" !important;
+.bn-block-content[data-is-empty-and-focused='true']:not([data-is-only-empty-block='true'])::after {
+  content: '' !important;
 }
 
-/* Display — Geist bold with tight tracking. Used for note titles
+/* Display — system sans bold with tight tracking. Used for note titles
    and view headlines. Mix B Refined: 38px / 700 / -1.1 tracking. */
 .cx-display {
   font-family: var(--font-display);
@@ -212,7 +276,7 @@
 .cx-eyebrow {
   font-family: var(--font-sans);
   font-weight: 500;
-  font-size: 11px;
+  font-size: 0.6875rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: oklch(var(--fg-tertiary));
@@ -222,12 +286,12 @@
 .cx-kbd {
   display: inline-flex;
   align-items: center;
-  padding: 1px 6px;
+  padding: 1px 0.375rem;
   border-radius: 4px;
   background: oklch(var(--bg-surface-2));
   color: oklch(var(--fg-secondary));
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 500;
   border: 1px solid oklch(var(--fg-primary) / 0.08);
 }
@@ -236,7 +300,7 @@
    a lighter slash divider and an active segment in primary ink. */
 .cx-crumb {
   font-family: var(--font-sans);
-  font-size: 12px;
+  font-size: 0.75rem;
   color: oklch(var(--fg-secondary));
 }
 .cx-crumb-sep {
@@ -255,16 +319,46 @@
   background: oklch(var(--bg-surface-2));
   color: oklch(var(--fg-secondary));
   font-family: var(--font-sans);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 500;
-  padding: 5px 10px;
+  padding: 0.3125rem 0.625rem;
   border-radius: 4px;
 }
 
 /* Status / footer rail text — 11px muted. */
 .cx-status {
   font-family: var(--font-sans);
-  font-size: 11px;
+  font-size: 0.6875rem;
   color: oklch(var(--fg-secondary));
   letter-spacing: 0.01em;
+}
+
+@layer base {
+  /* Native selects otherwise inherit light UA surfaces in a dark webview. */
+  select,
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  textarea {
+    color: inherit;
+    background-color: oklch(var(--bg-surface));
+  }
+  select option,
+  select optgroup {
+    color: oklch(var(--fg-primary));
+    background-color: oklch(var(--bg-surface));
+  }
+}
+
+/* Embedded notes fill the session's available width after the sidebar. Avoid
+   viewport breakpoints: a wide viewport can still contain a narrow editor. */
+.cx-note-embedded .bn-container {
+  height: auto;
+  min-height: 15rem;
+}
+.cx-note-embedded .bn-editor {
+  padding-inline: clamp(1.25rem, 4%, 2.5rem);
+}
+.cx-note-embedded .bn-editor,
+.cx-note-embedded .ProseMirror {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }

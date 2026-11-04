@@ -7,7 +7,7 @@ interface MinimalEditor {
       props: { meetingId: string };
     }>,
     referenceBlock: unknown,
-    placement: 'before' | 'after',
+    placement: 'before' | 'after'
   ) => void;
   getTextCursorPosition: () => { block: unknown };
 }
@@ -30,7 +30,7 @@ export function buildMeetingSlashItem(editor: MinimalEditor) {
       editor.insertBlocks(
         [{ type: 'meeting', props: { meetingId: fixture.id } }],
         editor.getTextCursorPosition().block,
-        'after',
+        'after'
       );
     },
   };

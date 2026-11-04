@@ -1,0 +1,287 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Coxinha: captura Linux</title><style>
+  :root {
+    --bg-body: #0c0e16;
+    --bg-surface: #131620;
+    --bg-card: #191d2b;
+    --bg-card-hover: #1f2438;
+    --border: #262b3d;
+    --border-subtle: #1e2236;
+    --text-1: #edf0f7;
+    --text-2: #a1a8be;
+    --text-3: #6c7186;
+    --accent: #f59e42;             /* Coxinha orange */
+    --accent-dim: rgba(245,158,66,0.14);
+    --green: #34d399;
+    --green-dim: rgba(52,211,153,0.12);
+    --red: #f87171;
+    --red-dim: rgba(248,113,113,0.10);
+    --amber: #fbbf24;
+    --amber-dim: rgba(251,191,36,0.10);
+    --blue: #60a5fa;
+    --cyan: #22d3ee;
+    --gray: #6c7186;
+    --gray-dim: rgba(108,113,134,0.15);
+    --shadow: 0 2px 8px rgba(0,0,0,0.35);
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.25);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  [data-theme="light"] {
+    --bg-body: #f1f5f9;
+    --bg-surface: #ffffff;
+    --bg-card: #ffffff;
+    --bg-card-hover: #f8fafc;
+    --border: #e2e8f0;
+    --border-subtle: #f1f5f9;
+    --text-1: #0f172a;
+    --text-2: #475569;
+    --text-3: #94a3b8;
+    --accent: #d97706;
+    --accent-dim: rgba(217,119,6,0.08);
+    --green: #10b981;
+    --green-dim: rgba(16,185,129,0.08);
+    --red: #ef4444;
+    --red-dim: rgba(239,68,68,0.06);
+    --amber: #f59e0b;
+    --amber-dim: rgba(245,158,11,0.06);
+    --blue: #3b82f6;
+    --cyan: #06b6d4;
+    --gray: #94a3b8;
+    --gray-dim: rgba(148,163,184,0.10);
+    --shadow: 0 1px 3px rgba(0,0,0,0.08);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    max-width: 1140px; margin: 0 auto; padding: 20px 28px 28px;
+    background: var(--bg-body); color: var(--text-1);
+    transition: background 0.25s, color 0.25s;
+    line-height: 1.5;
+  }
+  .report-header { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; }
+  .report-header .brand {
+    font-weight: 700; font-size: 20px; color: var(--text-1);
+    display: flex; align-items: center; gap: 8px; white-space: nowrap;
+  }
+  .report-header .brand::before {
+    content: ""; display: inline-block; width: 8px; height: 8px;
+    border-radius: 50%; background: var(--accent);
+  }
+  .report-header .meta { color: var(--text-3); font-size: 13px; margin: 0; }
+  #theme-toggle {
+    margin-left: auto; background: none; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 6px 10px; cursor: pointer;
+    font-size: 16px; line-height: 1; color: var(--text-2); flex-shrink: 0;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  #theme-toggle:hover { background: var(--accent-dim); border-color: var(--accent); }
+  .report-layout { display: flex; gap: 20px; margin-top: 12px; }
+  .sidebar {
+    width: 200px; flex-shrink: 0; position: sticky; top: 12px;
+    align-self: flex-start; max-height: calc(100vh - 80px);
+    overflow-y: auto; display: flex; flex-direction: column; gap: 6px;
+  }
+  .sidebar-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-left: 3px solid var(--border); border-radius: var(--radius-sm);
+    padding: 10px 14px; cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; gap: 10px; position: relative;
+  }
+  .sidebar-card:hover { border-color: var(--accent); border-left-color: var(--accent); background: var(--bg-card-hover); }
+  .sidebar-card.active { border-color: var(--accent); background: var(--accent-dim); border-left-color: var(--accent); }
+  .sidebar-card.card-pass { border-left-color: var(--green); background: var(--green-dim); }
+  .sidebar-card.card-pass:hover { border-color: var(--green); }
+  .sidebar-card.card-pass.active { border-color: var(--green); background: var(--green-dim); border-left-color: var(--green); }
+  .sidebar-card.card-pending { border-left-color: var(--amber); background: var(--amber-dim); }
+  .sidebar-card.card-pending:hover { border-color: var(--amber); }
+  .sidebar-card.card-pending.active { border-color: var(--amber); background: var(--amber-dim); border-left-color: var(--amber); }
+  .sidebar-card .card-label { font-size: 13px; font-weight: 600; color: var(--text-1); }
+  .sidebar-card .card-count { font-size: 11px; color: var(--text-3); margin-left: auto; }
+  .sidebar-card.card-pass .card-count { color: var(--green); font-weight: 700; }
+  .sidebar-card.card-pending .card-count { color: var(--amber); font-weight: 700; }
+  .main-content { flex: 1; min-width: 0; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  h1 { margin: 0 0 4px; font-size: 26px; font-weight: 700; color: var(--text-1); }
+  .comparison-bar {
+    font-size: 13px; color: var(--text-3); margin-bottom: 20px;
+    padding: 8px 14px; background: var(--accent-dim); border-radius: var(--radius-sm);
+    border: 1px solid var(--border-subtle);
+  }
+  .comparison-bar b { color: var(--accent); }
+  section {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px 24px; margin-bottom: 16px;
+    scroll-margin-top: 64px; box-shadow: var(--shadow-sm);
+    transition: background 0.25s, border-color 0.25s; overflow: hidden;
+  }
+  .section-header {
+    font-size: 18px; font-weight: 700; margin: 0 0 14px;
+    padding-left: 14px; border-left: 4px solid var(--accent);
+    color: var(--text-1);
+  }
+  .subsection-title {
+    font-size: 14px; font-weight: 600; margin: 16px 0 8px;
+    color: var(--text-2);
+  }
+  .help-text { color: var(--text-3); font-size: 14px; }
+  .stat-grid { display: flex; flex-wrap: wrap; gap: 16px; padding: 8px 0 4px; }
+  .stat-card {
+    background: var(--bg-surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 20px 28px; min-width: 150px;
+    text-align: center; transition: background 0.25s, border-color 0.25s;
+  }
+  .stat-number { font-size: 38px; font-weight: 800; color: var(--accent); letter-spacing: -0.02em; }
+  .stat-label { font-size: 14px; font-weight: 600; color: var(--text-2); margin-top: 4px; }
+  .stat-sub { font-size: 11px; color: var(--text-3); margin-top: 6px; font-family: "SF Mono", Monaco, Consolas, monospace; }
+  details { margin: 0; }
+  summary {
+    font-size: 16px; padding: 6px 0; list-style: none;
+    display: flex; align-items: center; gap: 8px;
+    color: var(--text-1); pointer-events: none;
+  }
+  summary::-webkit-details-marker { display: none; }
+  table {
+    font-size: 13px; border-collapse: collapse; width: 100%;
+    margin-top: 10px; table-layout: fixed;
+  }
+  th, td {
+    text-align: left; padding: 10px 14px;
+    border-bottom: 1px solid var(--border-subtle);
+    overflow: hidden; text-overflow: ellipsis;
+  }
+  th {
+    background: var(--bg-surface); font-weight: 600; font-size: 12px;
+    color: var(--text-3); text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  tr:hover td { background: var(--bg-card-hover); }
+  code { font-size: 12px; font-family: "SF Mono", Monaco, Consolas, monospace; color: var(--accent); word-break: break-all; }
+  .text-secondary { color: var(--text-2); }
+  .count-clean { font-weight: 700; color: var(--green); }
+  .count-pending { font-weight: 700; color: var(--amber); }
+  .score-good { --score-color: var(--green); }
+  .score-mid { --score-color: var(--amber); }
+  .score-bad { --score-color: var(--red); }
+  .gauge {
+    width: 96px; height: 96px; border-radius: 50%;
+    border: 5px solid var(--score-color);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .gauge-value { font-size: 28px; font-weight: 800; color: var(--score-color); }
+  .metric-row {
+    display: flex; gap: 24px; padding: 12px 0;
+    border-bottom: 1px solid var(--border-subtle);
+    align-items: baseline; flex-wrap: wrap;
+  }
+  .metric-row:last-child { border-bottom: none; }
+  .metric-name {
+    font-size: 13px; font-weight: 600; color: var(--text-2);
+    min-width: 220px; flex-shrink: 0;
+  }
+  .metric-value {
+    font-family: "SF Mono", Monaco, Consolas, monospace;
+    font-size: 15px; font-weight: 700; color: var(--green);
+    min-width: 110px;
+  }
+  .metric-budget {
+    font-family: "SF Mono", Monaco, Consolas, monospace;
+    font-size: 12px; color: var(--text-3);
+  }
+  .metric-bar {
+    flex: 1; min-width: 140px; height: 8px; background: var(--border);
+    border-radius: 4px; overflow: hidden;
+  }
+  .metric-bar-fill { height: 100%; background: var(--green); transition: width 0.3s; }
+  .placeholder-note {
+    padding: 14px 18px; background: var(--amber-dim); border: 1px solid var(--amber);
+    border-radius: var(--radius-sm); color: var(--text-1); font-size: 13px;
+    margin: 10px 0;
+  }
+  .placeholder-note strong { color: var(--amber); }
+  .diff-row td { padding: 6px 14px; font-size: 12px; }
+  .diff-row .diff-path { font-family: "SF Mono", Monaco, Consolas, monospace; padding-left: 24px; }
+  .diff-group td { background: var(--bg-surface); font-weight: 600; padding-top: 10px; padding-bottom: 10px; }
+  .diff-bar { height: 10px; display: inline-block; vertical-align: middle; }
+  .diff-bar-add { background: var(--green); border-radius: 2px 0 0 2px; }
+  .diff-bar-del { background: var(--red); border-radius: 0 2px 2px 0; }
+  footer {
+    margin-top: 28px; color: var(--text-3); font-size: 12px;
+    text-align: center; padding: 16px 0;
+    border-top: 1px solid var(--border-subtle);
+  }
+  @media (max-width: 768px) {
+    .report-layout { flex-direction: column; }
+    .sidebar {
+      position: static; width: 100%; flex-direction: row;
+      overflow-x: auto; max-height: none; gap: 8px; padding-bottom: 8px;
+    }
+    .sidebar-card { white-space: nowrap; min-width: fit-content; }
+  }
+  @media (max-width: 640px) {
+    body { padding: 14px; }
+    .stat-card { min-width: 120px; padding: 14px 16px; }
+    .stat-number { font-size: 28px; }
+  }
+</style></head><body><header class="report-header"><span class="brand">Coxinha</span><p class="meta">2026-10-18 · captura e biblioteca</p><button id="theme-toggle" onclick="document.documentElement.dataset.theme=document.documentElement.dataset.theme==='light'?'dark':'light'">Tema</button></header><div class="report-layout"><nav class="sidebar"><button class="sidebar-card" onclick="showPanel('home')">Home</button><button class="sidebar-card" onclick="showPanel('changes')">Changes</button><button class="sidebar-card" onclick="showPanel('unit')">Unit & Integration</button><button class="sidebar-card" onclick="showPanel('e2e')">E2E</button><button class="sidebar-card" onclick="showPanel('perf')">Perf baselines</button><button class="sidebar-card" onclick="showPanel('coverage')">Coverage</button><button class="sidebar-card" onclick="showPanel('security')">Security</button><button class="sidebar-card" onclick="showPanel('quality')">Quality</button><button class="sidebar-card" onclick="showPanel('deferred')">Deferred</button></nav><main class="main-content"><section class="panel active" id="home"><h1>Captura Linux pronta para teste manual curto</h1><p>Spec 0058 continua em andamento. Biblioteca independente, duas fontes explícitas, medidores, pausa/retomada, recuperação e players separados. Não é o MVP acústico completo.</p><div class="stat-grid"><div class="stat-card"><div class="stat-number">94</div><div class="stat-label">Frontend</div></div><div class="stat-card"><div class="stat-number">82</div><div class="stat-label">Tauri unitários</div></div><div class="stat-card"><div class="stat-number">14</div><div class="stat-label">Core: 13 + 1 integração</div></div></div><p>Comparação com a baseline desta branch: frontend 83 → 94. Base Git 86d146a, branch feat/0058-meeting-library, alterações locais sem commit/push. Plano revisado pelo Fable; implementação Sol 6.1; baseline independente Gemini Personal 3.8 Flash High.</p><p>Rodar <code>./target/debug/coxinha</code> na raiz do repositório. Frontend embutido, sem servidor Vite. Selecionar mic físico e monitor dos fones, gravar1–2 min, pausar/retomar, parar e ouvir cada trilha. Roteiro completo: <a href="../research/2026-10-18-capture-acceptance.md">aceite</a>.</p></section><section class="panel " id="changes"><h1>Changes</h1><p>Contagens do diff e arquivos novos; lockfiles e bindings gerados excluídos. Não inclui este próprio relatório.</p><pre style="white-space:pre-wrap">5	3	CLAUDE.md
+1	1	Cargo.toml
+1	1	docs/architecture/conventions.md
+6	0	docs/architecture/decisions/0002-local-first.md
+6	0	docs/architecture/decisions/0004-pure-rust.md
+6	0	docs/architecture/decisions/0009-diarization-trait.md
+6	0	docs/architecture/decisions/0015-layered-knowledge-memory.md
+2	0	docs/architecture/decisions/README.md
+6	0	docs/architecture/meeting-pipeline.md
+6	0	docs/architecture/vault-schema.md
+5	0	docs/specs/0004-db-migrations.md
+6	0	docs/specs/0007-recording-and-call-detection.md
+6	0	docs/specs/0008-meeting-pipeline.md
+6	0	docs/specs/0057-app-shell-rebuild.md
+3	2	src-tauri/Cargo.toml
+9	21	src-tauri/src/diarizer/pyannote.rs
+30	7	src-tauri/src/lib.rs
+5	3	src-tauri/src/obsidian.rs
+19	16	src-tauri/src/transcriber/whisper.rs
+5	1	src-tauri/tauri.conf.json
+6	0	src/components/AppShell/Rail.tsx
+2	0	src/lib/i18n.ts
+44	0	src/locales/en.json
+11	2	src/router.tsx
+1	4	src/routes/__root.tsx
+1	1	vite.config.ts
+2	0	vitest.config.ts
+22	0	coxinha-core/Cargo.toml (new)
+54	0	coxinha-core/README.md (new)
+210	0	coxinha-core/src/artifacts.rs (new)
+121	0	coxinha-core/src/bin/coxinha-meetings.rs (new)
+7	0	coxinha-core/src/capture/mod.rs (new)
+352	0	coxinha-core/src/capture/pulse.rs (new)
+337	0	coxinha-core/src/capture/recording.rs (new)
+45	0	coxinha-core/src/capture/recording_tests.rs (new)
+323	0	coxinha-core/src/identity.rs (new)
+99	0	coxinha-core/src/identity/tests.rs (new)
+117	0	coxinha-core/src/jobs.rs (new)
+8	0	coxinha-core/src/lib.rs (new)
+7	0	coxinha-core/src/profiles.sql (new)
+18	0	coxinha-core/src/schema.sql (new)
+204	0	coxinha-core/src/store.rs (new)
+88	0	coxinha-core/src/whisper.rs (new)
+35	0	coxinha-core/tests/process_recovery.rs (new)
+42	0	docs/architecture/decisions/0018-meeting-library-and-identity.md (new)
+209	0	docs/plans/2026-10-17-meeting-library.md (new)
+67	0	docs/research/2026-10-17-fable-plan-review.md (new)
+139	0	docs/research/2026-10-17-meeting-library-audit.md (new)
+98	0	docs/research/2026-10-17-speech-engine-probes.md (new)
+71	0	docs/research/2026-10-18-capture-acceptance.md (new)
+43	0	docs/research/2026-10-18-isolated-capture.md (new)
+47	0	docs/research/2026-10-18-library-ui-contract.md (new)
+73	0	docs/specs/0058-meeting-library.md (new)
+472	0	src-tauri/src/library.rs (new)
+189	0	src/features/meetings/LibraryView.test.tsx (new)
+329	0	src/features/meetings/LibraryView.tsx (new)
+69	0	src/features/meetings/library.ts (new)
+46	0	src/locales/pt-BR.json (new)
+8	0	src/router.test.ts (new)
+14	0	src/routes/MeetingsRoute.tsx (new)
+155	0	tools/test-isolated-capture.py (new)</pre></section><section class="panel " id="unit"><h1>Unit & Integration</h1><p>Rust: core 13 unit+1integração em 0.09s + 0.03s; Tauri 82/82 em 0.19s. Evidência retornada pelo subagente Sol; tempos individuais Rust não foram preservados. Vitest 94/94, JSON em /tmp/coxinha-desktop-checks-20261018/vitest.json.</p><p>Casos críticos Rust: stalled_output_is_diagnosed_while_mic_remains_healthy; overflow_or_pre_stop_reader_failure_never_finishes_as_success; killed_synthetic_capture_recovers_uncheckpointed_tail; worker_recovers_unclean_capture_without_promoting_it_to_success; playback_rejects_symlink_to_private_file_even_with_valid_checksum. Identidade usa vetores sintéticos e prova política, não reconhecimento acústico.</p><table><thead><tr><th>Teste frontend</th><th>Estado</th><th>Tempo</th></tr></thead><tbody><tr><td>src/router.test.ts<br>opens the independent meeting library first and retains legacy home</td><td>passed</td><td>4.89 ms</td></tr><tr><td>src/lib/notes.test.ts<br>sortByUpdated orders most recent first</td><td>passed</td><td>16.53 ms</td></tr><tr><td>src/lib/notes.test.ts<br>sortByUpdated is stable for equal timestamps (does not lose entries)</td><td>passed</td><td>1.95 ms</td></tr><tr><td>src/lib/notes.test.ts<br>sortByUpdated does not mutate the input array</td><td>passed</td><td>0.54 ms</td></tr><tr><td>src/lib/theme.test.ts<br>theme helpers applyTheme toggles the `.dark` class on the given root</td><td>passed</td><td>6.08 ms</td></tr><tr><td>src/lib/theme.test.ts<br>theme helpers systemTheme reads prefers-color-scheme</td><td>passed</td><td>2.17 ms</td></tr><tr><td>src/lib/theme.test.ts<br>theme helpers followThemePreference(&quot;auto&quot;) applies the current value immediately</td><td>passed</td><td>1.22 ms</td></tr><tr><td>src/lib/theme.test.ts<br>theme helpers followThemePreference(&quot;auto&quot;) reacts when the OS flips the preference</td><td>passed</td><td>1.83 ms</td></tr><tr><td>src/lib/theme.test.ts<br>theme helpers cleanup function unbinds the listener</td><td>passed</td><td>1.27 ms</td></tr><tr><td>src/lib/theme.test.ts<br>theme preference defaults to &quot;auto&quot; when nothing is stored</td><td>passed</td><td>0.68 ms</td></tr><tr><td>src/lib/theme.test.ts<br>theme preference persists explicit light/dark choices to localStorage</td><td>passed</td><td>2.15 ms</td></tr><tr><td>src/lib/theme.test.ts<br>theme preference &quot;auto&quot; clears the stored value so next session re-reads the OS</td><td>passed</td><td>0.9 ms</td></tr><tr><td>src/lib/theme.test.ts<br>theme preference followThemePreference(&quot;dark&quot;) applies dark and ignores OS</td><td>passed</td><td>0.88 ms</td></tr><tr><td>src/lib/theme.test.ts<br>theme preference followThemePreference(&quot;light&quot;) applies light and ignores OS</td><td>passed</td><td>1.83 ms</td></tr><tr><td>src/locales/en.test.ts<br>en locale catalog has non-empty strings under &quot;brand&quot;</td><td>passed</td><td>1.81 ms</td></tr><tr><td>src/locales/en.test.ts<br>en locale catalog has non-empty strings under &quot;nav&quot;</td><td>passed</td><td>0.63 ms</td></tr><tr><td>src/locales/en.test.ts<br>en locale catalog has non-empty strings under &quot;sidebar&quot;</td><td>passed</td><td>0.3 ms</td></tr><tr><td>src/locales/en.test.ts<br>en locale catalog has non-empty strings under &quot;empty&quot;</td><td>passed</td><td>0.21 ms</td></tr><tr><td>src/locales/en.test.ts<br>en locale catalog has non-empty strings under &quot;a11y&quot;</td><td>passed</td><td>0.25 ms</td></tr><tr><td>src/components/AppShell/Breadcrumb.test.tsx<br>Breadcrumb returns null for an empty trail</td><td>passed</td><td>22.68 ms</td></tr><tr><td>src/components/AppShell/Breadcrumb.test.tsx<br>Breadcrumb renders each segment in order</td><td>passed</td><td>41.2 ms</td></tr><tr><td>src/components/AppShell/Breadcrumb.test.tsx<br>Breadcrumb renders a separator between segments but not before the first</td><td>passed</td><td>8.82 ms</td></tr><tr><td>src/components/AppShell/SidePanel.test.tsx<br>SidePanel renders children when the store says open</td><td>passed</td><td>49.69 ms</td></tr><tr><td>src/components/AppShell/SidePanel.test.tsx<br>SidePanel renders nothing when the store says closed</td><td>passed</td><td>2.96 ms</td></tr><tr><td>src/components/AppShell/SidePanel.test.tsx<br>SidePanel persists the open state to localStorage via toggle</td><td>passed</td><td>1.02 ms</td></tr><tr><td>src/features/meetings/LibraryView.test.tsx<br>meeting library requires explicit valid sources and performs start, pause, resume and stop</td><td>passed</td><td>392.54 ms</td></tr><tr><td>src/features/meetings/LibraryView.test.tsx<br>meeting library keeps failed commands visible and does not pretend capture succeeded</td><td>passed</td><td>42.97 ms</td></tr><tr><td>src/features/meetings/LibraryView.test.tsx<br>meeting library loads durable recordings after remount and uses separate verified playback paths</td><td>passed</td><td>74.85 ms</td></tr><tr><td>src/features/meetings/LibraryView.test.tsx<br>meeting library recovers an interrupted capture explicitly</td><td>passed</td><td>87.6 ms</td></tr><tr><td>src/features/meetings/LibraryView.test.tsx<br>meeting library reports the desktop requirement and never calls IPC in browser preview</td><td>passed</td><td>11.54 ms</td></tr><tr><td>src/features/meetings/LibraryView.test.tsx<br>rejects duplicate, missing and wrong-kind selections</td><td>passed</td><td>0.47 ms</td></tr><tr><td>src/features/meetings/LibraryView.test.tsx<br>distinguishes source failures, stalls, waiting, silence and pause</td><td>passed</td><td>0.3 ms</td></tr><tr><td>src/features/meetings/LibraryView.test.tsx<br>ignores an earlier poll after pause, then stop=false</td><td>passed</td><td>30.09 ms</td></tr><tr><td>src/features/meetings/LibraryView.test.tsx<br>ignores an earlier poll after pause, then stop=true</td><td>passed</td><td>33.97 ms</td></tr><tr><td>src/features/meetings/LibraryView.test.tsx<br>refreshes recordings and status even if enumerating sources fails</td><td>passed</td><td>41.41 ms</td></tr><tr><td>src/features/meetings/MeetingCard.test.tsx<br>MeetingCard renders a &quot;not found&quot; card for unknown meeting ids</td><td>passed</td><td>43.4 ms</td></tr><tr><td>src/features/meetings/MeetingCard.test.tsx<br>MeetingCard renders the meeting title, date, and participants count</td><td>passed</td><td>186.75 ms</td></tr><tr><td>src/features/meetings/MeetingCard.test.tsx<br>MeetingCard switches tab content when a different tab is clicked</td><td>passed</td><td>59.32 ms</td></tr><tr><td>src/features/meetings/MeetingCard.test.tsx<br>MeetingCard fires onUnlink for unknown meetings when the handler is provided</td><td>passed</td><td>13.61 ms</td></tr><tr><td>src/features/notes/BacklinksPanel.test.tsx<br>BacklinksPanel renders the empty state when no backlinks come back</td><td>passed</td><td>69.76 ms</td></tr><tr><td>src/features/notes/BacklinksPanel.test.tsx<br>BacklinksPanel lists linker notes with title text</td><td>passed</td><td>16.63 ms</td></tr><tr><td>src/features/notes/BacklinksPanel.test.tsx<br>BacklinksPanel navigates to the linker note on click</td><td>passed</td><td>217.4 ms</td></tr><tr><td>src/features/notes/BacklinksPanel.test.tsx<br>BacklinksPanel surfaces backend errors in an alert</td><td>passed</td><td>17.65 ms</td></tr><tr><td>src/features/notes/BacklinksPanel.test.tsx<br>BacklinksPanel falls back to &quot;(untitled)&quot; when the linker has no title</td><td>passed</td><td>5.29 ms</td></tr><tr><td>src/features/notes/BacklinksPanel.test.tsx<br>BacklinksPanel refetches when the active noteId changes</td><td>passed</td><td>4.77 ms</td></tr><tr><td>src/features/notes/NoteActionsMenu.test.tsx<br>NoteActionsMenu renders nothing when closed</td><td>passed</td><td>36.33 ms</td></tr><tr><td>src/features/notes/NoteActionsMenu.test.tsx<br>NoteActionsMenu renders every section and the footer when open</td><td>passed</td><td>71.34 ms</td></tr><tr><td>src/features/notes/NoteActionsMenu.test.tsx<br>NoteActionsMenu fires the real actions through their callbacks and closes the menu</td><td>passed</td><td>183.03 ms</td></tr><tr><td>src/features/notes/NoteActionsMenu.test.tsx<br>NoteActionsMenu filters rows when the user types in the search box</td><td>passed</td><td>57.93 ms</td></tr><tr><td>src/features/notes/NoteActionsMenu.test.tsx<br>NoteActionsMenu forwards font changes to the onFontChange callback</td><td>passed</td><td>36.62 ms</td></tr><tr><td>src/features/notes/NoteActionsMenu.test.tsx<br>NoteActionsMenu toggles fullWidth via the Full width row</td><td>passed</td><td>25.02 ms</td></tr><tr><td>src/features/notes/NoteActionsMenu.test.tsx<br>NoteActionsMenu does not fire callbacks for disabled rows</td><td>passed</td><td>78.34 ms</td></tr><tr><td>src/features/notes/NoteActionsMenu.test.tsx<br>NoteActionsMenu closes on Escape</td><td>passed</td><td>13.03 ms</td></tr><tr><td>src/features/notes/NoteActionsMenu.test.tsx<br>NoteActionsMenu closes when the user clicks outside the menu</td><td>passed</td><td>9.51 ms</td></tr><tr><td>src/features/notes/NoteHeader.test.tsx<br>NoteHeader renders the supplied title at display size</td><td>passed</td><td>183.16 ms</td></tr><tr><td>src/features/notes/NoteHeader.test.tsx<br>NoteHeader falls back to the untitled label when the title is empty</td><td>passed</td><td>18.06 ms</td></tr><tr><td>src/features/notes/NoteHeader.test.tsx<br>NoteHeader emits the meta row with the formatted date and Saved suffix</td><td>passed</td><td>6.84 ms</td></tr><tr><td>src/features/notes/NoteHeader.test.tsx<br>NoteHeader hides the meta row when updatedAt is not a parsable date</td><td>passed</td><td>3.3 ms</td></tr><tr><td>src/features/notes/NoteHeader.test.tsx<br>NoteHeader renders a tag chip for every supplied tag</td><td>passed</td><td>8.98 ms</td></tr><tr><td>src/features/notes/NoteHeader.test.tsx<br>NoteHeader omits the tag row entirely when the tags array is empty</td><td>passed</td><td>3.09 ms</td></tr><tr><td>src/features/notes/NoteHeader.test.tsx<br>formatNoteMeta returns an empty string on an unparsable input</td><td>passed</td><td>0.57 ms</td></tr><tr><td>src/features/notes/NoteHeader.test.tsx<br>formatNoteMeta appends the Saved suffix when the input parses</td><td>passed</td><td>0.55 ms</td></tr><tr><td>src/features/notes/editorFocus.test.ts<br>isInteractiveClickTarget returns false for null / non-Element targets</td><td>passed</td><td>2.16 ms</td></tr><tr><td>src/features/notes/editorFocus.test.ts<br>isInteractiveClickTarget returns false for plain padding divs</td><td>passed</td><td>15.03 ms</td></tr><tr><td>src/features/notes/editorFocus.test.ts<br>isInteractiveClickTarget returns true for a contenteditable descendant</td><td>passed</td><td>12.34 ms</td></tr><tr><td>src/features/notes/editorFocus.test.ts<br>isInteractiveClickTarget returns true when the target is or sits inside a button</td><td>passed</td><td>1.99 ms</td></tr><tr><td>src/features/notes/editorFocus.test.ts<br>isInteractiveClickTarget returns true for anchors, inputs, textareas, selects</td><td>passed</td><td>5.74 ms</td></tr><tr><td>src/features/notes/editorFocus.test.ts<br>isInteractiveClickTarget returns true for role=&quot;button&quot; / role=&quot;link&quot; even on non-button tags</td><td>passed</td><td>1.72 ms</td></tr><tr><td>src/features/home/HomeCanvas.test.tsx<br>HomeCanvas renders the greeting with the user first name</td><td>passed</td><td>174.42 ms</td></tr><tr><td>src/features/home/HomeCanvas.test.tsx<br>HomeCanvas renders every fixture thing-card</td><td>passed</td><td>18.33 ms</td></tr><tr><td>src/features/home/HomeCanvas.test.tsx<br>HomeCanvas renders every recent note</td><td>passed</td><td>14.68 ms</td></tr><tr><td>src/features/settings/SettingsView.test.tsx<br>SettingsView — vault panel renders the empty-state when no Obsidian vaults are detected</td><td>passed</td><td>74.31 ms</td></tr><tr><td>src/features/settings/SettingsView.test.tsx<br>SettingsView — vault panel lists detected vaults as radio options and keeps Save disabled until selection changes</td><td>passed</td><td>193.02 ms</td></tr><tr><td>src/features/settings/SettingsView.test.tsx<br>SettingsView — vault panel calls updateConfig with the picked vault path on Save</td><td>passed</td><td>80.82 ms</td></tr><tr><td>src/features/settings/SettingsView.test.tsx<br>SettingsView — vault panel surfaces load errors from getConfig in an alert</td><td>passed</td><td>7.76 ms</td></tr><tr><td>src/features/settings/SettingsView.test.tsx<br>SettingsView — vault panel rebuilds the index, shows the stats, and reloads notes</td><td>passed</td><td>32.88 ms</td></tr><tr><td>src/features/settings/SettingsView.test.tsx<br>SettingsView — vault panel surfaces rebuild errors without touching the note store</td><td>passed</td><td>32.7 ms</td></tr><tr><td>src/features/settings/SettingsView.test.tsx<br>SettingsView — appearance panel defaults to Auto when no preference is stored</td><td>passed</td><td>34.11 ms</td></tr><tr><td>src/features/settings/SettingsView.test.tsx<br>SettingsView — appearance panel persists the chosen theme to localStorage and broadcasts the change</td><td>passed</td><td>44.76 ms</td></tr><tr><td>src/features/settings/SettingsView.test.tsx<br>SettingsView — appearance panel clears the stored value when Auto is chosen after an override</td><td>passed</td><td>27.73 ms</td></tr><tr><td>src/features/settings/SettingsView.test.tsx<br>SettingsView — shortcuts panel lists all five global shortcuts from the config</td><td>passed</td><td>20.13 ms</td></tr><tr><td>src/features/settings/SettingsView.test.tsx<br>SettingsView — shortcuts panel reflects a non-default binding from the saved config</td><td>passed</td><td>6.78 ms</td></tr><tr><td>src/features/settings/SettingsView.test.tsx<br>SettingsView — shortcuts panel surfaces the &quot;rebind coming soon&quot; hint</td><td>passed</td><td>5.56 ms</td></tr><tr><td>src/features/shell/CommandPalette.test.tsx<br>CommandPalette returns null when closed</td><td>passed</td><td>16.84 ms</td></tr><tr><td>src/features/shell/CommandPalette.test.tsx<br>CommandPalette renders actions and recent notes when open with empty query</td><td>passed</td><td>49.83 ms</td></tr><tr><td>src/features/shell/CommandPalette.test.tsx<br>CommandPalette filters notes by typed query</td><td>passed</td><td>202.95 ms</td></tr><tr><td>src/features/shell/CommandPalette.test.tsx<br>CommandPalette navigates to a note when picked</td><td>passed</td><td>42.91 ms</td></tr><tr><td>src/features/shell/CommandPalette.test.tsx<br>CommandPalette fires the action when an action row is picked</td><td>passed</td><td>28.9 ms</td></tr><tr><td>src/features/shell/CommandPalette.test.tsx<br>CommandPalette closes on Escape</td><td>passed</td><td>32.86 ms</td></tr><tr><td>src/features/shell/CommandPalette.test.tsx<br>CommandPalette surfaces an empty-state message when nothing matches</td><td>passed</td><td>36.14 ms</td></tr><tr><td>src/features/shell/CommandPalette.test.tsx<br>CommandPalette exposes a Delete-this-note action only on note-detail routes</td><td>passed</td><td>15.65 ms</td></tr><tr><td>src/features/shell/CommandPalette.test.tsx<br>CommandPalette hides the Delete-this-note action on non-detail routes</td><td>passed</td><td>14.91 ms</td></tr><tr><td>src/features/shell/CommandPalette.test.tsx<br>CommandPalette calls deleteNote when the user confirms the row trash icon</td><td>passed</td><td>58.65 ms</td></tr><tr><td>src/features/shell/CommandPalette.test.tsx<br>CommandPalette skips deletion when the user cancels the confirm</td><td>passed</td><td>39.7 ms</td></tr></tbody></table></section><section class="panel " id="e2e"><h1>E2E e transporte</h1><table><thead><tr><th>Modo isolado</th><th>Mic / saída frames</th><th>Resultado</th></tr></thead><tbody><tr><td>normal 5s</td><td>239040 / 239040</td><td>finished, 440/880 Hz</td></tr><tr><td>pause 1s</td><td>190080 / 191040</td><td>finished,~4s salvos</td></tr><tr><td>stall somente saída</td><td>144000 / 46080</td><td>interrupted,rc 1 esperado</td></tr></tbody></table><p><code>python3 tools/test-isolated-capture.py normal|pause|stall</code>. PipeWire/Pulse real em runtime privado; tons virtuais, sem microfone físico nem mudança no roteamento da sessão. Originais e logs preservados em diretórios /tmp/coxinha-isolated-capture-* impressos pela ferramenta.</p><p>Prévia visual pt-BR em 1280×800 sem erro de console na biblioteca. Browser informa corretamente runtime desktop necessário. Build do executável e boot com --hidden em dados temporários separados. E2E da UI nativa, reprodução via WebKit e captura em hardware: pendentes de aceite humano.</p></section><section class="panel " id="perf"><h1>Perf baselines</h1><p>Boot standalone final atingiu marcador backend-ready em 0.402s. Não é tempo até tela utilizável. Não foi medida distribuição de latências, RSS/CPU da árvore de processos, drift nem gravação longa. Budgets e comparação com release: not configured yet.</p></section><section class="panel " id="coverage"><h1>Coverage</h1><p>not configured yet. Nenhum llvm-cov/c8 executado; contagem de testes não é cobertura.</p></section><section class="panel " id="security"><h1>Security</h1><p>Escopo de playback inicia vazio e só libera arquivos WAV fechados, verificados e canônicos. Teste impede symlink para arquivo privado mesmo com checksum válido. Exportação de reunião exclui base de vozes. SAST/SCA/secrets scan: not configured yet. Não é certificação LGPD/segurança.</p></section><section class="panel " id="quality"><h1>Quality</h1><table><thead><tr><th>Check</th><th>Resultado</th></tr></thead><tbody><tr><td>pnpm typecheck / test / build</td><td>PASS;94 testes; avisos de chunk grande e depreciação existentes</td></tr><tr><td>cargo test -p coxinha-core</td><td>PASS 13 + 1</td></tr><tr><td>cargo test -p coxinha --lib</td><td>PASS 82/82; corrigido label Windows no Linux (Obsidian)</td></tr><tr><td>cargo clippy -p coxinha-core --all-targets -- -D warnings</td><td>PASS</td></tr><tr><td>cargo clippy -p coxinha --lib -- -D warnings</td><td>FAIL: double_must_use gerado por async_trait em dois traits legados</td></tr><tr><td>Mesmo clippy com -A clippy::double_must_use</td><td>PASS; exceção explícita, não limpo sem ressalvas</td></tr><tr><td>cargo build -p coxinha --bin coxinha --features tauri/custom-protocol</td><td>PASS; frontend embutido; binary debug local</td></tr><tr><td>cargo fmt --all -- --check / git diff --check</td><td>PASS</td></tr></tbody></table><p>Inicialização standalone foi corrigida para não exportar bindings por caminho relativo ao cwd. Exportação de desenvolvimento usa CARGO_MANIFEST_DIR. Nenhuma gravação real foi iniciada na verificação.</p></section><section class="panel " id="deferred"><h1>Deferred</h1><ul><li>Spec 0058 C: engines reais por trilha, revisão de texto/falantes, cadastro/amostras e reconhecimento em outra reunião.</li><li>Spec 0058 B/D: WASAPI Windows, build/pacote Windows e ensaio em hardware. Não suportado por este adapter Linux.</li><li>Clock de chegada, sem compensação de latência/drift. Pausas excluídas dos WAVs e preservadas no journal. Players independentes.</li><li>Possível perda de tail parcial&lt;20ms; RIFF sem rollover antes de 4 GiB. Ensaio longo pendente.</li><li>Playback Tauri com Range limitado; pedido sem Range pode carregar arquivo inteiro. Memória e WebKit real ainda não validados.</li><li>Pacotes AppImage/instaladores distribuíveis, servidor/auth/Tailscale, Graph, PWA, compartilhamento e busca por conteúdo seguem próximos incrementos.</li><li>Calibração acústica, WER/DER, false attribution, voz desconhecida e sobreposição não medidos. Sem percentuais inventados.</li></ul></section></main></div><script>function showPanel(id){document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id===id));}</script></body></html>

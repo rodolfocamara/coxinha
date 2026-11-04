@@ -1,0 +1,334 @@
+@layer theme, base, components, utilities;
+
+/* Reuniões as the calendar (spec 0107): bar, now strip, rail | grid | peek. */
+@layer components {
+  .ch-root {
+    container: calendar / inline-size;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+  }
+  .ch-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 3.375rem;
+    padding: 0.625rem 1rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .ch-sep {
+    width: 1px;
+    height: 1.25rem;
+    margin: 0 0.25rem;
+    background: var(--color-border);
+  }
+  .ch-title {
+    margin: 0 0 0 0.375rem;
+    font-size: 1rem;
+    font-weight: 650;
+    white-space: nowrap;
+  }
+
+  /* Now and next */
+  .ch-strip {
+    display: flex;
+    gap: 0.625rem;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .ch-strip-card {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 0.625rem;
+    min-width: 0;
+    padding: 0.375rem 0.5rem 0.375rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    background: var(--color-card);
+  }
+  .ch-strip-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    flex-shrink: 0;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-primary-ink);
+  }
+  .ch-strip-card[data-kind='now'] .ch-strip-tag {
+    color: var(--color-live);
+  }
+  .ch-strip-dot {
+    width: 0.4375rem;
+    height: 0.4375rem;
+    border-radius: 999px;
+    background: var(--color-live);
+  }
+  .ch-strip-main {
+    display: grid;
+    flex: 1;
+    min-width: 0;
+    padding: 2px 0.25rem;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .ch-strip-main b,
+  .ch-strip-main span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ch-strip-main b {
+    font-weight: 600;
+  }
+  .ch-strip-main span {
+    font-size: 0.75rem;
+  }
+  .ch-strip-main:hover {
+    background: var(--color-secondary);
+  }
+  .ch-strip-main:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 0;
+  }
+  .ch-alert {
+    padding: 0.5rem 1rem 0;
+  }
+
+  /* Body */
+  .ch-body {
+    display: grid;
+    flex: 1;
+    grid-template-columns: 220px minmax(0, 1fr);
+    min-height: 0;
+  }
+  .ch-body[data-peek] {
+    grid-template-columns: 220px minmax(0, 1fr) 320px;
+  }
+  .ch-main {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    padding: 0.75rem 1rem 1rem;
+  }
+  .ch-main > .mh-week-grid,
+  .ch-main > .mh-month-body {
+    flex: 1;
+    min-height: 0;
+  }
+  /* Rail */
+  .ch-rail {
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+    min-height: 0;
+    padding: 0.875rem 0.75rem 0 1rem;
+    overflow-y: auto;
+    border-right: 1px solid var(--color-border);
+  }
+  .ch-mini-head {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-bottom: 0.375rem;
+    font-size: 0.78125rem;
+  }
+  .ch-mini-head b {
+    flex: 1;
+    font-weight: 600;
+  }
+  .ch-mini-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    text-align: center;
+  }
+  .ch-mini-wd {
+    padding: 2px 0;
+    font-size: 0.65625rem;
+    font-weight: 600;
+    color: var(--color-muted-foreground);
+    text-transform: uppercase;
+  }
+  .ch-mini-day {
+    height: 1.5rem;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: inherit;
+    font-size: 0.71875rem;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+  }
+  .ch-mini-day[data-outside] {
+    color: var(--color-muted-foreground);
+    opacity: 0.6;
+  }
+  .ch-mini-day[data-in-view] {
+    background: var(--color-secondary);
+  }
+  .ch-mini-day[aria-current='date'] {
+    background: var(--color-primary);
+    color: var(--color-primary-foreground);
+    font-weight: 600;
+  }
+  .ch-mini-day:hover {
+    outline: 1px solid var(--color-border);
+  }
+  .ch-mini-day:focus-visible {
+    outline: 2px solid var(--color-ring);
+  }
+  .ch-cats {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+  }
+  .ch-cats legend,
+  .ch-peek-h {
+    margin: 0 0 0.375rem;
+    padding: 0;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-muted-foreground);
+  }
+  .ch-cat {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    padding: 3px 0.25rem;
+    border-radius: 6px;
+    font-size: 0.78125rem;
+    cursor: pointer;
+  }
+  .ch-cat:hover {
+    background: var(--color-secondary);
+  }
+  .ch-cat input {
+    flex-shrink: 0;
+    accent-color: var(--color-primary);
+  }
+  .ch-cat-swatch {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: 3px;
+  }
+  .ch-cat-swatch[data-empty] {
+    box-shadow: inset 0 0 0 1.5px var(--color-muted-foreground);
+  }
+  .ch-review {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.5rem 0.625rem;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background: none;
+    color: inherit;
+    font-size: 0.78125rem;
+    text-align: left;
+    cursor: pointer;
+  }
+  .ch-review:hover {
+    background: var(--color-secondary);
+  }
+  .ch-review:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: -2px;
+  }
+  .ch-outlook {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    min-height: 2.5rem;
+    margin: 0 -0.75rem 0 -1rem;
+    padding: 0.375rem 0.625rem 0.375rem 1rem;
+    border-top: 1px solid var(--color-border);
+    font-size: 0.71875rem;
+    color: var(--color-muted-foreground);
+  }
+
+  /* Breakpoints in rem (spec 0125): bigger text reaches them at a wider window. */
+  @container calendar (max-width: 69rem) {
+    .ch-bar {
+      flex-wrap: wrap;
+    }
+    .ch-bar-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+  }
+  /* Rail and peek are fixed widths in px, so this break is in px too. */
+  @container calendar (max-width: 960px) {
+    .ch-body[data-peek] {
+      grid-template-columns: minmax(0, 1fr) 320px;
+    }
+    .ch-body[data-peek] > .ch-rail {
+      display: none;
+    }
+  }
+  /* The grid needs the width: the rail folds to a row without the month. */
+  @container calendar (max-width: 44rem) {
+    .ch-body,
+    .ch-body[data-peek] {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+    .ch-body[data-peek] > :last-child {
+      position: absolute;
+      inset-block: 0;
+      right: 0;
+      width: min(320px, 85%);
+      z-index: 4;
+      background: var(--color-background);
+    }
+    .ch-body {
+      position: relative;
+    }
+    .ch-rail {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem 0.75rem;
+      padding: 0.5rem 1rem 0;
+      overflow: visible;
+      border-right: 0;
+    }
+    .ch-rail .ch-mini {
+      display: none;
+    }
+    .ch-rail > .ch-review {
+      width: auto;
+    }
+    .ch-rail > .ch-outlook {
+      flex: 1 1 auto;
+      min-width: 0;
+      min-height: 0;
+      margin: 0;
+      padding: 0;
+      border: 0;
+    }
+  }
+}
