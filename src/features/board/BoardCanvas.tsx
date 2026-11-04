@@ -17,7 +17,7 @@ import { boardSession } from './persistence';
 import { canLink, connect, progressColor, type Board, type BoardItem } from './model';
 import { edgeTypes, nodeTypes } from './BoardNodes';
 import { BoardZoom } from './BoardZoom';
-import { boardEdges, boardNodes } from './boardNodes';
+import { boardEdges, boardNodes } from './boardFlow';
 import { boardDrag } from './boardDrag';
 import { boardGeometryChanges } from './boardGeometryChanges';
 import { patchItem } from './hierarchy';

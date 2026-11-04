@@ -2,7 +2,7 @@ import { expect, it } from 'vitest';
 import type { Node } from '@xyflow/react';
 import { fixtureBoard } from '../workspace/testing';
 import { patchItem } from './hierarchy';
-import { boardNodes } from './boardNodes';
+import { boardNodes } from './boardFlow';
 
 it('keeps the node object of every card the change did not touch', () => {
   const cache = new Map<string, { deps: unknown[]; node: Node }>();
