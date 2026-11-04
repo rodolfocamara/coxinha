@@ -20,6 +20,8 @@ fn the_sync_asks_for_the_details_and_keeps_what_it_read() {
         "showAs",
         "isOrganizer",
         "webLink",
+        "allowNewTimeProposals",
+        "responseRequested",
         "id",
         "subject",
         "start",

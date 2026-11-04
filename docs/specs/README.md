@@ -214,3 +214,4 @@ Pending decisions that block or shape the implementation.
 - [0126 — Meeting detail as a reading panel](0126-meeting-detail.md) — in-progress
 - [0128 — One keyboard shortcut system](0128-keyboard-shortcuts.md) — done
 - [0129 — Settings as pages: one section per route, grouped sidebar, find a setting](0129-settings-pages.md) — in-progress
+- [0130 — Respond to invites](0130-respond-to-invites.md) — in-progress

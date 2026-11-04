@@ -5,7 +5,7 @@ const DAYS_AHEAD: i64 = 180;
 const PAGE_SIZE: usize = 100;
 const MAX_PAGES: usize = 50;
 const MAX_EVENTS: usize = 5000;
-const SELECT: &str = "id,subject,start,end,isCancelled,isAllDay,attendees,organizer,seriesMasterId,type,originalStart,categories,responseStatus,location,onlineMeeting,bodyPreview,showAs,isOrganizer,webLink";
+const SELECT: &str = "id,subject,start,end,isCancelled,isAllDay,attendees,organizer,seriesMasterId,type,originalStart,categories,responseStatus,location,onlineMeeting,bodyPreview,showAs,isOrganizer,webLink,allowNewTimeProposals,responseRequested";
 fn window(now: chrono::DateTime<Utc>) -> (chrono::DateTime<Utc>, chrono::DateTime<Utc>) {
     (
         now - Duration::days(DAYS_BACK),
@@ -161,6 +161,8 @@ pub(super) fn parse_event(item: &serde_json::Value) -> Result<Event, String> {
         show_as: details::show_as_of(item),
         is_organizer: item["isOrganizer"].as_bool().unwrap_or(false),
         web_link: details::web_link(item["webLink"].as_str()),
+        allow_new_time_proposals: item["allowNewTimeProposals"].as_bool(),
+        response_requested: item["responseRequested"].as_bool(),
     })
 }
 

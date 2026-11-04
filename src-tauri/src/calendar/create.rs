@@ -49,18 +49,19 @@ pub(super) fn validate(
     })
 }
 
+pub(super) fn utc_time(t: &chrono::DateTime<Utc>) -> serde_json::Value {
+    serde_json::json!({
+        "dateTime": t.format("%Y-%m-%dT%H:%M:%S").to_string(),
+        "timeZone": "UTC",
+    })
+}
+
 /// The Graph `transactionId` makes a retry of the same meeting a no-op.
 pub(super) fn create_body(event: &NewEvent) -> serde_json::Value {
-    let at = |t: &chrono::DateTime<Utc>| {
-        serde_json::json!({
-            "dateTime": t.format("%Y-%m-%dT%H:%M:%S").to_string(),
-            "timeZone": "UTC",
-        })
-    };
     serde_json::json!({
         "subject": event.subject,
-        "start": at(&event.start),
-        "end": at(&event.end),
+        "start": utc_time(&event.start),
+        "end": utc_time(&event.end),
         "showAs": "busy",
         "attendees": [],
         "transactionId": event.transaction,

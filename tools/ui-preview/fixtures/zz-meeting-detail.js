@@ -122,6 +122,12 @@
     session({ id: 'd-prep', title: 'Prepared one', starts_at: at(2, 14), ends_at: at(2, 15), status: 'planned', personal_note: { id: 'n-prep', relative_path: 'p.md' } }),
   ];
   events.push(event({ id: 'd-prep-e', title: 'Prepared one', startsAt: at(2, 14), endsAt: at(2, 15), response: 'accepted', joinUrl: 'https://teams.microsoft.com/l/meetup-join/u', attendeeResponses: small }));
+  // Spec 0130: invitations to answer; the mock records what would have been sent.
+  events.push(event({ id: 'd-invite', title: 'Budget invite', startsAt: at(3, 9), endsAt: at(3, 10), response: 'notResponded', allowNewTimeProposals: true, responseRequested: true, joinUrl: 'https://teams.microsoft.com/l/meetup-join/i', attendeeResponses: small }));
+  events.push(event({ id: 'd-series', title: 'Weekly invite', startsAt: at(3, 11), endsAt: at(3, 12), response: 'notResponded', seriesMasterId: 'd-master', eventType: 'occurrence', attendeeResponses: small }));
+  events.push(event({ id: 'd-series-2', title: 'Weekly invite, next', startsAt: at(4, 11), endsAt: at(4, 12), response: 'notResponded', seriesMasterId: 'd-master', eventType: 'occurrence', attendeeResponses: small }));
+  events.push(event({ id: 'd-noprop', title: 'Closed invite', startsAt: at(3, 14), endsAt: at(3, 15), response: 'accepted', allowNewTimeProposals: false, attendeeResponses: small }));
+  events.push(event({ id: 'd-cancelled', title: 'Cancelled invite', startsAt: at(3, 16), endsAt: at(3, 17), response: 'accepted', cancelled: true, attendeeResponses: small }));
   const candidate = event({ id: 'd-candidate', title: 'Vendor call about the rollout, with a title long enough to wrap', startsAt: at(-1, 11, 45), endsAt: at(-1, 12, 45), attendeeResponses: small });
   events.push(candidate);
   f.library_calendar_matches = () => [{ sessionId: 'd-match', meetingId: 'm-d-match', title: 'Meeting in Google Chrome', startsAt: at(-1, 12), endsAt: at(-1, 12, 40), event: candidate }];
@@ -134,6 +140,7 @@
     events,
     categories: [{ id: 'c1', name: 'Leadership', preset: 4 }],
     masterCategories: [{ id: 'c1', name: 'Leadership', preset: 4 }],
+    categoryAccess: { read: true, write: true },
   });
   const ms = 60_000;
   f.library_detail = ({ meetingId }) => ({
@@ -214,4 +221,15 @@
     return null;
   };
   f.calendar_open_link = () => null;
+  window.__cxRespond = { calls: [], fail: [] };
+  f.calendar_respond = ({ eventId, request }) => {
+    window.__cxRespond.calls.push({ eventId, request });
+    const error = window.__cxRespond.fail.shift();
+    if (error) throw new Error(error);
+    const answer = { accept: 'accepted', tentative: 'tentativelyAccepted', decline: 'declined' }[request.kind];
+    const target = events.find((e) => e.id === eventId);
+    for (const e of events)
+      if (e.id === eventId || (request.scope === 'series' && e.seriesMasterId === target.seriesMasterId)) e.response = answer;
+    return f.calendar_status();
+  };
 })();

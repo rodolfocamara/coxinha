@@ -443,7 +443,15 @@
     "candidateLimit": "A meeting supports up to 100 candidates. Review existing candidates and choose a smaller list before adding invitees.",
     "categoriesReconnect": "Outlook did not allow changing categories. Reconnect Outlook to grant it.",
     "categoriesInvalid": "Choose at most 25 categories.",
-    "eventMissing": "This event is no longer in the Outlook calendar. Sync and try again."
+    "eventMissing": "This event is no longer in the Outlook calendar. Sync and try again.",
+    "respondOffline": "No connection to Outlook. Nothing was sent.",
+    "respondUncertain": "The connection dropped while sending, so it may have arrived. Check Outlook before trying again.",
+    "respondReconnect": "Outlook did not allow responding. Reconnect Outlook in Settings › Calendar.",
+    "respondRejected": "Outlook refused this response. The event may no longer accept it.",
+    "respondFailed": "Outlook did not take the response. Nothing changed.",
+    "respondUnavailable": "This event can no longer be answered here. Sync and check it.",
+    "respondInvalid": "Check the response and try again.",
+    "respondNoProposals": "The organizer does not allow proposing a new time."
   },
   "noteRecovery": {
     "diagnosticDetail": "Diagnostic details",
