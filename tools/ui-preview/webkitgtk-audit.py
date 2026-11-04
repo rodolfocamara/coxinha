@@ -43,10 +43,26 @@ SCREENS = {
     "respond": "/meetings?view=week",
 }
 
+FREEZE = """(() => {
+  const Real = Date;
+  const fixed = new Real(%s).getTime();
+  window.Date = class extends Real {
+    constructor(...args) {
+      if (args.length) super(...args);
+      else super(fixed);
+    }
+    static now() {
+      return fixed;
+    }
+  };
+})();"""
+
 # A screen behind a click: the fixtures it needs, and how to reach it (spec 0130).
 SETUP = {
     "respond": {
         "state": {"detail": 1},
+        # A Tuesday: the week then holds every fixture, whatever the day of the run.
+        "clock": "2026-11-03T12:00:00",
         "steps": [
             """[...document.querySelectorAll('.ch-main button')]
                 .find((b) => /Weekly invite/.test(b.getAttribute('aria-label') || b.textContent))
@@ -108,12 +124,13 @@ class Page:
             GLib.usleep(2000)
         return done()
 
-    def prepare(self, width, height, theme, size, state=None):
+    def prepare(self, width, height, theme, size, state=None, clock=None):
         self.window.set_default_size(width, height)
         self.window.resize(width, height)
         self.view.set_size_request(width, height)
         self.manager.remove_all_scripts()
-        seed = "localStorage.setItem('coxinha.themePref', %s);" % json.dumps(theme)
+        seed = FREEZE % json.dumps(clock) if clock else ""
+        seed += "localStorage.setItem('coxinha.themePref', %s);" % json.dumps(theme)
         seed += "localStorage.setItem('coxinha.appearance', %s);" % json.dumps(
             json.dumps({"fontSize": size, "language": "pt-BR"})
         )
@@ -187,7 +204,7 @@ def main():
                 width, height = map(int, win.split("x"))
                 for screen in args.screens.split(","):
                     setup = SETUP.get(screen, {})
-                    page.prepare(width, height, theme, size, setup.get("state"))
+                    page.prepare(width, height, theme, size, setup.get("state"), setup.get("clock"))
                     page.load(base)
                     for _ in range(60):
                         if page.eval("String(!!window.__coxinha?.router)") == "true":

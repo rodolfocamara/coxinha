@@ -90,6 +90,8 @@ async function openPanel({
   });
   const page = await context.newPage();
   page.on('pageerror', (e) => report(state, 'pageerror', e.message));
+  // Before the fixtures: their dates hang off this clock, not off the day of the run.
+  await page.clock.setFixedTime(new Date(NOW));
   for (const script of scripts) await page.addInitScript(script);
   await page.addInitScript(
     ([t, size]) => {
@@ -98,7 +100,6 @@ async function openPanel({
     },
     [theme, fontSize]
   );
-  await page.clock.setFixedTime(new Date(NOW));
   await page.goto(base, { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => window.__coxinha?.router, null, { timeout: 30000 });
   await page.evaluate(() =>
@@ -303,9 +304,9 @@ async function inspector(sessionId, { theme = 'dark', locale = 'en', shoot = fal
   });
   const page = await context.newPage();
   page.on('pageerror', (e) => report(sessionId, 'pageerror', e.message));
+  await page.clock.setFixedTime(new Date(NOW));
   for (const script of scripts) await page.addInitScript(script);
   await page.addInitScript((t) => localStorage.setItem('coxinha.themePref', t), theme);
-  await page.clock.setFixedTime(new Date(NOW));
   await page.goto(base, { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => window.__coxinha?.router, null, { timeout: 30000 });
   await page.evaluate(

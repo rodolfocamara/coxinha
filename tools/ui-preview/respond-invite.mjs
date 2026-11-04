@@ -44,6 +44,8 @@ async function open({ locale = 'en', theme = 'dark', fontSize = 16, width = 1280
     report(where, `left the page: ${url}`);
     return route.abort();
   });
+  // Before the fixtures: their dates hang off this clock, not off the day of the run.
+  await page.clock.setFixedTime(new Date(NOW));
   for (const script of scripts) await page.addInitScript(script);
   await page.addInitScript(
     ([t, size, language]) => {
@@ -52,7 +54,6 @@ async function open({ locale = 'en', theme = 'dark', fontSize = 16, width = 1280
     },
     [theme, fontSize, locale]
   );
-  await page.clock.setFixedTime(new Date(NOW));
   await page.goto(base, { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => window.__coxinha?.router, null, { timeout: 30000 });
   await page.evaluate(() => window.__coxinha.router.navigate({ to: '/meetings', search: { view: 'week' } }));
