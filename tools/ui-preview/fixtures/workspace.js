@@ -23,7 +23,9 @@
   f.list_notes = () => notes;
   f.search_notes = ({ query }) => {
     const q = String(query || '').toLowerCase();
-    return notes.filter((n) => n.title.toLowerCase().includes(q) || (bodies[n.id] || '').toLowerCase().includes(q));
+    return notes.filter(
+      (n) => n.title.toLowerCase().includes(q) || (bodies[n.id] || '').toLowerCase().includes(q)
+    );
   };
   f.get_note = ({ id }) => {
     const n = notes.find((x) => x.id === id);
@@ -46,10 +48,18 @@
     bodies[id] = '';
     return n;
   };
+  const trashed = new Map();
   f.delete_note = ({ id }) => {
     const i = notes.findIndex((x) => x.id === id);
-    if (i >= 0) notes.splice(i, 1);
+    if (i >= 0) trashed.set(id, notes.splice(i, 1)[0]);
     return null;
+  };
+  f.restore_note = ({ id }) => {
+    const n = trashed.get(id);
+    if (!n) throw new Error('not in the trash');
+    trashed.delete(id);
+    notes.unshift(n);
+    return n;
   };
   f.board_export_recovery = () => 'recovery/board-1.json';
   f.save_attachment = ({ filename }) => `attachments/${filename}`;

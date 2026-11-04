@@ -185,8 +185,9 @@ export function BoardCanvas({
           if (c.source && c.target) boardSession.update(connect(board, c.source, c.target));
         }}
         // React Flow deletes only the selected dependency; items leave through
-        // the Workspace's own shortcut, which keeps an undo.
-        deleteKeyCode={['Delete', 'Backspace']}
+        // the Workspace's own shortcut, which keeps an undo. It calls
+        // preventDefault on any key it watches, which would silence that shortcut.
+        deleteKeyCode={selectedEdge ? ['Delete', 'Backspace'] : null}
         onBeforeDelete={async ({ edges }) => ({ nodes: [], edges })}
         onEdgesDelete={(edges) => {
           const current = boardSession.get();

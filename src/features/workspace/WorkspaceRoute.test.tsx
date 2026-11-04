@@ -320,6 +320,12 @@ it('removes the cards of a deleted note and closes the editor', async () => {
 it("React Flow's Delete removes only dependencies; items use the Workspace shortcut", async () => {
   mount();
   await screen.findByTestId('node-c-api');
+  // React Flow prevents every key it watches, which would silence the item shortcut.
+  expect(flow.props.deleteKeyCode).toBeNull();
+  act(() => flow.props.onEdgesChange([{ id: 'e-1', type: 'select', selected: true }]));
+  expect(flow.props.deleteKeyCode).toEqual(['Delete', 'Backspace']);
+  act(() => flow.props.onEdgesChange([{ id: 'e-1', type: 'select', selected: false }]));
+  expect(flow.props.deleteKeyCode).toBeNull();
   const edge = { id: 'e-1', source: 'c-integ', target: 'c-api' };
   await expect(
     flow.props.onBeforeDelete({ nodes: [{ id: 'c-api' }], edges: [edge] })

@@ -38,6 +38,9 @@ and the board feels slow while dragging.
 
 ### P3 Delete goes to the trash
 
+- React Flow watches Delete and Backspace only while a dependency is selected.
+  It calls `preventDefault` on any key it watches, and the item shortcut
+  yields to a handled key, so watching them always left items undeletable.
 - Delete or Backspace removes the selected item, as in Excalidraw. An
   activity or note goes with its note file to `.coxinha/trash/<date>/`,
   keeping its path inside (`notes/a.md`), and every card of that note leaves
@@ -72,8 +75,8 @@ and the board feels slow while dragging.
   and Área as 34px icon buttons (thin 1.5 stroke) with their number key in
   the corner; 1, 2 and 3 create them when no field has focus.
 - Zoom is an island at the bottom left: −, the percentage (click for 100%),
-  + and fit, in place of React Flow's controls. The header keeps the title
-  and the save state.
+  - and fit, in place of React Flow's controls. The header keeps the title
+    and the save state.
 
 ## Acceptance
 
