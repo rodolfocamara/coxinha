@@ -216,3 +216,4 @@ Pending decisions that block or shape the implementation.
 - [0129 — Settings as pages: one section per route, grouped sidebar, find a setting](0129-settings-pages.md) — in-progress
 - [0130 — Respond to invites](0130-respond-to-invites.md) — in-progress
 - [0131 — Close hides to the tray](0131-close-hides-to-tray.md) — in-progress
+- [0132 — Fixes from the first Windows validation](0132-windows-validation-fixes.md) — in-progress

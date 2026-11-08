@@ -80,13 +80,19 @@ export function useWorkspace() {
     void refreshSessionList();
   }, []);
 
-  // Back/forward, the palette and Hoje drive the selection through the URL.
+  // Back/forward, the palette, Hoje and the new-note shortcut drive the selection
+  // through the URL. Opening a note from there is an explicit gesture: put the caret in it.
+  const routeSeen = useRef(false);
   useEffect(() => {
+    const external = !routeSeen.current || routeNoteId !== sel.noteId;
+    routeSeen.current = true;
+    if (routeNoteId && external) setFocusRequest(editorFocusRequest());
     setSel((current) =>
       (routeNoteId ?? null) === current.noteId
         ? current
         : { itemId: null, noteId: routeNoteId ?? null }
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only a URL change opens
   }, [routeNoteId]);
 
   useEffect(() => {

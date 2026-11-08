@@ -80,7 +80,8 @@ export function RootLayout() {
           navigate({ to: '/' });
           return;
         case 'agenda':
-          navigate({ to: '/agenda' });
+          // Today's agenda is the day view; the meetings chord opens the remembered view.
+          navigate({ to: '/meetings', search: { view: 'day' } });
           return;
         case 'meetings':
           navigate({ to: '/meetings' });

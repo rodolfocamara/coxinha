@@ -59,6 +59,7 @@
       "stop": "Não foi possível parar. Tente de novo.",
       "devices": "Não foi possível listar os dispositivos de áudio.",
       "devicesMissing": "Nenhum microfone ou áudio do computador encontrado.",
+      "unsupported": "A gravação ainda não está disponível neste sistema.",
       "captureBusy": "Já existe uma gravação em andamento."
     },
     "autoStopIn": "parando sozinho em {{time}}",

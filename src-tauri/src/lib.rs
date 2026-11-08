@@ -163,6 +163,7 @@ pub fn run() {
             app.manage(shared_state);
 
             tray::setup(app.handle())?;
+            window::fit_main_to_work_area(app.handle());
             if !std::env::args().any(|arg| arg == "--hidden") {
                 window::show_main(app.handle());
             }
