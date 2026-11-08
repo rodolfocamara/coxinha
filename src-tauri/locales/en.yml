@@ -6,6 +6,8 @@ tray:
   settings: Settings
   quit: Quit
 desktop:
+  hiddenTitle: "Coxinha is still running"
+  hiddenBody: "Use Quit in the tray menu to exit."
   confirm: "Exit Coxinha? Pending changes will be saved and recording finalized before exit. Running processing will be interrupted and can be retried."
   exit: "Save and exit"
   minimize: "Minimize to tray"

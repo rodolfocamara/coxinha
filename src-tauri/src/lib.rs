@@ -87,7 +87,15 @@ pub fn run() {
     #[cfg(all(debug_assertions, dev))]
     export_bindings_if_changed(&specta_builder);
 
-    tauri::Builder::default()
+    let mut builder = tauri::Builder::default();
+    // Registered first so a second launch only reveals the running one (ADR 0025).
+    // Native test profiles run side by side, so they skip it.
+    if test_profile.is_none() {
+        builder = builder.plugin(tauri_plugin_single_instance::init(|app, _, _| {
+            window::show_main(app);
+        }));
+    }
+    builder
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())
@@ -183,8 +191,10 @@ pub fn run() {
         })
         .on_window_event(|window, event| {
             if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-                api.prevent_close();
-                desktop::request_exit(window.app_handle());
+                if window.label() == "main" {
+                    api.prevent_close();
+                    desktop::close_requested(window.app_handle());
+                }
             }
         })
         .build(context)

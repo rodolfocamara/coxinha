@@ -1,5 +1,7 @@
 _version: 2
 desktop:
+  hiddenTitle: "O Coxinha continua aberto"
+  hiddenBody: "Use Sair no menu da bandeja para encerrar."
   confirm: "Sair do Coxinha? As alterações serão salvas e a gravação será finalizada antes de sair. O processamento em execução será interrompido e poderá ser tentado novamente."
   exit: "Salvar e sair"
   minimize: "Minimizar para a bandeja"

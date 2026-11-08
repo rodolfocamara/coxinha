@@ -16,8 +16,15 @@ use protocol::{ExitDecision, FlushReply};
 use recovery::fallback;
 use shutdown::complete_exit;
 
+#[derive(Debug, PartialEq, Eq)]
+pub enum CloseAction {
+    Ignore,
+    Hide { notify: bool },
+}
+
 pub struct Desktop {
     busy: AtomicBool,
+    hidden_once: AtomicBool,
     pending: Mutex<Option<protocol::Pending>>,
     log: Mutex<PathBuf>,
     session: String,
@@ -27,6 +34,7 @@ impl Desktop {
         fs::create_dir_all(&path)?;
         let state = Self {
             busy: AtomicBool::new(false),
+            hidden_once: AtomicBool::new(false),
             pending: Mutex::new(None),
             log: Mutex::new(path.join("desktop.log")),
             session: uuid::Uuid::new_v4().to_string(),
@@ -35,6 +43,15 @@ impl Desktop {
             .record("session_started")
             .map_err(anyhow::Error::msg)?;
         Ok(state)
+    }
+    /// ADR 0025: close hides; a running shutdown keeps its recovery dialog on screen.
+    pub fn close_action(&self) -> CloseAction {
+        if self.busy.load(Ordering::SeqCst) {
+            return CloseAction::Ignore;
+        }
+        CloseAction::Hide {
+            notify: !self.hidden_once.swap(true, Ordering::SeqCst),
+        }
     }
     fn try_begin(&self) -> bool {
         !self.busy.swap(true, Ordering::SeqCst)
@@ -167,6 +184,23 @@ impl Drop for BusyReset<'_> {
             abort(self.app, &pending.id);
         }
         self.state.busy.store(false, Ordering::SeqCst);
+    }
+}
+pub fn close_requested(app: &AppHandle) {
+    let CloseAction::Hide { notify } = app.state::<Desktop>().close_action() else {
+        return;
+    };
+    if let Some(window) = app.get_webview_window("main") {
+        let _ = window.hide();
+    }
+    if notify {
+        use tauri_plugin_notification::NotificationExt;
+        let _ = app
+            .notification()
+            .builder()
+            .title(rust_i18n::t!("desktop.hiddenTitle"))
+            .body(rust_i18n::t!("desktop.hiddenBody"))
+            .show();
     }
 }
 pub fn request_exit(app: &AppHandle) {
