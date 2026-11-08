@@ -64,9 +64,9 @@ fn eligible(root: &std::path::Path, meeting: &str) -> bool {
 
 impl Worker {
     pub(super) fn pump_backlog(&mut self) {
-        #[cfg(target_os = "linux")]
+        #[cfg(capture)]
         let capturing = self.active.is_some();
-        #[cfg(not(target_os = "linux"))]
+        #[cfg(not(capture))]
         let capturing = false;
         if capturing || self.processing.is_some() || !self.live.backlog_on() {
             self.live.backlog.scan = None;

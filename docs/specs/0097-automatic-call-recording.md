@@ -150,7 +150,7 @@ blocking items B1–B5.
   synthetic two-track run (no gaps, Stop P95 unchanged, ASR duty ≤ 50%, RSS
   measured with Handy loaded, no sustained thermal throttling), WER within 2
   points of offline Tagarela, and Windows validation once capture exists
-  there.
+  there (spec 0133).
 
 ### P4 Suggested title from the macserver LLM
 

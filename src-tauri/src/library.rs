@@ -64,7 +64,7 @@ struct Worker {
     processing: Option<processing::ProcessingTask>,
     resume: processing::Resume,
     store: Store,
-    #[cfg(target_os = "linux")]
+    #[cfg(capture)]
     active: Option<Active>,
     error: Option<String>,
     finalization_failed: Option<String>,
@@ -102,7 +102,7 @@ impl Library {
                     processing: None,
                     resume: Default::default(),
                     store,
-                    #[cfg(target_os = "linux")]
+                    #[cfg(capture)]
                     active: None,
                     error: None,
                     finalization_failed: None,
@@ -112,9 +112,9 @@ impl Library {
                 };
                 let mut watch = watch::CaptureWatch::new(&worker, notify);
                 loop {
-                    #[cfg(target_os = "linux")]
+                    #[cfg(capture)]
                     let wait = if worker.active.is_some() { 0 } else { 100 };
-                    #[cfg(not(target_os = "linux"))]
+                    #[cfg(not(capture))]
                     let wait = 100;
                     match receiver.recv_timeout(std::time::Duration::from_millis(wait)) {
                         Ok(request) => {
@@ -186,9 +186,9 @@ impl Library {
 }
 impl Worker {
     fn status(&self) -> Value {
-        #[cfg(target_os = "linux")]
+        #[cfg(capture)]
         let active = self.active.as_ref().map(|a| a.status(&self.store.root));
-        #[cfg(not(target_os = "linux"))]
+        #[cfg(not(capture))]
         let active: Option<Value> = None;
         json!({"active":active,"error":self.error,"processing":self.processing.as_ref().map(|p|p.status()),"voices":{"generation":self.voices.generation}})
     }
@@ -204,7 +204,7 @@ impl Worker {
                     self.processing.is_none(),
                     "finish processing before importing audio"
                 );
-                #[cfg(target_os = "linux")]
+                #[cfg(capture)]
                 anyhow::ensure!(
                     self.active.is_none(),
                     "finish capture before importing audio"
@@ -271,7 +271,7 @@ impl Worker {
                     self.processing.is_none(),
                     "finish local processing before recovery"
                 );
-                #[cfg(target_os = "linux")]
+                #[cfg(capture)]
                 anyhow::ensure!(self.active.is_none(), "stop active capture before recovery");
                 // Recovery rewrites the tracks the live worker may be reading.
                 anyhow::ensure!(
@@ -299,7 +299,7 @@ impl Worker {
         self.pump_resume();
         self.pump_backlog();
         self.pump_voices();
-        #[cfg(target_os = "linux")]
+        #[cfg(capture)]
         self.pump_capture();
     }
 }
@@ -320,7 +320,7 @@ pub use calendar_match::*;
 mod reconcile;
 pub use reconcile::reconcile_agenda;
 mod capture;
-#[cfg(target_os = "linux")]
+#[cfg(capture)]
 use capture::Active;
 mod live;
 pub use live::*;

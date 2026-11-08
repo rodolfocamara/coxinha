@@ -22,6 +22,8 @@ function DeviceSelect({
 }) {
   const { t } = useTranslation();
   const label = (source: Source) => {
+    if (source.absent)
+      return t(`people.settings.devices.${source.monitor ? 'absentOutput' : 'absentMic'}`);
     const text = source.description || source.name;
     return source.is_default ? t('people.settings.devices.systemDefault', { name: text }) : text;
   };

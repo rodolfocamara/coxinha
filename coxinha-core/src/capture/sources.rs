@@ -1,16 +1,7 @@
+use super::Source;
 use anyhow::{ensure, Context, Result};
-use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::process::Command;
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Source {
-    pub name: String,
-    pub description: String,
-    pub monitor: bool,
-    #[serde(default)]
-    pub is_default: bool,
-}
 
 fn pactl(args: &[&str]) -> Result<Vec<u8>> {
     let output = Command::new("pactl")
@@ -70,7 +61,7 @@ fn parse_sources(
             !output.is_empty() && (sink.is_some_and(|s| s["name"].as_str() == Some(output))
                 || source["monitor_source"].as_str() == Some(output))
         } else { !mic.is_empty() && name == mic };
-        Ok(Source { name: name.into(), description: source["description"].as_str().unwrap_or(name).into(), monitor, is_default })
+        Ok(Source { name: name.into(), description: source["description"].as_str().unwrap_or(name).into(), monitor, is_default, absent: false })
     }).collect()
 }
 

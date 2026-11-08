@@ -109,6 +109,8 @@
       "devices": {
         "systemDefault": "{{name}} (padrão do sistema)",
         "none": "Nenhum dispositivo encontrado",
+        "absentMic": "Sem microfone: só o áudio do computador",
+        "absentOutput": "Sem áudio do computador: só o microfone",
         "loading": "Procurando dispositivos…",
         "error": "Não deu para listar os dispositivos de áudio.",
         "retry": "Tentar de novo",

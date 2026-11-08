@@ -19,6 +19,10 @@ transcribe-cpp = { version = "=0.2.4", default-features = false, optional = true
 pyannote-rs = { version = "0.3.4", optional = true }
 ort = { version = "=2.0.0-rc.10", default-features = false, features = ["load-dynamic"], optional = true }
 
+[target.'cfg(windows)'.dependencies]
+# Spec 0133: WASAPI capture and loopback.
+wasapi = "0.18"
+
 [features]
 default = []
 local-processing = ["stt-whisper", "diarization-onnx"]

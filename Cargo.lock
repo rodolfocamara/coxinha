@@ -977,6 +977,7 @@ dependencies = [
  "tempfile",
  "transcribe-cpp",
  "uuid",
+ "wasapi",
  "whisper-rs",
 ]
 
