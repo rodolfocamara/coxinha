@@ -10,13 +10,13 @@ pub async fn library_list(state: State<'_, Library>) -> Result<Value, String> {
 #[specta::specta]
 pub async fn library_sources() -> Result<Value, String> {
     tauri::async_runtime::spawn_blocking(|| {
-        #[cfg(any(target_os = "linux", windows))]
+        #[cfg(capture)]
         {
             coxinha_core::capture::list_sources()
                 .and_then(|s| Ok(serde_json::to_value(s)?))
                 .map_err(|e| format!("{e:#}"))
         }
-        #[cfg(not(any(target_os = "linux", windows)))]
+        #[cfg(not(capture))]
         {
             Err("capture adapter unavailable on this platform".into())
         }

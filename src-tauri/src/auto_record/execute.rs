@@ -4,7 +4,7 @@ use super::{changed, lock, notify, plan, policy, policy::Command, AutoRecord, En
 use crate::library::Library;
 use crate::storage::Storage;
 use coxinha_core::store::session::NewSession;
-use serde_json::{json, Value};
+use serde_json::json;
 use shared::ActiveCall;
 use std::sync::Arc;
 use tauri::{AppHandle, Manager};
@@ -83,28 +83,11 @@ pub(super) async fn execute(app: &AppHandle, command: Command) {
     changed(app);
 }
 
-async fn sources() -> Result<Value, String> {
-    tauri::async_runtime::spawn_blocking(|| {
-        #[cfg(any(target_os = "linux", windows))]
-        {
-            coxinha_core::capture::list_sources()
-                .and_then(|s| Ok(serde_json::to_value(s)?))
-                .map_err(|e| format!("{e:#}"))
-        }
-        #[cfg(not(any(target_os = "linux", windows)))]
-        {
-            Err::<Value, String>("capture adapter unavailable on this platform".into())
-        }
-    })
-    .await
-    .map_err(|e| e.to_string())?
-}
-
 /// Devices, calendar title, session, start, invitees. Each step can fail
 /// once; there is no retry loop and the strip prompt stays available.
 async fn begin(app: &AppHandle, call: &ActiveCall) -> Result<Started, String> {
     let settings = lock(&app.state::<AutoRecord>().settings).clone();
-    let devices = sources().await?;
+    let devices = crate::library::library_sources().await?;
     let mic = plan::pick_source(&devices, false, settings.mic_source.as_deref())
         .ok_or("no microphone")?;
     let output = plan::pick_source(&devices, true, settings.output_source.as_deref())

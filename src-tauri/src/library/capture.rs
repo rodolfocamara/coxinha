@@ -1,10 +1,10 @@
 use super::*;
 
 /// Spec 0118: a 1 s microphone peak above this is the owner speaking.
-#[cfg_attr(not(any(target_os = "linux", windows)), allow(dead_code))]
+#[cfg_attr(not(capture), allow(dead_code))]
 const SPEECH_PEAK: f32 = 0.08;
 
-#[cfg(any(target_os = "linux", windows))]
+#[cfg(capture)]
 pub(super) struct Active {
     pub(super) capture: coxinha_core::capture::DeviceCapture,
     pub(super) id: String,
@@ -12,7 +12,7 @@ pub(super) struct Active {
     meters: Meters,
     checkpoint: Instant,
 }
-#[cfg(any(target_os = "linux", windows))]
+#[cfg(capture)]
 impl Active {
     pub(super) fn status(&self, root: &std::path::Path) -> Value {
         let now = Instant::now();
@@ -24,13 +24,13 @@ impl Active {
 
 /// Latest block peak per track (mic, output) and the last microphone speech.
 #[derive(Default)]
-#[cfg_attr(not(any(target_os = "linux", windows)), allow(dead_code))]
+#[cfg_attr(not(capture), allow(dead_code))]
 struct Meters {
     peaks: [f32; 2],
     last: [Option<Instant>; 2],
     speech: Option<Instant>,
 }
-#[cfg_attr(not(any(target_os = "linux", windows)), allow(dead_code))]
+#[cfg_attr(not(capture), allow(dead_code))]
 impl Meters {
     fn record(&mut self, track: usize, peak: f32, now: Instant) {
         self.peaks[track] = peak;
@@ -45,13 +45,13 @@ impl Meters {
             "lastBlockMs": self.last[track].map(|t| millis(now, t)), "error": null})
     }
 }
-#[cfg_attr(not(any(target_os = "linux", windows)), allow(dead_code))]
+#[cfg_attr(not(capture), allow(dead_code))]
 fn millis(now: Instant, then: Instant) -> u64 {
     now.saturating_duration_since(then).as_millis() as u64
 }
 
 impl Worker {
-    #[cfg(any(target_os = "linux", windows))]
+    #[cfg(capture)]
     pub(super) fn pump_capture(&mut self) {
         let Some(a) = self.active.as_mut() else {
             return;
@@ -89,7 +89,7 @@ impl Worker {
                 mic,
                 output,
             } => {
-                #[cfg(any(target_os = "linux", windows))]
+                #[cfg(capture)]
                 {
                     anyhow::ensure!(self.active.is_none(), "capture already active");
                     anyhow::ensure!(title.trim().len() <= 500, "title exceeds 500 bytes");
@@ -130,14 +130,14 @@ impl Worker {
                     });
                     Ok(self.status())
                 }
-                #[cfg(not(any(target_os = "linux", windows)))]
+                #[cfg(not(capture))]
                 {
                     let _ = (session, title, mic, output);
                     anyhow::bail!("capture adapter unavailable on this platform")
                 }
             }
             Action::Pause(paused) => {
-                #[cfg(any(target_os = "linux", windows))]
+                #[cfg(capture)]
                 {
                     let a = self
                         .active
@@ -149,7 +149,7 @@ impl Worker {
                     }
                     Ok(self.status())
                 }
-                #[cfg(not(any(target_os = "linux", windows)))]
+                #[cfg(not(capture))]
                 {
                     let _ = paused;
                     anyhow::bail!("capture adapter unavailable")
@@ -157,9 +157,9 @@ impl Worker {
             }
             Action::Shutdown { allow_interrupted } => {
                 if allow_interrupted {
-                    #[cfg(any(target_os = "linux", windows))]
+                    #[cfg(capture)]
                     let had_capture = self.active.is_some();
-                    #[cfg(not(any(target_os = "linux", windows)))]
+                    #[cfg(not(capture))]
                     let had_capture = false;
                     let capture_failed = self.finish(true).is_err()
                         || self.finalization_failed.is_some()
@@ -193,7 +193,7 @@ impl Worker {
 
 impl Worker {
     pub(super) fn finish(&mut self, interrupted: bool) -> anyhow::Result<()> {
-        #[cfg(any(target_os = "linux", windows))]
+        #[cfg(capture)]
         if let Some(a) = self.active.take() {
             let result = a.capture.finish(&self.store, interrupted);
             // B1: every outcome is terminal for the live worker.
@@ -227,7 +227,7 @@ impl Worker {
                 _ => {}
             }
         }
-        #[cfg(not(any(target_os = "linux", windows)))]
+        #[cfg(not(capture))]
         let _ = interrupted;
         Ok(())
     }

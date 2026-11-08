@@ -10,8 +10,8 @@ fn capture(store: &Store, mic: &str, absent: [bool; 2]) -> (EndpointCapture, Fee
 }
 
 fn drain(capture: &mut EndpointCapture) -> Result<()> {
-    for _ in 0..16 {
-        capture.pump()?;
+    while let Ok(message) = capture.receiver.try_recv() {
+        capture.apply(message)?;
     }
     Ok(())
 }
@@ -60,10 +60,10 @@ fn an_absent_microphone_is_silence_in_step_with_computer_audio() {
 }
 
 #[test]
-fn a_default_switch_is_journaled_and_a_lost_track_fills_silence_until_found() {
+fn the_final_drain_keeps_a_lost_track_silent_and_journals_the_switch() {
     let dir = tempfile::tempdir().unwrap();
     let store = Store::open(dir.path()).unwrap();
-    let (mut capture, feed) = capture(&store, MIC, [false, false]);
+    let (capture, feed) = capture(&store, MIC, [false, false]);
     for message in [
         Message::Block(Track::Mic, vec![1; 960], 1),
         Message::Block(Track::Output, vec![2; 960], 1),
@@ -75,7 +75,6 @@ fn a_default_switch_is_journaled_and_a_lost_track_fills_silence_until_found() {
     ] {
         assert!(feed.send(message));
     }
-    drain(&mut capture).unwrap();
     let manifest = capture.finish(&store, false).unwrap();
     assert_eq!(manifest.state, "finished");
     let mic = samples(&store, &manifest, 0);

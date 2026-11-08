@@ -1,7 +1,7 @@
 use super::*;
 impl Worker {
     pub(super) fn detail(&self, id: &str) -> anyhow::Result<Value> {
-        #[cfg(any(target_os = "linux", windows))]
+        #[cfg(capture)]
         anyhow::ensure!(
             self.active.as_ref().is_none_or(|a| a.id == id),
             "stop active capture before verifying another recording"

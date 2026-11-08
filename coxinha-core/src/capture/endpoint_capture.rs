@@ -146,12 +146,19 @@ impl EndpointCapture {
             }
         }
         match self.receiver.recv_timeout(Duration::from_millis(100)) {
-            Ok(Message::Block(track, samples, arrival)) => {
+            Ok(message) => self.apply(message),
+            Err(mpsc::RecvTimeoutError::Timeout) => Ok(None),
+            Err(e) => bail!("capture channels disconnected: {e}"),
+        }
+    }
+    fn apply(&mut self, message: Message) -> Result<Option<(Track, f32)>> {
+        match message {
+            Message::Block(track, samples, arrival) => {
                 self.last[index(track)] = Instant::now();
                 let peak = self.write(track, &samples, arrival)?;
                 Ok(Some((track, peak)))
             }
-            Ok(Message::Switched(track, endpoint, at)) => {
+            Message::Switched(track, endpoint, at) => {
                 self.absent[index(track)] = false;
                 self.last[index(track)] = Instant::now();
                 self.recording.gap(
@@ -160,7 +167,7 @@ impl EndpointCapture {
                 )?;
                 Ok(None)
             }
-            Ok(Message::Lost(track, reason, at)) => {
+            Message::Lost(track, reason, at) => {
                 self.absent[index(track)] = true;
                 self.recording.gap(
                     &format!("{track:?} default device unavailable ({reason}); silence until one returns"),
@@ -171,12 +178,18 @@ impl EndpointCapture {
                 }
                 Ok(None)
             }
-            Ok(Message::Failed(e)) => {
+            Message::Failed(e) => {
                 self.recording.gap(&e, self.elapsed_ns())?;
                 bail!(e)
             }
-            Err(mpsc::RecvTimeoutError::Timeout) => Ok(None),
-            Err(e) => bail!("capture channels disconnected: {e}"),
+        }
+    }
+    /// After stop, device events still decide which track gets silence. A
+    /// reader's own failure was already judged by `Feed::send`.
+    fn settle(&mut self, message: Message) {
+        let reader_failure = matches!(message, Message::Failed(_));
+        if self.apply(message).is_err() && !reader_failure {
+            self.failed_source.store(true, Ordering::Release);
         }
     }
     pub fn stop(&mut self) {
@@ -184,12 +197,8 @@ impl EndpointCapture {
         // Readers poll the flag every few milliseconds; keep draining so a
         // reader blocked on a full queue can observe it.
         while self.readers.iter().any(|reader| !reader.is_finished()) {
-            if let Ok(Message::Block(track, samples, arrival)) =
-                self.receiver.recv_timeout(Duration::from_millis(10))
-            {
-                if self.write(track, &samples, arrival).is_err() {
-                    self.failed_source.store(true, Ordering::Release);
-                }
+            if let Ok(message) = self.receiver.recv_timeout(Duration::from_millis(10)) {
+                self.settle(message);
             }
         }
         for reader in self.readers.drain(..) {
@@ -200,15 +209,13 @@ impl EndpointCapture {
     }
     pub fn finish(mut self, store: &Store, interrupted: bool) -> Result<CaptureManifest> {
         self.stop();
-        let mut interrupted = interrupted
-            || self.overflow.load(Ordering::Acquire)
-            || self.failed_source.load(Ordering::Acquire);
         while let Ok(message) = self.receiver.try_recv() {
-            if let Message::Block(track, samples, arrival) = message {
-                self.write(track, &samples, arrival)?;
-            }
+            self.settle(message);
         }
-        interrupted |= self.recording.manifest.tracks.iter().any(|t| t.frames == 0);
+        let interrupted = interrupted
+            || self.overflow.load(Ordering::Acquire)
+            || self.failed_source.load(Ordering::Acquire)
+            || self.recording.manifest.tracks.iter().any(|t| t.frames == 0);
         if interrupted {
             self.recording.gap("interrupted capture: source failure, queue overflow, missing audio or explicit interruption; inspect source diagnostics", self.elapsed_ns())?;
         }
