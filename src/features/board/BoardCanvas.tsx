@@ -133,6 +133,7 @@ export function BoardCanvas({
     >
       <ReactFlow
         colorMode={theme}
+        proOptions={{ hideAttribution: true }}
         onInit={viewport.initialize}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}

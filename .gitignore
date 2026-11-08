@@ -86,3 +86,6 @@ __pycache__/
 src-tauri/resources/speech/
 # transcribe.cpp libraries copied for the installer (scripts/build_release.py)
 src-tauri/resources/native/
+
+# Local design council screenshots and crops
+docs/design/council/

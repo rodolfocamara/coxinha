@@ -126,7 +126,7 @@ function StripCard({
       {live && session && <LiveBadge session={session} />}
       {canRecord ? (
         <Button
-          variant="primary"
+          variant="secondary"
           size="sm"
           icon={<Mic size={14} aria-hidden="true" />}
           disabled={actions.busy}

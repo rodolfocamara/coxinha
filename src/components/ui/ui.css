@@ -60,17 +60,21 @@
   .cx-btn[data-variant='primary'] {
     background: var(--color-primary);
     color: var(--color-primary-foreground);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.15);
   }
   .cx-btn[data-variant='primary']:hover:not(:disabled) {
     background: oklch(var(--accent-hover));
+    box-shadow: 0 2px 6px oklch(var(--accent) / 0.35);
   }
   .cx-btn[data-variant='secondary'] {
     border-color: var(--color-border);
     background: var(--color-card);
     color: var(--color-foreground);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
   }
   .cx-btn[data-variant='secondary']:hover:not(:disabled) {
     background: var(--color-secondary);
+    border-color: color-mix(in oklab, var(--color-border) 60%, var(--color-foreground));
   }
   .cx-btn[data-variant='ghost'] {
     background: transparent;

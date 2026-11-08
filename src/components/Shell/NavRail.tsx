@@ -2,7 +2,6 @@ import { useLayoutEffect, useRef, type ReactNode } from 'react';
 import { useNavigate, useRouterState } from '@tanstack/react-router';
 import { CalendarDays, LayoutGrid, Mic, Search, Settings, Sun, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import brandMark from '../../assets/coxinha-mark.svg';
 import { toggleCapture } from '../../features/capture/captureActions';
 import { useCaptureStore } from '../../features/capture/captureStore';
 import { formatChord, useSystemChord } from '../../lib/shortcuts';
@@ -98,7 +97,6 @@ export function NavRail() {
 
   return (
     <nav className="cx-nav" aria-label={t('a11y.mainNavigation')}>
-      <img src={brandMark} alt={t('brand.name')} className="cx-nav-logo" />
       <span ref={indicator} className="cx-nav-indicator" aria-hidden="true" />
       {item('hoje', <Sun size={16} aria-hidden="true" />, t('shell.nav.hoje'))}
       {item('meetings', <CalendarDays size={16} aria-hidden="true" />, t('shell.nav.meetings'))}

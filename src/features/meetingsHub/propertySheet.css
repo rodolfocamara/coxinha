@@ -63,7 +63,8 @@
     font-size: 0.8125rem;
     line-height: 1rem;
     font-variant-numeric: tabular-nums;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
   .ch-prop-text {
     min-width: 0;

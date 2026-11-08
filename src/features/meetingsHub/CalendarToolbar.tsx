@@ -32,7 +32,7 @@ export function CalendarToolbar(p: Props) {
     <header className="ch-bar">
       <h1 className="sr-only">{t('meetingsHub.title')}</h1>
       <Button
-        variant="primary"
+        variant="secondary"
         size="sm"
         icon={<Plus size={14} aria-hidden="true" />}
         disabled={!p.desktop}
@@ -86,13 +86,13 @@ export function CalendarToolbar(p: Props) {
       <Button
         size="sm"
         variant="ghost"
-        icon={<Search size={14} aria-hidden="true" />}
+        iconOnly
+        icon={<Search size={15} aria-hidden="true" />}
         aria-haspopup="dialog"
+        aria-label={t('search.bar')}
         title={t('search.bar')}
         onClick={openSearch}
-      >
-        <span className="ch-bar-label">{t('search.bar')}</span>
-      </Button>
+      />
       <Button
         size="sm"
         variant="ghost"

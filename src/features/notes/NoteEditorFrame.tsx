@@ -94,7 +94,7 @@ export function NoteEditorFrame({
         </div>
         <div
           className={clsx(
-            embedded ? 'min-w-0 mx-auto pb-8' : 'mx-auto px-6 sm:px-12 lg:px-20 pt-12 pb-10',
+            embedded ? 'min-w-0 mx-0 pb-8' : 'mx-auto px-6 sm:px-12 lg:px-20 pt-12 pb-10',
             fullWidth ? 'max-w-none' : 'max-w-[60rem]'
           )}
         >

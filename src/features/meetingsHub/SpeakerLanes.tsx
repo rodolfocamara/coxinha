@@ -23,7 +23,6 @@ export function SpeakerLanes({
         const label = lane.name ?? t('meetingsHub.lanes.unknown', { n: lane.index });
         const hue = lane.name ? lane.hue : null;
         const color = hue ? `oklch(var(--p${hue}))` : 'var(--color-warning)';
-        const fill = hue ? `oklch(var(--p${hue}-bg))` : 'oklch(var(--p3-bg))';
         const seek = (seconds: number) => onSeek?.(lane.track, seconds);
         return (
           <div key={lane.key} className="contents">
@@ -55,7 +54,7 @@ export function SpeakerLanes({
                     {
                       left: `${segment.left}%`,
                       width: `${segment.width}%`,
-                      background: fill,
+                      background: color,
                       '--i': laneIndex * 2 + Math.min(i, 6),
                     } as React.CSSProperties
                   }
