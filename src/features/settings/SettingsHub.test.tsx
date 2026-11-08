@@ -110,6 +110,36 @@ it('loads devices once, writes choices through chooseDevices and never starts ca
   expect(useCaptureStore.getState().status).toBeNull();
 });
 
+it('names an absent device kind instead of a system default (spec 0133)', async () => {
+  vi.mocked(invoke).mockImplementation(async (command: string) => {
+    if (command === 'library_sources')
+      return [
+        {
+          name: 'wasapi:none-input',
+          description: 'No microphone',
+          monitor: false,
+          is_default: true,
+          absent: true,
+        },
+        {
+          name: 'wasapi:default-output',
+          description: 'Speakers',
+          monitor: true,
+          is_default: true,
+        },
+      ];
+    throw new Error(`unexpected ${command}`);
+  });
+  render(<RecordingSection />);
+  const mic = await screen.findByRole('combobox', { name: tr('people.settings.mic.title') });
+  await waitFor(() => expect(mic).toHaveTextContent(tr('people.settings.devices.absentMic')));
+  expect(mic).not.toHaveTextContent('No microphone');
+  expect(useCaptureStore.getState().mic).toBe('wasapi:none-input');
+  expect(
+    screen.getByRole('combobox', { name: tr('people.settings.output.title') })
+  ).toHaveTextContent('Speakers (padrão do sistema)');
+});
+
 it('shows a retry when devices cannot be listed, and notes that a live capture keeps its devices', async () => {
   const user = userEvent.setup();
   vi.mocked(invoke).mockRejectedValueOnce(new Error('pactl missing'));

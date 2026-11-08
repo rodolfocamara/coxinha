@@ -18,7 +18,14 @@ export type CalendarMatch = {
   endsAt: string;
   event: CalendarEvent;
 };
-export type Source = { name: string; description: string; monitor: boolean; is_default?: boolean };
+export type Source = {
+  name: string;
+  description: string;
+  monitor: boolean;
+  is_default?: boolean;
+  /** Spec 0133: no device of this kind; the track records silence. */
+  absent?: boolean;
+};
 export type Meter = { peak: number; lastBlockMs: number | null; error: string | null };
 export type RecordingStorage = {
   directory: string;

@@ -85,13 +85,13 @@ pub(super) async fn execute(app: &AppHandle, command: Command) {
 
 async fn sources() -> Result<Value, String> {
     tauri::async_runtime::spawn_blocking(|| {
-        #[cfg(target_os = "linux")]
+        #[cfg(any(target_os = "linux", windows))]
         {
             coxinha_core::capture::list_sources()
                 .and_then(|s| Ok(serde_json::to_value(s)?))
                 .map_err(|e| format!("{e:#}"))
         }
-        #[cfg(not(target_os = "linux"))]
+        #[cfg(not(any(target_os = "linux", windows)))]
         {
             Err::<Value, String>("capture adapter unavailable on this platform".into())
         }

@@ -39,7 +39,7 @@ impl Worker {
     }
     /// Spec 0121: a capture outranks processing. The run stops at its next
     /// checkpoint without publishing and restarts after the capture.
-    #[cfg_attr(not(target_os = "linux"), allow(dead_code))]
+    #[cfg_attr(not(any(target_os = "linux", windows)), allow(dead_code))]
     pub(super) fn yield_processing(&mut self) {
         let Some(task) = self.processing.as_ref() else {
             return;
