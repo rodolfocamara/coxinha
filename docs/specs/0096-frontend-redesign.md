@@ -174,8 +174,8 @@ library and session, the acknowledgement cache).
 
 ## Out of scope
 
-- Windows capture (capture stays Linux-only; the recorder shows the
-  unsupported state).
+- Windows capture (capture stayed Linux-only here; the recorder shows the
+  unsupported state). Windows capture is spec 0133.
 - Removing the stub `recorder.rs` commands (separate cleanup).
 - New AI features, sync or network calls.
 
