@@ -45,8 +45,14 @@ vi.mock('../notes/NoteEditor', () => ({
     content: { markdown: string };
     overlay?: (editor: unknown) => React.ReactNode;
     onTrash?: () => void;
+    focusRequest?: unknown;
   }) => (
-    <section data-testid="note-editor" data-note-id={props.noteId} data-variant={props.variant}>
+    <section
+      data-testid="note-editor"
+      data-note-id={props.noteId}
+      data-variant={props.variant}
+      data-focus-request={props.focusRequest ? 'yes' : 'no'}
+    >
       <div className="relative">{props.overlay?.(fakeEditor(props.content.markdown))}</div>
       <button type="button" onClick={props.onTrash}>
         delete-note-file
@@ -204,6 +210,12 @@ it('follows URL changes and selects the item that shows the note', async () => {
   expect(await screen.findByTestId('note-editor')).toHaveAttribute('data-note-id', 'n-api');
   expect(screen.getByTestId('node-c-api')).toHaveClass('selected');
   expect(screen.getByRole('slider', { name: 'Progresso' })).toHaveValue('55');
+});
+
+it('asks for the caret when the URL opens a note (palette, new-note shortcut)', async () => {
+  mocks.params = { noteId: 'n-quick' };
+  mount();
+  expect(await screen.findByTestId('note-editor')).toHaveAttribute('data-focus-request', 'yes');
 });
 
 it('has exactly one editor: the side panel, never inside a canvas card', async () => {

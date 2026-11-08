@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { SearchBar } from '../components/AppShell/SearchBar';
 import { expect, it, vi } from 'vitest';
 import { RootLayout } from './__root';
+import { useCalendarHome } from '../features/meetingsHub/calendarHomeModel';
 const mocks = vi.hoisted(() => ({
   navigate: vi.fn(),
   loadNotes: vi.fn().mockResolvedValue(undefined),
@@ -57,6 +58,21 @@ it('toggles capture through the single controller from the desktop shortcut', as
   expect(mocks.start).not.toHaveBeenCalled();
   expect(mocks.invoke).not.toHaveBeenCalledWith('library_start', expect.anything());
   expect(mocks.navigate).not.toHaveBeenCalled();
+});
+it("the agenda and meetings chords open different views: today's day view and the remembered one", async () => {
+  mocks.navigate.mockClear();
+  useCalendarHome.getState().setAnchor(new Date(2020, 0, 1));
+  render(<RootLayout />);
+  await waitFor(() => expect(mocks.handler).toBeTypeOf('function'));
+  await act(async () => {
+    await mocks.handler!({ payload: { route: 'agenda' } });
+    await mocks.handler!({ payload: { route: 'meetings' } });
+  });
+  expect(mocks.navigate.mock.calls).toEqual([
+    [{ to: '/meetings', search: { view: 'day', days: 1 } }],
+    [{ to: '/meetings' }],
+  ]);
+  expect(useCalendarHome.getState().anchor).toBeNull();
 });
 it('returns to Hoje when asked to open the map, without starting capture', async () => {
   mocks.navigate.mockClear();

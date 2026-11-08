@@ -2,6 +2,8 @@
 
 Date: 2026-10-25. Status: accepted by explicit user request; implemented with automated and
 isolated browser evidence. Native Linux integration and Windows acceptance pending.
+Window close no longer exits: ADR 0025 (2026-11-08) makes it hide to the tray, and
+only tray Quit runs this protocol.
 
 The user requested that closing Coxinha save pending changes and exit directly.
 This supersedes only the mandatory initial exit confirmation in ADR 0019.

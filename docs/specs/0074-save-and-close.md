@@ -7,6 +7,8 @@
   native confirmation appearing far from the application on Linux.
 - Non-goals: silent data loss, close-to-tray, background recording after exit,
   schema changes, scheduled shutdown, or weakening the storage mutation barrier.
+- Superseded in part: since spec 0131 / ADR 0025, window close hides to the tray;
+  this protocol now runs from tray Quit only.
 
 ## Behavior
 

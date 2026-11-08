@@ -339,3 +339,15 @@ async fn late_completion_during_native_emergency_is_retained_on_retry() {
     assert!(!events.contains(&"begin:2".into()));
     assert!(!events.contains(&"complete:true".into()));
 }
+
+#[test]
+fn close_hides_notifies_once_and_waits_for_a_running_shutdown() {
+    let dir = tempfile::tempdir().unwrap();
+    let state = Desktop::new(dir.path().into()).unwrap();
+    assert_eq!(state.close_action(), CloseAction::Hide { notify: true });
+    assert_eq!(state.close_action(), CloseAction::Hide { notify: false });
+    assert!(state.try_begin());
+    assert_eq!(state.close_action(), CloseAction::Ignore);
+    state.busy.store(false, Ordering::SeqCst);
+    assert_eq!(state.close_action(), CloseAction::Hide { notify: false });
+}

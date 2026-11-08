@@ -1,11 +1,13 @@
-_version: 2
+# One locale per file (rust-i18n v1 layout); the other files hold every locale per key.
 
 tray:
   open: Open Coxinha
-  newNote: New note (Ctrl+Alt+N)
+  newNote: New note
   settings: Settings
   quit: Quit
 desktop:
+  hiddenTitle: "Coxinha is still running"
+  hiddenBody: "Use Quit in the tray menu to exit."
   confirm: "Exit Coxinha? Pending changes will be saved and recording finalized before exit. Running processing will be interrupted and can be retried."
   exit: "Save and exit"
   minimize: "Minimize to tray"

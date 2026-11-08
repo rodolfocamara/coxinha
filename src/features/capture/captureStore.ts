@@ -10,6 +10,7 @@ export type CaptureFailure =
   | 'stop'
   | 'devices'
   | 'devicesMissing'
+  | 'unsupported'
   | 'captureBusy'
   | null;
 

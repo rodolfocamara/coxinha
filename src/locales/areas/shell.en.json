@@ -59,6 +59,7 @@
       "stop": "Could not stop. Try again.",
       "devices": "Could not list audio devices.",
       "devicesMissing": "No microphone or computer audio found.",
+      "unsupported": "Recording is not available on this system yet.",
       "captureBusy": "A recording is already running."
     },
     "autoStopIn": "stopping on its own in {{time}}",

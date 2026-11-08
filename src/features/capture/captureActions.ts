@@ -62,10 +62,26 @@ export async function loadDevices(reset = false) {
     );
     useCaptureStore.setState({ sources, mic, output });
     return { mic, output };
-  } catch {
-    useCaptureStore.setState({ failure: 'devices' });
+  } catch (error) {
+    useCaptureStore.setState({
+      failure: String(error).includes(UNSUPPORTED) ? 'unsupported' : 'devices',
+    });
     return null;
   }
+}
+
+/** The backend's fixed answer where no capture adapter exists for the OS. */
+const UNSUPPORTED = 'capture adapter unavailable on this platform';
+
+/** Rediscovers before every start: a device may have come or gone since the last list. */
+async function readyDevices() {
+  const devices = await loadDevices();
+  if (!devices) return null;
+  if (!devices.mic || !devices.output) {
+    useCaptureStore.setState({ failure: 'devicesMissing' });
+    return null;
+  }
+  return { mic: devices.mic, output: devices.output };
 }
 
 export function chooseDevices(next: { mic?: string; output?: string }) {
@@ -115,11 +131,8 @@ export async function startCapture(request: StartRequest) {
     useCaptureStore.setState({ failure: 'captureBusy' });
     return null;
   }
-  const devices = current.mic && current.output ? current : await loadDevices();
-  if (!devices?.mic || !devices.output) {
-    useCaptureStore.setState({ failure: 'devicesMissing' });
-    return null;
-  }
+  const devices = await readyDevices();
+  if (!devices) return null;
   const status = await run('start', 'start', () =>
     'sessionId' in request
       ? invoke<CaptureStatus>('library_start_session', {
@@ -158,13 +171,31 @@ export function dismissCaptureError() {
  * Rail button and global shortcut: stop when live, otherwise create a meeting
  * session for the capture so it gets notes and shows up in Reuniões.
  */
+let toggling = false;
 export async function toggleCapture(title: string) {
   const { status, busy } = useCaptureStore.getState();
-  if (busy) return null;
+  if (busy || toggling) return null;
   if (status?.active) return stopCapture();
+  // The device check and the meeting creation come before `run` marks the store busy.
+  toggling = true;
+  try {
+    return await startNewMeeting(title);
+  } finally {
+    toggling = false;
+  }
+}
+
+async function startNewMeeting(title: string) {
+  // Without usable devices there is nothing to record: create no meeting.
+  if (!(await readyDevices())) return null;
   const now = new Date().toISOString().slice(0, 19) + 'Z';
-  const session = await sessions
-    .create({ title, starts_at: now, ends_at: null, status: 'active' })
-    .catch(() => null);
-  return startCapture(session ? { sessionId: session.id, title } : { title });
+  const input = { title, starts_at: now, ends_at: null, status: 'active' as const };
+  const session = await sessions.create(input).catch(() => null);
+  const started = await startCapture(session ? { sessionId: session.id, title } : { title });
+  if (session && !started?.active) {
+    // A failed start must not leave a meeting that claims to be under way.
+    await sessions.update(session.id, { ...input, status: 'cancelled' }).catch(() => {});
+    window.dispatchEvent(new Event(SESSIONS_CHANGED));
+  }
+  return started;
 }
