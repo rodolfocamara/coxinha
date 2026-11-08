@@ -94,7 +94,7 @@ write it.
 
 ## Anti-patterns in this project
 
-- Treating the DB as the source of truth (the filesystem is)
+- Treating the notes index as canonical, or deleting canonical meeting/profile DBs as cache (ADR-0018)
 - Making external calls without explicit user configuration
 - Enabling auto-update or analytics by default
 - Duplicating `shared::*` types on the frontend instead of using

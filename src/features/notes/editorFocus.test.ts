@@ -42,12 +42,8 @@ describe('isInteractiveClickTarget', () => {
   it('returns true for anchors, inputs, textareas, selects', () => {
     expect(isInteractiveClickTarget(document.createElement('a'))).toBe(true);
     expect(isInteractiveClickTarget(document.createElement('input'))).toBe(true);
-    expect(isInteractiveClickTarget(document.createElement('textarea'))).toBe(
-      true,
-    );
-    expect(isInteractiveClickTarget(document.createElement('select'))).toBe(
-      true,
-    );
+    expect(isInteractiveClickTarget(document.createElement('textarea'))).toBe(true);
+    expect(isInteractiveClickTarget(document.createElement('select'))).toBe(true);
   });
 
   it('returns true for role="button" / role="link" even on non-button tags', () => {

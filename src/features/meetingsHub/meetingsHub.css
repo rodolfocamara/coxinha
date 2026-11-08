@@ -1,0 +1,353 @@
+@layer theme, base, components, utilities;
+
+/* Reuniões (specs 0096 P4, 0107): meeting page = detail + 268px inspector. */
+@layer components {
+  .mh-root {
+    display: flex;
+    height: 100%;
+    min-height: 0;
+    font-size: 0.8125rem;
+  }
+
+  /* Tabs (meeting page) and rows (review sheet) */
+  .mh-tabs {
+    position: relative;
+    display: flex;
+    gap: 0.875rem;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-muted-foreground);
+    font-size: 0.75rem;
+  }
+  .mh-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: color var(--m-instant);
+  }
+  .mh-tab-indicator[data-animate='true'] {
+    transition:
+      transform var(--m-fast) var(--e-out),
+      width var(--m-fast) var(--e-out);
+  }
+  .mh-tab:hover,
+  .mh-tab[aria-selected='true'] {
+    color: var(--color-foreground);
+  }
+  .mh-tab:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  .mh-tab-indicator {
+    position: absolute;
+    pointer-events: none;
+    left: 0;
+    bottom: -1px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--color-primary);
+  }
+  .mh-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 2px 0.5rem;
+    width: 100%;
+    padding: 0.5625rem 0.875rem 0.5625rem 0.75rem;
+    border: 0;
+    border-left: 2px solid transparent;
+    background: none;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--m-instant);
+  }
+  .mh-row:hover {
+    background: oklch(var(--fg-primary) / 0.04);
+  }
+  .mh-row[aria-current='true'] {
+    background: var(--color-secondary);
+    border-left-color: var(--color-primary);
+  }
+  .mh-row:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: -2px;
+  }
+  .mh-row-title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 550;
+  }
+  .mh-row-time {
+    font-size: 0.6875rem;
+    color: var(--color-muted-foreground);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    white-space: nowrap;
+  }
+  .mh-row-meta {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.5rem;
+    min-height: 1.125rem;
+    font-size: 0.75rem;
+    color: var(--color-muted-foreground);
+  }
+  .mh-row-meta [data-tone='live'] {
+    color: var(--color-live);
+  }
+  .mh-row-meta [data-tone='warning'] {
+    color: var(--color-warning);
+  }
+  /* Pills and dots */
+  .mh-pill {
+    display: inline-flex;
+    align-items: center;
+    height: 1.125rem;
+    padding: 0 0.4375rem;
+    border-radius: 999px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    white-space: nowrap;
+    background: var(--color-secondary);
+    color: var(--color-muted-foreground);
+  }
+  .mh-pill[data-tone='warning'] {
+    background: var(--color-warning-soft);
+    color: var(--color-warning);
+  }
+  .mh-pill[data-tone='info'] {
+    background: var(--color-info-soft);
+    color: var(--color-info);
+  }
+  .mh-pill[data-tone='live'] {
+    background: var(--color-live-soft);
+    color: var(--color-live);
+  }
+  .mh-dot {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 0.4375rem;
+    height: 0.4375rem;
+    border-radius: 999px;
+    background: var(--color-muted-foreground);
+    opacity: 0.7;
+  }
+  .mh-dot[data-tone='info'] {
+    background: var(--color-info);
+    opacity: 1;
+  }
+  .mh-dot[data-tone='live'] {
+    background: var(--color-live);
+    opacity: 1;
+  }
+
+  /* Detail */
+  .mh-detail {
+    container: meeting / inline-size;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .mh-enter > * {
+    animation: cx-rise var(--m-fast) var(--e-out) both;
+  }
+  .mh-enter > :nth-child(2) {
+    animation-delay: 15ms;
+  }
+  .mh-enter > :nth-child(3) {
+    animation-delay: 30ms;
+  }
+  .mh-dh {
+    padding: 1.125rem 1.5rem 0;
+  }
+  .mh-dh-top {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+  }
+  .mh-title {
+    margin: 0;
+    min-width: 0;
+    font-size: 1.3125rem;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    overflow-wrap: anywhere;
+  }
+  .mh-sub {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.375rem;
+    margin: 0.3125rem 0 0;
+    font-size: 0.75rem;
+    color: var(--color-muted-foreground);
+  }
+  .mh-finding {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.625rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 10px;
+    font-size: 0.78125rem;
+  }
+
+  /* Speaker lanes: the signature */
+  .mh-lanes {
+    display: grid;
+    grid-template-columns: 7rem 1fr 2.5rem;
+    gap: 0.375rem 0.625rem;
+    align-items: center;
+    margin-top: 0.875rem;
+    font-size: 0.75rem;
+  }
+  .mh-lane-who {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    min-width: 0;
+    white-space: nowrap;
+    color: var(--color-foreground);
+    opacity: 0.85;
+  }
+  .mh-lane-who[data-unconfirmed] {
+    color: var(--color-warning);
+    opacity: 1;
+  }
+  .mh-lane-who i {
+    width: 0.4375rem;
+    height: 0.4375rem;
+    border-radius: 999px;
+    flex-shrink: 0;
+  }
+  .mh-lane-track {
+    position: relative;
+    height: 1.125rem;
+    padding: 0;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-muted);
+    cursor: pointer;
+  }
+  .mh-lane-track:disabled {
+    cursor: default;
+  }
+  .mh-lane-track:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+  .mh-lane-track b {
+    position: absolute;
+    top: 1px;
+    bottom: 1px;
+    border-radius: 4px;
+    transform-origin: left;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
+    animation: cx-grow-x 320ms var(--e-out) both;
+    animation-delay: calc(60ms + var(--i, 0) * 25ms);
+  }
+  .mh-lane-share {
+    text-align: right;
+    color: var(--color-muted-foreground);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .mh-dtabs {
+    gap: 1.125rem;
+    margin-top: 0.875rem;
+    padding: 0 1.5rem;
+    font-size: 0.8125rem;
+  }
+  .mh-dtabs .mh-tab {
+    padding: 0.5625rem 0;
+  }
+  .mh-dbody {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 16.75rem;
+  }
+  .mh-pane {
+    min-height: 0;
+    overflow: auto;
+    padding: 1rem 1.5rem;
+  }
+  .mh-panel:not([hidden]) {
+    animation: cx-rise var(--m-fast) var(--e-out) both;
+  }
+  .mh-live-note {
+    margin: 0 0 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 10px;
+    background: var(--color-live-soft);
+    color: var(--color-foreground);
+    font-size: 0.78125rem;
+  }
+
+  /* Inspector */
+  .mh-insp {
+    min-height: 0;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.125rem;
+    padding: 1rem;
+    border-left: 1px solid var(--color-border);
+    font-size: 0.75rem;
+  }
+  /* The inspector drops under the notes; the two scroll as one. */
+  @container meeting (max-width: 42rem) {
+    .mh-dbody {
+      grid-template-columns: minmax(0, 1fr);
+      grid-auto-rows: max-content;
+      overflow: auto;
+    }
+    .mh-dbody > .mh-pane,
+    .mh-dbody > .mh-insp {
+      overflow: visible;
+    }
+    .mh-dbody > .mh-insp {
+      border-left: 0;
+      border-top: 1px solid var(--color-border);
+    }
+  }
+  .mh-insp-h {
+    display: flex;
+    align-items: center;
+    min-height: 1.25rem;
+    margin: 0 0 0.5rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--color-muted-foreground);
+  }
+  .mh-person {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0;
+  }
+  .mh-av {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 1.375rem;
+    height: 1.375rem;
+    border-radius: 999px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+  }
+}

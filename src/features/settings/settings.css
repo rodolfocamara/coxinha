@@ -1,0 +1,323 @@
+/* Ajustes (spec 0096 P6): row grammar, switch and segmented control. */
+/* Declare Tailwind's layer order first: whichever file loads first fixes it. */
+@layer theme, base, components, utilities;
+@layer components {
+  .cx-settings-row + .cx-settings-row {
+    border-top: 1px solid var(--color-border);
+  }
+
+  /* The wide column keeps fields aligned; a switch, button or badge leaves the room to the text. */
+  .cx-settings-row-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 16.875rem);
+  }
+  .cx-settings-row-grid:has(
+    > [data-settings-control] > :is(.cx-switch, .cx-btn, .cx-badge, .cx-kbd)
+  ) {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  /* In the layer, not a utility, so the stacked layout below can start it on the left. */
+  [data-settings-control] {
+    justify-content: flex-end;
+  }
+  /* A row of only a title and what hangs under it. */
+  [data-settings-control]:empty {
+    display: none;
+  }
+  .cx-settings-row-below {
+    padding: 0 1rem 0.8125rem;
+  }
+  /* Whatever hangs under a row starts on its title's edge (glyph 1rem + gap 0.75rem). */
+  .cx-settings-row:has(.cx-settings-row-icon) > .cx-settings-row-below {
+    padding-left: 2.75rem;
+  }
+  /* A wide control no longer fits beside its label; a small one still does. */
+  @container (max-width: 38rem) {
+    .cx-settings-row-grid:not(
+      :has(> [data-settings-control] > :is(.cx-switch, .cx-btn, .cx-badge, .cx-kbd))
+    ) {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.5rem;
+    }
+    .cx-settings-row-grid:not(
+        :has(> [data-settings-control] > :is(.cx-switch, .cx-btn, .cx-badge, .cx-kbd))
+      )
+      > [data-settings-control] {
+      justify-content: flex-start;
+    }
+    .cx-settings-row-grid:not(
+        :has(> [data-settings-control] > :is(.cx-switch, .cx-btn, .cx-badge, .cx-kbd))
+      ):has(.cx-settings-row-icon)
+      > [data-settings-control] {
+      padding-left: 1.75rem;
+    }
+  }
+  /* A quiet glyph beside the label, as in the property sheet (spec 0126 P9). */
+  .cx-settings-row-icon {
+    display: inline-flex;
+    flex-shrink: 0;
+    width: 1rem;
+    height: 1.25rem;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-muted-foreground);
+  }
+  /* Switch: the native checkbox stays focusable, the track draws it. */
+  .cx-switch {
+    position: relative;
+    display: inline-flex;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .cx-switch-input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: inherit;
+  }
+  .cx-switch-track {
+    position: relative;
+    width: 2.125rem;
+    height: 1.25rem;
+    border-radius: 999px;
+    background: oklch(var(--fg-primary) / 0.18);
+    transition: background-color var(--m-fast) var(--e-out);
+  }
+  .cx-switch-track::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
+    transition: transform var(--m-fast) var(--e-out);
+  }
+  .cx-switch-input:checked + .cx-switch-track {
+    background: var(--color-primary);
+  }
+  .cx-switch-input:checked + .cx-switch-track::after {
+    transform: translateX(0.875rem);
+  }
+  .cx-switch-input:focus-visible + .cx-switch-track {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+  .cx-switch-input:disabled + .cx-switch-track {
+    opacity: 0.45;
+  }
+
+  /* Segmented: equal columns so the thumb only translates. */
+  .cx-segmented {
+    position: relative;
+    display: inline-grid;
+    grid-template-columns: repeat(var(--count), minmax(0, 1fr));
+    padding: 3px;
+    border-radius: 9px;
+    background: var(--color-muted);
+    border: 1px solid var(--color-border);
+  }
+  .cx-segmented-thumb {
+    position: absolute;
+    top: 2px;
+    bottom: 2px;
+    left: 2px;
+    width: calc((100% - 0.25rem) / var(--count));
+    border-radius: 6px;
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
+    transform: translateX(calc(var(--index) * 100%));
+    transition: transform var(--m-fast) var(--e-out);
+  }
+  .cx-segmented-option {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    height: 1.625rem;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.625rem;
+    border-radius: 6px;
+    color: var(--color-muted-foreground);
+    font-size: var(--text-ui);
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color var(--m-instant);
+  }
+  .cx-segmented-option:hover:not([data-on='true']) {
+    color: var(--color-foreground);
+  }
+  .cx-segmented-option[data-on='true'] {
+    color: var(--color-foreground);
+    font-weight: 600;
+  }
+  .cx-segmented-option:focus-within {
+    outline: 2px solid var(--color-ring);
+    outline-offset: -2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cx-segmented-thumb,
+    .cx-switch-track,
+    .cx-switch-track::after {
+      transition: none;
+    }
+  }
+
+  /* Appearance (spec 0125). The value column is wide enough for "200%", so the
+     track does not jump as the number changes. */
+  .cx-slider {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 2.75rem 1.5rem;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  .cx-slider-value {
+    font-size: var(--text-ui);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    white-space: nowrap;
+    color: var(--color-muted-foreground);
+  }
+  .cx-slider-reset {
+    display: inline-grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 6px;
+    color: var(--color-muted-foreground);
+    cursor: pointer;
+  }
+  .cx-slider-reset:hover {
+    background: var(--color-secondary);
+    color: var(--color-foreground);
+  }
+  .cx-slider-reset[hidden] {
+    display: none;
+  }
+  .cx-slider-reset:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 1px;
+  }
+  /* Drawn by hand: accent-color alone renders differently in WebKitGTK and WebView2. */
+  .cx-range {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    min-width: 0;
+    height: 1.25rem;
+    background: transparent;
+    cursor: pointer;
+  }
+  .cx-range::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(
+      to right,
+      var(--color-primary) var(--progress, 0%),
+      oklch(var(--fg-primary) / 0.22) var(--progress, 0%)
+    );
+  }
+  .cx-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 1rem;
+    height: 1rem;
+    margin-top: calc(2px - 0.5rem);
+    border: 2px solid var(--color-primary);
+    border-radius: 50%;
+    background: var(--color-card);
+  }
+  .cx-range:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  .cx-swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+  }
+  .cx-swatch {
+    display: inline-grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    background: var(--swatch);
+    box-shadow: inset 0 0 0 1px oklch(var(--fg-primary) / 0.14);
+    color: oklch(var(--fg-on-accent));
+    cursor: pointer;
+  }
+  .cx-swatch:has(input:checked) {
+    outline: 2px solid var(--color-foreground);
+    outline-offset: 1px;
+  }
+  .cx-swatch:focus-within {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+  .cx-swatch[data-custom] {
+    background: var(--color-secondary);
+    color: var(--color-foreground);
+  }
+  .cx-accent-details {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.625rem;
+  }
+  .cx-accent-sample {
+    padding: 0.1875rem 0.625rem;
+    border-radius: 8px;
+    font-size: var(--text-ui);
+    font-weight: 550;
+    white-space: nowrap;
+  }
+  .cx-color-input {
+    width: 2rem;
+    height: 1.5rem;
+    padding: 0;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: none;
+    cursor: pointer;
+  }
+  .cx-color-input:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+
+  /* Extra time zones (spec 0119 P4). */
+  .cx-zone-list {
+    display: grid;
+    gap: 2px;
+  }
+  .cx-zone-item {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+    background: var(--color-secondary);
+    font-size: 0.78125rem;
+  }
+  .cx-zone-results {
+    display: grid;
+    gap: 2px;
+    justify-items: start;
+  }
+  .cx-zone-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.375rem;
+  }
+}

@@ -1,0 +1,344 @@
+import { useNavigate } from '@tanstack/react-router';
+import { AlertTriangle, ChevronRight, Eye, Pause, Phone, Play, Square, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import brandMark from '../../assets/coxinha-mark.svg';
+import { Button } from '../../components/ui';
+import { WindowChrome } from '../../components/AppShell/WindowChrome';
+import type { ActiveCall } from '../../lib/bindings';
+import { sessionListCache } from '../sessions/sessions';
+import {
+  acknowledgeCallEnded,
+  callKey,
+  trackRecordedCall,
+  useMeetingDetection,
+} from '../detection/meetingDetection';
+import {
+  stopDetectedCallRecording,
+  switchToDetectedCall,
+  useDirectCapture,
+} from '../detection/directCapture';
+import { dismissCaptureError, pauseCapture, stopCapture } from './captureActions';
+import { useCaptureStore } from './captureStore';
+import '../../components/Shell/shell.css';
+import { SearchBar } from '../../components/AppShell/SearchBar';
+import { useAutoStop, useEndedWithCall } from './autoRecord';
+import { BackgroundLine, EndedWithCall, RecordButton, useBackgroundWork } from './BackgroundWork';
+import {
+  AutoStopNotice,
+  DetectedCall,
+  LiveToggle,
+  Levels,
+  formatElapsed,
+  useChanged,
+  type View,
+} from './recorderParts';
+
+export { formatElapsed };
+
+/** Title of what is being recorded: start request first, then the session list. */
+function useLiveTitle() {
+  const { t } = useTranslation();
+  const meetingId = useCaptureStore(
+    (s) => s.status?.active?.meetingId ?? s.status?.processing?.meetingId
+  );
+  const liveSession = useCaptureStore((s) => s.liveSession);
+  const receipt = useDirectCapture((s) => s.receipt);
+  const sessions = sessionListCache((s) => s.data);
+  const session = meetingId ? sessions?.find((s) => s.meeting_id === meetingId) : undefined;
+  return {
+    title: liveSession?.title ?? receipt?.title ?? session?.title ?? t('recorder.untitled'),
+    sessionId: liveSession?.sessionId ?? receipt?.sessionId ?? session?.id ?? null,
+  };
+}
+
+/**
+ * The only UI with capture controls (spec 0096 P1). It also hosts call
+ * detection prompts and doubles as the window title bar.
+ */
+export function RecorderStrip() {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const status = useCaptureStore((s) => s.status);
+  const busy = useCaptureStore((s) => s.busy);
+  const failure = useCaptureStore((s) => s.failure);
+  const dismissedError = useCaptureStore((s) => s.dismissedError);
+  const detection = useMeetingDetection();
+  const direct = useDirectCapture();
+  const { title, sessionId } = useLiveTitle();
+  const autoStop = useAutoStop();
+  const ended = useEndedWithCall();
+  const sessions = sessionListCache((s) => s.data);
+  const work = useBackgroundWork();
+  const background = work && <BackgroundLine text={work} />;
+  const active = status?.active;
+
+  const openMeeting = sessionId
+    ? () => void navigate({ to: '/meetings/$sessionId', params: { sessionId } })
+    : undefined;
+  const titleChip = (
+    <button
+      type="button"
+      className="cx-chip"
+      onClick={openMeeting ?? (() => void navigate({ to: '/meetings' }))}
+      title={t('recorder.openMeeting')}
+    >
+      <span>{title}</span>
+      <ChevronRight size={13} aria-hidden="true" />
+    </button>
+  );
+  const stopButton = (
+    <Button
+      size="xs"
+      variant="danger"
+      icon={<Square size={13} aria-hidden="true" />}
+      disabled={!!busy}
+      onClick={() => void stopCapture()}
+    >
+      {t(busy === 'stop' ? 'recorder.stopping' : 'recorder.stop')}
+    </Button>
+  );
+
+  const detecting = detection.enabled && !detection.failed && !detection.status?.unavailable;
+  const nextCall: ActiveCall | undefined =
+    detecting && active && detection.recordedCallKey
+      ? detection.status?.calls.find(
+          (c) =>
+            callKey(c) !== detection.recordedCallKey && !detection.dismissed.includes(callKey(c))
+        )
+      : undefined;
+  const pendingCall: ActiveCall | undefined =
+    detecting && !active
+      ? detection.status?.calls.find((c) => !detection.dismissed.includes(callKey(c)))
+      : undefined;
+  const endedSession = ended && sessions?.find((s) => s.meeting_id === ended.meetingId);
+  const error = status?.error && status.error !== dismissedError ? status.error : null;
+
+  let view: View;
+  if (active && nextCall) {
+    view = {
+      key: `next:${callKey(nextCall)}`,
+      tone: 'attention',
+      content: (
+        <>
+          <Phone size={14} aria-hidden="true" />
+          <b role="alert">{t('recorder.nextCall', { app: nextCall.app_name })}</b>
+          <span className="cx-strip-muted">{t('recorder.stillRecording', { title })}</span>
+        </>
+      ),
+      actions: (
+        <>
+          <Button
+            size="xs"
+            variant="primary"
+            disabled={direct.busy}
+            onClick={() =>
+              void switchToDetectedCall(
+                nextCall,
+                t('meetingDetection.newTitle', { app: nextCall.app_name })
+              )
+            }
+          >
+            {t('recorder.recordNew')}
+          </Button>
+          {stopButton}
+          <Button
+            size="xs"
+            variant="ghost"
+            disabled={direct.busy}
+            onClick={() => trackRecordedCall(nextCall)}
+          >
+            {t('recorder.sameMeeting')}
+          </Button>
+        </>
+      ),
+    };
+  } else if (active && autoStop && autoStop.binding.meetingId === active.meetingId) {
+    view = {
+      key: 'auto-stop',
+      tone: 'attention',
+      content: (
+        <AutoStopNotice
+          app={autoStop.binding.calls[0]?.app_name ?? ''}
+          stopAt={autoStop.stopAt}
+          busy={!!busy}
+        />
+      ),
+    };
+  } else if (active && detecting && detection.callEndedPrompt) {
+    view = {
+      key: 'ended',
+      tone: 'attention',
+      content: (
+        <>
+          <Phone size={14} aria-hidden="true" />
+          <b role="alert">
+            {t(detection.endedBy === 'silence' ? 'recorder.callSilent' : 'recorder.callEnded', {
+              app: detection.callEndedPrompt.app_name,
+            })}
+          </b>
+          <span className="cx-strip-muted tabular-nums">
+            {t('recorder.stillRecordingFor', { title, time: formatElapsed(active.elapsedMs) })}
+          </span>
+        </>
+      ),
+      actions: (
+        <>
+          <Button
+            size="xs"
+            variant="primary"
+            icon={<Square size={13} aria-hidden="true" />}
+            disabled={direct.busy || !!busy}
+            onClick={() => void stopDetectedCallRecording()}
+          >
+            {t('recorder.stop')}
+          </Button>
+          <Button size="xs" variant="ghost" onClick={() => acknowledgeCallEnded()}>
+            {t('recorder.keepRecording')}
+          </Button>
+        </>
+      ),
+    };
+  } else if (active) {
+    view = {
+      key: active.paused ? 'paused' : 'recording',
+      tone: active.paused ? 'attention' : 'live',
+      content: (
+        <>
+          <span className="cx-live-dot" data-paused={active.paused} aria-hidden="true" />
+          <b className="tabular-nums" role="status">
+            {t(active.paused ? 'recorder.paused' : 'recorder.recording', {
+              time: formatElapsed(active.elapsedMs),
+            })}
+          </b>
+          {titleChip}
+          <Levels mic={active.mic.peak} output={active.output.peak} paused={active.paused} />
+          {direct.receipt?.metadataFailed && (
+            <span className="text-warning">{t('recorder.metadataFailed')}</span>
+          )}
+          {background}
+        </>
+      ),
+      actions: (
+        <>
+          <LiveToggle meetingId={active.meetingId} />
+          <Button
+            size="xs"
+            variant={active.paused ? 'primary' : 'secondary'}
+            icon={
+              active.paused ? (
+                <Play size={13} aria-hidden="true" />
+              ) : (
+                <Pause size={13} aria-hidden="true" />
+              )
+            }
+            disabled={!!busy}
+            onClick={() => void pauseCapture(!active.paused)}
+          >
+            {t(active.paused ? 'recorder.resume' : 'recorder.pause')}
+          </Button>
+          {stopButton}
+        </>
+      ),
+    };
+  } else if (pendingCall) {
+    view = {
+      key: `detected:${callKey(pendingCall)}`,
+      tone: 'attention',
+      content: (
+        <>
+          <DetectedCall call={pendingCall} />
+          {background}
+        </>
+      ),
+    };
+  } else if (error) {
+    view = {
+      key: 'error',
+      tone: 'live',
+      content: (
+        <>
+          <AlertTriangle size={14} className="text-live" aria-hidden="true" />
+          <b role="alert" className="text-live">
+            {t('recorder.interrupted')}
+          </b>
+          <span className="cx-strip-muted truncate">{t('recorder.interruptedHelp')}</span>
+        </>
+      ),
+      actions: (
+        <>
+          <Button
+            size="xs"
+            variant="primary"
+            onClick={() => void navigate({ to: '/meetings' })}
+            icon={<Eye size={14} aria-hidden="true" />}
+          >
+            {t('recorder.review')}
+          </Button>
+          <Button
+            size="xs"
+            variant="ghost"
+            iconOnly
+            aria-label={t('recorder.dismiss')}
+            onClick={dismissCaptureError}
+          >
+            <X size={13} aria-hidden="true" />
+          </Button>
+        </>
+      ),
+    };
+  } else if (ended) {
+    const open = endedSession
+      ? () => void navigate({ to: '/meetings/$sessionId', params: { sessionId: endedSession.id } })
+      : undefined;
+    view = {
+      key: `ended-with-call:${ended.meetingId}`,
+      tone: 'idle',
+      content: (
+        <>
+          <EndedWithCall app={ended.app} onOpen={open} />
+          {background}
+        </>
+      ),
+      actions: <RecordButton />,
+    };
+  } else {
+    view = {
+      key: background ? 'idle:background' : 'idle',
+      tone: 'idle',
+      content: background,
+      actions: <RecordButton />,
+    };
+  }
+
+  const changed = useChanged(view.key);
+  const failureText = failure && failure !== 'status' ? t(`recorder.failure.${failure}`) : null;
+  return (
+    <header
+      className="cx-strip"
+      data-tone={view.tone}
+      data-changed={changed}
+      aria-label={t('recorder.label')}
+    >
+      <div className="cx-brand-lockup">
+        <img src={brandMark} alt="" className="cx-brand-logo" aria-hidden="true" />
+        <span className="cx-brand-name">{t('brand.name')}</span>
+      </div>
+      {view.content && (
+        <div className="cx-strip-part" key={view.key}>
+          {view.content}
+        </div>
+      )}
+      {failureText && (
+        <span role="alert" className="cx-strip-part text-live">
+          {failureText}
+        </span>
+      )}
+      <SearchBar compact={!!active} />
+      <WindowChrome>
+        <div className="cx-strip-part" key={`${view.key}:actions`}>
+          {view.actions}
+        </div>
+      </WindowChrome>
+    </header>
+  );
+}

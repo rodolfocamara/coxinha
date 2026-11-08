@@ -2,28 +2,16 @@ import { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
 import {
-  Archive,
   ArrowLeftRight,
-  ArrowRight,
-  ChevronRight,
-  CloudOff,
   Copy,
   CopyPlus,
-  Download,
-  History,
-  Languages,
   Link as LinkIcon,
-  Lock,
-  PenLine,
-  Play,
   Search,
-  SlidersHorizontal,
-  Sparkles,
   Trash2,
   Type,
   Undo2,
-  Upload,
 } from 'lucide-react';
+import { shortcutHint, useEscapeLayer } from '../../lib/shortcuts';
 
 export type NoteFont = 'default' | 'serif' | 'mono';
 
@@ -37,6 +25,9 @@ export interface NoteActionsMenuProps {
     lastEditedBy?: string;
     lastEditedAt?: string;
   };
+
+  /** Session notes expose only actions that keep their identity and workspace. */
+  allowDuplicateAndDelete?: boolean;
 
   // Real actions
   onCopyLink: () => void;
@@ -55,19 +46,15 @@ export interface NoteActionsMenuProps {
 }
 
 /**
- * Notion-style page-actions dropdown. Matches Page 25 of the
- * Mix B Refined mockup — 280 px wide, font picker at the top,
- * grouped action rows with dividers, toggles for preferences,
- * word-count footer.
- *
- * Anchors below `anchorRef` with an 8 px gap, right-aligned.
- * Closes on Escape, click-outside, or when any action fires.
+ * Focused page-actions dropdown: font picker at the top, active
+ * note actions, layout toggles, undo, and word-count footer.
  */
 export function NoteActionsMenu({
   open,
   onClose,
   anchorRef,
   footer,
+  allowDuplicateAndDelete = true,
   onCopyLink,
   onCopyContents,
   onDuplicate,
@@ -111,28 +98,13 @@ export function NoteActionsMenu({
       if (anchorRef.current?.contains(target as HTMLElement)) return;
       onClose();
     }
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        onClose();
-      }
-    }
     window.addEventListener('mousedown', onDown);
-    window.addEventListener('keydown', onKey);
-    return () => {
-      window.removeEventListener('mousedown', onDown);
-      window.removeEventListener('keydown', onKey);
-    };
+    return () => window.removeEventListener('mousedown', onDown);
   }, [open, onClose, anchorRef]);
+  useEscapeLayer(open, onClose);
 
-  // Filter rows against the search box so a user can type "trash"
-  // and see only the matching row. Keeps the menu useful when it
-  // doubles as a recall surface.
   const q = query.trim().toLowerCase();
-  const filter = useMemo(
-    () => (label: string) => !q || label.toLowerCase().includes(q),
-    [q],
-  );
+  const filter = useMemo(() => (label: string) => !q || label.toLowerCase().includes(q), [q]);
 
   if (!open || !position) return null;
 
@@ -148,7 +120,7 @@ export function NoteActionsMenu({
       ref={panelRef}
       role="menu"
       aria-label={t('noteMenu.title')}
-      className="fixed z-50 w-[280px] max-h-[min(80vh,560px)] overflow-y-auto rounded-[10px] border border-border bg-popover text-popover-foreground shadow-[0_10px_28px_rgb(0_0_0_/_0.18)]"
+      className="fixed z-50 w-[17.5rem] max-h-[min(80vh,560px)] overflow-y-auto rounded-[10px] border border-border bg-popover text-popover-foreground shadow-[0_10px_28px_rgb(0_0_0_/_0.18)]"
       style={{ top: position.top, right: position.right, paddingTop: 8, paddingBottom: 8 }}
       data-testid="note-actions-menu"
     >
@@ -196,7 +168,7 @@ export function NoteActionsMenu({
           <Row
             icon={<LinkIcon size={14} aria-hidden="true" />}
             label={t('noteMenu.copyLink')}
-            hint="Ctrl+L"
+            hint={shortcutHint('note.copyLink')}
             onClick={run(onCopyLink)}
           />
         )}
@@ -207,31 +179,15 @@ export function NoteActionsMenu({
             onClick={run(onCopyContents)}
           />
         )}
-        {filter(t('noteMenu.duplicate')) && (
+        {allowDuplicateAndDelete && filter(t('noteMenu.duplicate')) && (
           <Row
             icon={<CopyPlus size={14} aria-hidden="true" />}
             label={t('noteMenu.duplicate')}
-            hint="Ctrl+D"
+            hint={shortcutHint('note.duplicate')}
             onClick={run(onDuplicate)}
           />
         )}
-        {filter(t('noteMenu.moveTo')) && (
-          <Row
-            icon={<ArrowRight size={14} aria-hidden="true" />}
-            label={t('noteMenu.moveTo')}
-            hint="Ctrl+Shift+P"
-            disabled
-          />
-        )}
-        {filter(t('noteMenu.archive')) && (
-          <Row
-            icon={<Archive size={14} aria-hidden="true" />}
-            label={t('noteMenu.archive')}
-            badge="Beta"
-            disabled
-          />
-        )}
-        {filter(t('noteMenu.moveToTrash')) && (
+        {allowDuplicateAndDelete && filter(t('noteMenu.moveToTrash')) && (
           <Row
             icon={<Trash2 size={14} aria-hidden="true" />}
             label={t('noteMenu.moveToTrash')}
@@ -243,28 +199,6 @@ export function NoteActionsMenu({
       <Divider />
 
       <Group>
-        {filter(t('noteMenu.present')) && (
-          <Row
-            icon={<Play size={14} aria-hidden="true" />}
-            label={t('noteMenu.present')}
-            hint="Ctrl+Alt+P"
-            badge="Beta"
-            disabled
-          />
-        )}
-      </Group>
-
-      <Divider />
-
-      <Group>
-        {filter(t('noteMenu.availableOffline')) && (
-          <ToggleRow
-            icon={<CloudOff size={14} aria-hidden="true" />}
-            label={t('noteMenu.availableOffline')}
-            disabled
-            value={false}
-          />
-        )}
         {filter(t('noteMenu.smallText')) && (
           <ToggleRow
             icon={<Type size={14} aria-hidden="true" />}
@@ -281,81 +215,17 @@ export function NoteActionsMenu({
             onChange={onFullWidthChange}
           />
         )}
-        {filter(t('noteMenu.customizePage')) && (
-          <Row
-            icon={<SlidersHorizontal size={14} aria-hidden="true" />}
-            label={t('noteMenu.customizePage')}
-            disabled
-          />
-        )}
       </Group>
 
       <Divider />
 
       <Group>
-        {filter(t('noteMenu.lockPage')) && (
-          <ToggleRow
-            icon={<Lock size={14} aria-hidden="true" />}
-            label={t('noteMenu.lockPage')}
-            disabled
-            value={false}
-          />
-        )}
-        {filter(t('noteMenu.useWithAi')) && (
-          <Row
-            icon={<Sparkles size={14} className="text-primary" aria-hidden="true" />}
-            label={t('noteMenu.useWithAi')}
-            trailing={<ChevronRight size={13} className="text-muted-foreground" aria-hidden="true" />}
-            disabled
-          />
-        )}
-        {filter(t('noteMenu.suggestEdits')) && (
-          <Row
-            icon={<PenLine size={14} aria-hidden="true" />}
-            label={t('noteMenu.suggestEdits')}
-            disabled
-          />
-        )}
-        {filter(t('noteMenu.translate')) && (
-          <Row
-            icon={<Languages size={14} aria-hidden="true" />}
-            label={t('noteMenu.translate')}
-            trailing={<ChevronRight size={13} className="text-muted-foreground" aria-hidden="true" />}
-            disabled
-          />
-        )}
         {filter(t('noteMenu.undo')) && (
           <Row
             icon={<Undo2 size={14} aria-hidden="true" />}
             label={t('noteMenu.undo')}
-            hint="Ctrl+Z"
+            hint={shortcutHint('note.undo')}
             onClick={run(onUndo)}
-          />
-        )}
-      </Group>
-
-      <Divider />
-
-      <Group>
-        {filter(t('noteMenu.import')) && (
-          <Row
-            icon={<Download size={14} aria-hidden="true" />}
-            label={t('noteMenu.import')}
-            disabled
-          />
-        )}
-        {filter(t('noteMenu.export')) && (
-          <Row
-            icon={<Upload size={14} aria-hidden="true" />}
-            label={t('noteMenu.export')}
-            disabled
-          />
-        )}
-        {filter(t('noteMenu.versionHistory')) && (
-          <Row
-            icon={<History size={14} aria-hidden="true" />}
-            label={t('noteMenu.versionHistory')}
-            disabled
           />
         )}
       </Group>
@@ -364,7 +234,7 @@ export function NoteActionsMenu({
         <>
           <Divider />
           <div
-            className="flex flex-col gap-0.5 px-3.5 pt-2 pb-1 text-[11px] text-muted-foreground"
+            className="flex flex-col gap-0.5 px-3.5 pt-2 pb-1 text-[0.6875rem] text-muted-foreground"
             data-testid="note-actions-footer"
           >
             <span>{t('noteMenu.footer.wordCount', { count: footer.wordCount })}</span>
@@ -391,41 +261,23 @@ function Row({
   icon,
   label,
   hint,
-  badge,
-  trailing,
   onClick,
-  disabled,
 }: {
   icon: ReactNode;
   label: string;
   hint?: string;
-  badge?: string;
-  trailing?: ReactNode;
   onClick?: () => void;
-  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
       role="menuitem"
-      disabled={disabled}
       onClick={onClick}
-      className={clsx(
-        'flex items-center gap-2 mx-1 rounded-md px-3 py-1.5 text-[13px] text-foreground text-left transition-colors',
-        disabled
-          ? 'opacity-55 cursor-not-allowed'
-          : 'hover:bg-secondary/70 focus-visible:bg-secondary/70 focus-visible:outline-none',
-      )}
+      className="flex items-center gap-2 mx-1 rounded-md px-3 py-1.5 text-[0.8125rem] text-foreground text-left transition-colors hover:bg-secondary/70 focus-visible:bg-secondary/70 focus-visible:outline-none"
     >
       <span className="text-muted-foreground shrink-0">{icon}</span>
       <span className="flex-1 truncate">{label}</span>
-      {badge && (
-        <span className="font-sans uppercase tracking-wider text-[9px] font-semibold text-muted-foreground">
-          {badge}
-        </span>
-      )}
-      {hint && <span className="font-mono text-[10px] text-muted-foreground">{hint}</span>}
-      {trailing}
+      {hint && <span className="font-mono text-[0.625rem] text-muted-foreground">{hint}</span>}
     </button>
   );
 }
@@ -435,27 +287,19 @@ function ToggleRow({
   label,
   value,
   onChange,
-  disabled,
 }: {
   icon: ReactNode;
   label: string;
   value: boolean;
   onChange?: (next: boolean) => void;
-  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
       role="menuitemcheckbox"
       aria-checked={value}
-      disabled={disabled}
       onClick={() => onChange?.(!value)}
-      className={clsx(
-        'flex items-center gap-2 mx-1 rounded-md px-3 py-1.5 text-[13px] text-foreground text-left transition-colors',
-        disabled
-          ? 'opacity-55 cursor-not-allowed'
-          : 'hover:bg-secondary/70 focus-visible:bg-secondary/70 focus-visible:outline-none',
-      )}
+      className="flex items-center gap-2 mx-1 rounded-md px-3 py-1.5 text-[0.8125rem] text-foreground text-left transition-colors hover:bg-secondary/70 focus-visible:bg-secondary/70 focus-visible:outline-none"
     >
       <span className="text-muted-foreground shrink-0">{icon}</span>
       <span className="flex-1 truncate">{label}</span>
@@ -463,13 +307,13 @@ function ToggleRow({
         aria-hidden="true"
         className={clsx(
           'relative w-6 h-3.5 rounded-full transition-colors shrink-0',
-          value ? 'bg-primary' : 'bg-border',
+          value ? 'bg-primary' : 'bg-border'
         )}
       >
         <span
           className={clsx(
             'absolute top-[1px] w-3 h-3 rounded-full bg-white transition-[left] shadow-sm',
-            value ? 'left-[11px]' : 'left-[1px]',
+            value ? 'left-[11px]' : 'left-[1px]'
           )}
         />
       </span>
@@ -494,17 +338,15 @@ function FontPickerOption({
       onClick={onClick}
       className={clsx(
         'flex-1 flex flex-col items-center gap-0.5 rounded-md px-2 py-1.5 transition-colors',
-        active
-          ? 'bg-primary/10 text-primary'
-          : 'text-muted-foreground hover:bg-secondary/60',
+        active ? 'bg-primary/10 text-primary-ink' : 'text-muted-foreground hover:bg-secondary/60'
       )}
       aria-pressed={active}
     >
-      <span className={clsx('text-[22px] leading-none', fontClassName)}>Ag</span>
+      <span className={clsx('text-[1.375rem] leading-none', fontClassName)}>Ag</span>
       <span
         className={clsx(
-          'text-[11px]',
-          active ? 'font-semibold text-foreground' : 'font-normal',
+          'text-[0.6875rem]',
+          active ? 'font-semibold text-foreground' : 'font-normal'
         )}
       >
         {label}

@@ -5,3 +5,16 @@ tray:
   newNote: New note (Ctrl+Alt+N)
   settings: Settings
   quit: Quit
+desktop:
+  confirm: "Exit Coxinha? Pending changes will be saved and recording finalized before exit. Running processing will be interrupted and can be retried."
+  exit: "Save and exit"
+  minimize: "Minimize to tray"
+  cancel: "Cancel"
+  failed: "Coxinha remains open. Saving or stopping failed. Check recording details, recover if needed, and retry. Diagnostic location:"
+  unavailable: "The editor did not confirm saving. It may be unavailable or still saving. Cancel to wait or recover. Exit anyway may lose unsaved edits; recordings will still be finalized."
+  retry: "Retry saving / keep waiting"
+  discardExit: "Discard unsaved edits and exit"
+  delayed: "Saving has not been confirmed yet. The editor may still be saving; this does not prove it stopped responding."
+  discardWarning: "You can cancel or retry. Discard and exit abandons edits that have not reached disk. Native writes already in progress will finish first. Recording raw files are preserved, but finalization may remain incomplete and require recovery on next launch. This action does not promise a successfully saved recording."
+  attachmentPending: "An attachment is still being copied. Its insertion and unsaved note changes are not confirmed. Wait and retry, or cancel to return to the note. Discarding and exiting can leave that attachment out of the note."
+  saveFailed: "The editor could not confirm saving note or board changes. Cancel to inspect the save error, or retry."

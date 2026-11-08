@@ -11,7 +11,7 @@ describe('en locale catalog', () => {
     ['brand', ['name']],
     ['nav', ['notes', 'agenda', 'meetings', 'settings']],
     ['sidebar', ['newNoteButton', 'recentHeading', 'emptyState', 'untitled']],
-    ['empty', ['noNoteSelected', 'newNoteCta']],
+    ['empty', ['noNoteSelected']],
     ['a11y', ['mainNavigation', 'noteList', 'newNote']],
   ];
 

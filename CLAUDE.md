@@ -2,18 +2,20 @@
 
 ## Invariants (not negotiable without an ADR)
 
-- **Filesystem is canonical.** Notes/audio/attachments live under
-  `~/coxinha/`; SQLite is a rebuildable index only.
+- **Hybrid truth (ADR-0018).** Notes remain Markdown with a rebuildable index.
+  New meetings use immutable raw files/manifests plus canonical meetings.db;
+  private/profiles.db holds confirmed voices. Never delete these as cache.
 - **Knowledge vs Memory.** User-authored + unambiguous-derived data
   lives in *Knowledge* (the vault files + SQLite view). AI-derived
   facts / preferences / embeddings live in *Memory* — always
   labelled as suggestion, always linked back to source, always
   dismissible. See
   [ADR-0015](./docs/architecture/decisions/0015-layered-knowledge-memory.md).
-- **Windows-first.** Validate on Windows before mac/Linux.
+- **Linux + Windows.** Both are primary targets; hardware gates are separate.
+- **Meetings first.** Independent library; note blocks are optional references.
 - **Zero network in F1.** No sync, OAuth, analytics, or auto-update
   without explicit user opt-in.
-- **Tray-resident.** Closing the window hides it; never re-spawn.
+- **Save and close (ADR-0020).** Window close and tray Quit immediately save/finalize and exit without a routine confirmation. Failures remain recoverable in a centered app dialog; discard requires an explicit warning. Minimize to tray is explicit.
 - **Plain Markdown.** No proprietary note schema; any Markdown editor
   must open the vault.
 - **i18n + a11y from day one.** No hardcoded UI strings; every

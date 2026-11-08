@@ -12,6 +12,6 @@
 export function isInteractiveClickTarget(target: EventTarget | null): boolean {
   if (!target || !(target instanceof HTMLElement)) return false;
   return !!target.closest(
-    '[contenteditable="true"], button, a, input, textarea, select, [role="button"], [role="link"]',
+    '[contenteditable="true"], button, a, input, textarea, select, [role="button"], [role="link"]'
   );
 }

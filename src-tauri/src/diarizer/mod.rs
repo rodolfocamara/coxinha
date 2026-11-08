@@ -22,6 +22,7 @@ pub trait Diarizer: Send + Sync {
     /// Wired into the meeting pipeline by spec 0008 — the trait exists
     /// today so the factory + config types are real.
     #[allow(dead_code)]
+    #[must_use = "Await diarization to obtain speaker annotations."]
     async fn diarize(
         &self,
         wav: &Path,

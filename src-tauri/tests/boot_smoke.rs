@@ -12,7 +12,7 @@
 //! guards against order-of-magnitude regressions.
 
 use std::io::{BufRead, BufReader};
-use std::process::{Command, Stdio};
+mod support;
 use std::sync::mpsc;
 use std::thread;
 use std::time::{Duration, Instant};
@@ -25,18 +25,13 @@ const BOOT_WAIT_BUDGET: Duration = Duration::from_secs(8);
 const BOOT_READY_BUDGET: Duration = Duration::from_secs(2);
 
 #[test]
+#[ignore = "native app: requires explicit feature and parent-owned private desktop/session"]
 fn app_boots_and_emits_ready_within_budget() {
     let bin = env!("CARGO_BIN_EXE_coxinha");
-    let tmp = tempfile::tempdir().expect("tempdir");
+    let sandbox = support::NativeSandbox::new();
 
     let start = Instant::now();
-    let mut child = Command::new(bin)
-        .env("COXINHA_VAULT", tmp.path())
-        .env("RUST_LOG", "coxinha=info,coxinha_lib=info")
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .expect("spawn coxinha.exe");
+    let mut child = sandbox.spawn(std::path::Path::new(bin));
 
     // Tracing's default fmt layer writes to stdout; some libraries
     // log to stderr. Stream both to a single channel so either carries

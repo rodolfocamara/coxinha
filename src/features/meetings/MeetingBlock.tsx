@@ -30,7 +30,7 @@ const meetingBlockFactory = createReactBlockSpec(
         <MeetingCard meetingId={block.props.meetingId} />
       </div>
     ),
-  },
+  }
 );
 
 // createReactBlockSpec returns a factory `(options?) => BlockSpec`;

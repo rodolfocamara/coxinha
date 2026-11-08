@@ -1,0 +1,181 @@
+/* Ajustes as pages (spec 0129): the sidebar, the filter and one page at a time. */
+@layer theme, base, components, utilities;
+@layer components {
+  .cx-settings {
+    container-type: inline-size;
+    height: 100%;
+    min-height: 0;
+  }
+  .cx-settings-frame {
+    display: grid;
+    grid-template-columns: 14.5rem minmax(0, 1fr);
+    height: 100%;
+    min-height: 0;
+  }
+  .cx-settings-side {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    min-height: 0;
+    padding: 0.875rem 0.625rem 0.625rem;
+    border-right: 1px solid var(--color-border);
+  }
+  .cx-settings-title {
+    padding-inline: 0.25rem;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  .cx-settings-filter {
+    position: relative;
+    flex: none;
+  }
+  .cx-settings-filter-icon {
+    position: absolute;
+    top: 50%;
+    left: 0.5625rem;
+    translate: 0 -50%;
+    color: var(--color-muted-foreground);
+    pointer-events: none;
+  }
+  .cx-settings-filter input {
+    padding-left: 1.75rem;
+  }
+  .cx-settings-picker {
+    display: none;
+    min-width: 0;
+  }
+  .cx-settings-nav {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+  }
+  .cx-settings-nav-group + .cx-settings-nav-group {
+    margin-top: 1rem;
+  }
+  .cx-settings-nav-label {
+    padding: 0 0.5rem 0.25rem;
+    font-size: 0.75rem;
+    color: var(--color-muted-foreground);
+  }
+  .cx-settings-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    min-height: 2rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+    transition: background-color var(--m-instant);
+  }
+  .cx-settings-nav-icon {
+    flex-shrink: 0;
+    color: var(--color-muted-foreground);
+  }
+  .cx-settings-nav-item:hover {
+    background: var(--color-card);
+  }
+  .cx-settings-nav-item[aria-current='page'] {
+    background: var(--color-secondary);
+    font-weight: 550;
+  }
+  .cx-settings-nav-item[aria-current='page'] .cx-settings-nav-icon {
+    color: var(--color-primary-ink);
+  }
+  .cx-settings-nav-item:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: -2px;
+  }
+
+  .cx-settings-results {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+  }
+  .cx-settings-none {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    color: var(--color-muted-foreground);
+  }
+  .cx-settings-result {
+    display: grid;
+    padding: 0.3125rem 0.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .cx-settings-result:hover,
+  .cx-settings-result[data-active] {
+    background: var(--color-secondary);
+  }
+  .cx-settings-result-page {
+    font-size: 0.75rem;
+    color: var(--color-muted-foreground);
+  }
+
+  .cx-settings-pages {
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+  }
+  .cx-settings-page {
+    height: 100%;
+    overflow: auto;
+  }
+  .cx-settings-page[hidden] {
+    display: none;
+  }
+  /* One column, centred beside the sidebar: label and control stay within a glance. */
+  .cx-settings-page-body {
+    display: grid;
+    gap: 1.375rem;
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 46rem;
+    margin-inline: auto;
+    padding: 1.125rem 1.5rem 2.5rem;
+  }
+  .cx-settings-page-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.75rem;
+    outline: none;
+  }
+  .cx-settings-group-title {
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  /* Filter pick or deep link: the row reads as chosen for as long as focus stays on its title. */
+  .cx-settings-row:has([tabindex='-1']:focus) {
+    background: var(--color-secondary);
+  }
+
+  /* Below this the page would be narrower than one row: the sidebar folds into a bar. */
+  @container (max-width: 44rem) {
+    .cx-settings-frame {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+    .cx-settings-side {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      border-right: 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .cx-settings-title,
+    .cx-settings-nav {
+      display: none;
+    }
+    .cx-settings-picker {
+      display: block;
+    }
+    .cx-settings-side:has(.cx-settings-results) .cx-settings-filter,
+    .cx-settings-results {
+      grid-column: 1 / -1;
+      max-height: 12rem;
+    }
+    .cx-settings-page-body {
+      padding: 0.875rem 1rem 2rem;
+    }
+  }
+}

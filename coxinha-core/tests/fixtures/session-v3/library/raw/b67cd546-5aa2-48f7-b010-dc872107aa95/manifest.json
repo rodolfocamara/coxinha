@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "meeting": "b67cd546-5aa2-48f7-b010-dc872107aa95",
+  "state": "finished",
+  "sample_rate": 48000,
+  "channels": 1,
+  "clock": "monotonic arrival at reader; hardware timestamps unavailable",
+  "alignment": "unmeasured device latency and drift; no correction applied",
+  "tracks": [
+    {
+      "source": "synthetic mic",
+      "file": "mic.wav",
+      "frames": 128,
+      "first_arrival_ns": 10,
+      "last_arrival_ns": 10,
+      "sha256": "c201c6fd5a20ff268519b5dac797a3e3889c2bb61d2f42d7562ef256205a1686"
+    },
+    {
+      "source": "synthetic output",
+      "file": "output.wav",
+      "frames": 128,
+      "first_arrival_ns": 20,
+      "last_arrival_ns": 20,
+      "sha256": "edb0c8c0d98bd1a3e32bf477073df990e2a39b6497d954c0a0b46c4043cae25b"
+    }
+  ]
+}

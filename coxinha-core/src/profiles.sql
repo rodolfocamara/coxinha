@@ -1,0 +1,7 @@
+CREATE TABLE profile_revision(id INTEGER PRIMARY KEY CHECK(id=1), revision INTEGER NOT NULL);
+INSERT INTO profile_revision VALUES(1,0);
+CREATE TABLE person(id TEXT PRIMARY KEY, name TEXT NOT NULL, aliases_json TEXT NOT NULL, consent_origin TEXT NOT NULL);
+CREATE TABLE embedding_space(id TEXT PRIMARY KEY, model TEXT NOT NULL, revision TEXT NOT NULL, model_hash TEXT NOT NULL, preprocessing TEXT NOT NULL, dimension INTEGER NOT NULL CHECK(dimension>0), UNIQUE(model,revision,model_hash,preprocessing,dimension));
+CREATE TABLE assignment(id TEXT PRIMARY KEY, meeting_id TEXT NOT NULL, speaker TEXT NOT NULL, person_id TEXT REFERENCES person(id), state TEXT NOT NULL CHECK(state IN ('suggested','confirmed','rejected','revoked')), revision INTEGER NOT NULL DEFAULT 1, human_origin TEXT, derived_generation INTEGER NOT NULL);
+CREATE TABLE assignment_event(id INTEGER PRIMARY KEY, assignment_id TEXT NOT NULL REFERENCES assignment(id), revision INTEGER NOT NULL, person_id TEXT REFERENCES person(id), state TEXT NOT NULL, human_origin TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE voice_sample(id TEXT PRIMARY KEY, assignment_id TEXT NOT NULL REFERENCES assignment(id), assignment_revision INTEGER NOT NULL, person_id TEXT NOT NULL REFERENCES person(id), space_id TEXT NOT NULL REFERENCES embedding_space(id), vector_json TEXT NOT NULL, provenance_json TEXT NOT NULL, revoked INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, UNIQUE(assignment_id,assignment_revision,space_id,provenance_json));

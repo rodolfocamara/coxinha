@@ -1,0 +1,50 @@
+@layer theme, base, components, utilities;
+
+@layer components {
+  .cx-shortcut-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .cx-shortcut-list {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cx-shortcut-row {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.3125rem 0;
+    font-size: 0.8125rem;
+  }
+
+  .cx-shortcut-keys {
+    display: flex;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    justify-content: flex-end;
+  }
+
+  .cx-chord-capture {
+    padding: 0.25rem 0.625rem;
+    border: 1px dashed var(--color-primary);
+    border-radius: 0.375rem;
+    background: transparent;
+    color: var(--color-primary-ink);
+    font: inherit;
+    font-size: 0.8125rem;
+    white-space: nowrap;
+  }
+
+  .cx-chord-capture:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+}

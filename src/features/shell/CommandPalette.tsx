@@ -1,195 +1,212 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
-import { FileText, Search, Settings, Sparkles, Trash2 } from 'lucide-react';
-import clsx from 'clsx';
+import { Search } from 'lucide-react';
 
 import { useAppStore } from '../../lib/store';
 import {
-  applyTheme,
-  getThemePreference,
-  setThemePreference,
-  systemTheme,
-} from '../../lib/theme';
+  shortcutHint,
+  shortcutHints,
+  useEscapeLayer,
+  useShortcut,
+  useShortcutScope,
+} from '../../lib/shortcuts';
+import { moveNoteToTrash } from '../notes/trashUndo';
+import { noteDeletionErrorKey } from '../../lib/noteFileErrors';
+import { buildGroups, type Target } from '../search/universalSearch';
+import { useUniversalSearch } from '../search/useUniversalSearch';
+import { SECTION_ICONS } from '../settings/icons';
+import { matchSettings, settingsLocation, type SettingsRowEntry } from '../settings/settingsIndex';
+import { usePaletteActions, type PaletteAction } from './usePaletteActions';
+import {
+  LISTBOX_ID,
+  optionId,
+  PaletteList,
+  type NoteRow,
+  type PaletteGroup,
+  type PaletteRow,
+} from './PaletteList';
+import './palette.css';
 
 interface Props {
   open: boolean;
   onClose: () => void;
 }
 
-type PaletteRow =
-  | { kind: 'note'; id: string; label: string; hint?: string }
-  | { kind: 'action'; id: string; label: string; hint?: string; run: () => void };
-
-type Group = { label: string; items: PaletteRow[] };
-
 /**
- * Ctrl+K overlay. Fuzzy across note titles + an action registry
- * (new note, switch view, toggle theme, delete current note,
- * open settings). Per-row trash button + Ctrl+Backspace for fast
- * delete from the list. Spec 0043.
+ * Ctrl+K overlay (specs 0096, 0122): actions, every rail destination and the
+ * universal search over notes, meetings, transcripts and people. Note rows
+ * open in the Workspace; the trash button and Mod+Backspace move the note to
+ * the trash, with an undo.
  */
 export function CommandPalette({ open, onClose }: Props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const pathname = useLocation({ select: (s) => s.pathname });
   const notes = useAppStore((s) => s.notes);
-  const newNote = useAppStore((s) => s.newNote);
   const deleteNote = useAppStore((s) => s.deleteNote);
 
   const [query, setQuery] = useState('');
   const [cursor, setCursor] = useState(0);
+  const [deleteFailure, setDeleteFailure] = useState<{ error: unknown } | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const untitled = t('sidebar.untitled');
+  const search = useUniversalSearch(query, open);
+  const opener = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (!open) return;
     setQuery('');
+    setDeleteFailure(null);
     setCursor(0);
+    opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const id = setTimeout(() => inputRef.current?.focus(), 10);
     return () => clearTimeout(id);
   }, [open]);
 
-  const currentNoteId = useMemo(() => {
-    const match = pathname.match(/^\/notes\/([^/]+)/);
-    return match?.[1];
-  }, [pathname]);
+  /** Esc and the backdrop hand focus back to where the palette was opened. */
+  function dismiss() {
+    onClose();
+    if (opener.current?.isConnected) opener.current.focus();
+  }
+
+  const currentNoteId = pathname.match(/^\/(?:workspace|notes)\/([^/]+)/)?.[1];
   const currentNote = useMemo(
     () => (currentNoteId ? notes.find((n) => n.id === currentNoteId) : undefined),
-    [currentNoteId, notes],
+    [currentNoteId, notes]
   );
 
-  async function confirmAndDelete(note: { id: string; title: string }) {
-    const label = note.title || t('sidebar.untitled');
-    const prompt = t('palette.deleteConfirm', { title: label });
-    if (!window.confirm(prompt)) return;
-    await deleteNote(note.id);
-    if (note.id === currentNoteId) {
-      await navigate({ to: '/notes' });
+  async function trash(note: { id: string; title: string }) {
+    try {
+      await moveNoteToTrash(note, deleteNote);
+      setDeleteFailure(null);
+      if (note.id === currentNoteId) {
+        await navigate({ to: '/workspace' });
+        onClose();
+      }
+    } catch (error) {
+      setDeleteFailure({ error });
     }
   }
 
-  const actions = useMemo<PaletteRow[]>(() => {
-    const items: PaletteRow[] = [
-      {
-        kind: 'action',
-        id: 'new-note',
-        label: t('palette.actions.newNote'),
-        hint: 'Ctrl+N',
-        run: async () => {
-          const note = await newNote();
-          await navigate({
-            to: '/notes/$noteId',
-            params: { noteId: note.id },
-          });
-        },
-      },
-      {
-        kind: 'action',
-        id: 'open-agenda',
-        label: t('palette.actions.openAgenda'),
-        hint: 'Win+Shift+A',
-        run: () => navigate({ to: '/agenda' }),
-      },
-      {
-        kind: 'action',
-        id: 'toggle-theme',
-        label: t('palette.actions.toggleTheme'),
-        run: () => {
-          const pref = getThemePreference();
-          const resolved = pref === 'auto' ? systemTheme() : pref;
-          const next = resolved === 'dark' ? 'light' : 'dark';
-          setThemePreference(next);
-          applyTheme(next);
-        },
-      },
-      {
-        kind: 'action',
-        id: 'open-settings',
-        label: t('palette.actions.openSettings'),
-        hint: 'Ctrl+,',
-        run: () => navigate({ to: '/settings' }),
-      },
-    ];
-    if (currentNote) {
-      items.splice(1, 0, {
-        kind: 'action',
-        id: 'delete-current-note',
-        label: t('palette.actions.deleteCurrentNote'),
-        hint: 'Ctrl+Backspace',
-        run: () => void confirmAndDelete(currentNote),
-      });
-    }
-    return items;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigate, newNote, t, currentNote]);
+  const { actions, destinations } = usePaletteActions({
+    open,
+    pathname,
+    currentNote,
+    onDeleteCurrent: (note) => void trash(note),
+  });
 
-  const groups = useMemo<Group[]>(() => {
+  const settingAction = (entry: SettingsRowEntry): PaletteAction => {
+    const Icon = SECTION_ICONS[entry.section];
+    return {
+      kind: 'action',
+      id: `setting-${entry.id}`,
+      label: `${t(entry.title)} · ${t(`people.settings.sections.${entry.section}`)}`,
+      icon: <Icon size={15} aria-hidden="true" />,
+      run: () => void navigate(settingsLocation(entry.id)),
+    };
+  };
+
+  const groups = useMemo<PaletteGroup[]>(() => {
     const q = query.trim().toLowerCase();
-    if (!q) {
-      // All notes on empty query — palette doubles as a browse list.
-      const recent = notes.map<PaletteRow>((n) => ({
-        kind: 'note',
-        id: n.id,
-        label: n.title || t('sidebar.untitled'),
-      }));
-      return [
-        ...(recent.length ? [{ label: t('palette.sections.notes'), items: recent }] : []),
-        { label: t('palette.sections.actions'), items: actions },
-      ];
-    }
-    const noteHits = notes
-      .filter((n) => (n.title || '').toLowerCase().includes(q))
-      .slice(0, 20)
-      .map<PaletteRow>((n) => ({
-        kind: 'note',
-        id: n.id,
-        label: n.title || t('sidebar.untitled'),
-      }));
-    const actionHits = actions.filter((a) => a.label.toLowerCase().includes(q));
-    return [
-      ...(noteHits.length ? [{ label: t('palette.sections.notes'), items: noteHits }] : []),
-      ...(actionHits.length ? [{ label: t('palette.sections.actions'), items: actionHits }] : []),
+    const match = (label: string) => !q || label.toLowerCase().includes(q);
+    const g = (key: string) => t(`people.palette.groups.${key}`);
+    const commands: PaletteGroup[] = [
+      { id: 'actions', label: g('actions'), items: actions.filter((a) => match(a.label)) },
+      { id: 'go', label: g('goTo'), items: destinations.filter((a) => match(a.label)) },
+      {
+        id: 'settings',
+        label: g('settings'),
+        items: matchSettings(
+          (key, options) => t(key, options as never) as unknown as string,
+          query
+        ).map(settingAction),
+      },
     ];
-  }, [query, notes, actions, t]);
+    if (!q)
+      commands.push({
+        id: 'notes',
+        label: g('notes'),
+        items: notes.map<NoteRow>((n) => ({ kind: 'note', id: n.id, label: n.title || untitled })),
+      });
+    const found = buildGroups(query, notes, search.answer, new Date(), untitled).map(
+      (group): PaletteGroup => ({
+        id: group.kind,
+        label: t(`search.groups.${group.kind}`),
+        items: group.items.map(
+          (item): PaletteRow =>
+            item.target.view === 'note'
+              ? {
+                  kind: 'note',
+                  id: item.target.noteId,
+                  label: item.label,
+                  detail: item.detail,
+                  activity: item.activity,
+                }
+              : { kind: 'result', id: item.key, item }
+        ),
+      })
+    );
+    return [...commands, ...found].filter((group) => group.items.length > 0);
+  }, [query, notes, actions, destinations, t, untitled, search.answer]);
 
   const flat = useMemo(() => groups.flatMap((g) => g.items), [groups]);
 
   useEffect(() => setCursor(0), [query]);
+  useEffect(() => {
+    document.getElementById(optionId(cursor))?.scrollIntoView?.({ block: 'nearest' });
+  }, [cursor]);
 
-  function pick(row: PaletteRow) {
-    onClose();
-    if (row.kind === 'action') {
-      row.run();
-    } else {
-      void navigate({ to: '/notes/$noteId', params: { noteId: row.id } });
+  function openTarget(target: Target) {
+    switch (target.view) {
+      case 'note':
+        return navigate({ to: '/workspace/$noteId', params: { noteId: target.noteId } });
+      case 'session':
+        return navigate({ to: '/meetings/$sessionId', params: { sessionId: target.sessionId } });
+      case 'event':
+        return navigate({ to: '/meetings', search: { event: target.eventId } });
+      case 'transcript':
+        return navigate({
+          to: '/meetings/$sessionId',
+          params: { sessionId: target.sessionId },
+          search: { panel: 'transcript', find: target.find },
+        });
+      case 'person':
+        return navigate({ to: '/people', search: { person: target.personId, name: target.name } });
     }
   }
 
-  async function onKey(e: React.KeyboardEvent) {
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      onClose();
+  function pick(row: PaletteRow) {
+    if (row.kind === 'action' && row.keepOpen) {
+      void row.run();
       return;
     }
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      setCursor((v) => Math.min(flat.length - 1, v + 1));
-    }
-    if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setCursor((v) => Math.max(0, v - 1));
-    }
-    // Ctrl+Backspace on a focused note row → delete with confirm
-    if (e.key === 'Backspace' && (e.ctrlKey || e.metaKey)) {
+    onClose();
+    if (row.kind === 'action') void row.run();
+    else if (row.kind === 'note')
+      void navigate({ to: '/workspace/$noteId', params: { noteId: row.id } });
+    else void openTarget(row.item.target);
+  }
+
+  useShortcutScope('palette', open);
+  useEscapeLayer(open, dismiss, { modal: true, scope: 'palette' });
+  useShortcut(
+    'palette.delete',
+    () => {
       const row = flat[cursor];
-      if (row?.kind === 'note') {
-        e.preventDefault();
-        const note = notes.find((n) => n.id === row.id);
-        if (note) {
-          await confirmAndDelete({ id: note.id, title: note.title });
-        }
-        return;
-      }
+      const note = row?.kind === 'note' ? notes.find((n) => n.id === row.id) : undefined;
+      if (!note) return false;
+      void trash(note);
+    },
+    { enabled: open }
+  );
+
+  function onKey(e: React.KeyboardEvent) {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      const step = e.key === 'ArrowDown' ? 1 : -1;
+      setCursor((v) => Math.min(flat.length - 1, Math.max(0, v + step)));
+      return;
     }
     if (e.key === 'Enter' && flat[cursor]) {
       e.preventDefault();
@@ -199,168 +216,92 @@ export function CommandPalette({ open, onClose }: Props) {
 
   if (!open) return null;
 
-  let flatIdx = -1;
-
   return (
     <div
-      className="fixed inset-0 z-50 flex justify-center px-4 pt-[14vh] bg-foreground/10 backdrop-blur-sm"
-      onClick={onClose}
+      className="cx-palette-overlay fixed inset-0 z-50 flex justify-center bg-black/35 px-4 pt-[5.625rem] backdrop-blur-[3px]"
+      onClick={dismiss}
       role="presentation"
     >
       <div
-        className="w-full max-w-[560px] max-h-[60vh] flex flex-col overflow-hidden rounded-[16px] border border-border bg-popover/80 backdrop-blur-2xl shadow-2xl"
+        className="cx-palette-panel flex max-h-[min(560px,70vh)] w-full max-w-[37.5rem] flex-col self-start overflow-hidden rounded-[16px] border border-border bg-card shadow-xl"
         onClick={(e) => e.stopPropagation()}
         onKeyDown={onKey}
         role="dialog"
         aria-modal="true"
-        aria-label={t('palette.title')}
+        aria-label={t('people.palette.title')}
       >
-        <div className="flex items-center gap-2.5 px-4 h-12 border-b border-border">
-          <Search
-            size={17}
-            className="text-muted-foreground shrink-0"
-            aria-hidden="true"
-          />
+        <div className="flex h-[3.25rem] items-center gap-2.5 border-b border-border px-4">
+          <Search size={17} className="shrink-0 text-muted-foreground" aria-hidden="true" />
           <input
             ref={inputRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={t('palette.placeholder')}
-            aria-label={t('palette.placeholder')}
-            className="flex-1 bg-transparent outline-none text-base text-foreground placeholder:text-muted-foreground"
+            role="combobox"
+            aria-expanded="true"
+            aria-controls={LISTBOX_ID}
+            aria-autocomplete="list"
+            aria-activedescendant={flat[cursor] ? optionId(cursor) : undefined}
+            placeholder={t('people.palette.placeholder')}
+            aria-label={t('people.palette.placeholder')}
+            className="flex-1 bg-transparent text-[0.9375rem] text-foreground outline-none placeholder:text-muted-foreground"
           />
-          <kbd className="cx-kbd">Esc</kbd>
+          <kbd className="cx-kbd">{shortcutHint('layer.close')}</kbd>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-1.5">
+        {deleteFailure && (
+          <p role="alert" className="px-4 py-2">
+            {t(noteDeletionErrorKey(deleteFailure.error) ?? 'editor.deleteFailed')}
+          </p>
+        )}
+        <div className="flex-1 overflow-y-auto p-2">
           {flat.length === 0 && (
             <div className="px-4 py-7 text-center text-sm text-muted-foreground">
-              {t('palette.empty', { query })}
+              {search.pending ? t('search.searching') : t('people.palette.empty', { query })}
             </div>
           )}
-          {groups.map((group) => (
-            <div key={group.label} className="py-1.5">
-              <div className="cx-eyebrow px-2.5 pt-1.5 pb-1">{group.label}</div>
-              {group.items.map((item) => {
-                flatIdx++;
-                const active = flatIdx === cursor;
-                const localIdx = flatIdx;
-                return (
-                  <PaletteItemRow
-                    key={`${item.kind}-${item.id}`}
-                    item={item}
-                    active={active}
-                    onHover={() => setCursor(localIdx)}
-                    onPick={() => pick(item)}
-                    onDelete={
-                      item.kind === 'note'
-                        ? () => {
-                            const note = notes.find((n) => n.id === item.id);
-                            if (note) {
-                              void confirmAndDelete({
-                                id: note.id,
-                                title: note.title,
-                              });
-                            }
-                          }
-                        : undefined
-                    }
-                  />
-                );
-              })}
-            </div>
-          ))}
+          <PaletteList
+            groups={groups}
+            cursor={cursor}
+            query={query}
+            onHover={setCursor}
+            onPick={pick}
+            onDelete={(id) => {
+              const note = notes.find((n) => n.id === id);
+              if (note) void trash(note);
+            }}
+          />
         </div>
+        <p role="status" aria-live="polite" className="sr-only">
+          {query.trim()
+            ? search.pending
+              ? t('search.searching')
+              : t('search.count', { count: flat.length })
+            : ''}
+        </p>
 
-        <div className="flex gap-3.5 px-3.5 py-2 border-t border-border text-[11px] text-muted-foreground">
+        <div className="flex gap-3.5 border-t border-border px-3.5 py-2 text-[0.6875rem] text-muted-foreground">
           <span>
-            <kbd className="cx-kbd">↑</kbd>
-            <kbd className="cx-kbd ml-0.5">↓</kbd> {t('palette.hints.navigate')}
+            {shortcutHints('palette.move').map((hint, index) => (
+              <kbd key={hint} className={index ? 'cx-kbd ml-0.5' : 'cx-kbd'}>
+                {hint}
+              </kbd>
+            ))}{' '}
+            {t('people.palette.hints.navigate')}
           </span>
           <span>
-            <kbd className="cx-kbd">↵</kbd> {t('palette.hints.open')}
+            <kbd className="cx-kbd">{shortcutHint('palette.open')}</kbd>{' '}
+            {t('people.palette.hints.open')}
           </span>
           <span>
-            <kbd className="cx-kbd">⌘⌫</kbd> {t('palette.hints.delete')}
+            <kbd className="cx-kbd">{shortcutHint('palette.delete')}</kbd>{' '}
+            {t('people.palette.hints.delete')}
           </span>
           <span>
-            <kbd className="cx-kbd">Esc</kbd> {t('palette.hints.close')}
+            <kbd className="cx-kbd">{shortcutHint('layer.close')}</kbd>{' '}
+            {t('people.palette.hints.close')}
           </span>
         </div>
       </div>
-    </div>
-  );
-}
-
-function PaletteItemRow({
-  item,
-  active,
-  onHover,
-  onPick,
-  onDelete,
-}: {
-  item: PaletteRow;
-  active: boolean;
-  onHover: () => void;
-  onPick: () => void;
-  onDelete?: () => void;
-}) {
-  const { t } = useTranslation();
-  return (
-    <div
-      className={clsx(
-        'group w-full flex items-center rounded-md text-sm text-foreground',
-        active && 'bg-secondary/70',
-      )}
-      onMouseEnter={onHover}
-    >
-      <button
-        type="button"
-        onClick={onPick}
-        className="flex-1 min-w-0 flex items-center gap-2.5 px-2.5 py-2 text-left"
-      >
-        {item.kind === 'note' ? (
-          <FileText
-            size={15}
-            className="text-muted-foreground shrink-0"
-            aria-hidden="true"
-          />
-        ) : item.id === 'open-settings' ? (
-          <Settings
-            size={15}
-            className="text-muted-foreground shrink-0"
-            aria-hidden="true"
-          />
-        ) : item.id === 'delete-current-note' ? (
-          <Trash2
-            size={15}
-            className="text-destructive shrink-0"
-            aria-hidden="true"
-          />
-        ) : (
-          <Sparkles
-            size={15}
-            className="text-muted-foreground shrink-0"
-            aria-hidden="true"
-          />
-        )}
-        <span className="flex-1 truncate">{item.label}</span>
-      </button>
-      {onDelete ? (
-        <button
-          type="button"
-          onClick={onDelete}
-          aria-label={t('palette.actions.deleteThisNote')}
-          title={t('palette.actions.deleteThisNote')}
-          className="shrink-0 mx-1 p-1.5 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity"
-        >
-          <Trash2 size={14} aria-hidden="true" />
-        </button>
-      ) : item.hint ? (
-        <span className="shrink-0 pr-3 font-mono text-[11px] text-muted-foreground">
-          {item.hint}
-        </span>
-      ) : null}
     </div>
   );
 }

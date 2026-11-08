@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 vi.mock('react-i18next', () => ({
@@ -25,10 +25,10 @@ vi.mock('../../lib/bindings', () => ({
 
 const loadNotes = vi.fn();
 vi.mock('../../lib/store', () => ({
-  useAppStore: <T,>(selector: (s: { loadNotes: typeof loadNotes }) => T) =>
-    selector({ loadNotes }),
+  useAppStore: <T,>(selector: (s: { loadNotes: typeof loadNotes }) => T) => selector({ loadNotes }),
 }));
 
+import { SETTINGS_SECTIONS } from './settingsIndex';
 import { SettingsView } from './SettingsView';
 import { THEME_STORAGE_KEY } from '../../lib/theme';
 
@@ -61,15 +61,13 @@ describe('SettingsView — vault panel', () => {
     getConfig.mockResolvedValue({ status: 'ok', data: BASE_CONFIG });
     listObsidianVaults.mockResolvedValue({ status: 'ok', data: [] });
 
-    render(<SettingsView />);
+    render(<SettingsView section="storage" />);
 
-    await waitFor(() =>
-      expect(screen.getByText('settings.vault.noObsidian')).toBeInTheDocument()
-    );
+    await waitFor(() => expect(screen.getByText('settings.vault.noObsidian')).toBeInTheDocument());
     expect(screen.getByText('C:/Users/me/coxinha')).toBeInTheDocument();
   });
 
-  it('lists detected vaults as radio options and keeps Save disabled until selection changes', async () => {
+  it('lists detected vaults with switching disabled until storage supports migration', async () => {
     getConfig.mockResolvedValue({ status: 'ok', data: BASE_CONFIG });
     listObsidianVaults.mockResolvedValue({
       status: 'ok',
@@ -84,8 +82,9 @@ describe('SettingsView — vault panel', () => {
       ],
     });
 
-    render(<SettingsView />);
+    render(<SettingsView section="storage" />);
 
+    await userEvent.click(await screen.findByText('settings.vault.otherFolders'));
     const radio = await screen.findByRole('radio', { name: /Work/ });
     const save = screen.getByRole('button', { name: /settings\.vault\.save/ });
 
@@ -93,11 +92,12 @@ describe('SettingsView — vault panel', () => {
 
     await userEvent.click(radio);
 
-    expect(radio).toBeChecked();
-    expect(save).toBeEnabled();
+    expect(radio).not.toBeChecked();
+    expect(radio).toBeDisabled();
+    expect(save).toBeDisabled();
   });
 
-  it('calls updateConfig with the picked vault path on Save', async () => {
+  it('never pretends changing the configured path switched active storage', async () => {
     getConfig.mockResolvedValue({ status: 'ok', data: BASE_CONFIG });
     listObsidianVaults.mockResolvedValue({
       status: 'ok',
@@ -113,25 +113,22 @@ describe('SettingsView — vault panel', () => {
     });
     updateConfig.mockResolvedValue({ status: 'ok', data: null });
 
-    render(<SettingsView />);
+    render(<SettingsView section="storage" />);
 
+    await userEvent.click(await screen.findByText('settings.vault.otherFolders'));
     const radio = await screen.findByRole('radio', { name: /Ideas/ });
     await userEvent.click(radio);
     await userEvent.click(screen.getByRole('button', { name: /settings\.vault\.save/ }));
 
-    await waitFor(() =>
-      expect(updateConfig).toHaveBeenCalledWith(
-        expect.objectContaining({ vault_path: 'D:/Vaults/ideas' })
-      )
-    );
-    expect(await screen.findByText('settings.vault.saved')).toBeInTheDocument();
+    expect(updateConfig).not.toHaveBeenCalled();
+    expect(screen.getByText('settings.recovery.vaultSwitch')).toBeVisible();
   });
 
   it('surfaces load errors from getConfig in an alert', async () => {
     getConfig.mockResolvedValue({ status: 'error', error: 'boom' });
     listObsidianVaults.mockResolvedValue({ status: 'ok', data: [] });
 
-    render(<SettingsView />);
+    render(<SettingsView section="storage" />);
 
     const alert = await screen.findByRole('alert');
     expect(alert.textContent).toContain('boom');
@@ -145,14 +142,14 @@ describe('SettingsView — vault panel', () => {
       data: { notes_indexed: 42, links_indexed: 7, notes_skipped: 0 },
     });
 
-    render(<SettingsView />);
+    render(<SettingsView section="storage" />);
 
     const button = await screen.findByRole('button', { name: /settings\.vault\.rebuild/ });
     await userEvent.click(button);
 
     await waitFor(() => expect(rebuildFromVault).toHaveBeenCalledOnce());
     expect(loadNotes).toHaveBeenCalledOnce();
-    const status = await screen.findByRole('status');
+    const status = await screen.findByText(/settings\.vault\.rebuiltSuccess/);
     expect(status.textContent).toContain('42');
     expect(status.textContent).toContain('7');
   });
@@ -162,11 +159,9 @@ describe('SettingsView — vault panel', () => {
     listObsidianVaults.mockResolvedValue({ status: 'ok', data: [] });
     rebuildFromVault.mockResolvedValue({ status: 'error', error: 'disk full' });
 
-    render(<SettingsView />);
+    render(<SettingsView section="storage" />);
 
-    await userEvent.click(
-      await screen.findByRole('button', { name: /settings\.vault\.rebuild/ }),
-    );
+    await userEvent.click(await screen.findByRole('button', { name: /settings\.vault\.rebuild/ }));
 
     const alert = await screen.findByRole('alert');
     expect(alert.textContent).toContain('disk full');
@@ -184,7 +179,7 @@ describe('SettingsView — appearance panel', () => {
 
   it('defaults to Auto when no preference is stored', async () => {
     render(<SettingsView />);
-    const auto = await screen.findByRole('radio', { name: 'settings.appearance.theme.auto' });
+    const auto = await screen.findByRole('radio', { name: 'people.settings.theme.auto' });
     expect(auto).toBeChecked();
   });
 
@@ -193,13 +188,10 @@ describe('SettingsView — appearance panel', () => {
     render(<SettingsView />);
 
     const events: string[] = [];
-    const listener = (e: Event) =>
-      events.push((e as CustomEvent).detail as string);
+    const listener = (e: Event) => events.push((e as CustomEvent).detail as string);
     window.addEventListener('coxinha:theme-pref-changed', listener);
 
-    await user.click(
-      await screen.findByRole('radio', { name: 'settings.appearance.theme.dark' }),
-    );
+    await user.click(await screen.findByRole('radio', { name: 'people.settings.theme.dark' }));
 
     expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('dark');
     expect(events).toEqual(['dark']);
@@ -212,9 +204,7 @@ describe('SettingsView — appearance panel', () => {
     localStorage.setItem(THEME_STORAGE_KEY, 'light');
     render(<SettingsView />);
 
-    await user.click(
-      await screen.findByRole('radio', { name: 'settings.appearance.theme.auto' }),
-    );
+    await user.click(await screen.findByRole('radio', { name: 'people.settings.theme.auto' }));
 
     expect(localStorage.getItem(THEME_STORAGE_KEY)).toBeNull();
   });
@@ -228,7 +218,7 @@ describe('SettingsView — shortcuts panel', () => {
   it('lists all five global shortcuts from the config', async () => {
     getConfig.mockResolvedValue({ status: 'ok', data: BASE_CONFIG });
 
-    render(<SettingsView />);
+    render(<SettingsView section="shortcuts" />);
 
     const { shortcuts } = BASE_CONFIG;
     expect(await screen.findByText(shortcuts.new_note)).toBeInTheDocument();
@@ -238,7 +228,7 @@ describe('SettingsView — shortcuts panel', () => {
     expect(screen.getByText(shortcuts.toggle_recording)).toBeInTheDocument();
 
     expect(screen.getByText('settings.shortcuts.action.new_note')).toBeInTheDocument();
-    expect(screen.getByText('settings.shortcuts.action.toggle_recording')).toBeInTheDocument();
+    expect(screen.getByText('people.settings.shortcuts.toggleRecording')).toBeInTheDocument();
   });
 
   it('reflects a non-default binding from the saved config', async () => {
@@ -250,19 +240,87 @@ describe('SettingsView — shortcuts panel', () => {
       },
     });
 
-    render(<SettingsView />);
+    render(<SettingsView section="shortcuts" />);
 
     expect(await screen.findByText('Ctrl+Shift+Space')).toBeInTheDocument();
     expect(screen.queryByText('Ctrl+Alt+Y')).not.toBeInTheDocument();
   });
+});
 
-  it('surfaces the "rebind coming soon" hint', async () => {
+it('recovers from rejected IPC promises with explicit retry', async () => {
+  getConfig
+    .mockRejectedValueOnce(new Error('IPC transport unavailable'))
+    .mockResolvedValueOnce({ status: 'ok', data: BASE_CONFIG });
+  listObsidianVaults.mockResolvedValue({ status: 'ok', data: [] });
+  render(<SettingsView section="storage" />);
+  expect(await screen.findByRole('alert')).toHaveTextContent('settings.recovery.loadError');
+  await userEvent.click(screen.getByRole('button', { name: 'settings.recovery.retry' }));
+  expect(await screen.findByText(BASE_CONFIG.vault_path)).toBeVisible();
+  expect(getConfig).toHaveBeenCalledTimes(2);
+});
+
+it.each([
+  ['note_file_identity_conflict', 'settings.rebuildErrors.identityConflict'],
+  ['note_file_invalid_metadata', 'settings.rebuildErrors.invalidMetadata'],
+])('localizes known preflight refusal %s without rebuilding automatically', async (code, key) => {
+  getConfig.mockResolvedValue({ status: 'ok', data: BASE_CONFIG });
+  listObsidianVaults.mockResolvedValue({ status: 'ok', data: [] });
+  rebuildFromVault.mockResolvedValue({ status: 'error', error: code });
+  render(<SettingsView section="storage" />);
+  const button = await screen.findByRole('button', { name: 'settings.vault.rebuild' });
+  expect(rebuildFromVault).not.toHaveBeenCalled();
+  await userEvent.click(button);
+  expect(await screen.findByRole('alert')).toHaveTextContent(key);
+  expect(screen.getByRole('alert')).not.toHaveTextContent(code);
+  expect(loadNotes).not.toHaveBeenCalled();
+});
+
+describe('SettingsView — section list and landing', () => {
+  beforeEach(() => {
     getConfig.mockResolvedValue({ status: 'ok', data: BASE_CONFIG });
+    listObsidianVaults.mockResolvedValue({ status: 'ok', data: [] });
+  });
 
+  it('lists every page as a link in its group and keeps the legacy heading anchors', async () => {
     render(<SettingsView />);
+    const nav = screen.getByRole('navigation', { name: 'people.settings.sectionsLabel' });
+    const names = within(nav)
+      .getAllByRole('link')
+      .map((link) => link.textContent);
+    expect(names).toEqual(SETTINGS_SECTIONS.map((id) => `people.settings.sections.${id}`));
+    await screen.findByText(BASE_CONFIG.vault_path);
+    for (const id of [
+      'appearance-heading',
+      'detection-heading',
+      'integrations-heading',
+      'vault-heading',
+      'shortcuts-heading',
+      'rebuild-heading',
+      'diagnostics-heading',
+    ])
+      expect(document.getElementById(id), id).not.toBeNull();
+  });
 
-    expect(
-      await screen.findByText('settings.shortcuts.rebindComingSoon'),
-    ).toBeInTheDocument();
+  it.each([
+    ['integrations', 'people.settings.sections.integrations'],
+    ['recording', 'people.settings.sections.recording'],
+    ['storage', 'people.settings.sections.storage'],
+  ] as const)('opens on %s: focuses the title and marks it current', async (section, label) => {
+    render(<SettingsView section={section} />);
+    await screen.findByText(BASE_CONFIG.vault_path);
+    const heading = screen.getByRole('heading', { level: 1, name: label });
+    await waitFor(() => expect(heading).toHaveFocus());
+    expect(heading.closest('section')).toHaveAttribute('id', section);
+    expect(screen.getByRole('link', { name: label })).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('focuses the rebuild row for the note-recovery link', async () => {
+    render(<SettingsView section="storage" target="rebuild-heading" />);
+    const heading = await screen.findByRole('heading', { name: 'settings.vault.rebuildHeading' });
+    await waitFor(() => expect(heading).toHaveFocus());
+    expect(screen.getByRole('link', { name: 'people.settings.sections.storage' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
   });
 });

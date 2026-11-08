@@ -1,0 +1,157 @@
+{
+  "meetingDetail": {
+    "underWay": "Em andamento, faltam {{left}}",
+    "people": {
+      "organizer": "Organizador",
+      "optional": "Opcional",
+      "spoke": "Confirmado na gravação",
+      "more_one": "e mais {{count}}",
+      "more_other": "e mais {{count}}",
+      "stackMore": "+{{count}}",
+      "response": {
+        "accepted": "{{count}} sim",
+        "tentative": "{{count}} talvez",
+        "declined": "{{count}} não",
+        "noAnswer": "{{count}} sem resposta"
+      }
+    },
+    "signals": {
+      "files_one": "{{count}} arquivo",
+      "files_other": "{{count}} arquivos"
+    },
+    "rows": {
+      "result": "Resultado",
+      "people": "Pessoas",
+      "transcript": "Transcrição",
+      "speakers": "Falantes",
+      "note": "Nota",
+      "summary": "Resumo",
+      "followUps": "Follow-ups",
+      "files": "Arquivos",
+      "diagram": "Diagrama",
+      "memory": "Memória",
+      "present": "Presentes",
+      "invited": "Convidados",
+      "mark": "Avaliação",
+      "response": "Sua resposta",
+      "location": "Local",
+      "organizer": "Organizador",
+      "preparation": "Preparação",
+      "invitation": "Convite",
+      "calendar": "Agenda",
+      "meeting": "Reunião"
+    },
+    "values": {
+      "yes": "Sim",
+      "no": "Não",
+      "none": "Nada",
+      "transcriptYes": "Sim · {{duration}}",
+      "running": "Em andamento",
+      "failed": "Falhou",
+      "off": "Desligado",
+      "notYet": "Ainda não",
+      "memoryKept": "Sim · só o resumo",
+      "unknown": "Desconhecido",
+      "confirmed_one": "{{count}} confirmado",
+      "confirmed_other": "{{count}} confirmados",
+      "nobodyInvited": "Nenhum · só na sua agenda",
+      "notLinked": "Sem vínculo",
+      "showMessage": "Ver mensagem",
+      "prepNone": "Nenhuma",
+      "prepNote": "Nota",
+      "prepLinks_one": "{{count}} link",
+      "prepLinks_other": "{{count}} links",
+      "prepActivities_one": "{{count}} atividade",
+      "prepActivities_other": "{{count}} atividades",
+      "speakersNone": "{{total}} · nenhum nomeado",
+      "speakersAll_one": "{{count}} · nomeado",
+      "speakersAll_other": "{{count}} · todos nomeados",
+      "speakersSome_one": "{{total}} · {{count}} nomeado",
+      "speakersSome_other": "{{total}} · {{count}} nomeados",
+      "response": {
+        "organizer": "Você organiza",
+        "accepted": "Aceita",
+        "tentative": "Talvez",
+        "declined": "Recusada",
+        "none": "Sem resposta"
+      }
+    },
+    "actions": {
+      "open": "Abrir",
+      "openTranscript": "Abrir a transcrição completa",
+      "name": "Nomear",
+      "nameSpeakers": "Nomear os falantes",
+      "setUp": "Configurar",
+      "setUpSummaries": "Configurar os resumos em Ajustes › Títulos e resumos",
+      "link": "Vincular"
+    },
+    "respond": {
+      "action": {
+        "respond": "Responder",
+        "change": "Alterar",
+        "respondName": "Responder a este convite",
+        "changeName": "Alterar sua resposta"
+      },
+      "note": {
+        "sent": "Enviada a {{name}}",
+        "silent": "Salva, organizador não avisado"
+      },
+      "title": "Responder ao convite",
+      "reviewTitle": "Revise antes de enviar",
+      "current": "Sua resposta agora: {{response}}",
+      "choiceLegend": "Sua resposta",
+      "choice": {
+        "accept": "Aceitar",
+        "tentative": "Talvez",
+        "decline": "Recusar",
+        "propose": "Propor novo horário"
+      },
+      "noProposals": "O organizador não permite propor novo horário.",
+      "proposeAsLegend": "Enviar como",
+      "date": "Data",
+      "from": "De",
+      "to": "Até",
+      "zoneHint": "Horários em {{zone}}.",
+      "problem": {
+        "noChoice": "Escolha uma resposta.",
+        "range": "O novo horário precisa terminar depois de começar.",
+        "past": "O novo horário já passou.",
+        "same": "O novo horário é o atual da reunião. Escolha outro."
+      },
+      "scopeLegend": "Vale para",
+      "scope": {
+        "occurrence": "Esta ocorrência, {{when}}",
+        "series": "A série inteira",
+        "single": "Esta reunião"
+      },
+      "oneOccurrence": "O novo horário é proposto só para esta ocorrência.",
+      "comment": "Comentário (opcional)",
+      "commentHint": "Vai para o organizador junto com a resposta.",
+      "notify": "Avisar {{name}}",
+      "notifyProposal": "Uma proposta sempre vai para o organizador.",
+      "notifyNotAsked": "O organizador não pediu respostas.",
+      "noWrite": "O Outlook não autorizou responder nesta conexão. Reconecte em Ajustes › Calendário.",
+      "review": {
+        "to": "Para",
+        "nobody": "Ninguém, o organizador não é avisado",
+        "event": "Evento",
+        "response": "Resposta",
+        "comment": "Comentário",
+        "proposed": "Novo horário",
+        "appliesTo": "Vale para",
+        "willSend": "Isto vai para {{name}} e não pode ser desfeito.",
+        "silent": "Nada vai para o organizador. Só a sua agenda muda.",
+        "tentativeNewTime": "Talvez, com novo horário",
+        "declineNewTime": "Recusar, com novo horário"
+      },
+      "buttons": {
+        "review": "Revisar",
+        "back": "Voltar",
+        "send": "Enviar a {{name}}",
+        "save": "Salvar sem avisar",
+        "sending": "Enviando…",
+        "retry": "Tentar de novo"
+      }
+    }
+  }
+}

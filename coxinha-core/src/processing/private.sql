@@ -1,0 +1,1 @@
+CREATE TABLE processed_candidate(job_id TEXT NOT NULL, speaker TEXT NOT NULL, turn_id TEXT NOT NULL, space_json TEXT NOT NULL, vector_json TEXT NOT NULL, provenance_json TEXT NOT NULL, PRIMARY KEY(job_id,turn_id));

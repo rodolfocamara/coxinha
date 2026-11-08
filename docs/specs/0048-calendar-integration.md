@@ -1,6 +1,13 @@
 # Spec 0048: Calendar integration (Agenda + OS calendar)
 
 - **Status:** draft
+- **Meeting-library scope update (2026-10-19):** The
+  [speaker recognition and calendar plan](../plans/2026-10-19-speaker-recognition-and-calendar.md)
+  revises this draft for the meeting library: Microsoft first, explicit sync,
+  private remote cache separate from canonical meeting links/snapshots, and
+  attendee names used only as review candidates. The polling, notes-first UI,
+  Google prerequisite and plaintext-token fallback below are not requirements
+  of that increment. No calendar metadata proves presence or voice identity.
 - **Phase:** F2
 - **Owner:** Rodolfo
 - **Depends on:** spec 0006 (app shell), spec 0009 (meetings

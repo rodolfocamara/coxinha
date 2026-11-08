@@ -1,0 +1,168 @@
+/* Layered (spec 0095) so utilities in JSX override these defaults. */
+/* Declare Tailwind's layer order first: whichever file loads first fixes it. */
+@layer theme, base, components, utilities;
+@layer components {
+  .canvas-note {
+    min-width: 0;
+    padding: 2px 1rem 0.75rem;
+    flex: 1;
+  }
+  .canvas-text {
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+    outline: none;
+    min-height: 4.5rem;
+    cursor: text;
+    white-space: pre-wrap;
+  }
+  .canvas-text :is(p, h1, h2, h3, ul, ol, pre, blockquote) {
+    margin: 0 0 0.5rem;
+  }
+  .canvas-text :is(h1, h2, h3),
+  .canvas-activity .canvas-read > div > p:first-child {
+    font-size: 1.125rem;
+    line-height: 1.4;
+    font-weight: 600;
+  }
+  .canvas-text ul {
+    list-style: disc;
+    padding-left: 1.375rem;
+  }
+  .canvas-text ol {
+    list-style: decimal;
+    padding-left: 1.375rem;
+  }
+  .canvas-text li > p {
+    margin-bottom: 2px;
+  }
+  .canvas-text ul[data-type='taskList'] {
+    list-style: none;
+    padding-left: 0;
+  }
+  .canvas-text li[data-type='taskItem'] {
+    display: flex;
+    gap: 0.5rem;
+    align-items: baseline;
+  }
+  .canvas-text li[data-type='taskItem'] > div {
+    flex: 1;
+    min-width: 0;
+  }
+  .canvas-text li[data-type='taskItem'] input {
+    accent-color: var(--color-primary);
+    width: 0.875rem;
+    height: 0.875rem;
+    padding: 0;
+  }
+  .canvas-text pre {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-size: 0.75rem;
+    background: var(--color-muted);
+    padding: 0.5rem;
+    border-radius: 5px;
+  }
+  .canvas-text blockquote {
+    border-left: 2px solid var(--color-border);
+    padding-left: 0.625rem;
+  }
+  .canvas-text-tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 3px;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.375rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .activity-board .canvas-text-tools button {
+    padding: 0.25rem 0.375rem;
+    border: none;
+    background: transparent;
+    font-size: 0.75rem;
+  }
+  .canvas-text-tools button[aria-pressed='true'] {
+    background: var(--color-muted);
+  }
+  .canvas-save-error {
+    font-size: 0.75rem;
+    color: var(--color-destructive);
+  }
+  .activity-board .board-card-body {
+    height: auto;
+    min-height: 10rem;
+  }
+  .activity-board .react-flow__node.board-text {
+    padding: 0;
+    border: 1px dashed transparent;
+    border-radius: 8px;
+    background: transparent;
+  }
+  .activity-board .react-flow__node.board-text.selected {
+    border-color: var(--color-primary);
+  }
+  .activity-board .board-card-body.board-text-body {
+    background: transparent;
+    border-top: none;
+    min-height: 5rem;
+  }
+  .board-text-body .board-card-footer {
+    min-height: 1.25rem;
+  }
+  .board-area-progress {
+    margin-left: auto;
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+  .board-area-meter {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 0.25rem;
+    overflow: hidden;
+    border-radius: 0 0 12px 12px;
+    background: var(--color-border);
+  }
+  .board-area-meter > div {
+    height: 100%;
+  }
+  .activity-board .react-flow__node-area.board-drop-target {
+    outline: 3px solid var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  }
+  .board-drop-hint {
+    position: absolute;
+    top: 3rem;
+    left: 1rem;
+    padding: 0.375rem 0.625rem;
+    background: var(--color-card);
+    border-radius: 6px;
+    font-size: 0.75rem;
+  }
+
+  .canvas-free-text .canvas-text {
+    min-height: 1.5rem;
+  }
+
+  .activity-board .react-flow__resize-control.board-resize-handle {
+    width: 0.625rem;
+    height: 0.625rem;
+    border: 2px solid var(--color-card);
+    border-radius: 3px;
+    background: var(--color-primary);
+    z-index: 6;
+  }
+  .activity-board .react-flow__resize-control.board-resize-line {
+    border-color: var(--color-primary);
+    z-index: 5;
+  }
+  .activity-board .react-flow__resize-control.board-resize-line:is(.left, .right) {
+    width: 0.5rem;
+  }
+  .activity-board .react-flow__resize-control.board-resize-line:is(.top, .bottom) {
+    height: 0.5rem;
+  }
+}

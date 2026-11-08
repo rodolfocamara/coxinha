@@ -1,18 +1,16 @@
 # Icons
 
-Put the app icons here:
+Generated from the Coxinha logo, option A in `docs/design/logo/` (sources in
+`docs/design/logo/svg/`, regenerate with `node docs/design/logo/build.mjs`).
 
-- `32x32.png` (tray + Windows)
-- `128x128.png` (Linux + fallback)
-- `128x128@2x.png` (Retina)
-- `icon.ico` (Windows installer)
-- `icon.icns` (macOS)
-- `icon.png` (Linux tray)
-
-Generate them from a single 1024x1024 `coxinha.png`:
+- `32x32.png`, `128x128.png`, `128x128@2x.png`, `icon.png`, `icon.ico`,
+  `icon.icns`: app and installer icons, from `a-app.svg`.
+- `tray.png`: the tray glyph, from `a-tray.svg`. It is drawn for 16-22 px and
+  outlined so it reads on dark and light panels; do not replace it with the
+  app icon.
 
 ```bash
-pnpm tauri icon path/to/coxinha.png
+rsvg-convert -w 1024 -h 1024 docs/design/logo/svg/a-app.svg -o /tmp/coxinha.png
+pnpm tauri icon /tmp/coxinha.png -o /tmp/coxinha-icons   # copy the six files above
+rsvg-convert -w 32 -h 32 docs/design/logo/svg/a-tray.svg -o src-tauri/icons/tray.png
 ```
-
-The command writes all required sizes into `src-tauri/icons/`.

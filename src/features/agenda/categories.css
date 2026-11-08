@@ -1,0 +1,210 @@
+@layer theme, base, components, utilities;
+
+@layer components {
+  /* Outlook category presets 0–24 (spec 0103, recalibrated by spec 0119 P3).
+     Names per preset: Microsoft Graph `categoryColor`
+     (learn.microsoft.com/graph/api/resources/outlookcategory). Hex values are
+     the Fluent 2 shared colours the new Outlook draws for each name; Microsoft
+     publishes no table, so DarkSteel (preset11) and the dark fills were measured
+     on the owner's Outlook (dark theme, 2026-11-03): the bar is the colour
+     itself and the fill is 55% of it over #141414 (Outlook blue #0772c9 fills
+     #104776), darkened where light text would fall under 4.5:1. */
+  :root {
+    /* Tentative's stripes (spec 0124 P3): away from the text colour of the theme. */
+    --cx-hatch: rgb(255 255 255 / 0.55);
+    --outlook-cat-0: #c50f1f;
+    --outlook-cat-0-bg: #f6d1d5;
+    --outlook-cat-1: #da3b01;
+    --outlook-cat-1-bg: #f9dcd1;
+    --outlook-cat-2: #ff8c00;
+    --outlook-cat-2-bg: #ffedd6;
+    --outlook-cat-3: #eaa300;
+    --outlook-cat-3-bg: #fcefd3;
+    --outlook-cat-4: #13a10e;
+    --outlook-cat-4-bg: #cef0cd;
+    --outlook-cat-5: #00b7c3;
+    --outlook-cat-5-bg: #cef3f5;
+    --outlook-cat-6: #73aa24;
+    --outlook-cat-6-bg: #e5f1d3;
+    --outlook-cat-7: #0099bc;
+    --outlook-cat-7-bg: #cdedf4;
+    --outlook-cat-8: #7160e8;
+    --outlook-cat-8-bg: #e7e4fb;
+    --outlook-cat-9: #e43ba6;
+    --outlook-cat-9-bg: #fbddf0;
+    --outlook-cat-10: #005b70;
+    --outlook-cat-10-bg: #c3e1e8;
+    --outlook-cat-11: #063842;
+    --outlook-cat-11-bg: #cdd7d9;
+    --outlook-cat-12: #7a7574;
+    --outlook-cat-12-bg: #eae8e8;
+    --outlook-cat-13: #5d5a58;
+    --outlook-cat-13-bg: #e5e4e3;
+    --outlook-cat-14: #394146;
+    --outlook-cat-14-bg: #dbdfe1;
+    --outlook-cat-15: #750b1c;
+    --outlook-cat-15-bg: #e9c7cd;
+    --outlook-cat-16: #a74109;
+    --outlook-cat-16-bg: #f1d9cc;
+    --outlook-cat-17: #4d291c;
+    --outlook-cat-17-bg: #e3d2cb;
+    --outlook-cat-18: #c19c00;
+    --outlook-cat-18-bg: #f5eece;
+    --outlook-cat-19: #0b6a0b;
+    --outlook-cat-19-bg: #c6e7c6;
+    --outlook-cat-20: #006666;
+    --outlook-cat-20-bg: #c2e7e7;
+    --outlook-cat-21: #498205;
+    --outlook-cat-21-bg: #dbebc7;
+    --outlook-cat-22: #003966;
+    --outlook-cat-22-bg: #c2d6e7;
+    --outlook-cat-23: #401b6c;
+    --outlook-cat-23-bg: #d8cce7;
+    --outlook-cat-24: #77004d;
+    --outlook-cat-24-bg: #e9c4dc;
+  }
+  .dark,
+  [data-theme='dark'] {
+    --cx-hatch: rgb(0 0 0 / 0.24);
+    --outlook-cat-0: #c50f1f;
+    --outlook-cat-0-bg: #75111a;
+    --outlook-cat-1: #da3b01;
+    --outlook-cat-1-bg: #81290a;
+    --outlook-cat-2: #ff8c00;
+    --outlook-cat-2-bg: #955609;
+    --outlook-cat-3: #eaa300;
+    --outlook-cat-3-bg: #8a6309;
+    --outlook-cat-4: #13a10e;
+    --outlook-cat-4-bg: #136211;
+    --outlook-cat-5: #00b7c3;
+    --outlook-cat-5-bg: #096e74;
+    --outlook-cat-6: #73aa24;
+    --outlook-cat-6-bg: #48671d;
+    --outlook-cat-7: #0099bc;
+    --outlook-cat-7-bg: #095d70;
+    --outlook-cat-8: #7160e8;
+    --outlook-cat-8-bg: #473e89;
+    --outlook-cat-9: #e43ba6;
+    --outlook-cat-9-bg: #862964;
+    --outlook-cat-10: #005b70;
+    --outlook-cat-10-bg: #093b47;
+    --outlook-cat-11: #063842;
+    --outlook-cat-11-bg: #0c282d;
+    --outlook-cat-12: #7a7574;
+    --outlook-cat-12-bg: #4c4949;
+    --outlook-cat-13: #5d5a58;
+    --outlook-cat-13-bg: #3c3b39;
+    --outlook-cat-14: #394146;
+    --outlook-cat-14-bg: #282d30;
+    --outlook-cat-15: #750b1c;
+    --outlook-cat-15-bg: #490f18;
+    --outlook-cat-16: #a74109;
+    --outlook-cat-16-bg: #652d0e;
+    --outlook-cat-17: #4d291c;
+    --outlook-cat-17-bg: #332018;
+    --outlook-cat-18: #c19c00;
+    --outlook-cat-18-bg: #735f09;
+    --outlook-cat-19: #0b6a0b;
+    --outlook-cat-19-bg: #0f430f;
+    --outlook-cat-20: #006666;
+    --outlook-cat-20-bg: #094141;
+    --outlook-cat-21: #498205;
+    --outlook-cat-21-bg: #31500c;
+    --outlook-cat-22: #003966;
+    --outlook-cat-22-bg: #092841;
+    --outlook-cat-23: #401b6c;
+    --outlook-cat-23-bg: #2c1844;
+    --outlook-cat-24: #77004d;
+    --outlook-cat-24-bg: #4a0933;
+  }
+
+  /* A categorized meeting is a filled block with a bar, as Outlook draws it. */
+  .cx-cat-mark {
+    position: relative;
+  }
+  .cx-cat-mark[data-category] {
+    isolation: isolate;
+  }
+  .cx-cat-mark[data-category]::after {
+    content: '';
+    position: absolute;
+    inset: var(--cx-cat-block, 2px 0.25rem);
+    z-index: -1;
+    border-radius: 6px;
+    background: var(--cx-cat-bg);
+    transition: background-color var(--m-instant, 0ms);
+  }
+  .cx-cat-mark[data-category]:hover::after {
+    background: color-mix(in oklab, var(--cx-cat-bg) 88%, var(--color-foreground));
+  }
+  .cx-cat-mark[data-category][aria-current='true']::after {
+    box-shadow: inset 0 0 0 1.5px var(--cx-cat);
+  }
+  .cx-cat-mark[data-category]::before {
+    content: '';
+    position: absolute;
+    top: var(--cx-cat-bar-y, 2px);
+    bottom: var(--cx-cat-bar-y, 2px);
+    left: var(--cx-cat-inset, 0.25rem);
+    width: 0.25rem;
+    border-radius: 6px 0 0 6px;
+    background: var(--cx-cat);
+  }
+  .cx-cat-dot {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: var(--cx-cat, var(--color-muted-foreground));
+  }
+  .cx-cat-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+  .cx-cat-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    height: 1.375rem;
+    padding: 0 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+  .cx-cat-options {
+    display: grid;
+    gap: 1px;
+    margin-top: 0.375rem;
+  }
+  .cx-cat-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.3125rem 0.5rem;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: inherit;
+    font-size: 0.78125rem;
+    text-align: left;
+    cursor: pointer;
+  }
+  .cx-cat-option:hover {
+    background: var(--color-secondary);
+  }
+  .cx-cat-option:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: -2px;
+  }
+  .cx-cat-option[aria-pressed='true'] {
+    font-weight: 550;
+  }
+  .cx-cat-option svg {
+    margin-left: auto;
+    color: var(--color-muted-foreground);
+  }
+}

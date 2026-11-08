@@ -1,0 +1,128 @@
+import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Alert } from '../../components/ui';
+import { library } from './library';
+import { PersonFormSheet } from './PersonFormSheet';
+import { voiceCurationErrorText } from './voiceCurationError';
+import { PeopleBrowser } from '../people/PeopleBrowser';
+import { ImportPeopleSheet } from '../people/ImportPeopleSheet';
+import { useCaptureStore } from '../capture/captureStore';
+
+/**
+ * Pessoas (spec 0096 P6): the global local registry of people and voice
+ * samples in the list + detail grammar. Mutations run one at a time through
+ * `act`, then the browser remounts so every page reloads from a fresh view.
+ */
+export function PeopleDirectory({
+  opened,
+}: {
+  /** Spec 0122: the person the universal search opened. */
+  opened?: { personId: string; name: string };
+} = {}) {
+  const { t } = useTranslation();
+  const [version, setVersion] = useState(0);
+  const [adding, setAdding] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [imported, setImported] = useState<{ created: number; skipped: number } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const pending = useRef(false);
+  const [error, setError] = useState<unknown>(null);
+  const [created, setCreated] = useState<{ personId: string; name: string } | null>(null);
+  const [selected, setSelected] = useState<string | null>(opened?.personId ?? null);
+  const [search, setSearch] = useState('');
+  useEffect(() => {
+    if (!opened) return;
+    setSelected(opened.personId);
+    setSearch('');
+    // A new `?person=` arriving matters, not a new object for the same one.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [opened?.personId]);
+  // Voices remembered later from confirmations (spec 0120) reload every page.
+  const voices = useCaptureStore((state) => state.status?.voices?.generation);
+  const seenVoices = useRef(voices);
+  useEffect(() => {
+    if (voices === seenVoices.current) return;
+    seenVoices.current = voices;
+    if (!pending.current) setVersion((value) => value + 1);
+  }, [voices]);
+  async function act(action: () => Promise<unknown>) {
+    if (pending.current) return;
+    pending.current = true;
+    setBusy(true);
+    setError(null);
+    try {
+      await action();
+      setVersion((value) => value + 1);
+    } catch (failure) {
+      setError(failure);
+      throw failure;
+    } finally {
+      pending.current = false;
+      setBusy(false);
+    }
+  }
+  if (!library.available()) {
+    return (
+      <section className="h-full overflow-auto p-6" aria-labelledby="people-heading">
+        <h1 id="people-heading" className="mb-3 text-base font-semibold">
+          {t('people.title')}
+        </h1>
+        <Alert tone="info">{t('library.desktopRequired')}</Alert>
+      </section>
+    );
+  }
+  const notices = (
+    <div className="space-y-2 px-3.5 empty:hidden">
+      {!!error && !adding && <Alert tone="error">{voiceCurationErrorText(error, t)}</Alert>}
+      {created && (
+        <Alert tone="success">
+          <span role="status">{t('people.created', { name: created.name })}</span>
+        </Alert>
+      )}
+      {imported && (
+        <Alert tone="success">
+          <span role="status">{t('people.import.done', imported)}</span>
+        </Alert>
+      )}
+    </div>
+  );
+  return (
+    <section className="flex h-full min-h-0" aria-labelledby="people-heading">
+      <PeopleBrowser
+        key={version}
+        version={version}
+        disabled={busy}
+        act={act}
+        selected={selected}
+        onSelect={setSelected}
+        search={search}
+        onSearch={setSearch}
+        onAdd={() => setAdding(true)}
+        onImport={() => setImporting(true)}
+        created={created ?? (opened?.personId === selected ? opened : null)}
+        notices={notices}
+      />
+      <ImportPeopleSheet
+        open={importing}
+        onOpenChange={setImporting}
+        run={act}
+        onImported={(result) => {
+          setCreated(null);
+          setImported(result);
+        }}
+      />
+      <PersonFormSheet
+        open={adding}
+        onOpenChange={setAdding}
+        run={act}
+        disabled={busy && !adding}
+        onCreated={(personId, name) => {
+          setImported(null);
+          setCreated({ personId, name });
+          setSelected(personId);
+          setSearch('');
+        }}
+      />
+    </section>
+  );
+}
