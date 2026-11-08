@@ -408,12 +408,50 @@ fn set_initial_locale() {
     }
 }
 
-/// Trim a BCP-47 tag down to the base language when a region-specific
-/// catalog isn't available (`en-US` → `en`). `rust-i18n` already falls
-/// back via the `fallback = "en"` directive, but normalizing here
-/// avoids one failed lookup per key.
+/// Maps an OS or settings tag (`pt_BR.UTF-8`, `pt-BR`, `pt`, `en-US`) to a catalog
+/// locale: the exact tag, else the base language, else a regional catalog of that
+/// language, else English.
 fn normalize_locale(raw: &str) -> String {
-    raw.split(['-', '_']).next().unwrap_or("en").to_lowercase()
+    let tag = raw.split('.').next().unwrap_or_default().replace('_', "-");
+    let base = tag.split('-').next().unwrap_or_default().to_lowercase();
+    let available = rust_i18n::available_locales!();
+    let find =
+        |want: &dyn Fn(&str) -> bool| available.iter().find(|l| want(l)).map(|l| l.to_string());
+    find(&|l| l.eq_ignore_ascii_case(&tag))
+        .or_else(|| find(&|l| l.eq_ignore_ascii_case(&base)))
+        .or_else(|| find(&|l| l.to_lowercase().starts_with(&format!("{base}-"))))
+        .unwrap_or_else(|| "en".into())
+}
+
+#[cfg(test)]
+mod locale_tests {
+    use super::normalize_locale;
+    use rust_i18n::t;
+
+    #[test]
+    fn os_and_settings_tags_reach_the_portuguese_catalog() {
+        for raw in ["pt_BR.UTF-8", "pt-BR", "pt", "PT_br"] {
+            assert_eq!(normalize_locale(raw), "pt-BR", "{raw}");
+        }
+        assert_eq!(normalize_locale("en_US.UTF-8"), "en");
+        assert_eq!(normalize_locale("de-DE"), "en");
+    }
+
+    #[test]
+    fn tray_and_exit_strings_resolve_in_both_catalogs() {
+        assert_eq!(t!("tray.quit", locale = "en"), "Quit");
+        assert_eq!(t!("tray.quit", locale = "pt-BR"), "Sair");
+        assert_eq!(
+            t!("desktop.hiddenTitle", locale = "en"),
+            "Coxinha is still running"
+        );
+        assert_eq!(t!("desktop.exit", locale = "pt-BR"), "Salvar e sair");
+        // The every-locale-per-key files keep working next to them.
+        assert_eq!(
+            t!("callDetection.title", locale = "pt-BR"),
+            "Possível reunião detectada"
+        );
+    }
 }
 
 mod commands {

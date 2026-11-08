@@ -1,8 +1,8 @@
-_version: 2
+# One locale per file (rust-i18n v1 layout); the other files hold every locale per key.
 
 tray:
   open: Open Coxinha
-  newNote: New note (Ctrl+Alt+N)
+  newNote: New note
   settings: Settings
   quit: Quit
 desktop:
