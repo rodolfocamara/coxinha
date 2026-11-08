@@ -59,7 +59,7 @@ export function RecordingSection() {
   const sources = useCaptureStore((state) => state.sources);
   const mic = useCaptureStore((state) => state.mic);
   const output = useCaptureStore((state) => state.output);
-  const failed = useCaptureStore((state) => state.failure === 'devices');
+  const failure = useCaptureStore((state) => state.failure);
   const live = useCaptureStore((state) => !!state.status?.active);
   const available = library.available();
   const [loading, setLoading] = useState(false);
@@ -67,8 +67,9 @@ export function RecordingSection() {
     setLoading(true);
     void loadDevices().finally(() => setLoading(false));
   };
+  // Every visit relists: a device may have been plugged in or removed since.
   useEffect(() => {
-    if (available && sources.length === 0) refresh();
+    if (available) refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [available]);
   const mics = sources.filter((source) => !source.monitor);
@@ -79,7 +80,9 @@ export function RecordingSection() {
     <p role="status" className="text-xs text-muted-foreground">
       {s('devices.loading')}
     </p>
-  ) : failed && sources.length === 0 ? (
+  ) : failure === 'unsupported' ? (
+    <Alert tone="info">{t('recorder.failure.unsupported')}</Alert>
+  ) : failure === 'devices' && sources.length === 0 ? (
     <Alert
       tone="error"
       action={

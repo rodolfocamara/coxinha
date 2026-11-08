@@ -58,3 +58,13 @@ it('keeps the meeting active when the capture starts', async () => {
   expect(calls('library_create_session')).toHaveLength(1);
   expect(calls('library_update_session')).toHaveLength(0);
 });
+
+it('a second press while the first is still checking devices creates no second meeting', async () => {
+  const [first, second] = await Promise.all([
+    toggleCapture('Recording'),
+    toggleCapture('Recording'),
+  ]);
+  expect(first?.active).toBeTruthy();
+  expect(second).toBeNull();
+  expect(calls('library_create_session')).toHaveLength(1);
+});

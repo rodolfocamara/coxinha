@@ -139,6 +139,17 @@ it('shows a retry when devices cannot be listed, and notes that a live capture k
   expect(screen.getByText(tr('people.settings.devices.liveNote'))).toBeVisible();
 });
 
+it('relists devices on every visit and says when this system cannot record', async () => {
+  render(<RecordingSection />);
+  await waitFor(() => expect(invoke).toHaveBeenCalledTimes(1));
+  cleanup();
+  vi.mocked(invoke).mockRejectedValueOnce('capture adapter unavailable on this platform');
+  render(<RecordingSection />);
+  expect(await screen.findByText(tr('recorder.failure.unsupported'))).toBeVisible();
+  expect(invoke).toHaveBeenCalledTimes(2);
+  expect(screen.queryByRole('button', { name: tr('people.settings.devices.retry') })).toBeNull();
+});
+
 it('call detection is a switch row in Gravação that persists the preference', async () => {
   const user = userEvent.setup();
   render(<RecordingSection />);

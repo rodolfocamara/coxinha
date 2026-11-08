@@ -18,6 +18,7 @@ import { loadSystemChords, useShortcut } from '../lib/shortcuts';
 import { useAppStore } from '../lib/store';
 import { followThemePreference, getThemePreference, THEME_PREF_EVENT } from '../lib/theme';
 import { Shell } from '../components/Shell/Shell';
+import { useCalendarHome } from '../features/meetingsHub/calendarHomeModel';
 import { quickCaptureTitle } from '../components/Shell/NavRail';
 import { CaptureController } from '../features/capture/CaptureController';
 import { toggleCapture } from '../features/capture/captureActions';
@@ -80,8 +81,9 @@ export function RootLayout() {
           navigate({ to: '/' });
           return;
         case 'agenda':
-          // Today's agenda is the day view; the meetings chord opens the remembered view.
-          navigate({ to: '/meetings', search: { view: 'day' } });
+          // Today's agenda: one day, today. The meetings chord opens the remembered view.
+          useCalendarHome.setState({ anchor: null });
+          navigate({ to: '/meetings', search: { view: 'day', days: 1 } });
           return;
         case 'meetings':
           navigate({ to: '/meetings' });

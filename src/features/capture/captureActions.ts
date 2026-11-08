@@ -73,9 +73,9 @@ export async function loadDevices(reset = false) {
 /** The backend's fixed answer where no capture adapter exists for the OS. */
 const UNSUPPORTED = 'capture adapter unavailable on this platform';
 
+/** Rediscovers before every start: a device may have come or gone since the last list. */
 async function readyDevices() {
-  const current = useCaptureStore.getState();
-  const devices = current.mic && current.output ? current : await loadDevices();
+  const devices = await loadDevices();
   if (!devices) return null;
   if (!devices.mic || !devices.output) {
     useCaptureStore.setState({ failure: 'devicesMissing' });
@@ -171,10 +171,21 @@ export function dismissCaptureError() {
  * Rail button and global shortcut: stop when live, otherwise create a meeting
  * session for the capture so it gets notes and shows up in Reuniões.
  */
+let toggling = false;
 export async function toggleCapture(title: string) {
   const { status, busy } = useCaptureStore.getState();
-  if (busy) return null;
+  if (busy || toggling) return null;
   if (status?.active) return stopCapture();
+  // The device check and the meeting creation come before `run` marks the store busy.
+  toggling = true;
+  try {
+    return await startNewMeeting(title);
+  } finally {
+    toggling = false;
+  }
+}
+
+async function startNewMeeting(title: string) {
   // Without usable devices there is nothing to record: create no meeting.
   if (!(await readyDevices())) return null;
   const now = new Date().toISOString().slice(0, 19) + 'Z';
