@@ -8,54 +8,65 @@
     overflow: auto;
   }
 
-  /* One pressed option at a time, like Outlook's view buttons. */
+  /* One pressed option at a time, harmonized with Settings segmented control. */
   .mh-cal-switch {
     display: inline-flex;
     flex-shrink: 0;
     align-items: center;
     gap: 2px;
-    padding: 2px;
+    padding: 3px;
     border: 1px solid var(--color-border);
     border-radius: 9px;
+    background: var(--color-muted);
   }
   .mh-cal-split {
     position: relative;
     display: inline-flex;
+    align-items: center;
   }
   .mh-cal-opt {
     display: inline-flex;
     white-space: nowrap;
     align-items: center;
     gap: 0.375rem;
-    height: 1.75rem;
+    height: 1.625rem;
     padding: 0 0.625rem;
     border: 1px solid transparent;
-    border-radius: 7px;
+    border-radius: 6px;
     background: none;
     color: var(--color-muted-foreground);
-    font-size: 0.78125rem;
+    font-size: 0.75rem;
+    font-weight: 500;
     cursor: pointer;
   }
   .mh-cal-opt:hover {
-    background: var(--color-secondary);
     color: var(--color-foreground);
   }
   .mh-cal-opt[aria-pressed='true'] {
     border-color: var(--color-border);
-    background: var(--color-secondary);
+    background: var(--color-card);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.15);
     color: var(--color-foreground);
-    font-weight: 550;
+    font-weight: 600;
   }
   .mh-cal-opt:focus-visible,
   .mh-cal-menu-item:focus-visible {
     outline: 2px solid var(--color-ring);
     outline-offset: -2px;
   }
-  .mh-cal-caret {
-    padding: 0 0.375rem;
+  .mh-cal-split .mh-cal-opt:first-child {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    padding-right: 0.375rem;
+  }
+  .mh-cal-split .mh-cal-caret {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    padding: 0 0.25rem;
+    border-left: 1px solid color-mix(in oklab, var(--color-border) 60%, transparent);
   }
   .mh-cal-caret[aria-expanded='true'] {
-    background: var(--color-secondary);
+    background: var(--color-card);
     color: var(--color-foreground);
   }
   .mh-cal-menu {

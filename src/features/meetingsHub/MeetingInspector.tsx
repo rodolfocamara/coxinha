@@ -94,7 +94,16 @@ export function MeetingInspector(p: Props) {
         </PropRow>
         {p.detail?.storage?.directory && (
           <PropRow icon={Folder} label={k('folder')} title={p.detail.storage.directory}>
-            {p.detail.storage.directory}
+            {p.detail.storage.directory.split(/([/\\])/).map((part, i) =>
+              part === '/' || part === '\\' ? (
+                <span key={i}>
+                  {part}
+                  <wbr />
+                </span>
+              ) : (
+                <span key={i}>{part}</span>
+              )
+            )}
           </PropRow>
         )}
         {/* The transcript has its row above, with the state of the job. */}
@@ -128,7 +137,7 @@ export function MeetingInspector(p: Props) {
               variant="ghost"
               size="xs"
               iconOnly
-              className="ml-auto"
+              className="ml-auto -mr-1.5"
               icon={<Plus size={13} aria-hidden="true" />}
               aria-label={k('addParticipant')}
               title={k('addParticipant')}

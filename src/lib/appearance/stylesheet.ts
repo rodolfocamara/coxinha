@@ -20,8 +20,8 @@ function themeDeclarations(a: Appearance, theme: Theme): string[] {
     const { h, c } = tokens.accent;
     const blob =
       theme === 'light'
-        ? { l: 0.84, c: Math.min(c, 0.09), alpha: 0.2 }
-        : { l: 0.74, c: Math.min(c, 0.14), alpha: 0.13 };
+        ? { l: 0.8, c: Math.min(c, 0.12), alpha: 0.22 }
+        : { l: 0.72, c: Math.min(c, 0.14), alpha: 0.09 };
     lines.push(
       `--accent:${token(tokens.accent)}`,
       `--accent-hover:${token(tokens.hover)}`,

@@ -145,7 +145,7 @@ export function ItemLinks(props: Side & { headingClassName?: string }) {
       <Button
         size="xs"
         variant="ghost"
-        className="mt-1"
+        className="mt-1 -ml-2"
         icon={<Link2 size={13} aria-hidden="true" />}
         aria-expanded={picking}
         onClick={() => setPicking((v) => !v)}

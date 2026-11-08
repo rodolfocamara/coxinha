@@ -54,9 +54,11 @@ export function signalLabel(item: SignalItem, t: TFunction) {
 export function SignalIcons({ items }: { items: SignalItem[] }) {
   const { t } = useTranslation();
   if (!items.length) return null;
+  const visible = items.slice(0, 3);
+  const remaining = items.length - 3;
   return (
     <span className="ch-signals">
-      {items.map((item) => {
+      {visible.map((item) => {
         const Icon = ICONS[item.id];
         const label = signalLabel(item, t);
         return (
@@ -66,6 +68,17 @@ export function SignalIcons({ items }: { items: SignalItem[] }) {
           </span>
         );
       })}
+      {remaining > 0 && (
+        <span
+          className="ch-signal text-[0.6875rem] text-muted-foreground font-medium"
+          title={items
+            .slice(3)
+            .map((item) => signalLabel(item, t))
+            .join(', ')}
+        >
+          +{remaining}
+        </span>
+      )}
     </span>
   );
 }

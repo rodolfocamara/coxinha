@@ -47,7 +47,7 @@
     "noTranscript": "no transcript",
     "outlookConnect": "Connect Outlook",
     "outlookReconnect": "Reconnect Outlook",
-    "outlookSynced": "Outlook · updated at {{time}}",
+    "outlookSynced": "Outlook · {{time}}",
     "outlookSync": "Sync Outlook now",
     "outlookAccount": "Outlook account",
     "outlookSheet": {

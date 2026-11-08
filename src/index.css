@@ -70,8 +70,8 @@
   --shell-chrome-height: 3rem;
   --shell-panel-width: 23.75rem;
   /* Redesigned shell (spec 0096): labelled icon rail and recorder strip. */
-  --shell-nav-width: 4.25rem;
-  --shell-strip-height: 2.375rem;
+  --shell-nav-width: 4.75rem;
+  --shell-strip-height: 2.625rem;
 }
 
 @layer base {
@@ -101,25 +101,25 @@
     --selection: 0.86 0.06 55;
 
     --success: 0.55 0.11 158;
-    --warning: 0.6 0.12 75;
+    --warning: 0.48 0.14 75;
     --danger: 0.56 0.12 30;
-    --live: 0.6 0.19 31;
+    --live: 0.56 0.20 31;
     --info: 0.52 0.14 258;
 
-    /* Ambient gradient blobs behind the app; Ajustes can switch it off. */
-    --blob-a: 0.84 0.09 55 / 0.2;
-    --blob-b: 0.85 0.07 180 / 0.14;
-    --blob-c: 0.8 0.08 265 / 0.14;
+    /* Ambient gradient blobs behind the app: warm, clearly visible with deep diffusion. */
+    --blob-a: 0.80 0.12 55 / 0.22;
+    --blob-b: 0.82 0.09 185 / 0.16;
+    --blob-c: 0.78 0.10 270 / 0.16;
 
-    /* Person hues for speakers and avatars: ink on a soft fill. */
-    --p1: 0.6 0.13 50;
-    --p1-bg: 0.9 0.04 55;
-    --p2: 0.52 0.14 345;
-    --p2-bg: 0.89 0.04 345;
-    --p3: 0.54 0.08 225;
-    --p3-bg: 0.9 0.03 220;
-    --p4: 0.56 0.11 135;
-    --p4-bg: 0.91 0.04 135;
+    /* Person hues for speakers and avatars: ink on a soft fill. Hue 285 avoids accent collision. */
+    --p1: 0.48 0.14 285;
+    --p1-bg: 0.94 0.03 285;
+    --p2: 0.46 0.15 345;
+    --p2-bg: 0.93 0.03 345;
+    --p3: 0.48 0.10 225;
+    --p3-bg: 0.94 0.025 220;
+    --p4: 0.48 0.12 135;
+    --p4-bg: 0.94 0.03 135;
 
     /* Motion (spec 0096): speed first, only transform and opacity. */
     --m-instant: 80ms;
@@ -136,25 +136,25 @@
     --dur-breath: 600ms;
   }
 
-  /* Dark: comfortable graphite, canvas #242528 and surfaces #2b2d30. */
+  /* Dark: comfortable graphite with clear, distinct elevation steps. */
   .dark,
   [data-theme='dark'] {
     color-scheme: dark;
-    --bg-canvas: 0.1645 0.0055 271;
-    --bg-surface: 0.2085 0.0065 271;
-    --bg-surface-2: 0.2455 0.0075 271;
-    --bg-sunken: 0.1495 0.005 271;
-    --bg-overlay: 0.2235 0.007 271;
+    --bg-canvas: 0.155 0.005 271;
+    --bg-surface: 0.235 0.007 271;
+    --bg-surface-2: 0.295 0.008 271;
+    --bg-sunken: 0.138 0.004 271;
+    --bg-overlay: 0.310 0.009 271;
 
-    --fg-primary: 0.94548 0.00675 97.35;
-    --fg-secondary: 0.81001 0.00837 98.91;
-    --fg-tertiary: 0.7347 0.00881 91.51;
-    --fg-quaternary: 0.67629 0.00899 91.52;
+    --fg-primary: 0.95 0.006 97.35;
+    --fg-secondary: 0.82 0.008 98.91;
+    --fg-tertiary: 0.74 0.008 91.51;
+    --fg-quaternary: 0.68 0.009 91.52;
     --fg-on-accent: 0.25997 0.01184 67.27;
     --fg-on-danger: 0.25997 0.01184 67.27;
 
     --accent: 0.77 0.135 55;
-    --accent-hover: 0.81 0.135 55;
+    --accent-hover: 0.83 0.145 55;
     --accent-soft: 0.32 0.06 55;
     --accent-ink: 0.77 0.135 55;
     --selection: 0.86 0.06 55;
@@ -163,11 +163,11 @@
     --warning: 0.84 0.11 80;
     --live: 0.69 0.19 33;
     --info: 0.76 0.11 258;
-    --blob-a: 0.74 0.14 55 / 0.13;
-    --blob-b: 0.74 0.11 190 / 0.09;
-    --blob-c: 0.6 0.15 268 / 0.09;
-    --p1: 0.78 0.11 55;
-    --p1-bg: 0.33 0.04 55;
+    --blob-a: 0.72 0.14 55 / 0.09;
+    --blob-b: 0.72 0.11 190 / 0.06;
+    --blob-c: 0.62 0.14 270 / 0.06;
+    --p1: 0.74 0.12 285;
+    --p1-bg: 0.33 0.04 285;
     --p2: 0.72 0.11 340;
     --p2-bg: 0.31 0.04 340;
     --p3: 0.77 0.07 220;
@@ -178,7 +178,7 @@
     /* Keep surface edges visible without turning dividers into chrome. */
     --danger: 0.75 0.11 30;
     --color-destructive-foreground: oklch(var(--fg-on-danger));
-    --color-border: oklch(1 0 0 / 0.08);
+    --color-border: oklch(1 0 0 / 0.11);
   }
 
   * {
@@ -355,10 +355,25 @@
   min-height: 15rem;
 }
 .cx-note-embedded .bn-editor {
-  padding-inline: clamp(1.25rem, 4%, 2.5rem);
+  padding-inline: 0;
 }
 .cx-note-embedded .bn-editor,
 .cx-note-embedded .ProseMirror {
   min-width: 0;
   overflow-wrap: anywhere;
+}
+.cx-note-embedded .ProseMirror h1 {
+  font-size: 1.125rem;
+  line-height: 1.35;
+  margin-top: 0.5rem;
+  margin-bottom: 0.375rem;
+  font-weight: 600;
+  color: var(--color-foreground);
+}
+.cx-note-embedded .ProseMirror h2 {
+  font-size: 1.125rem;
+  line-height: 1.35;
+  margin-top: 0.625rem;
+  margin-bottom: 0.375rem;
+  font-weight: 600;
 }

@@ -108,11 +108,11 @@
   .ch-body {
     display: grid;
     flex: 1;
-    grid-template-columns: 220px minmax(0, 1fr);
+    grid-template-columns: 14.5rem minmax(0, 1fr);
     min-height: 0;
   }
   .ch-body[data-peek] {
-    grid-template-columns: 220px minmax(0, 1fr) 320px;
+    grid-template-columns: 14.5rem minmax(0, 1fr) 320px;
   }
   .ch-main {
     display: flex;
@@ -172,7 +172,6 @@
   }
   .ch-mini-day[data-outside] {
     color: var(--color-muted-foreground);
-    opacity: 0.6;
   }
   .ch-mini-day[data-in-view] {
     background: var(--color-secondary);

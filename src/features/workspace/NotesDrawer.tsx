@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronLeft, FileText, Plus } from 'lucide-react';
+import { ChevronLeft, FileText, Plus, Search } from 'lucide-react';
 import type { Note } from '../../lib/bindings';
 import { useAppStore } from '../../lib/store';
 import { Button, Input } from '../../components/ui';
@@ -102,13 +102,17 @@ export function NotesDrawer({ ws }: { ws: Workspace }) {
                 />
               )}
             </div>
-            <Input
-              type="search"
-              value={query}
-              placeholder={t('workspace.drawer.search')}
-              aria-label={t('workspace.drawer.search')}
-              onChange={(e) => setQuery(e.target.value)}
-            />
+            <div className="ws-drawer-search">
+              <Search size={13} aria-hidden="true" className="ws-drawer-search-icon" />
+              <Input
+                size="sm"
+                type="search"
+                value={query}
+                placeholder={t('workspace.drawer.search')}
+                aria-label={t('workspace.drawer.search')}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+            </div>
           </div>
           <div className="ws-drawer-scroll">
             <h3 className="ws-drawer-group">

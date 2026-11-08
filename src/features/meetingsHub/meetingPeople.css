@@ -88,7 +88,8 @@
   .ch-av-stack .mh-av {
     width: 1.25rem;
     height: 1.25rem;
-    font-size: 0.53125rem;
+    font-size: 0.65625rem;
+    font-weight: 600;
   }
   .ch-people {
     display: grid;
@@ -107,7 +108,8 @@
   .ch-person .mh-av {
     width: 1.5rem;
     height: 1.5rem;
-    font-size: 0.625rem;
+    font-size: 0.75rem;
+    font-weight: 600;
   }
   .ch-person-name {
     min-width: 0;

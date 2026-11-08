@@ -113,6 +113,7 @@ export function CalendarBlock({
       data-cancelled={event?.cancelled || undefined}
       data-look={look ?? undefined}
       data-signals={icons || undefined}
+      data-multi-lane={block && block.lanes > 1 ? 'true' : undefined}
       data-key={row.key}
       style={{ ...(tinted ? colourStyle(colour.preset) : {}), ...position }}
       title={`${when} ${title}`}

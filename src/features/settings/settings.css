@@ -115,9 +115,10 @@
     position: relative;
     display: inline-grid;
     grid-template-columns: repeat(var(--count), minmax(0, 1fr));
-    padding: 2px;
+    padding: 3px;
     border-radius: 9px;
-    background: var(--color-secondary);
+    background: var(--color-muted);
+    border: 1px solid var(--color-border);
   }
   .cx-segmented-thumb {
     position: absolute;
@@ -125,9 +126,10 @@
     bottom: 2px;
     left: 2px;
     width: calc((100% - 0.25rem) / var(--count));
-    border-radius: 7px;
+    border-radius: 6px;
     background: var(--color-card);
-    box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
+    border: 1px solid var(--color-border);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
     transform: translateX(calc(var(--index) * 100%));
     transition: transform var(--m-fast) var(--e-out);
   }
@@ -139,15 +141,20 @@
     align-items: center;
     justify-content: center;
     padding: 0 0.625rem;
-    border-radius: 7px;
+    border-radius: 6px;
     color: var(--color-muted-foreground);
     font-size: var(--text-ui);
+    font-weight: 500;
     white-space: nowrap;
     cursor: pointer;
     transition: color var(--m-instant);
   }
+  .cx-segmented-option:hover:not([data-on='true']) {
+    color: var(--color-foreground);
+  }
   .cx-segmented-option[data-on='true'] {
     color: var(--color-foreground);
+    font-weight: 600;
   }
   .cx-segmented-option:focus-within {
     outline: 2px solid var(--color-ring);

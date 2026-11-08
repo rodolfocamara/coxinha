@@ -1,6 +1,7 @@
 import { useNavigate } from '@tanstack/react-router';
 import { AlertTriangle, ChevronRight, Eye, Pause, Phone, Play, Square, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import brandMark from '../../assets/coxinha-mark.svg';
 import { Button } from '../../components/ui';
 import { WindowChrome } from '../../components/AppShell/WindowChrome';
 import type { ActiveCall } from '../../lib/bindings';
@@ -304,12 +305,7 @@ export function RecorderStrip() {
     view = {
       key: background ? 'idle:background' : 'idle',
       tone: 'idle',
-      content: (
-        <>
-          <span className="cx-strip-muted">{t('brand.name')}</span>
-          {background}
-        </>
-      ),
+      content: background,
       actions: <RecordButton />,
     };
   }
@@ -323,15 +319,21 @@ export function RecorderStrip() {
       data-changed={changed}
       aria-label={t('recorder.label')}
     >
-      <div className="cx-strip-part" key={view.key}>
-        {view.content}
+      <div className="cx-brand-lockup">
+        <img src={brandMark} alt="" className="cx-brand-logo" aria-hidden="true" />
+        <span className="cx-brand-name">{t('brand.name')}</span>
       </div>
+      {view.content && (
+        <div className="cx-strip-part" key={view.key}>
+          {view.content}
+        </div>
+      )}
       {failureText && (
         <span role="alert" className="cx-strip-part text-live">
           {failureText}
         </span>
       )}
-      <SearchBar />
+      <SearchBar compact={!!active} />
       <WindowChrome>
         <div className="cx-strip-part" key={`${view.key}:actions`}>
           {view.actions}

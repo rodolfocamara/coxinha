@@ -52,7 +52,7 @@
     },
     "notes": {
       "title": "Notas recentes",
-      "open": "Workspace",
+      "open": "Abrir",
       "untitled": "Sem título",
       "today": "hoje {{time}}",
       "yesterday": "ontem",
